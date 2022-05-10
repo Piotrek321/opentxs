@@ -710,7 +710,7 @@ auto Script::ExtractPatterns(const api::Session& api) const noexcept
         std::begin(hashes),
         std::end(hashes),
         std::back_inserter(output),
-        [&](const auto& hash) -> auto{
+        [&](const auto& hash) -> auto {
             return api.Crypto().Blockchain().IndexItem(hash->Bytes());
         });
 
@@ -1268,4 +1268,19 @@ auto Script::Value(const std::size_t position) const noexcept
 
     return get_data(index);
 }
+
+bool Script::CompareScriptElements(const bitcoin::Script& other) const noexcept
+{
+    if (size() != other.size()) return false;
+
+    auto otherIter = other.begin();
+    auto iter = begin();
+    while (iter != end()) {
+        if (*iter != *otherIter) return false;
+        ++iter;
+        ++otherIter;
+    }
+    return true;
+}
+
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

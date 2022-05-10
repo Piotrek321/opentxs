@@ -37,7 +37,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
         auto difference = ot::Vector<ot::UnallocatedCString>{};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(inputHex), [
-            ](const auto& in) -> auto{ return in->asHex(); });
+            ](const auto& in) -> auto { return in->asHex(); });
 
         EXPECT_EQ(expected.size(), inputHex.size());
 

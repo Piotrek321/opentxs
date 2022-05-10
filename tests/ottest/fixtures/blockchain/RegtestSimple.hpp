@@ -141,5 +141,11 @@ protected:
         -> const ot::UnallocatedCString;
 
     auto GetHDAccount(const User& user) const noexcept -> const bca::HD&;
+
+    auto GetDisplayBalance(opentxs::Amount value) const noexcept -> std::string;
+    auto GetWalletAddress(const User& user) const noexcept -> std::string;
+    auto GetWalletName(const User& user) const noexcept -> std::string;
+    auto GetTransactions(const User& user) const noexcept
+        -> opentxs::UnallocatedVector<opentxs::blockchain::block::pTxid>;
 };
 }  // namespace ottest

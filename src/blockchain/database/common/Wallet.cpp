@@ -164,7 +164,7 @@ auto Wallet::LookupTransactions(const PatternID pattern) const noexcept
         const auto& data = pattern_to_transactions_.at(pattern);
         std::transform(
             std::begin(data), std::end(data), std::back_inserter(output), [
-            ](const auto& txid) -> auto{ return txid; });
+            ](const auto& txid) -> auto { return txid; });
 
     } catch (...) {
     }

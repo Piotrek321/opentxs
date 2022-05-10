@@ -484,7 +484,7 @@ auto Element::update_element(rLock& lock) const noexcept -> void
     auto hashes = UnallocatedVector<ReadView>{};
     std::transform(
         std::begin(elements), std::end(elements), std::back_inserter(hashes), [
-        ](const auto& in) -> auto{ return in->Bytes(); });
+        ](const auto& in) -> auto { return in->Bytes(); });
     lock.unlock();
     parent_.Internal().UpdateElement(hashes);
 }

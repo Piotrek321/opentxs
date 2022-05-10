@@ -271,7 +271,7 @@ auto BitcoinTransaction(
         std::begin(in.chain()),
         std::end(in.chain()),
         std::back_inserter(chains),
-        [](const auto type) -> auto{
+        [](const auto type) -> auto {
             return UnitToBlockchain(ClaimToUnit(
                 translate(static_cast<proto::ContactItemType>(type))));
         });
@@ -306,7 +306,7 @@ auto BitcoinTransaction(
 
             std::transform(
                 std::begin(map), std::end(map), std::back_inserter(inputs), [
-                ](auto& in) -> auto{ return std::move(in.second); });
+                ](auto& in) -> auto { return std::move(in.second); });
         }
 
         auto outputs = UnallocatedVector<
@@ -327,7 +327,7 @@ auto BitcoinTransaction(
 
             std::transform(
                 std::begin(map), std::end(map), std::back_inserter(outputs), [
-                ](auto& in) -> auto{ return std::move(in.second); });
+                ](auto& in) -> auto { return std::move(in.second); });
         }
 
         return std::make_unique<ReturnType>(

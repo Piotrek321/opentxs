@@ -15,6 +15,7 @@
 #include <string_view>
 #include <tuple>
 
+#include "internal/blockchain/Blockchain.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
 #include "ottest/fixtures/common/User.hpp"
 
@@ -403,5 +404,34 @@ auto Regtest_fixture_simple::WaitForSynchro(
         }
         ot::Sleep(std::chrono::seconds(5));
     }
+}
+auto Regtest_fixture_simple::GetDisplayBalance(
+    opentxs::Amount value) const noexcept -> std::string
+{
+    return opentxs::blockchain::internal::Format(test_chain_, value);
+}
+
+auto Regtest_fixture_simple::GetWalletAddress(const User& user) const noexcept
+    -> std::string
+{
+    return GetHDAccount(user)
+        .BalanceElement(opentxs::blockchain::crypto::Subchain::Internal, 0)
+        .Address(opentxs::blockchain::crypto::AddressStyle::P2PKH);
+}
+
+auto Regtest_fixture_simple::GetWalletName(const User& user) const noexcept
+    -> std::string
+{
+    return user.nym_->Alias();
+}
+
+auto Regtest_fixture_simple::GetTransactions(const User& user) const noexcept
+    -> opentxs::UnallocatedVector<opentxs::blockchain::block::pTxid>
+{
+    const auto& network =
+        user.api_->Network().Blockchain().GetChain(test_chain_);
+    const auto& wallet = network.Wallet();
+
+    return wallet.GetTransactions();
 }
 }  // namespace ottest

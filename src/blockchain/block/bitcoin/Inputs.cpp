@@ -253,7 +253,7 @@ auto Inputs::NetBalanceChange(const identifier::Nym& nym, const Log& log)
         std::begin(inputs_),
         std::end(inputs_),
         opentxs::Amount{0},
-        [&](const auto prev, const auto& input) -> auto{
+        [&](const auto prev, const auto& input) -> auto {
             return prev + input->NetBalanceChange(nym, index++, log);
         });
 }

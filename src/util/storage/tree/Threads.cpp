@@ -106,7 +106,7 @@ auto Threads::BlockchainTransactionList() const noexcept
         std::begin(blockchain_.map_),
         std::end(blockchain_.map_),
         std::back_inserter(output),
-        [&](const auto& in) -> auto{ return in.first; });
+        [&](const auto& in) -> auto { return in.first; });
 
     return output;
 }

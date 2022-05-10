@@ -419,7 +419,7 @@ auto Output::index_elements() noexcept -> void
     LogTrace()(OT_PRETTY_CLASS())(patterns.size())(" pubkey hashes found:")
         .Flush();
     std::for_each(
-        std::begin(patterns), std::end(patterns), [&](const auto& id) -> auto{
+        std::begin(patterns), std::end(patterns), [&](const auto& id) -> auto {
             hashes.emplace(id);
             LogTrace()("    * ")(id).Flush();
         });
