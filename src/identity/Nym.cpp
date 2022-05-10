@@ -14,10 +14,10 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.tpp"
 #include "internal/api/crypto/Seed.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/identity/Authority.hpp"
 #include "internal/identity/Nym.hpp"

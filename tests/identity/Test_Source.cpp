@@ -11,8 +11,8 @@
 #include <stdexcept>
 #include <tuple>
 
-#include "internal/core/Factory.hpp"
 #include "internal/api/crypto/Seed.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/identity/Authority.hpp"
 #include "internal/identity/Nym.hpp"
 #include "ottest/fixtures/paymentcode/VectorsV3.hpp"

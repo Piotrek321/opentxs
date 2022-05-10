@@ -92,7 +92,7 @@ auto Input::Cache::keys() const noexcept -> UnallocatedVector<crypto::Key>
     auto output = UnallocatedVector<crypto::Key>{};
     std::transform(
         std::begin(keys_), std::end(keys_), std::back_inserter(output), [
-        ](const auto& key) -> auto{ return key; });
+        ](const auto& key) -> auto { return key; });
 
     return output;
 }

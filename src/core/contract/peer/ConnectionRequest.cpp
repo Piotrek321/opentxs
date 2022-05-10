@@ -11,9 +11,9 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"

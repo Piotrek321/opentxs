@@ -240,7 +240,7 @@ auto GCS(
         auto elements = blockchain::GCS::Targets{alloc};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(elements), [
-            ](const auto& element) -> auto{ return reader(element); });
+            ](const auto& element) -> auto { return reader(element); });
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wtautological-type-limit-compare"

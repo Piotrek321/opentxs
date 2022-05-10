@@ -10,9 +10,9 @@
 #include <memory>
 #include <stdexcept>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Config.hpp"

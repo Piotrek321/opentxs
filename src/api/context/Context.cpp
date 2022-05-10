@@ -20,13 +20,13 @@
 #include <string_view>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "internal/api/Crypto.hpp"
 #include "internal/api/Factory.hpp"
 #include "internal/api/Log.hpp"
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/interface/rpc/RPC.hpp"
 #include "internal/network/zeromq/Factory.hpp"
 #include "internal/util/Flag.hpp"

@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_opentx_test(ottest-blockchain-regtest-basic Basic.cpp)
+
 add_opentx_test(
   ottest-blockchain-regtest-block-propagation BlockPropagation.cpp
 )
@@ -25,3 +26,8 @@ set_tests_properties(
 )
 
 add_opentx_test(ottest-blockchain-regtest-sync-client SyncClient.cpp)
+
+add_opentx_test(ottest-blockchain-regtest-rename RenameWallet.cpp)
+add_opentx_test(ottest-blockchain-regtest-restart Restart.cpp)
+add_opentx_test(ottest-blockchain-regtest-restart-end StressRestartAtEnd.cpp)
+add_opentx_test(ottest-blockchain-regtest-restart-inloop StressRestartInLoop.cpp)

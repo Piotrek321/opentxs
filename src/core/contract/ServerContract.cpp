@@ -15,11 +15,11 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/core/Core.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/Types.hpp"
 #include "internal/identity/Nym.hpp"

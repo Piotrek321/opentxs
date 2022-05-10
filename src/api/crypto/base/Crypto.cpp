@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "api/crypto/base/Crypto.hpp"  // IWYU pragma: associated
 
-#include "internal/core/Factory.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/crypto/Crypto.hpp"
 #include "internal/crypto/Factory.hpp"
 #include "internal/crypto/library/Factory.hpp"

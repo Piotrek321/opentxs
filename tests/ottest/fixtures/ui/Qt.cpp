@@ -137,7 +137,7 @@ auto check_account_activity_qt(
         auto output = QVariantList{};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(output), [
-            ](const auto& in) -> auto{ return static_cast<int>(in); });
+            ](const auto& in) -> auto { return static_cast<int>(in); });
 
         return output;
     }();

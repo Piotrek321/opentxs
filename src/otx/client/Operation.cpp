@@ -19,7 +19,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/StateMachine.hpp"
@@ -29,6 +28,7 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Mint.hpp"

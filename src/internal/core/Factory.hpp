@@ -8,9 +8,6 @@
 #include <cstdint>
 #include <string_view>
 
-#include "opentxs/crypto/Types.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Container.hpp"
 #include "internal/core/contract/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
@@ -18,9 +15,13 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/Enums.pb.h"
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
@@ -752,4 +753,3 @@ public:
         -> api::network::ZMQ*;
 };
 }  // namespace opentxs
-

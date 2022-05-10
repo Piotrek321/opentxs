@@ -11,9 +11,9 @@
 #include <string_view>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "internal/api/Crypto.hpp"
 #include "internal/api/crypto/Seed.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/identity/Authority.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/identity/Types.hpp"

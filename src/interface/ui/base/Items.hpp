@@ -52,7 +52,7 @@ public:
         output.reserve(index_.size());
         std::transform(
             index_.begin(), index_.end(), std::back_inserter(output), [
-            ](const auto& in) -> auto{ return in.first; });
+            ](const auto& in) -> auto { return in.first; });
 
         return output;
     }

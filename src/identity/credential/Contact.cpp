@@ -11,10 +11,10 @@
 #include <memory>
 #include <stdexcept>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/wot/claim/Types.hpp"

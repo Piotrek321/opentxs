@@ -11,17 +11,16 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.tpp"
 #include "internal/api/Crypto.hpp"
 #include "internal/api/FactoryAPI.hpp"
 #include "internal/api/crypto/Asymmetric.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#include "internal/core/Factory.hpp"
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #endif  // OT_BLOCKCHAIN
-#include "internal/core/Factory.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "internal/core/identifier/Factory.hpp"

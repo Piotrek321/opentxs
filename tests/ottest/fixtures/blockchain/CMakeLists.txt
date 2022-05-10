@@ -17,5 +17,7 @@ target_sources(
     "Regtest.hpp"
     "RegtestSimple.cpp"
     "RegtestSimple.hpp"
+    "Restart.cpp"
+    "Restart.hpp"
     "StartStop.hpp"
 )

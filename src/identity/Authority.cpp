@@ -15,10 +15,10 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Authority.hpp"

@@ -425,7 +425,7 @@ auto Cache::Request(const Vector<block::Hash>& hashes) noexcept
             std::begin(download),
             std::end(download),
             std::back_inserter(blockList),
-            [](const auto& in) -> auto{
+            [](const auto& in) -> auto {
                 const auto& [key, value] = in;
 
                 return key.Bytes();

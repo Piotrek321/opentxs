@@ -79,7 +79,7 @@ protected:
     UserIndex users_;
     UserListeners user_listeners_;
     bool wait_for_handshake_ = true;
-    static constexpr auto wait_time_limit_ = std::chrono::minutes(5);
+    static constexpr auto wait_time_limit_ = std::chrono::minutes(1);
     const unsigned amount_in_transaction_ = 10000000;
     const unsigned transaction_in_block_ = 50;
 
@@ -141,5 +141,11 @@ protected:
         -> const ot::UnallocatedCString;
 
     auto GetHDAccount(const User& user) const noexcept -> const bca::HD&;
+
+    auto GetDisplayBalance(opentxs::Amount value) const noexcept -> std::string;
+    auto GetWalletAddress(const User& user) const noexcept -> std::string;
+    auto GetWalletName(const User& user) const noexcept -> std::string;
+    auto GetTransactions(const User& user) const noexcept
+        -> opentxs::UnallocatedVector<opentxs::blockchain::block::pTxid>;
 };
 }  // namespace ottest

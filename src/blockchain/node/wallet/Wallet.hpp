@@ -121,6 +121,9 @@ public:
     {
         return fee_oracle_.EstimatedFee();
     }
+    auto GetTransactions() const noexcept
+        -> UnallocatedVector<block::pTxid> override;
+
     auto GetBalance() const noexcept -> Balance final;
     auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance final;

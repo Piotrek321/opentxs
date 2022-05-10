@@ -10,8 +10,8 @@
 #include <memory>
 #include <stdexcept>
 
-#include "internal/core/Factory.hpp"
 #include "identity/credential/Key.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/util/Log.hpp"

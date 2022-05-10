@@ -3,11 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                       // IWYU pragma: associated
-#include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "blockchain/node/wallet/Wallet.hpp"  // IWYU pragma: associated
 
-#include <atomic>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -22,7 +19,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
@@ -117,6 +113,10 @@ auto Wallet::ConstructTransaction(
 {
     proposals_.Add(tx, std::move(promise));
     trigger();
+}
+auto Wallet::GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>
+{
+    return db_.GetTransactions();
 }
 
 auto Wallet::GetBalance() const noexcept -> Balance { return db_.GetBalance(); }

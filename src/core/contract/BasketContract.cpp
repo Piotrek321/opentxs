@@ -12,9 +12,9 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/Unit.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"
 #include "internal/util/LogMacros.hpp"

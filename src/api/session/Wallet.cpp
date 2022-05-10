@@ -18,13 +18,13 @@
 #include <thread>
 #include <type_traits>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/core/Core.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/core/contract/Types.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/network/p2p/Factory.hpp"

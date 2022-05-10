@@ -14,10 +14,10 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/client/Pair.hpp"

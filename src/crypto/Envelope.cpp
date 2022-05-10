@@ -15,11 +15,11 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/crypto/Symmetric.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Config.hpp"

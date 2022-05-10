@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "interface/ui/accountactivity/BlockchainAccountActivity.hpp"  // IWYU pragma: associated
 
+#include <opentxs/util/Log.hpp>
 #include <atomic>
 #include <functional>
 #include <future>
@@ -257,13 +258,18 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
 {
     wait_for_startup();
     const auto body = in.Body();
-
     OT_ASSERT(4 < body.size());
 
     const auto chain = body.at(1).as<blockchain::Type>();
     const auto confirmed = factory::Amount(body.at(2));
     const auto unconfirmed = factory::Amount(body.at(3));
     const auto nym = Widget::api_.Factory().NymID(body.at(4));
+
+    LogConsole()(
+        "BlockchainAccountActivity::process_balance confirmed balance: " +
+        display_balance(confirmed) + ", unconfirmed balance: " +
+        display_balance(unconfirmed) + ", nym: " + nym->asHex())
+        .Flush();
 
     OT_ASSERT(chain_ == chain);
     OT_ASSERT(primary_id_ == nym);

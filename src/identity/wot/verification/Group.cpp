@@ -10,8 +10,8 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "Proto.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"

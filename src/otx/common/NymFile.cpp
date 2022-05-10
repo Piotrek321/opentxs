@@ -13,10 +13,10 @@
 #include <memory>
 #include <utility>
 
-#include "internal/core/Factory.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/otx/common/StringXML.hpp"

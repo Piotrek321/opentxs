@@ -16,7 +16,6 @@
 #include <tuple>
 #include <type_traits>
 
-#include "internal/core/Factory.hpp"
 #include "interface/rpc/RPC.hpp"
 #include "interface/rpc/response/Invalid.hpp"
 #include "internal/api/session/Client.hpp"

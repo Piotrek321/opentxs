@@ -9,8 +9,8 @@
 
 #include <stdexcept>
 
-#include "internal/core/Factory.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/api/session/Factory.hpp"

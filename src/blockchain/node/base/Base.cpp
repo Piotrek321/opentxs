@@ -113,6 +113,11 @@ struct NullWallet final : public node::internal::Wallet {
     {
         return {};
     }
+    auto GetTransactions() const noexcept
+        -> UnallocatedVector<block::pTxid> override
+    {
+        return {};
+    }
     auto GetBalance() const noexcept -> Balance final { return {}; }
     auto GetBalance(const identifier::Nym&) const noexcept -> Balance final
     {
