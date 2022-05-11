@@ -37,3 +37,5 @@ set_tests_properties(
 set_tests_properties(
         ottest-blockchain-regtest-restart-stress PROPERTIES DISABLED TRUE
 )
+
+add_opentx_test(ottest-blockchain-regtest-restart-early RestartEarly.cpp)

@@ -434,4 +434,15 @@ auto Regtest_fixture_simple::GetTransactions(const User& user) const noexcept
 
     return wallet.GetTransactions();
 }
+
+    auto Regtest_fixture_simple::GetHeight(const User& user) const noexcept
+    -> opentxs::blockchain::block::Height
+    {
+        const auto& network =
+                user.api_->Network().Blockchain().GetChain(test_chain_);
+        const auto& wallet = network.Wallet();
+
+        return wallet.Height();
+    }
+
 }  // namespace ottest

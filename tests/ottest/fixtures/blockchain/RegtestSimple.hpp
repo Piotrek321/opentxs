@@ -147,5 +147,7 @@ protected:
     auto GetWalletName(const User& user) const noexcept -> std::string;
     auto GetTransactions(const User& user) const noexcept
         -> opentxs::UnallocatedVector<opentxs::blockchain::block::pTxid>;
+    auto GetHeight(const User& user) const noexcept
+    -> opentxs::blockchain::block::Height;
 };
 }  // namespace ottest
