@@ -105,8 +105,13 @@ option(
   "Enable include-what-you-use static analysis"
   OFF
 )
+option(
+  OT_CLANG_TIDY
+  "Enable clang-tidy"
+  OFF
+)
 
-if(OT_IWYU)
+if(OT_IWYU OR OT_CLANG_TIDY)
   set(OT_PCH OFF)
 endif()
 
@@ -391,6 +396,7 @@ message(STATUS "Valgrind support:         ${OT_VALGRIND}")
 message(STATUS "precompiled headers:      ${OT_PCH}")
 message(STATUS "iwyu:                     ${OPENTXS_IWYU_ARGS}")
 message(STATUS "fix_includes:             ${OPENTXS_FIX_INCLUDES_ARGS}")
+message(STATUS "clang-tidy:               ${OT_CLANG_TIDY}")
 
 if(OT_IWYU)
   message(STATUS "")
@@ -427,6 +433,18 @@ if(OT_IWYU)
   )
   message(STATUS "  6. Run clang-format on any files that fix_includes edited.")
   message(STATUS "")
+endif()
+
+if(OT_CLANG_TIDY)
+  find_program(CLANG_TIDY_COMMAND NAMES clang-tidy)
+
+  if(CLANG_TIDY_COMMAND)
+    set(CMAKE_CXX_CLANG_TIDY
+        "${CLANG_TIDY_COMMAND};-header-filter=${CMAKE_CURRENT_SOURCE_DIR}/(include|src|tests)/.*.(h|t)pp;-fix"
+    )
+  else()
+    message(FATAL_ERROR "clang-tidy not found")
+  endif()
 endif()
 
 # -----------------------------------------------------------------------------

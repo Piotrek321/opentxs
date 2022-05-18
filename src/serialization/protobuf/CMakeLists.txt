@@ -220,6 +220,8 @@ set_target_properties(
     MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
     C_INCLUDE_WHAT_YOU_USE ""
     CXX_INCLUDE_WHAT_YOU_USE ""
+    C_CLANG_TIDY ""
+    CXX_CLANG_TIDY ""
 )
 
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:messages>)
