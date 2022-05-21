@@ -4,6 +4,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_library(opentxs-common OBJECT "")
+
+if(OT_QT_EXPORT)
+  add_library(opentxs-moc OBJECT "")
+endif()
+
 target_link_libraries(opentxs-common PRIVATE Boost::headers opentxs::messages)
 target_include_directories(
   opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
@@ -119,12 +124,21 @@ if(OT_QT_EXPORT)
     ${OPENTXS_QT_PRIVATE_HEADERS}
   )
   target_sources(
-    opentxs-common
+    opentxs-moc
     PRIVATE
       ${OPENTXS_QT_PUBLIC_HEADERS}
       ${OPENTXS_QT_PRIVATE_HEADERS}
       ${OPENTXS_MOC_SOURCES}
   )
+  set_target_properties(
+    opentxs-moc
+    PROPERTIES
+      C_INCLUDE_WHAT_YOU_USE ""
+      CXX_INCLUDE_WHAT_YOU_USE ""
+      C_CLANG_TIDY ""
+      CXX_CLANG_TIDY ""
+  )
+  target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-moc>)
 
   if(OPENTXS_STANDALONE)
     install(

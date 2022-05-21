@@ -9,6 +9,7 @@ list(
   "${opentxs_SOURCE_DIR}/include/opentxs/interface/qt/DisplayScale.hpp"
 )
 target_sources(opentxs-common PRIVATE "DisplayScale.cpp")
+target_link_libraries(opentxs-moc PRIVATE Qt::Core)
 target_link_libraries(opentxs-common PRIVATE Qt::Core opentxs::messages)
 target_link_libraries(opentxs PRIVATE Qt::Core)
 

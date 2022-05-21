@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "util/license/License.hpp"  // IWYU pragma: associated
 
+#include "opentxs/util/Container.hpp"
+
 namespace opentxs
 {
 auto license_irrxml(LicenseMap& out) noexcept -> void

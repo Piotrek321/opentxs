@@ -11,6 +11,7 @@ list(
 target_sources(
   opentxs-common PRIVATE "IdentityManager.cpp" "IdentityManager.hpp"
 )
+target_link_libraries(opentxs-moc PRIVATE Qt::Core)
 target_link_libraries(opentxs-common PRIVATE Qt::Core opentxs::messages)
 target_link_libraries(opentxs PRIVATE Qt::Core)
 

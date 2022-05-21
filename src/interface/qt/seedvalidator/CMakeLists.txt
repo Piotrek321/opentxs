@@ -9,6 +9,7 @@ list(
   "${opentxs_SOURCE_DIR}/include/opentxs/interface/qt/SeedValidator.hpp"
 )
 target_sources(opentxs-common PRIVATE "SeedValidator.cpp")
+target_link_libraries(opentxs-moc PRIVATE Qt::Gui)
 target_link_libraries(opentxs-common PRIVATE Qt::Gui opentxs::messages)
 target_link_libraries(opentxs PUBLIC Qt::Gui)
 
