@@ -8,6 +8,7 @@ if(CASH_LUCRE_EXPORT)
 endif()
 add_subdirectory(license)
 add_subdirectory(size)
+add_subdirectory(tests)
 
 if(BIP32_EXPORT)
   set(OPENTXS_HAVE_HD_KEYS "true")

@@ -14,6 +14,8 @@ target_sources(
     "Counter.hpp"
     "Notary.cpp"
     "Notary.hpp"
+    "OneClientSession.cpp"
+    "OneClientSession.hpp"
     "Options.cpp"
     "Options.hpp"
     "User.cpp"

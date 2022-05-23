@@ -41,7 +41,7 @@ namespace ot = opentxs;
 
 namespace ottest
 {
-class Client_fixture : virtual public Base, virtual public ::testing::Test
+class Client_fixture : virtual public Base
 {
 protected:
     using UserIndex = ot::UnallocatedMap<int, User>;

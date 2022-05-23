@@ -34,3 +34,6 @@
 [submodule "deps/cs_libguarded"]
 	path = deps/cs_libguarded
 	url = https://github.com/copperspice/cs_libguarded
+[submodule "tests/ottest/data/blockchain/ethereum"]
+	path = tests/ottest/data/blockchain/ethereum
+	url = https://github.com/ethereum/tests

@@ -6,6 +6,9 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <opentxs/opentxs.hpp>
+
+#include "ottest/fixtures/common/Client.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -14,7 +17,10 @@ namespace opentxs  // NOLINT
 // {
 namespace api
 {
-class Context;
+namespace session
+{
+class Client;
+}  // namespace session
 }  // namespace api
 // }  // namespace v1
 }  // namespace opentxs
@@ -24,13 +30,13 @@ namespace ot = opentxs;
 
 namespace ottest
 {
-class Base : virtual public ::testing::Test
+class OneClientSession : virtual public Client_fixture
 {
 protected:
-    const ot::api::Context& ot_;
+    const ot::api::session::Client& client_1_;
 
-    Base() noexcept;
+    OneClientSession() noexcept;
 
-    ~Base() override = default;
+    ~OneClientSession() override = default;
 };
 }  // namespace ottest
