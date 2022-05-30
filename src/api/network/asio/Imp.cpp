@@ -39,6 +39,7 @@
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "network/asio/Endpoint.hpp"
 #include "network/asio/Socket.hpp"  // IWYU pragma: keep
 #include "opentxs/api/network/Asio.hpp"
@@ -152,15 +153,18 @@ auto Asio::Imp::Connect(
     socket.socket_.async_connect(
         internal,
         [this, connection{space(id)}, address{endpoint.str()}](const auto& e) {
-            if (e) {
-                LogVerbose()(OT_PRETTY_CLASS())("asio connect error: ")(
-                    e.message())
-                    .Flush();
-            }
             auto work = opentxs::network::zeromq::tagged_reply_to_connection(
                 reader(connection),
                 e ? WorkType::AsioDisconnect : WorkType::AsioConnect);
             work.AddFrame(address);
+
+            if (e) {
+                LogVerbose()(OT_PRETTY_CLASS())("asio connect error: ")(
+                    e.message())
+                    .Flush();
+                work.AddFrame(e.message());
+            }
+
             data_socket_->Send(std::move(work));
         });
 
@@ -178,7 +182,7 @@ auto Asio::Imp::data_callback(zmq::Message&& in) -> void
 
     if (0 == header.size()) { return; }
 
-    const auto& connectionID = header.at(header.size() - 1u);
+    const auto& connectionID = header.at(header.size() - 1_uz);
 
     if (0 == connectionID.size()) { return; }
 
@@ -403,6 +407,7 @@ auto Asio::Imp::Receive(
                     e.message())
                     .Flush();
                 work.AddFrame(address);
+                work.AddFrame(e.message());
             } else {
                 work.AddFrame(buffer.data(), buffer.size());
             }
@@ -697,6 +702,49 @@ auto Asio::Imp::state_machine() noexcept -> bool
     LogTrace()(OT_PRETTY_CLASS())("Finished checking ip addresses").Flush();
 
     return again;
+}
+
+auto Asio::Imp::Transmit(
+    const ReadView id,
+    const ReadView bytes,
+    Socket& socket) noexcept -> bool
+{
+    auto lock = sLock{lock_};
+
+    if (shutdown()) { return false; }
+
+    if (0 == id.size()) { return false; }
+
+    auto buf = std::make_shared<Space>(space(bytes));
+
+    return Post(
+        ThreadPool::Network,
+        [this, buf, connection{space(id)}, &socket] {
+            boost::asio::async_write(
+                socket.socket_,
+                boost::asio::buffer(buf->data(), buf->size()),
+                [this, connection](auto& e, std::size_t sent) {
+                    data_socket_->Send([&] {
+                        auto work = opentxs::network::zeromq::
+                            tagged_reply_to_connection(
+                                reader(connection),
+                                value(WorkType::AsioSendResult));
+                        work.AddFrame(sent);
+                        static constexpr auto trueValue = std::byte{0x01};
+                        static constexpr auto falseValue = std::byte{0x00};
+
+                        if (e) {
+                            work.AddFrame(falseValue);
+                            work.AddFrame(e.message());
+                        } else {
+                            work.AddFrame(trueValue);
+                        }
+
+                        return work;
+                    }());
+                });
+        },
+        asioTransmitThreadName);
 }
 
 Asio::Imp::~Imp() { Shutdown(); }

@@ -10,7 +10,6 @@
 #include "blockchain/node/p2p/Requestor.hpp"  // IWYU pragma: associated
 
 #include <boost/smart_ptr/make_shared.hpp>
-#include <boost/system/error_code.hpp>
 #include <chrono>
 #include <string_view>
 #include <utility>
@@ -376,37 +375,21 @@ auto Requestor::Imp::request(const block::Position& position) noexcept -> void
 }
 
 auto Requestor::Imp::reset_heartbeat_timer(
-    std::chrono::seconds interval) noexcept -> void
+    std::chrono::microseconds interval) noexcept -> void
 {
-    reset_timer(interval, heartbeat_timer_);
+    reset_timer(interval, heartbeat_timer_, Work::StateMachine);
 }
 
-auto Requestor::Imp::reset_init_timer(std::chrono::seconds interval) noexcept
-    -> void
+auto Requestor::Imp::reset_init_timer(
+    std::chrono::microseconds interval) noexcept -> void
 {
-    reset_timer(interval, init_timer_);
+    reset_timer(interval, init_timer_, Work::StateMachine);
 }
 
-auto Requestor::Imp::reset_request_timer(std::chrono::seconds interval) noexcept
-    -> void
+auto Requestor::Imp::reset_request_timer(
+    std::chrono::microseconds interval) noexcept -> void
 {
-    reset_timer(interval, request_timer_);
-}
-
-auto Requestor::Imp::reset_timer(
-    const std::chrono::seconds& interval,
-    Timer& timer) noexcept -> void
-{
-    timer.SetRelative(interval);
-    timer.Wait([this](const auto& ec) {
-        if (ec) {
-            if (boost::system::errc::operation_canceled != ec.value()) {
-                LogError()(OT_PRETTY_CLASS())(ec).Flush();
-            }
-        } else {
-            pipeline_.Push(MakeWork(Work::StateMachine));
-        }
-    });
+    reset_timer(interval, request_timer_, Work::StateMachine);
 }
 
 auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
@@ -626,10 +609,7 @@ auto Requestor::Imp::work() noexcept -> bool
     return false;
 }
 
-Requestor::Imp::~Imp()
-{
-    signal_shutdown();
-}
+Requestor::Imp::~Imp() { signal_shutdown(); }
 }  // namespace opentxs::blockchain::node::p2p
 
 namespace opentxs::blockchain::node::p2p

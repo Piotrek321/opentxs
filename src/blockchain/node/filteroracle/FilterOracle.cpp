@@ -429,14 +429,12 @@ auto FilterOracle::new_tip(
         work.AddFrame(tip.hash_);
         new_filters_->Send(std::move(work));
     }
-    {
-        auto work = MakeWork(WorkType::BlockchainNewFilter);
-        work.AddFrame(chain_);
-        work.AddFrame(type);
-        work.AddFrame(tip.height_);
-        work.AddFrame(tip.hash_);
-        filter_notifier_.Send(std::move(work));
-    }
+    auto work = MakeWork(WorkType::BlockchainNewFilter);
+    work.AddFrame(chain_);
+    work.AddFrame(type);
+    work.AddFrame(tip.height_);
+    work.AddFrame(tip.hash_);
+    filter_notifier_.Send(std::move(work));
 }
 
 auto FilterOracle::ProcessBlock(

@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -766,8 +767,32 @@ auto BitcoinP2PVersion(
     const UnallocatedCString& remoteAddress,
     const std::uint16_t remotePort,
     const std::uint64_t nonce,
-    const UnallocatedCString& userAgent,
+    const std::string_view userAgent,
     const blockchain::block::Height height,
     const bool relay) -> blockchain::p2p::bitcoin::message::internal::Version*;
+#endif  // OT_BLOCKCHAIN
+}  // namespace opentxs::factory
+
+namespace opentxs::factory
+{
+// TODO templates in network/blockchain/bitcoin/Peer.tpp assume the raw pointer
+// version of these functions but eventually we want all these factories to
+// return unique_ptr. Once that conversion is complete and Peer.tpp is updated
+// to use the updated versions then these temporary functions can be removed
+#if OT_BLOCKCHAIN
+auto BitcoinP2PInvTemp(
+    const api::Session& api,
+    std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
+    const blockchain::p2p::bitcoin::ProtocolVersion version,
+    const void* payload,
+    const std::size_t size) noexcept(false)
+    -> blockchain::p2p::bitcoin::message::internal::Inv*;
+auto BitcoinP2PTxTemp(
+    const api::Session& api,
+    std::unique_ptr<blockchain::p2p::bitcoin::Header> header,
+    const blockchain::p2p::bitcoin::ProtocolVersion version,
+    const void* payload,
+    const std::size_t size) noexcept
+    -> blockchain::p2p::bitcoin::message::internal::Tx*;
 #endif  // OT_BLOCKCHAIN
 }  // namespace opentxs::factory

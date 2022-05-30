@@ -145,6 +145,10 @@ struct Asio::Imp final : public api::network::internal::Asio,
     auto Resolve(std::string_view server, std::uint16_t port) const noexcept
         -> Resolved;
     auto Shutdown() noexcept -> void;
+    auto Transmit(
+        const ReadView id,
+        const ReadView bytes,
+        Socket& socket) noexcept -> bool final;
 
     Imp(const zmq::Context& zmq) noexcept;
     Imp() = delete;

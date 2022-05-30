@@ -41,6 +41,7 @@
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
@@ -56,6 +57,7 @@ class Session;
 }  // namespace api
 
 class Log;
+class Timer;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -171,6 +173,22 @@ private:
     auto init_complete() noexcept -> void { init_promise_.set_value(); }
 
 protected:
+    auto reset_timer(
+        const std::chrono::microseconds& value,
+        Timer& timer,
+        Work work) noexcept -> void
+    {
+        timer.Cancel();
+        timer.SetRelative(value);
+        reset_timer(timer, work);
+    }
+    auto reset_timer(const Time& value, Timer& timer, Work work) noexcept
+        -> void
+    {
+        timer.Cancel();
+        timer.SetAbsolute(value);
+        reset_timer(timer, work);
+    }
     auto shutdown_actor() noexcept -> void
     {
         init_future_.get();
@@ -381,6 +399,18 @@ private:
         if (again) { trigger(); }
 
         last_executed_ = Clock::now();
+    }
+    auto reset_timer(Timer& timer, Work work) noexcept -> void
+    {
+        timer.Wait([this, work](const auto& ec) {
+            if (ec) {
+                if (boost::system::errc::operation_canceled != ec.value()) {
+                    LogError()(OT_PRETTY_CLASS())(name_)(": ")(ec).Flush();
+                }
+            } else {
+                pipeline_.Push(MakeWork(work));
+            }
+        });
     }
     auto worker(network::zeromq::Message&& in) noexcept -> void
     {

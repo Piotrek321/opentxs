@@ -23,12 +23,20 @@
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/database/Peer.hpp"
+#include "internal/blockchain/node/BlockOracle.hpp"
 #include "internal/blockchain/node/Config.hpp"
+#include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "internal/blockchain/p2p/bitcoin/Factory.hpp"
+#include "internal/network/blockchain/Peer.hpp"
+#include "internal/network/blockchain/bitcoin/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
+#include "opentxs/api/crypto/Util.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
@@ -41,6 +49,8 @@
 
 namespace opentxs::blockchain::node::implementation
 {
+std::atomic<int> PeerManager::Peers::next_id_{0};
+
 PeerManager::Peers::Peers(
     const api::Session& api,
     const internal::Config& config,
@@ -76,7 +86,14 @@ PeerManager::Peers::Peers(
           localhost_peer_,
           const_cast<bool&>(invalid_peer_)))
     , preferred_services_(get_preferred_services(config_))
-    , next_id_(0)
+    , nonce_([&] {
+        auto out = decltype(nonce_){0};
+        const auto rc = api.Crypto().Util().RandomizeMemory(&out, sizeof(out));
+
+        OT_ASSERT(rc);
+
+        return out;
+    }())
     , minimum_peers_([&]() -> std::size_t {
         static const auto test = api.Factory().DataFromHex("0x7f000002");
 
@@ -125,18 +142,17 @@ auto PeerManager::Peers::add_peer(const int id, Endpoint endpoint) noexcept
 
     if (0 == count) {
         auto addressID = OTIdentifier{endpoint->ID()};
+        const auto [it, added] =
+            peers_.emplace(id, peer_factory(std::move(endpoint), id));
 
-        if (auto peer = peer_factory(std::move(endpoint), id); peer) {
-            const auto [it, added] = peers_.emplace(id, std::move(peer));
+        if (added) {
+            ++count;
+            adjust_count(1);
+            attempt_[addressID] = Clock::now();
+            connected_.emplace(std::move(addressID));
+            it->second.Start();
 
-            if (added) {
-                ++count;
-                adjust_count(1);
-                attempt_[addressID] = Clock::now();
-                connected_.emplace(std::move(addressID));
-
-                return id;
-            }
+            return id;
         }
     }
 
@@ -248,9 +264,9 @@ auto PeerManager::Peers::Disconnect(const int id) noexcept -> void
 
         if (incoming_tcp_) { incoming_tcp_->Disconnect(id); }
 
-        auto& peer = *it->second;
-        auto address = peer.AddressID();
-        peer.Shutdown();
+        auto& peer = it->second;
+        auto address = OTIdentifier{peer.AddressID()};
+        peer.Stop();
         peers_.erase(it);
 
         --active_.at(address);
@@ -292,7 +308,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
         }
 
         auto seeds = UnallocatedVector<std::string_view>{};
-        const auto count = std::size_t{1};
+        const auto count = 1_uz;
         std::sample(
             std::begin(dns),
             std::end(dns),
@@ -546,25 +562,25 @@ auto PeerManager::Peers::LookupIncomingSocket(const int id) noexcept(false)
 }
 
 auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
-    -> std::unique_ptr<blockchain::p2p::internal::Peer>
+    -> Peer
 {
     switch (params::Chains().at(chain_).p2p_protocol_) {
         case blockchain::p2p::Protocol::bitcoin: {
-            return factory::BitcoinP2PPeerLegacy(
+            return factory::BlockchainPeerBitcoin(
                 api_,
                 config_,
-                mempool_,
                 node_,
-                headers_,
-                filter_,
-                block_,
                 parent_,
+                mempool_,
+                headers_,
+                block_,
+                filter_,
+                nonce_,
                 database_,
                 policy_,
                 id,
                 std::move(endpoint),
-                shutdown_endpoint_,
-                params::Chains().at(chain_).p2p_protocol_version_);
+                shutdown_endpoint_);
         }
         case blockchain::p2p::Protocol::opentxs:
         case blockchain::p2p::Protocol::ethereum:
@@ -635,10 +651,7 @@ auto PeerManager::Peers::Shutdown() noexcept -> void
     if (incoming_zmq_) { incoming_zmq_->Shutdown(); }
     if (incoming_tcp_) { incoming_tcp_->Shutdown(); }
 
-    for (auto& [id, peer] : peers_) {
-        peer->Shutdown();
-        peer.reset();
-    }
+    for (auto& [id, peer] : peers_) { peer.Stop(); }
 
     peers_.clear();
     adjust_count(0);

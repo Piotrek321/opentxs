@@ -65,6 +65,7 @@ enum class WorkType : OTZMQWorkType {
     AsioRegister = 2048,
     AsioConnect = 2049,
     AsioDisconnect = 2050,
+    AsioSendResult = 2051,
     BitcoinP2P = 3072,
     OTXRequest = 4096,
     OTXResponse = 4097,
@@ -328,6 +329,12 @@ constexpr auto value(const WorkType in) noexcept
  *   AsioDisconnect: reports a connection or receiving error
  *       * Additional frames:
  *          1: the remote endpoint (encoded as ascii)
+ *
+ *   AsioSendResult: reports outcome of boost::asio::async_write
+ *       * Additional frames:
+ *          1: number of bytes written as std::size_t
+ *          2: send success value as std::byte. 0x00 indicates an error
+ *          3: [optional] error string
  *
  *   BitcoinP2P: serialized Bitcoin wire protocol message
  *       https://developer.bitcoin.org/reference/p2p_networking.html

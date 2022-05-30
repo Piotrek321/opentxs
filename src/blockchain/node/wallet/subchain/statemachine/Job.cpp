@@ -370,11 +370,7 @@ auto Job::process_watchdog() noexcept -> void
 
     to_parent_.Send(std::move(work));
     using namespace std::literals;
-    watchdog_.Cancel();
-    watchdog_.SetRelative(10s);
-    watchdog_.Wait([this](const auto& ec) {
-        if (!ec) { pipeline_.Push(MakeWork(Work::watchdog)); }
-    });
+    reset_timer(10s, watchdog_, Work::watchdog);
 }
 
 auto Job::state_normal(const Work work, Message&& msg) noexcept -> void

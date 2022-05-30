@@ -15,6 +15,7 @@
 
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
+#include "internal/network/blockchain/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -43,7 +44,7 @@ class ZMQIncomingConnectionManager final
     : public PeerManager::IncomingConnectionManager
 {
 public:
-    using Task = PeerManagerJobs;
+    using Task = opentxs::network::blockchain::PeerJob;
 
     auto Disconnect(const int id) const noexcept -> void final
     {
@@ -148,7 +149,7 @@ private:
             return;
         }
 
-        if (Task::P2P != body.at(0).as<Task>()) {
+        if (Task::p2p != body.at(0).as<Task>()) {
             LogError()(OT_PRETTY_CLASS())("Rejecting invalid message type")
                 .Flush();
 
@@ -236,7 +237,7 @@ private:
         OT_ASSERT(0 < body.size());
 
         switch (body.at(0).as<Task>()) {
-            case Task::Register: {
+            case Task::registration: {
                 OT_ASSERT(1 < body.size());
 
                 const auto peerID = body.at(1).as<int>();
@@ -248,7 +249,7 @@ private:
                     internalID = incomingID;
                     registered = true;
                     internal_->Send(network::zeromq::tagged_reply_to_message(
-                        message, Task::Register));
+                        message, Task::registration));
 
                     while (!cached.empty()) {
                         forward_message(internalID, std::move(cached.front()));
@@ -261,7 +262,7 @@ private:
                     return;
                 }
             } break;
-            case Task::P2P: {
+            case Task::p2p: {
                 OT_ASSERT(2 < body.size());
 
                 try {

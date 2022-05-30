@@ -105,12 +105,6 @@ enum class ManagerJobs : OTZMQWorkType {
 };
 
 enum class PeerManagerJobs : OTZMQWorkType {
-    Shutdown = value(WorkType::Shutdown),
-    Mempool = value(WorkType::BlockchainMempoolUpdated),
-    Register = value(WorkType::AsioRegister),
-    Connect = value(WorkType::AsioConnect),
-    Disconnect = value(WorkType::AsioDisconnect),
-    P2P = value(WorkType::BitcoinP2P),
     Getheaders = OT_ZMQ_INTERNAL_SIGNAL + 0,
     Getblock = OT_ZMQ_INTERNAL_SIGNAL + 1,
     BroadcastTransaction = OT_ZMQ_INTERNAL_SIGNAL + 2,
@@ -118,15 +112,7 @@ enum class PeerManagerJobs : OTZMQWorkType {
     JobAvailableCfheaders = OT_ZMQ_INTERNAL_SIGNAL + 4,
     JobAvailableCfilters = OT_ZMQ_INTERNAL_SIGNAL + 5,
     JobAvailableBlock = OT_ZMQ_INTERNAL_SIGNAL + 6,
-    ActivityTimeout = OT_ZMQ_INTERNAL_SIGNAL + 124,
-    NeedPing = OT_ZMQ_INTERNAL_SIGNAL + 125,
-    Body = OT_ZMQ_INTERNAL_SIGNAL + 126,
-    Header = OT_ZMQ_INTERNAL_SIGNAL + 127,
     Heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,
-    Init = OT_ZMQ_INIT_SIGNAL,
-    ReceiveMessage = OT_ZMQ_RECEIVE_SIGNAL,
-    SendMessage = OT_ZMQ_SEND_SIGNAL,
-    StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
 };
 
 using BlockJob =
@@ -136,4 +122,8 @@ using CfheaderJob =
 using CfilterJob = download::Batch<GCS, cfilter::Header, cfilter::Type>;
 
 auto print(BlockOracleJobs) noexcept -> std::string_view;
+constexpr auto value(PeerManagerJobs job) noexcept
+{
+    return static_cast<OTZMQWorkType>(job);
+}
 }  // namespace opentxs::blockchain::node

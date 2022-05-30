@@ -6,6 +6,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 
 #include "blockchain/bitcoin/p2p/Message.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -123,7 +124,7 @@ public:
         const UnallocatedSet<blockchain::p2p::Service>& localServices,
         const UnallocatedSet<blockchain::p2p::Service>& remoteServices,
         const bitcoin::Nonce nonce,
-        const UnallocatedCString& userAgent,
+        const std::string_view userAgent,
         const block::Height height,
         const bool relay,
         const Time time = Clock::now()) noexcept;
@@ -137,7 +138,7 @@ public:
         const UnallocatedSet<blockchain::p2p::Service>& localServices,
         const UnallocatedSet<blockchain::p2p::Service>& remoteServices,
         const bitcoin::Nonce nonce,
-        const UnallocatedCString& userAgent,
+        const std::string_view userAgent,
         const block::Height height,
         const bool relay,
         const Time time = Clock::now()) noexcept;

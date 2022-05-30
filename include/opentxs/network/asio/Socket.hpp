@@ -38,9 +38,6 @@ class OPENTXS_EXPORT Socket
 public:
     struct Imp;
 
-    using SendStatus = std::promise<bool>;
-    using Notification = std::unique_ptr<SendStatus>;
-
     auto Close() noexcept -> void;
     /**  Open an connection to a remote peer asynchronously
      *
@@ -86,13 +83,13 @@ public:
         const std::size_t bytes) noexcept -> bool;
     /**  Asynchronously deliver bytes to a remote peer
      *
-     *   @param data      the bytes to be sent
-     *   @param notifier  the callback to be executed with the result of the
-     *                    transmission attempt
+     *   @param notify the connection id which will be notified of the
+     *                 resolution of the transmit attempt
+     *   @param data   the bytes to be sent
      *
      *   \returns false if the asio context is shutting down
      */
-    auto Transmit(const ReadView data, Notification notifier) noexcept -> bool;
+    auto Transmit(const ReadView notify, const ReadView data) noexcept -> bool;
 
     OPENTXS_NO_EXPORT Socket(Imp* imp) noexcept;
     Socket() noexcept = delete;

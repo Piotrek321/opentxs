@@ -23,6 +23,7 @@
 #include "internal/blockchain/node/PeerManager.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
+#include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -96,7 +97,6 @@ namespace p2p
 namespace internal
 {
 struct Address;
-struct Peer;
 }  // namespace internal
 
 class Address;
@@ -109,6 +109,14 @@ namespace asio
 {
 class Socket;
 }  // namespace asio
+
+namespace blockchain
+{
+namespace internal
+{
+class Peer;
+}  // namespace internal
+}  // namespace blockchain
 
 namespace zeromq
 {
@@ -180,9 +188,11 @@ public:
         ~Peers();
 
     private:
-        using Peer = std::unique_ptr<blockchain::p2p::internal::Peer>;
+        using Peer = network::blockchain::internal::Peer;
         using Resolver = boost::asio::ip::tcp::resolver;
         using Addresses = boost::container::flat_set<OTIdentifier>;
+
+        static std::atomic<int> next_id_;
 
         const api::Session& api_;
         const node::internal::Config& config_;
@@ -200,7 +210,7 @@ public:
         const OTData localhost_peer_;
         const OTData default_peer_;
         const UnallocatedSet<blockchain::p2p::Service> preferred_services_;
-        std::atomic<int> next_id_;
+        const blockchain::p2p::bitcoin::Nonce nonce_;
         std::atomic<std::size_t> minimum_peers_;
         UnallocatedMap<int, Peer> peers_;
         UnallocatedMap<OTIdentifier, int> active_;
@@ -236,8 +246,7 @@ public:
         auto adjust_count(int adjustment) noexcept -> void;
         auto previous_failure_timeout(
             const Identifier& addressID) const noexcept -> bool;
-        auto peer_factory(Endpoint endpoint, const int id) noexcept
-            -> std::unique_ptr<blockchain::p2p::internal::Peer>;
+        auto peer_factory(Endpoint endpoint, const int id) noexcept -> Peer;
     };
 
     enum class Work : OTZMQWorkType {

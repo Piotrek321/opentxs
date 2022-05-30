@@ -26,6 +26,7 @@
 #include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -34,6 +35,7 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -235,6 +237,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
         work.AddFrame(height);
         network_.Reorg().Send(std::move(work));
     } else {
+        // TODO c++20
         auto work = MakeWork(WorkType::BlockchainNewHeader);
         work.AddFrame(network_.Chain());
         work.AddFrame(bytes.data(), bytes.size());
@@ -284,7 +287,7 @@ auto Headers::best() const noexcept -> block::Position
 auto Headers::best(const Lock& lock) const noexcept -> block::Position
 {
     auto output = block::Position{};
-    auto height = std::size_t{0};
+    auto height = 0_uz;
 
     if (false ==
         lmdb_.Load(
@@ -316,7 +319,7 @@ auto Headers::best(const Lock& lock) const noexcept -> block::Position
 auto Headers::checkpoint(const Lock& lock) const noexcept -> block::Position
 {
     auto output = block::Position{};
-    auto height = std::size_t{0};
+    auto height = 0_uz;
 
     if (false ==
         lmdb_.Load(

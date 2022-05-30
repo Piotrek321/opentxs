@@ -3,17 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                               // IWYU pragma: associated
-#include "1_Internal.hpp"                             // IWYU pragma: associated
-#include "blockchain/p2p/peer/ConnectionManager.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"    // IWYU pragma: associated
+#include "1_Internal.hpp"  // IWYU pragma: associated
+#include "internal/network/blockchain/ConnectionManager.hpp"  // IWYU pragma: associated
 
 #include <boost/asio.hpp>
 #include <chrono>
 #include <cstddef>
+#include <type_traits>
 
-#include "blockchain/p2p/peer/Address.hpp"
-#include "blockchain/p2p/peer/Peer.hpp"
-#include "internal/network/zeromq/Types.hpp"
+#include "internal/blockchain/p2p/P2P.hpp"
+#include "internal/network/blockchain/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -22,7 +22,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
-#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -35,21 +34,21 @@
 namespace asio = boost::asio;
 using tcp = asio::ip::tcp;
 
-namespace opentxs::blockchain::p2p::peer
+namespace opentxs::network::blockchain
 {
 struct TCPConnectionManager : virtual public ConnectionManager {
     const api::Session& api_;
+    const Log& log_;
     const int id_;
-    p2p::implementation::Peer& parent_;
-    network::zeromq::Pipeline& pipeline_;
-    const std::atomic<bool>& running_;
     const network::asio::Endpoint endpoint_;
     const Space connection_id_;
     const std::size_t header_bytes_;
+    const BodySize get_body_size_;
     std::promise<void> connection_id_promise_;
     std::shared_future<void> connection_id_future_;
     network::asio::Socket socket_;
     OTData header_;
+    bool running_;
 
     auto address() const noexcept -> UnallocatedCString final
     {
@@ -59,7 +58,6 @@ struct TCPConnectionManager : virtual public ConnectionManager {
     {
         return {address(), port()};
     }
-    auto filter(const Task) const noexcept -> bool final { return true; }
     auto host() const noexcept -> UnallocatedCString final
     {
         return endpoint_.GetAddress();
@@ -68,31 +66,24 @@ struct TCPConnectionManager : virtual public ConnectionManager {
     {
         return endpoint_.GetPort();
     }
-    auto style() const noexcept -> p2p::Network final
+    auto style() const noexcept -> opentxs::blockchain::p2p::Network final
     {
-        return p2p::Network::ipv6;
+        return opentxs::blockchain::p2p::Network::ipv6;
     }
 
-    auto connect() noexcept -> void override
+    auto do_connect() noexcept
+        -> std::pair<bool, std::optional<std::string_view>> override
     {
         OT_ASSERT(0 < connection_id_.size());
 
-        LogVerbose()(OT_PRETTY_CLASS())("Connecting to ")(endpoint_.str())
-            .Flush();
+        log_()(OT_PRETTY_CLASS())("Connecting to ")(endpoint_.str()).Flush();
         socket_.Connect(reader(connection_id_));
-    }
-    auto init() noexcept -> void final
-    {
-        pipeline_.ConnectDealer(
-            api_.Network().Asio().NotificationEndpoint(), [id = id_](auto) {
-                const network::zeromq::SocketID header = id;
-                auto out = zmq::Message{};
-                out.AddFrame(header);
-                out.StartBody();
-                out.AddFrame(Task::Init);
 
-                return out;
-            });
+        return std::make_pair(false, std::nullopt);
+    }
+    auto do_init() noexcept -> std::optional<std::string_view> final
+    {
+        return api_.Network().Asio().NotificationEndpoint();
     }
     auto is_initialized() const noexcept -> bool final
     {
@@ -101,66 +92,70 @@ struct TCPConnectionManager : virtual public ConnectionManager {
 
         return (ready == connection_id_future_.wait_for(zero));
     }
-    auto on_body(zmq::Message&& message) noexcept -> void final
+    auto on_body(zeromq::Message&& message) noexcept
+        -> std::optional<zeromq::Message> final
     {
         auto body = message.Body();
 
         OT_ASSERT(1 < body.size());
 
-        parent_.process_message([&] {
-            auto out = zmq::Message{};
+        run();
+
+        return [&] {
+            auto out = zeromq::Message{};
             out.StartBody();
-            out.AddFrame(Task::P2P);
+            out.AddFrame(PeerJob::p2p);
             out.AddFrame(header_);
             out.AddFrame(std::move(body.at(1)));
 
             return out;
-        }());
-        run();
+        }();
     }
-    auto on_connect(zmq::Message&&) noexcept -> void final
+    auto on_connect() noexcept -> void final
     {
-        LogVerbose()(OT_PRETTY_CLASS())("Connect to ")(endpoint_.str())(
-            " successful")
+        log_()(OT_PRETTY_CLASS())("Connect to ")(endpoint_.str())(" successful")
             .Flush();
-        parent_.on_connect();
         run();
     }
-    auto on_header(zmq::Message&& message) noexcept -> void final
+    auto on_header(zeromq::Message&& message) noexcept
+        -> std::optional<zeromq::Message> final
     {
         auto body = message.Body();
 
         OT_ASSERT(1 < body.size());
 
         auto& header = body.at(1);
-        const auto size = parent_.get_body_size(header);
+        const auto size = get_body_size_(header);
 
         if (0 < size) {
             header_->Assign(header.Bytes());
-            receive(static_cast<OTZMQWorkType>(Task::Body), size);
+            receive(static_cast<OTZMQWorkType>(PeerJob::body), size);
+
+            return std::nullopt;
         } else {
-            parent_.process_message([&] {
-                auto out = zmq::Message{};
+            run();
+
+            return [&] {
+                auto out = zeromq::Message{};
                 out.StartBody();
-                out.AddFrame(Task::P2P);
+                out.AddFrame(PeerJob::p2p);
                 out.AddFrame(std::move(header));
                 out.AddFrame();
 
                 return out;
-            }());
-            run();
+            }();
         }
     }
-    auto on_init(zmq::Message&&) noexcept -> void final
+    auto on_init() noexcept -> zeromq::Message final
     {
-        pipeline_.Send([&] {
+        return [&] {
             auto out = MakeWork(WorkType::AsioRegister);
             out.AddFrame(id_);
 
             return out;
-        }());
+        }();
     }
-    auto on_register(zmq::Message&& message) noexcept -> void final
+    auto on_register(zeromq::Message&& message) noexcept -> void final
     {
         const auto body = message.Body();
 
@@ -179,8 +174,6 @@ struct TCPConnectionManager : virtual public ConnectionManager {
             connection_id_promise_.set_value();
         } catch (...) {
         }
-
-        parent_.on_init();
     }
     auto receive(const OTZMQWorkType type, const std::size_t bytes) noexcept
         -> void
@@ -190,36 +183,45 @@ struct TCPConnectionManager : virtual public ConnectionManager {
     auto run() noexcept -> void
     {
         if (running_) {
-            receive(static_cast<OTZMQWorkType>(Task::Header), header_bytes_);
+            receive(static_cast<OTZMQWorkType>(PeerJob::header), header_bytes_);
         }
     }
-    auto shutdown_external() noexcept -> void final { socket_.Close(); }
-    auto stop_external() noexcept -> void final { socket_.Close(); }
+    auto shutdown_external() noexcept -> void final
+    {
+        running_ = false;
+        socket_.Close();
+    }
+    auto stop_external() noexcept -> void final
+    {
+        running_ = false;
+        socket_.Close();
+    }
     auto transmit(
-        zmq::Frame&& header,
-        zmq::Frame&& payload,
-        std::unique_ptr<SendPromise> promise) noexcept -> void final
+        zeromq::Frame&& header,
+        zeromq::Frame&& payload,
+        std::unique_ptr<SendPromise> promise) noexcept
+        -> std::optional<zeromq::Message> final
     {
         header += payload;
-        socket_.Transmit(header.Bytes(), std::move(promise));
+        socket_.Transmit(reader(connection_id_), header.Bytes());
+
+        return std::nullopt;
     }
 
     TCPConnectionManager(
         const api::Session& api,
+        const Log& log,
         const int id,
-        p2p::implementation::Peer& parent,
-        network::zeromq::Pipeline& pipeline,
-        const std::atomic<bool>& running,
         const Address& address,
-        const std::size_t headerSize) noexcept
+        const std::size_t headerSize,
+        BodySize&& gbs) noexcept
         : api_(api)
+        , log_(log)
         , id_(id)
-        , parent_(parent)
-        , pipeline_(pipeline)
-        , running_(running)
         , endpoint_(make_endpoint(address))
         , connection_id_()
         , header_bytes_(headerSize)
+        , get_body_size_(std::move(gbs))
         , connection_id_promise_()
         , connection_id_future_(connection_id_promise_.get_future())
         , socket_(api_.Network().Asio().MakeSocket(endpoint_))
@@ -229,7 +231,9 @@ struct TCPConnectionManager : virtual public ConnectionManager {
 
             return out;
         }())
+        , running_(true)
     {
+        OT_ASSERT(get_body_size_);
     }
 
     ~TCPConnectionManager() override { socket_.Close(); }
@@ -241,11 +245,11 @@ protected:
         using Type = network::asio::Endpoint::Type;
 
         switch (address.Type()) {
-            case p2p::Network::ipv6: {
+            case opentxs::blockchain::p2p::Network::ipv6: {
 
                 return {Type::ipv6, address.Bytes()->Bytes(), address.Port()};
             }
-            case p2p::Network::ipv4: {
+            case opentxs::blockchain::p2p::Network::ipv4: {
 
                 return {Type::ipv4, address.Bytes()->Bytes(), address.Port()};
             }
@@ -258,21 +262,19 @@ protected:
 
     TCPConnectionManager(
         const api::Session& api,
+        const Log& log,
         const int id,
-        const std::atomic<bool>& running,
         const std::size_t headerSize,
-        p2p::implementation::Peer& parent,
-        network::zeromq::Pipeline& pipeline,
         network::asio::Endpoint&& endpoint,
+        BodySize&& gbs,
         network::asio::Socket&& socket) noexcept
         : api_(api)
+        , log_(log)
         , id_(id)
-        , parent_(parent)
-        , pipeline_(pipeline)
-        , running_(running)
         , endpoint_(std::move(endpoint))
         , connection_id_()
         , header_bytes_(headerSize)
+        , get_body_size_(std::move(gbs))
         , connection_id_promise_()
         , connection_id_future_(connection_id_promise_.get_future())
         , socket_(std::move(socket))
@@ -282,30 +284,34 @@ protected:
 
             return out;
         }())
+        , running_(true)
     {
+        OT_ASSERT(get_body_size_);
     }
 };
 
 struct TCPIncomingConnectionManager final : public TCPConnectionManager {
-    auto connect() noexcept -> void final {}
+    auto do_connect() noexcept
+        -> std::pair<bool, std::optional<std::string_view>> final
+    {
+        return std::make_pair(false, std::nullopt);
+    }
 
     TCPIncomingConnectionManager(
         const api::Session& api,
+        const Log& log,
         const int id,
-        p2p::implementation::Peer& parent,
-        network::zeromq::Pipeline& pipeline,
-        const std::atomic<bool>& running,
         const Address& address,
         const std::size_t headerSize,
+        BodySize&& gbs,
         network::asio::Socket&& socket) noexcept
         : TCPConnectionManager(
               api,
+              log,
               id,
-              running,
               headerSize,
-              parent,
-              pipeline,
               make_endpoint(address),
+              std::move(gbs),
               std::move(socket))
     {
     }
@@ -315,36 +321,27 @@ struct TCPIncomingConnectionManager final : public TCPConnectionManager {
 
 auto ConnectionManager::TCP(
     const api::Session& api,
+    const Log& log,
     const int id,
-    p2p::implementation::Peer& parent,
-    network::zeromq::Pipeline& pipeline,
-    const std::atomic<bool>& running,
     const Address& address,
-    const std::size_t headerSize) noexcept -> std::unique_ptr<ConnectionManager>
+    const std::size_t headerSize,
+    BodySize&& gbs) noexcept -> std::unique_ptr<ConnectionManager>
 {
     return std::make_unique<TCPConnectionManager>(
-        api, id, parent, pipeline, running, address, headerSize);
+        api, log, id, address, headerSize, std::move(gbs));
 }
 
 auto ConnectionManager::TCPIncoming(
     const api::Session& api,
+    const Log& log,
     const int id,
-    p2p::implementation::Peer& parent,
-    network::zeromq::Pipeline& pipeline,
-    const std::atomic<bool>& running,
     const Address& address,
     const std::size_t headerSize,
+    BodySize&& gbs,
     opentxs::network::asio::Socket&& socket) noexcept
     -> std::unique_ptr<ConnectionManager>
 {
     return std::make_unique<TCPIncomingConnectionManager>(
-        api,
-        id,
-        parent,
-        pipeline,
-        running,
-        address,
-        headerSize,
-        std::move(socket));
+        api, log, id, address, headerSize, std::move(gbs), std::move(socket));
 }
-}  // namespace opentxs::blockchain::p2p::peer
+}  // namespace opentxs::network::blockchain

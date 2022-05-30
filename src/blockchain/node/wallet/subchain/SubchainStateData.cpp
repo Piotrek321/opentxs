@@ -10,7 +10,6 @@
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"  // IWYU pragma: associated
 
 #include <boost/container/container_fwd.hpp>
-#include <boost/system/error_code.hpp>
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -1860,16 +1859,7 @@ auto SubchainStateData::work() noexcept -> bool
         }
     }
 
-    watchdog_.SetRelative(60s);
-    watchdog_.Wait([this](const auto& error) {
-        if (error) {
-            if (boost::system::errc::operation_canceled != error.value()) {
-                LogError()(OT_PRETTY_CLASS())(name_)(" ")(error).Flush();
-            }
-        } else {
-            trigger();
-        }
-    });
+    reset_timer(60s, watchdog_, Work::statemachine);
 
     return false;
 }

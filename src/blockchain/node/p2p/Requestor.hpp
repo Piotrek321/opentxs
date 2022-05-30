@@ -151,12 +151,11 @@ private:
     auto process_sync_reply(Message&& in) noexcept -> void;
     auto register_chain() noexcept -> void;
     auto request(const block::Position& position) noexcept -> void;
-    auto reset_heartbeat_timer(std::chrono::seconds interval) noexcept -> void;
-    auto reset_init_timer(std::chrono::seconds interval) noexcept -> void;
-    auto reset_request_timer(std::chrono::seconds interval) noexcept -> void;
-    auto reset_timer(
-        const std::chrono::seconds& interval,
-        Timer& timer) noexcept -> void;
+    auto reset_heartbeat_timer(std::chrono::microseconds interval) noexcept
+        -> void;
+    auto reset_init_timer(std::chrono::microseconds interval) noexcept -> void;
+    auto reset_request_timer(std::chrono::microseconds interval) noexcept
+        -> void;
     auto state_init(const Work work, Message&& msg) noexcept -> void;
     auto state_run(const Work work, Message&& msg) noexcept -> void;
     auto state_sync(const Work work, Message&& msg) noexcept -> void;

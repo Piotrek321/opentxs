@@ -397,6 +397,13 @@ namespace internal
 
 namespace netwok
 {
+namespace blockchain
+{
+namespace internal
+{
+}  // namespace internal
+}  // namespace blockchain
+
 namespace implementation
 {
 }  // namespace implementation

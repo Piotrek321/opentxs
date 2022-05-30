@@ -60,27 +60,10 @@ auto Socket::Imp::Receive(
     return asio_.Receive(id, type, bytes, *this);
 }
 
-// NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
-auto Socket::Imp::Transmit(const ReadView data, Notification notifier) noexcept
-    -> bool
-{
-    using SharedStatus = std::shared_ptr<SendStatus>;
-    auto buf = std::make_shared<Space>(space(data));
-    auto work =
-        [this, buf, promise = SharedStatus{std::move(notifier)}]() -> void {
-        auto cb = [buf, promise](auto& error, auto bytes) -> void {
-            try {
-                if (promise) { promise->set_value(!error); }
-            } catch (...) {
-            }
-        };
-        boost::asio::async_write(
-            socket_, boost::asio::buffer(buf->data(), buf->size()), cb);
-    };
-
-    return asio_.Post(ThreadPool::Network, std::move(work), asioTransmitThreadName);
+auto Socket::Imp::Transmit(const ReadView notify, const ReadView data) noexcept
+-> bool {
+    return asio_.Transmit(notify, data, *this);
 }
-// NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
 Socket::Imp::~Imp() { Close(); }
 
@@ -110,11 +93,11 @@ auto Socket::Receive(
     return imp_->Receive(id, type, bytes);
 }
 
-auto Socket::Transmit(const ReadView data, Notification notifier) noexcept
+    auto Socket::Transmit(const ReadView notify, const ReadView data) noexcept
     -> bool
-{
-    return imp_->Transmit(data, std::move(notifier));
-}
+    {
+        return imp_->Transmit(notify, data);
+    }
 
 Socket::~Socket() { std::unique_ptr<Imp>{imp_}.reset(); }
 }  // namespace opentxs::network::asio

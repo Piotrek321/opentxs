@@ -4,3 +4,5 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(bitcoin)
+add_subdirectory(connectionmanager)
+add_subdirectory(peer)

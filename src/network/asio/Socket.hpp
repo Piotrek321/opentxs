@@ -61,7 +61,7 @@ struct Socket::Imp {
         const ReadView notify,
         const OTZMQWorkType type,
         const std::size_t bytes) noexcept -> bool;
-    auto Transmit(const ReadView data, Notification notifier) noexcept -> bool;
+    auto Transmit(const ReadView notify, const ReadView data) noexcept -> bool;
 
     Imp(const Endpoint& endpoint, Asio& asio) noexcept;
     Imp(Asio& asio, Endpoint&& endpoint, tcp::socket&& socket) noexcept;

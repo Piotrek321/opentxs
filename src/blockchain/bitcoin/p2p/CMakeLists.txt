@@ -15,8 +15,6 @@ target_sources(
     "Header.hpp"
     "Message.cpp"
     "Message.hpp"
-    "Peer.cpp"
-    "Peer.hpp"
 )
 target_include_directories(
   opentxs-common SYSTEM

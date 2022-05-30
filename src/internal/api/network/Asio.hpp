@@ -77,6 +77,10 @@ public:
         const OTZMQWorkType type,
         const std::size_t bytes,
         Socket& socket) noexcept -> bool = 0;
+    virtual auto Transmit(
+        const ReadView id,
+        const ReadView bytes,
+        Socket& socket) noexcept -> bool = 0;
 
     Asio(const Asio&) = delete;
     Asio(Asio&&) = delete;

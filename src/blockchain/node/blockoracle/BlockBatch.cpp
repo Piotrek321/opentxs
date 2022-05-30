@@ -86,6 +86,13 @@ BlockBatch::BlockBatch(BlockBatch&& rhs) noexcept
     swap(rhs);
 }
 
+auto BlockBatch::operator=(BlockBatch&& rhs) noexcept -> BlockBatch&
+{
+    swap(rhs);
+
+    return *this;
+}
+
 auto BlockBatch::Get() const noexcept -> const Vector<block::Hash>&
 {
     return imp_->hashes_;
