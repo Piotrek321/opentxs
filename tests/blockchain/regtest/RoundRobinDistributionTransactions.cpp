@@ -4,35 +4,35 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "ottest/fixtures/blockchain/Regtest.hpp"  // IWYU pragma: associated
-#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
-#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 #include <gtest/gtest.h>
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/blockchain/crypto/HDProtocol.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/blockchain/node/BlockOracle.hpp"
-#include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
-#include "opentxs/blockchain/crypto/Subaccount.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/blockchain/crypto/Element.hpp"
-#include "opentxs/blockchain/crypto/HD.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/api/session/Endpoints.hpp"
-#include "opentxs/blockchain/crypto/AddressStyle.hpp"
-#include "opentxs/util/Log.hpp"
-#include "opentxs/OT.hpp"
-
 #include <chrono>
 #include <thread>
+
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/blockchain/block/bitcoin/Block.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/blockchain/crypto/Account.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/blockchain/crypto/Element.hpp"
+#include "opentxs/blockchain/crypto/HD.hpp"
+#include "opentxs/blockchain/crypto/HDProtocol.hpp"
+#include "opentxs/blockchain/crypto/Subaccount.hpp"
+#include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Log.hpp"
+#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
+#include "ottest/fixtures/paymentcode/VectorsV3.hpp"
 
 namespace ottest
 {
