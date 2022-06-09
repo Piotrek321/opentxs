@@ -29,8 +29,13 @@ add_opentx_test(ottest-blockchain-regtest-sync-client SyncClient.cpp)
 add_opentx_test(ottest-blockchain-regtest-rename RenameWallet.cpp)
 add_opentx_test(ottest-blockchain-regtest-restart Restart.cpp)
 add_opentx_test(ottest-blockchain-regtest-restart-end StressRestartAtEnd.cpp)
-add_opentx_test(ottest-blockchain-regtest-restart-inloop StressRestartInLoop.cpp)
+add_opentx_test(
+  ottest-blockchain-regtest-restart-inloop StressRestartInLoop.cpp
+)
 add_opentx_test(ottest-blockchain-regtest-restart-early RestartEarly.cpp)
 
 add_opentx_test(ottest-blockchain-regtest-simple-transfer SimpleTransfer.cpp)
-add_opentx_test(ottest-blockchain-regtest-round-robin-distribution-transactions RoundRobinDistributionTransactions.cpp)
+add_opentx_test(
+  ottest-blockchain-regtest-round-robin-distribution-transactions
+  RoundRobinDistributionTransactions.cpp
+)
