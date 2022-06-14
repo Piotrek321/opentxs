@@ -51,12 +51,8 @@ public:
     UnallocatedCString primary_plugin_;
     bool migrate_plugin_;
 
-    bool auto_publish_nyms_;
-    bool auto_publish_servers_;
-    bool auto_publish_units_;
     std::int64_t gc_interval_;
     UnallocatedCString path_;
-    InsertCB dht_callback_;
 
     UnallocatedCString fs_primary_bucket_;
     UnallocatedCString fs_secondary_bucket_;

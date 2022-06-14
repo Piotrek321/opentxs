@@ -36,8 +36,8 @@ class Test_Basic : public ::testing::Test
 public:
     static ot::OTNymID alice_nym_id_;
     static ot::OTNymID bob_nym_id_;
-    static const ot::OTNotaryID server_id_;
-    static const ot::OTUnitID unit_id_;
+    static const ot::OTNotaryID& server_id() { return server_id_; }
+    static const ot::OTUnitID& unit_id() { return unit_id_; }
     static std::optional<ot::otx::blind::Mint> mint_;
     static std::optional<ot::otx::blind::Purse> request_purse_;
     static std::optional<ot::otx::blind::Purse> issue_purse_;
@@ -76,19 +76,20 @@ public:
             "");
         alice_nym_id_ = api_.Wallet().Nym({seedA, 0}, reason_, "Alice")->ID();
         bob_nym_id_ = api_.Wallet().Nym({seedB, 0}, reason_, "Bob")->ID();
-        const_cast<ot::identifier::UnitDefinition&>(unit_id_.get())
-            .SetString(ot::Identifier::Random()->str());
-        const_cast<ot::identifier::Notary&>(server_id_.get())
-            .SetString(ot::Identifier::Random()->str());
+        unit_id_.get().SetString(ot::Identifier::Random()->str());
+        server_id_.get().SetString(ot::Identifier::Random()->str());
         init_ = true;
     }
+
+private:
+    static ot::OTNotaryID server_id_;
+    static ot::OTUnitID unit_id_;
 };
 
 ot::OTNymID Test_Basic::alice_nym_id_{ot::identifier::Nym::Factory()};
 ot::OTNymID Test_Basic::bob_nym_id_{ot::identifier::Nym::Factory()};
-const ot::OTNotaryID Test_Basic::server_id_{ot::identifier::Notary::Factory()};
-const ot::OTUnitID Test_Basic::unit_id_{
-    ot::identifier::UnitDefinition::Factory()};
+ot::OTNotaryID Test_Basic::server_id_{ot::identifier::Notary::Factory()};
+ot::OTUnitID Test_Basic::unit_id_{ot::identifier::UnitDefinition::Factory()};
 std::optional<ot::otx::blind::Mint> Test_Basic::mint_{std::nullopt};
 std::optional<ot::otx::blind::Purse> Test_Basic::request_purse_{std::nullopt};
 std::optional<ot::otx::blind::Purse> Test_Basic::issue_purse_{std::nullopt};
@@ -98,7 +99,7 @@ ot::Time Test_Basic::valid_to_;
 
 TEST_F(Test_Basic, generateMint)
 {
-    mint_.emplace(api_.Factory().Mint(server_id_, unit_id_));
+    mint_.emplace(api_.Factory().Mint(server_id(), unit_id()));
 
     ASSERT_TRUE(mint_);
 
@@ -118,8 +119,8 @@ TEST_F(Test_Basic, generateMint)
         now,
         validTo,
         expires,
-        unit_id_,
-        server_id_,
+        unit_id(),
+        server_id(),
         nym,
         1,
         10,
@@ -144,7 +145,7 @@ TEST_F(Test_Basic, requestPurse)
     request_purse_.emplace(ot::factory::Purse(
         api_,
         *alice_,
-        server_id_,
+        server_id(),
         *bob_,
         ot::otx::blind::CashType::Lucre,
         *mint_,
@@ -162,20 +163,20 @@ TEST_F(Test_Basic, requestPurse)
     EXPECT_EQ(
         ot::Clock::to_time_t(purse.LatestValidFrom()),
         ot::Clock::to_time_t(valid_from_));
-    EXPECT_EQ(server_id_, purse.Notary());
+    EXPECT_EQ(server_id(), purse.Notary());
     EXPECT_EQ(purse.State(), ot::otx::blind::PurseType::Request);
     EXPECT_EQ(purse.Type(), ot::otx::blind::CashType::Lucre);
-    EXPECT_EQ(unit_id_, purse.Unit());
+    EXPECT_EQ(unit_id(), purse.Unit());
     EXPECT_EQ(purse.Value(), REQUEST_PURSE_VALUE);
     ASSERT_EQ(purse.size(), 2);
 
     auto& token1 = purse.at(0);
 
-    EXPECT_EQ(server_id_, token1.Notary());
+    EXPECT_EQ(server_id(), token1.Notary());
     EXPECT_EQ(token1.Series(), 0);
     EXPECT_EQ(token1.State(), ot::otx::blind::TokenState::Blinded);
     EXPECT_EQ(token1.Type(), ot::otx::blind::CashType::Lucre);
-    EXPECT_EQ(unit_id_, token1.Unit());
+    EXPECT_EQ(unit_id(), token1.Unit());
     EXPECT_EQ(
         ot::Clock::to_time_t(token1.ValidFrom()),
         ot::Clock::to_time_t(valid_from_));
@@ -186,11 +187,11 @@ TEST_F(Test_Basic, requestPurse)
 
     auto& token2 = purse.at(1);
 
-    EXPECT_EQ(server_id_, token2.Notary());
+    EXPECT_EQ(server_id(), token2.Notary());
     EXPECT_EQ(token2.Series(), 0);
     EXPECT_EQ(token2.State(), ot::otx::blind::TokenState::Blinded);
     EXPECT_EQ(token2.Type(), ot::otx::blind::CashType::Lucre);
-    EXPECT_EQ(unit_id_, token2.Unit());
+    EXPECT_EQ(unit_id(), token2.Unit());
     EXPECT_EQ(
         ot::Clock::to_time_t(token2.ValidFrom()),
         ot::Clock::to_time_t(valid_from_));
@@ -357,7 +358,7 @@ TEST_F(Test_Basic, wallet)
 {
     {
         auto& purse =
-            api_.Wallet().Purse(alice_nym_id_, server_id_, unit_id_, true);
+            api_.Wallet().Purse(alice_nym_id_, server_id(), unit_id(), true);
 
         EXPECT_FALSE(purse);
     }
@@ -365,15 +366,15 @@ TEST_F(Test_Basic, wallet)
     {
         api_.Wallet().Internal().mutable_Purse(
             alice_nym_id_,
-            server_id_,
-            unit_id_,
+            server_id(),
+            unit_id(),
             reason_,
             ot::otx::blind::CashType::Lucre);
     }
 
     {
         auto& purse =
-            api_.Wallet().Purse(alice_nym_id_, server_id_, unit_id_, false);
+            api_.Wallet().Purse(alice_nym_id_, server_id(), unit_id(), false);
 
         EXPECT_TRUE(purse);
     }
@@ -383,8 +384,8 @@ TEST_F(Test_Basic, PushPop)
 {
     auto purseEditor = api_.Wallet().Internal().mutable_Purse(
         alice_nym_id_,
-        server_id_,
-        unit_id_,
+        server_id(),
+        unit_id(),
         reason_,
         ot::otx::blind::CashType::Lucre);
     auto& purse = purseEditor.get();

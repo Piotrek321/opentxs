@@ -54,7 +54,8 @@ TEST_F(Regtest_fixture_round_robin, round_robin_recapture_transactions)
             .Flush();
     }
 
-    auto& expected_balance = user_alice.expected_balance_;
+    auto expected_balance = user_alice.expected_balance_;
+
     CloseClient(core_wallet_.name_);
 
     auto [user_core, success_core] = CreateClient(

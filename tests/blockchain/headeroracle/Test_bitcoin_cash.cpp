@@ -66,11 +66,11 @@ TEST_F(Test_HeaderOracle_btc, receive_btc)
 
 TEST_F(Test_HeaderOracle_btc, receive_bch)
 {
-    const auto network = init_network(api_, b::Type::BitcoinCash);
+    auto network = init_network(api_, b::Type::BitcoinCash);
 
     ASSERT_TRUE(network);
 
-    auto& oracle = const_cast<bc::HeaderOracle&>(network->HeaderOracle());
+    auto& oracle = network->HeaderOracle();
 
     EXPECT_TRUE(oracle.AddHeaders(headers_bch_));
 

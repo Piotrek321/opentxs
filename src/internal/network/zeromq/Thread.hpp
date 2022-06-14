@@ -43,6 +43,8 @@ public:
         -> std::pair<bool, std::future<bool>> = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
+    virtual auto SetName(std::string_view name) -> bool = 0;
+
     virtual ~Thread() = default;
 };
 }  // namespace opentxs::network::zeromq::internal

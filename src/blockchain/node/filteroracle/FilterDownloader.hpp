@@ -64,6 +64,8 @@ public:
         }
     }
 
+    std::string last_job_str() const noexcept override;
+
     FilterDownloader(
         const api::Session& api,
         database::Cfilter& db,
@@ -86,15 +88,17 @@ public:
               "cfilter",
               20000,
               10000)
-        , FilterWorker(api, 20ms)
+        , FilterWorker(api, "FilterDownloader")
         , db_(db)
         , header_(header)
         , node_(node)
         , chain_(chain)
         , type_(type)
         , notify_(notify)
+        , last_job_{}
     {
         init_executor({shutdown});
+        start();
     }
 
     ~FilterDownloader() final
@@ -109,7 +113,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -123,6 +127,7 @@ private:
     const blockchain::Type chain_;
     const cfilter::Type type_;
     const NotifyCallback& notify_;
+    FilterOracle::Work last_job_;
 
     auto batch_ready() const noexcept -> void
     {
@@ -212,6 +217,7 @@ auto FilterOracle::FilterDownloader::pipeline(zmq::Message&& in) -> void
 
     using Work = FilterOracle::Work;
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
@@ -233,15 +239,22 @@ auto FilterOracle::FilterDownloader::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto FilterOracle::FilterDownloader::state_machine() noexcept -> bool
+auto FilterOracle::FilterDownloader::state_machine() noexcept -> int
 {
-    return FilterDM::state_machine();
+    tdiag("FilterDownloader::state_machine");
+    return FilterDM::state_machine() ? 20 : 400;
 }
 
 auto FilterOracle::FilterDownloader::shut_down() noexcept -> void
 {
     close_pipeline();
     // TODO MT-34 investigate what other actions might be needed
+}
+
+auto FilterOracle::FilterDownloader::last_job_str() const noexcept
+    -> std::string
+{
+    return FilterOracle::to_str(last_job_);
 }
 
 }  // namespace opentxs::blockchain::node::implementation

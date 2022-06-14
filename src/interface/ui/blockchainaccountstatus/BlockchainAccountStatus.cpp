@@ -65,20 +65,36 @@ auto BlockchainAccountStatusModel(
 
 namespace opentxs::ui::implementation
 {
+auto BlockchainAccountStatus::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::newaccount, "newaccount"},
+        {Work::header, "header"},
+        {Work::reorg, "reorg"},
+        {Work::progress, "progress"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 BlockchainAccountStatus::BlockchainAccountStatus(
     const api::session::Client& api,
     const BlockchainAccountStatusPrimaryID& id,
     const blockchain::Type chain,
     const SimpleCallback& cb) noexcept
     : BlockchainAccountStatusType(api, id, cb, false)
-    , Worker(api, 100ms)
+    , Worker(api, "BlockchainAccountStatus")
     , chain_(chain)
+    , last_job_{}
 {
     init_executor({
         UnallocatedCString{api.Endpoints().BlockchainAccountCreated()},
         UnallocatedCString{api.Endpoints().BlockchainReorg()},
         UnallocatedCString{api.Endpoints().BlockchainScanProgress()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -178,6 +194,7 @@ auto BlockchainAccountStatus::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     if ((false == startup_complete()) && (Work::init != work)) {
         pipeline_.Push(std::move(in));
@@ -213,7 +230,7 @@ auto BlockchainAccountStatus::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainAccountStatus::state_machine() noexcept -> bool { return false; }
+auto BlockchainAccountStatus::state_machine() noexcept -> int { return -1; }
 
 auto BlockchainAccountStatus::shut_down() noexcept -> void
 {
@@ -511,6 +528,11 @@ auto BlockchainAccountStatus::subchain_display_name(
     progressOut = progress.str();
 
     return out;
+}
+
+auto BlockchainAccountStatus::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 BlockchainAccountStatus::~BlockchainAccountStatus()

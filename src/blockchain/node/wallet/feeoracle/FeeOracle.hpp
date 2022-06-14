@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <cs_deferred_guarded.h>
+#include <cs_plain_guarded.h>
 #include <future>
 #include <optional>
 #include <shared_mutex>
@@ -72,6 +72,8 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    auto to_string(Work) const noexcept -> const std::string&;
+
     const blockchain::Type chain_;
 
     // Returns satoshis per 1000 bytes
@@ -87,20 +89,22 @@ public:
 
 protected:
     auto pipeline(network::zeromq::Message&&) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
+
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
 
 private:
     using Data = Vector<std::pair<Time, Amount>>;
-    using Estimate =
-        libguarded::deferred_guarded<std::optional<Amount>, std::shared_mutex>;
+    using Estimate = libguarded::plain_guarded<std::optional<Amount>>;
 
     Timer timer_;
     ForwardList<blockchain::node::wallet::FeeSource> sources_;
     Data data_;
-    Estimate output_;
+    mutable Estimate output_;
+    Work last_job_;
 
     auto process_update(network::zeromq::Message&&) noexcept -> void;
     auto reset_timer() noexcept -> void;

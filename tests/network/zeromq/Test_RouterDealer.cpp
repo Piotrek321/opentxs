@@ -11,6 +11,8 @@
 #include <thread>
 #include <utility>
 
+#include "util/threadutil.hpp"
+
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -61,6 +63,7 @@ void Test_RouterDealer::requestSocketThread(
     const ot::UnallocatedCString& endpoint,
     const ot::UnallocatedCString& msg)
 {
+    ot::ThreadMonitor::set_name("testRoutDlr");
     auto requestSocket = context_.RequestSocket();
 
     ASSERT_NE(nullptr, &requestSocket.get());

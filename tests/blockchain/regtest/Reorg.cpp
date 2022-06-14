@@ -16,6 +16,7 @@
 #include "ottest/fixtures/rpc/Helpers.hpp"
 #include "ottest/fixtures/ui/AccountActivity.hpp"
 #include "ottest/fixtures/ui/AccountList.hpp"
+#include "util/threadutil.hpp"
 
 namespace ottest
 {
@@ -368,8 +369,10 @@ TEST_F(Regtest_fixture_hd, reorg)
     EXPECT_EQ(start, 11);
     EXPECT_EQ(end, 13);
     EXPECT_TRUE(Mine(start, count));
-    EXPECT_TRUE(listener_.wait(future1));
-    EXPECT_TRUE(listener_.wait(future2));
+    bool ok1{};  // short circuit the second long timeout
+    opentxs::ThreadDisplay::show_all(std::cerr);
+    EXPECT_TRUE(ok1 = listener_.wait(future1));
+    EXPECT_TRUE(ok1 && listener_.wait(future2));
 }
 
 TEST_F(Regtest_fixture_hd, account_activity_reorg)

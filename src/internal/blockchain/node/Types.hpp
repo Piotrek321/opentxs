@@ -135,5 +135,7 @@ using CfheaderJob =
     download::Batch<cfilter::Hash, cfilter::Header, cfilter::Type>;
 using CfilterJob = download::Batch<GCS, cfilter::Header, cfilter::Type>;
 
+auto print(ManagerJobs job) noexcept -> std::string_view;
+auto print(PeerManagerJobs job) noexcept -> std::string_view;
 auto print(BlockOracleJobs) noexcept -> std::string_view;
 }  // namespace opentxs::blockchain::node

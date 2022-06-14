@@ -76,9 +76,6 @@ enum class JobType : unsigned int {
     progress,
 };
 
-auto lock_for_reorg(
-    const std::string_view name,
-    std::timed_mutex& mutex) noexcept -> std::unique_lock<std::timed_mutex>;
 auto print(WalletJobs) noexcept -> std::string_view;
 auto print(AccountsJobs) noexcept -> std::string_view;
 auto print(AccountJobs) noexcept -> std::string_view;

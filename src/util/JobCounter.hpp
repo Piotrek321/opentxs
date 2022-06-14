@@ -19,7 +19,6 @@ public:
     auto operator++() noexcept -> Outstanding&;
     auto operator--() noexcept -> Outstanding&;
     auto wait_for_finished() noexcept -> void;
-    auto wait_for_ready() noexcept -> void;
 
     Outstanding(Imp* imp) noexcept;
     Outstanding(Outstanding&& rhs) noexcept;

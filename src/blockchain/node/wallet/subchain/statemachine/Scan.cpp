@@ -69,6 +69,8 @@ Scan::Imp::Imp(
 {
 }
 
+Scan::Imp::~Imp() { tdiag("Scan::Imp::~Imp"); }
+
 auto Scan::Imp::caught_up() const noexcept -> bool
 {
     return current() == filter_tip_.value_or(parent_.null_position_);
@@ -87,7 +89,7 @@ auto Scan::Imp::current() const noexcept -> const block::Position&
 
 auto Scan::Imp::do_startup() noexcept -> void
 {
-    disable_automatic_processing_ = true;
+    disable_automatic_processing(true);
     const auto& node = parent_.node_;
     const auto& filters = node.FilterOracleInternal();
     last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);
@@ -121,6 +123,14 @@ auto Scan::Imp::do_startup() noexcept -> void
 }
 
 auto Scan::Imp::ProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
+{
+    synchronize([&lock = std::as_const(headerOracleLock), &parent, this] {
+        sProcessReorg(lock, parent);
+    });
+}
+auto Scan::Imp::sProcessReorg(
     const Lock& headerOracleLock,
     const block::Position& parent) noexcept -> void
 {
@@ -183,7 +193,7 @@ auto Scan::Imp::tip() const noexcept -> const block::Position&
     }
 }
 
-auto Scan::Imp::work() noexcept -> bool
+auto Scan::Imp::work() noexcept -> int
 {
     auto post = ScopeGuard{[&] { Job::work(); }};
 
@@ -216,7 +226,7 @@ auto Scan::Imp::work() noexcept -> bool
             " all available filters have been scanned")
             .Flush();
 
-        return false;
+        return -1;
     }
 
     const auto height = current().first;
@@ -233,7 +243,7 @@ auto Scan::Imp::work() noexcept -> bool
             height - threshold)(" from current position of ")(rescan)
             .Flush();
 
-        return false;
+        return -1;
     }
 
     auto buf = std::array<std::byte, scan_status_bytes_ * 1000u>{};
@@ -263,7 +273,7 @@ auto Scan::Imp::work() noexcept -> bool
         to_process_.SendDeferred(make_work(std::move(clean)));
     }
 
-    return !caught_up();
+    return !caught_up() ? 1 : 400;
 }
 
 network::zeromq::Message Scan::Imp::make_work(

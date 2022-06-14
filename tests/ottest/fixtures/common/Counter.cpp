@@ -8,6 +8,7 @@
 #include <opentxs/opentxs.hpp>
 #include <chrono>
 #include <iostream>
+#include <thread>
 
 namespace ot = opentxs;
 
@@ -32,10 +33,10 @@ auto wait_for_counter(Counter& data, const bool hard) noexcept -> bool
     auto& [expected, updated] = data;
 
     while ((updated < expected) && ((ot::Clock::now() - start) < limit)) {
-        ot::Sleep(100ms);
+        std::this_thread::sleep_for(100ms);
     }
 
-    if (false == hard) { updated.store(expected.load()); }
+    if (!hard) { updated.store(expected.load()); }
 
     return updated >= expected;
 }

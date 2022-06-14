@@ -28,6 +28,7 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "util/Reactor.hpp"
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -68,7 +69,7 @@ class Message;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-class opentxs::network::p2p::Client::Imp
+class opentxs::network::p2p::Client::Imp : public Reactor
 {
 public:
     using Chain = opentxs::blockchain::Type;
@@ -81,7 +82,14 @@ public:
 
     Imp(const api::Session& api, zeromq::internal::Handle&& handle) noexcept;
 
-    ~Imp();
+    ~Imp() override;
+
+private:
+    // Reactor interface
+    auto handle(network::zeromq::Message&& in, unsigned idx) noexcept
+        -> void override;
+    auto last_job_str() const noexcept -> std::string final;
+    // end Reactor interface
 
 private:
     using ServerMap = Map<CString, client::Server>;
@@ -128,7 +136,10 @@ private:
     std::atomic<std::size_t> connected_count_;
     std::atomic_bool running_;
     zeromq::internal::Thread* thread_;
-
+    struct diag {
+        unsigned last_idx_;
+    };
+    diag diag_;
     auto get_chain(Chain chain) const noexcept -> CString;
     auto get_provider(Chain chain) const noexcept -> CString;
     auto get_required_height(Chain chain) const noexcept -> Height;

@@ -21,9 +21,12 @@
 #include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
+#include "util/threadutil.hpp"
 
 namespace opentxs::blockchain::p2p::peer
 {
+using namespace std::literals;
+
 struct ZMQConnectionManager : virtual public ConnectionManager {
     const api::Session& api_;
     const int id_;
@@ -111,7 +114,7 @@ struct ZMQConnectionManager : virtual public ConnectionManager {
             auto out = network::zeromq::tagged_message(Task::P2P);
             out.AddFrame(std::move(header));
             out.AddFrame(std::move(payload));
-
+            MessageMarker("ZMQ::tr\0"sv).mark(out);
             return out;
         }());
 

@@ -31,6 +31,7 @@
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/threadutil.hpp"
 
 namespace opentxs::factory
 {
@@ -160,7 +161,6 @@ auto HeaderOracle::AddCheckpoint(
     update.SetCheckpoint({position, requiredHash});
 
     if (apply_checkpoint(lock, position, update)) {
-
         return database_.ApplyUpdate(update);
     } else {
 
@@ -705,7 +705,6 @@ auto HeaderOracle::DeleteCheckpoint() noexcept -> bool
     update.ClearCheckpoint();
 
     if (apply_checkpoint(lock, position, update)) {
-
         return database_.ApplyUpdate(update);
     } else {
 

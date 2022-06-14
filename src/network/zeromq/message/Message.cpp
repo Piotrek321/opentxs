@@ -163,6 +163,8 @@ auto Message::Imp::AddFrame(const ProtobufType& input) noexcept -> Frame&
     return frames_.emplace_back(factory::ZMQFrame(input));
 }
 
+auto Message::Imp::PopFrame() -> void { frames_.pop_back(); }
+
 auto Message::Imp::AppendBytes() noexcept -> AllocateOutput
 {
     return [this](const std::size_t size) -> WritableView {
@@ -478,6 +480,7 @@ auto Message::AddFrame(const void* input, const std::size_t size) noexcept
     return imp_->AddFrame(input, size);
 }
 
+auto Message::PopFrame() -> void { imp_->PopFrame(); }
 auto Message::AppendBytes() noexcept -> AllocateOutput
 {
     return imp_->AppendBytes();

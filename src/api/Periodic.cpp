@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <iostream>
 #include <tuple>
 #include <utility>
 
@@ -83,7 +84,7 @@ void Periodic::thread()
         }
 
         lock.unlock();
-        Sleep(100ms);
+        std::this_thread::sleep_for(100ms);
     }
 }
 

@@ -10,7 +10,6 @@
 #include <optional>
 
 #include "Proto.hpp"
-#include "internal/network/Factory.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/message/Factory.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
@@ -54,6 +53,7 @@ public:
     auto AddFrame(const ProtobufType& input) noexcept -> Frame& final;
     auto AddFrame(const ReadView bytes) noexcept -> Frame&;
     auto AddFrame(const void* input, const std::size_t size) noexcept -> Frame&;
+    auto PopFrame() -> void;
     auto AppendBytes() noexcept -> AllocateOutput;
     auto at(const std::size_t index) -> Frame&;
     auto Body() noexcept -> FrameSection;

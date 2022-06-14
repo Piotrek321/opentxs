@@ -92,6 +92,8 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    auto to_string(Work) const -> const std::string&;
+
     auto NextBatch() noexcept { return allocate_batch(0); }
     auto Shutdown() noexcept -> std::shared_future<void>;
 
@@ -107,7 +109,9 @@ public:
 
 protected:
     auto pipeline(network::zeromq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
+
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -120,6 +124,7 @@ private:
     const internal::Manager& node_;
     const blockchain::Type chain_;
     OTZMQPublishSocket socket_;
+    Work last_job_;
 
     auto batch_ready() const noexcept -> void;
     auto batch_size(const std::size_t in) const noexcept -> std::size_t;

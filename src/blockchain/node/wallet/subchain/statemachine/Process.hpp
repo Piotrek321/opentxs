@@ -92,6 +92,11 @@ public:
     ~Imp() final = default;
 
 private:
+    auto sProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void;
+
+private:
     using Waiting = Deque<block::Position>;
     using Downloading = Map<block::Position, BitcoinBlockResult>;
     using DownloadIndex = Map<block::Hash, Downloading::iterator>;
@@ -138,6 +143,6 @@ private:
     auto process_reprocess(Message&& msg) noexcept -> void final;
     auto queue_downloads() noexcept -> void;
     auto queue_process() noexcept -> bool;
-    auto work() noexcept -> bool final;
+    auto work() noexcept -> int final;
 };
 }  // namespace opentxs::blockchain::node::wallet

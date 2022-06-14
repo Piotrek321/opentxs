@@ -64,7 +64,9 @@ auto UI::Imp::account_activity(
     const auto chain = is_blockchain_account(accountID);
 #endif  // OT_BLOCKCHAIN
 
+    std::cerr << "ZZZZ UI::Imp::account_activity\n";
     if (accounts_.end() == it) {
+        std::cerr << "ZZZZ UI::Imp::account_activity not found\n";
         it = accounts_
                  .emplace(
                      std::piecewise_construct,

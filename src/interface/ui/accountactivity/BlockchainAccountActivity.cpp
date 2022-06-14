@@ -9,6 +9,7 @@
 
 #include <opentxs/util/Log.hpp>
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <future>
 #include <limits>
@@ -100,12 +101,20 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           network::zeromq::socket::Direction::Connect))
     , progress_()
     , height_(0)
+    , last_job_{}
+    , transactions_{}
+    , active_{}
+    , iload_{transactions_.cend()}
+    , eload_{transactions_.cend()}
+    , load_in_progress_{}
+    , load_lock_{}
 {
     const auto connected = balance_socket_->Start(
         Widget::api_.Endpoints().BlockchainBalance().data());
 
     OT_ASSERT(connected);
 
+    start();
     init({
         UnallocatedCString{api.Endpoints().BlockchainReorg()},
         UnallocatedCString{api.Endpoints().BlockchainStateChange()},
@@ -150,6 +159,87 @@ auto BlockchainAccountActivity::display_balance(
 
 auto BlockchainAccountActivity::load_thread() noexcept -> void
 {
+    bool go{};
+    {
+        std::unique_lock<std::mutex> L(load_lock_);
+        if (load_in_progress_) {
+            tdiag("ZZZZ load_thread load_in_progress_");
+            return;
+        }
+        tdiag("ZZZZ load_thread");
+        load_in_progress_ = true;
+        transactions_ = [&]() -> UnallocatedVector<blockchain::block::pTxid> {
+            try {
+                auto& chain =
+                    Widget::api_.Network().Blockchain().GetChain(chain_);
+                height_ = chain.HeaderOracle().BestChain().first;
+
+                return chain.Internal().GetTransactions(primary_id_);
+            } catch (...) {
+                tdiag("ZZZZ load_thread transactions exception");
+                return {};
+            }
+        }();
+        iload_ = transactions_.cbegin();
+        eload_ = transactions_.cend();
+        active_.clear();
+        go = iload_ != eload_;
+    }
+
+    if (go) {
+        tdiag("ZZZZ load_thread start");
+        trigger();
+    } else {
+        load_in_progress_ = false;
+    }
+}
+
+auto BlockchainAccountActivity::load_thread_portion() noexcept -> bool
+{
+    using namespace std::chrono;
+    static thread_local auto cc = 0ull;
+    int ct = 0;
+    std::unique_lock<std::mutex> L(load_lock_);
+    tdiag("ZZZZ load_thread_portion, about to process");
+    auto Tstart = Clock::now();
+    while (iload_ != eload_) {
+        auto txid = *iload_;
+        ++iload_;
+        ++cc;
+        if (const auto id = process_txid(txid); id.has_value()) {
+            tdiag("ZZZZ load_thread_portion 1");
+            auto t0 = Clock::now();
+            active_.emplace(id.value());
+            auto t1 = Clock::now();
+            tdiag(
+                "ZZZZ load_thread_portion 2, added after [us]: ",
+                (duration_cast<microseconds>(t1 - t0)).count());
+        }
+        using namespace std::literals;
+        if (++ct == 50) {
+            ct = 0;
+            if (Clock::now() - Tstart > 200ms) { break; }
+        }
+    }
+    tdiag("ZZZZ load_thread_portion, processed in total: ", cc);
+    if (iload_ == eload_) {
+        cc = 0;
+        load_in_progress_ = false;
+        transactions_.clear();
+        iload_ = transactions_.cbegin();
+        eload_ = transactions_.cend();
+        auto T1 = Clock::now();
+        delete_inactive(active_);
+        auto T2 = Clock::now();
+        tdiag(
+            "ZZZZ load_thread_portion, deleted inactive in[us]:",
+            (duration_cast<microseconds>(T2 - T1)).count());
+    }
+    return load_in_progress_;
+}
+
+auto BlockchainAccountActivity::load_thread_old() noexcept -> void
+{
     const auto transactions =
         [&]() -> UnallocatedVector<blockchain::block::pTxid> {
         try {
@@ -164,13 +254,13 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
         }
     }();
     auto active = UnallocatedSet<AccountActivityRowID>{};
-
     for (const auto& txid : transactions) {
+        tdiag("ZZZZ load_thread 1, size = ", transactions.size());
         if (const auto id = process_txid(txid); id.has_value()) {
             active.emplace(id.value());
         }
+        tdiag("ZZZZ load_thread 2, size = ", transactions.size());
     }
-
     delete_inactive(active);
 }
 
@@ -195,6 +285,8 @@ auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
+    tdiag("ZZZZ pipeline Work:", print(work));
 
     switch (work) {
         case Work::shutdown: {
@@ -236,9 +328,10 @@ auto BlockchainAccountActivity::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainAccountActivity::state_machine() noexcept -> bool
+auto BlockchainAccountActivity::state_machine() noexcept -> int
 {
-    return false;
+
+    return load_thread_portion() ? 300 : -1;
 }
 
 auto BlockchainAccountActivity::shut_down() noexcept -> void
@@ -307,6 +400,7 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
         UpdateNotify();
     }
 
+    tdiag("ZZZZ process_balance");
     load_thread();
 }
 
@@ -358,6 +452,7 @@ auto BlockchainAccountActivity::process_height(
     if (height == height_) { return; }
 
     height_ = height;
+    tdiag("ZZZZ process_height");
     load_thread();
 }
 
@@ -451,8 +546,18 @@ auto BlockchainAccountActivity::process_txid(const Message& in) noexcept -> void
 auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
     -> std::optional<AccountActivityRowID>
 {
-    return process_txid(
-        txid, Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(txid));
+    tdiag("ZZZZ process_txid 0");
+    auto t0 = Clock::now();
+    auto bct = Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(txid);
+    auto t1 = Clock::now();
+    using namespace std::chrono;
+    tdiag(
+        "ZZZZ process_txid 1", (duration_cast<microseconds>(t1 - t0)).count());
+    auto r = process_txid(txid, std::move(bct));
+    auto t2 = Clock::now();
+    tdiag(
+        "ZZZZ process_txid 2", (duration_cast<microseconds>(t2 - t1)).count());
+    return r;
 }
 
 auto BlockchainAccountActivity::process_txid(
@@ -461,15 +566,18 @@ auto BlockchainAccountActivity::process_txid(
         pTX) noexcept  // TODO : MT-83
     -> std::optional<AccountActivityRowID>
 {
+    auto t0 = Clock::now();
     const auto rowID = AccountActivityRowID{
         blockchain_thread_item_id(Widget::api_.Crypto(), chain_, txid),
         proto::PAYMENTEVENTTYPE_COMPLETE};
+    auto t1 = Clock::now();
 
     if (false == bool(pTX)) { return std::nullopt; }
 
     const auto& tx = pTX->Internal();
 
     if (false == contains(tx.Chains(), chain_)) { return std::nullopt; }
+    auto t2 = Clock::now();
 
     const auto sortKey{tx.Timestamp()};
     const auto conf = [&]() -> int {
@@ -479,6 +587,7 @@ auto BlockchainAccountActivity::process_txid(
 
         return static_cast<int>(height_ - height) + 1;
     }();
+    auto t3 = Clock::now();
     auto custom = CustomData{
         new proto::PaymentWorkflow(),
         new proto::PaymentEvent(),
@@ -490,8 +599,18 @@ auto BlockchainAccountActivity::process_txid(
         new OTData{tx.ID()},
         new int{conf},
     };
-    add_item(rowID, sortKey, custom);
+    auto t4 = Clock::now();
 
+    add_item(rowID, sortKey, custom);
+    auto t5 = Clock::now();
+    using namespace std::chrono;
+    std::string d =
+        std::to_string((duration_cast<microseconds>(t1 - t0)).count()) + " " +
+        std::to_string((duration_cast<microseconds>(t2 - t1)).count()) + " " +
+        std::to_string((duration_cast<microseconds>(t3 - t2)).count()) + " " +
+        std::to_string((duration_cast<microseconds>(t4 - t3)).count()) + " " +
+        std::to_string((duration_cast<microseconds>(t5 - t4)).count());
+    tdiag("ZZZZ process_txid A [us]", d);
     return std::move(rowID);
 }
 
@@ -535,7 +654,11 @@ auto BlockchainAccountActivity::Send(
     }
 }
 
-auto BlockchainAccountActivity::startup() noexcept -> void { load_thread(); }
+auto BlockchainAccountActivity::startup() noexcept -> void
+{
+    tdiag("ZZZZ startup");
+    load_thread();
+}
 
 auto BlockchainAccountActivity::ValidateAddress(
     const UnallocatedCString& in) const noexcept -> bool
@@ -570,6 +693,11 @@ auto BlockchainAccountActivity::ValidateAmount(
 
         return {};
     }
+}
+
+auto BlockchainAccountActivity::last_job_str() const noexcept -> std::string
+{
+    return std::string{print(last_job_)};
 }
 
 BlockchainAccountActivity::~BlockchainAccountActivity()

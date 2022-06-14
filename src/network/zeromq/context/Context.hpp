@@ -113,6 +113,7 @@ public:
         const std::string_view endpoint) const noexcept
         -> OTZMQPairSocket final;
     auto Pipeline(
+        std::string&& diagnostic,
         std::function<void(zeromq::Message&&)>&& callback,
         const EndpointArgs& subscribe,
         const EndpointArgs& pull,

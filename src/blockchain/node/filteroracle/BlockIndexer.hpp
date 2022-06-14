@@ -125,9 +125,11 @@ public:
 
     ~BlockIndexer() final;
 
+    auto last_job_str() const noexcept -> std::string final;
+
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -144,6 +146,7 @@ private:
     const cfilter::Type type_;
     const NotifyCallback& notify_;
     JobCounter job_counter_;
+    FilterOracle::Work last_job_;
 
     auto batch_ready() const noexcept -> void { trigger(); }
     auto batch_size(const std::size_t in) const noexcept -> std::size_t;

@@ -10,7 +10,6 @@
 #include <iosfwd>
 
 #include "Proto.hpp"
-#include "internal/network/Factory.hpp"
 #include "internal/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Bytes.hpp"

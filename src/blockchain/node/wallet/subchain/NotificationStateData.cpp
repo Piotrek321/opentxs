@@ -279,11 +279,10 @@ auto NotificationStateData::process(
         .Flush();
 }
 
-auto NotificationStateData::work() noexcept -> bool
+auto NotificationStateData::work() noexcept -> int
 {
     auto again = SubchainStateData::work();
     init_contacts();
-
     return again;
 }
 }  // namespace opentxs::blockchain::node::wallet

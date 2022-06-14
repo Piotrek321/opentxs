@@ -70,6 +70,8 @@ public:
         return signal_shutdown();
     }
 
+    auto last_job_str() const noexcept -> std::string override;
+
     SyncServer(
         const api::Session& api,
         database::Sync& db,
@@ -91,7 +93,7 @@ public:
               "sync server",
               2000,
               1000)
-        , SyncWorker(api, 20ms)
+        , SyncWorker(api, "SyncServer")
         , db_(db)
         , header_(header)
         , filter_(filter)
@@ -104,6 +106,7 @@ public:
         , zmq_lock_()
         , zmq_running_(true)
         , zmq_thread_(&SyncServer::zmq_thread, this)
+        , last_job_{}
     {
         init_executor(
             {shutdown,
@@ -111,6 +114,7 @@ public:
                  api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)}});
         ::zmq_setsockopt(socket_.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
         ::zmq_connect(socket_.get(), endpoint_.c_str());
+        start();
     }
 
     ~SyncServer() final
@@ -125,7 +129,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -149,6 +153,7 @@ private:
     mutable std::mutex zmq_lock_;
     std::atomic_bool zmq_running_;
     std::thread zmq_thread_;
+    Work last_job_;
 
     auto batch_ready() const noexcept -> void { trigger(); }
     static auto batch_size(const std::size_t in) noexcept -> std::size_t
@@ -191,6 +196,7 @@ private:
         LogDetail()(print(chain_))(" sync data updated to height ")(
             position.first)
             .Flush();
+        tdiag("update_tip to", position.first);
     }
 
     auto download() noexcept -> void
@@ -255,6 +261,7 @@ private:
                 if (first.first <= current.first) {
                     LogTrace()(OT_PRETTY_CLASS())(__func__)(": reorg detected")
                         .Flush();
+                    tdiag("REORG");
                 }
 
                 LogTrace()(OT_PRETTY_CLASS())(__func__)(
@@ -262,6 +269,7 @@ private:
                     " until block ")(print(last))
                     .Flush();
             }
+            tdiag("process_position");
             update_position(std::move(hashes), type_, std::move(prior));
         } catch (...) {
         }
@@ -305,6 +313,7 @@ private:
 
             auto out = network::zeromq::reply_to_message(incoming);
 
+            tdiag("SyncServer::process_zmq send");
             if (send && reply.Serialize(out)) {
                 OTSocket::send_message(lock, socket_.get(), std::move(out));
             }
@@ -396,6 +405,7 @@ private:
             // function
             auto dummy = std::mutex{};
             auto lock = Lock{dummy};
+            tdiag("SyncServer about to send");
             OTSocket::send_message(lock, socket_.get(), std::move(work));
         }
     }
@@ -449,6 +459,8 @@ auto SyncServer::pipeline(zmq::Message&& in) -> void
 
     using Work = Work;
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
+
     auto lock = Lock{zmq_lock_};
 
     switch (work) {
@@ -474,14 +486,20 @@ auto SyncServer::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto SyncServer::state_machine() noexcept -> bool
+auto SyncServer::state_machine() noexcept -> int
 {
-    return SyncDM::state_machine();
+    tdiag("SyncServer::state_machine");
+    return SyncDM::state_machine() ? 20 : 400;
 }
 
 auto SyncServer::shut_down() noexcept -> void
 {
     close_pipeline();
     // TODO MT-34 investigate what other actions might be needed
+}
+
+auto SyncServer::last_job_str() const noexcept -> std::string
+{
+    return node::implementation::Base::to_str(last_job_);
 }
 }  // namespace opentxs::blockchain::node::base

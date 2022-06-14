@@ -177,6 +177,8 @@ public:
         protect_shutdown([this] { shut_down(); });
     }
 
+    auto last_job_str() const noexcept -> std::string override;
+
     Wallet(
         const api::Session& api,
         const node::internal::Manager& parent,
@@ -189,7 +191,7 @@ public:
 
 protected:
     auto pipeline(network::zeromq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -202,6 +204,7 @@ private:
     wallet::FeeOracle fee_oracle_;
     wallet::Accounts accounts_;
     wallet::Proposals proposals_;
+    Work last_job_;
 
     Wallet() = delete;
     Wallet(const Wallet&) = delete;

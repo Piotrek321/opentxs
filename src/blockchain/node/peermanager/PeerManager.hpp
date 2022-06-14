@@ -158,7 +158,7 @@ public:
         auto LookupIncomingSocket(const int id) noexcept(false)
             -> opentxs::network::asio::Socket;
         auto Disconnect(const int id) noexcept -> void;
-        auto Run() noexcept -> bool;
+        auto Run() noexcept -> int;
         auto Shutdown() noexcept -> void;
 
         Peers(
@@ -249,6 +249,8 @@ public:
         Shutdown = value(WorkType::Shutdown),
     };
 
+    static auto to_str(Work) -> std::string;
+
     auto AddIncomingPeer(const int id, std::uintptr_t endpoint) const noexcept
         -> void final;
     auto AddPeer(const blockchain::p2p::Address& address) const noexcept
@@ -270,6 +272,7 @@ public:
     auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
     auto Heartbeat() const noexcept -> void final
     {
+        tdiag("Heartbeat about to dispatch Heartbeat");
         jobs_.Dispatch(PeerManagerJobs::Heartbeat);
     }
     auto JobReady(const PeerManagerJobs type) const noexcept -> void final;
@@ -295,6 +298,8 @@ public:
 
     auto init() noexcept -> void final;
 
+    auto last_job_str() const noexcept -> std::string override;
+
     PeerManager(
         const api::Session& api,
         const node::internal::Config& config,
@@ -313,7 +318,7 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& message) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -346,6 +351,7 @@ private:
         OTZMQPublishSocket broadcast_block_;
         const EndpointMap endpoint_map_;
         const SocketMap socket_map_;
+        std::atomic<bool> closed_;
 
         static auto listen(
             EndpointMap& map,
@@ -355,6 +361,7 @@ private:
         Jobs() = delete;
     };
 
+    std::atomic<bool> closed_;
     const node::internal::Manager& node_;
     database::Peer& database_;
     const Type chain_;
@@ -365,6 +372,7 @@ private:
     mutable UnallocatedSet<int> verified_peers_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
+    Work last_job_;
 
     static auto peer_target(
         const Type chain,

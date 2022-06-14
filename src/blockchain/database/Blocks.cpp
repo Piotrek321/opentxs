@@ -24,6 +24,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
+#include "util/threadutil.hpp"
 
 namespace opentxs::blockchain::database
 {
@@ -77,6 +78,8 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
             return {};
         }
 
+        std::cerr << ThreadMonitor::get_name()
+                  << " Blocks::LoadBitcoin has block\n";
         return api_.Factory().BitcoinBlock(chain_, bytes.get());
     }
 }

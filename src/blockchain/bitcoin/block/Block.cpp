@@ -43,6 +43,7 @@
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
+#include "util/threadutil.hpp"
 
 namespace be = boost::endian;
 
@@ -125,7 +126,6 @@ auto BitcoinBlock(
             case blockchain::Type::eCash:
             case blockchain::Type::eCash_testnet3:
             case blockchain::Type::UnitTest: {
-
                 return std::make_shared<Block>(
                     api,
                     chain,
@@ -136,6 +136,7 @@ auto BitcoinBlock(
             case blockchain::Type::PKT:
             case blockchain::Type::PKT_testnet: {
                 // TODO
+                std::cerr << "BitcoinBlock TODO\n";
                 return {};
             }
             case blockchain::Type::Unknown:
@@ -152,7 +153,6 @@ auto BitcoinBlock(
         }
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
-
         return {};
     }
 }

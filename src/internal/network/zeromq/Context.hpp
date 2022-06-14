@@ -66,6 +66,7 @@ public:
         -> std::pair<bool, std::future<bool>> = 0;
     virtual auto PreallocateBatch() const noexcept -> BatchID = 0;
     virtual auto Pipeline(
+        std::string&& diagnostic,
         std::function<void(zeromq::Message&&)>&& callback,
         const EndpointArgs& subscribe = {},
         const EndpointArgs& pull = {},

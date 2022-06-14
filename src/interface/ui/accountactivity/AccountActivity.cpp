@@ -29,7 +29,7 @@ AccountActivity::AccountActivity(
     const AccountType type,
     const SimpleCallback& cb) noexcept
     : AccountActivityList(api, nymID, cb, true)
-    , Worker(api, {})
+    , Worker(api, "AccountActivity")
     , callbacks_()
     , balance_(0)
     , account_id_(accountID)
@@ -85,6 +85,7 @@ auto AccountActivity::init(Endpoints endpoints) noexcept -> void
 {
     init_executor(std::move(endpoints));
     pipeline_.Push(MakeWork(OT_ZMQ_INIT_SIGNAL));
+    tdiag("sending init");
 }
 
 auto AccountActivity::notify_balance(opentxs::Amount balance) const noexcept
@@ -106,10 +107,5 @@ auto AccountActivity::SetCallbacks(Callbacks&& cb) noexcept -> void
     callbacks_.cb_ = cb;
 }
 
-AccountActivity::~AccountActivity()
-{
-    wait_for_startup();
-    signal_shutdown().get();
-    shutdown_qt();
-}
+AccountActivity::~AccountActivity() {}
 }  // namespace opentxs::ui::implementation

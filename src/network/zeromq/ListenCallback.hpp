@@ -33,7 +33,7 @@ namespace opentxs::network::zeromq::implementation
 class ListenCallback final : virtual public zeromq::ListenCallback
 {
 public:
-    auto Deactivate() const noexcept -> void final;
+    auto Deactivate() noexcept -> void final;
     auto Process(zeromq::Message&& message) const noexcept -> void final;
 
     auto Replace(ReceiveCallback callback) noexcept -> void final;

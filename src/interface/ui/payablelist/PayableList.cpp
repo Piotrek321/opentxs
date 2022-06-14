@@ -45,19 +45,33 @@ auto PayableListModel(
 
 namespace opentxs::ui::implementation
 {
+auto PayableList::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::contact, "contact"},
+        {Work::nym, "nym"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+        {Work::shutdown, "shutdown"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 PayableList::PayableList(
     const api::session::Client& api,
     const identifier::Nym& nymID,
     const UnitType& currency,
     const SimpleCallback& cb) noexcept
     : PayableListList(api, nymID, cb, false)
-    , Worker(api, {})
+    , Worker(api, "PayableList")
     , owner_contact_id_(Widget::api_.Factory().Identifier())  // FIXME wtf
     , currency_(currency)
+    , last_job_{}
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().ContactUpdate()},
          UnallocatedCString{api.Endpoints().NymDownload()}});
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -96,6 +110,7 @@ auto PayableList::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     switch (work) {
         case Work::contact: {
@@ -121,7 +136,7 @@ auto PayableList::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto PayableList::state_machine() noexcept -> bool { return false; }
+auto PayableList::state_machine() noexcept -> int { return -1; }
 
 auto PayableList::shut_down() noexcept -> void
 {
@@ -203,6 +218,11 @@ auto PayableList::startup() noexcept -> void
     }
 
     finish_startup();
+}
+
+auto PayableList::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 PayableList::~PayableList()

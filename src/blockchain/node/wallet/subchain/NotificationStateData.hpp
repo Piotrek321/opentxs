@@ -181,7 +181,7 @@ private:
         const PasswordPrompt& reason) const noexcept -> void;
 
     auto init_contacts() noexcept -> void;
-    auto work() noexcept -> bool final;
+    auto work() noexcept -> int final;
 
     NotificationStateData() = delete;
     NotificationStateData(const NotificationStateData&) = delete;

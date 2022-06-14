@@ -86,8 +86,7 @@ BalanceOracle::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          CString{"balance oracle", alloc},
-          0ms,
+          "balance oracle",
           batch,
           alloc,
           {
@@ -171,9 +170,16 @@ auto BalanceOracle::Imp::notify_subscribers(
     }
 }
 
+auto BalanceOracle::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto BalanceOracle::Imp::pipeline(const Work work, Message&& msg) noexcept
     -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (work) {
         case Work::shutdown: {
             shutdown_actor();
@@ -349,7 +355,7 @@ auto BalanceOracle::Imp::do_startup() noexcept -> void {}
 
 auto BalanceOracle::Imp::do_shutdown() noexcept -> void {}
 
-auto BalanceOracle::Imp::work() noexcept -> bool { return false; }
+auto BalanceOracle::Imp::work() noexcept -> int { return -1; }
 
 BalanceOracle::Imp::~Imp() { signal_shutdown(); }
 }  // namespace opentxs::api::crypto::blockchain

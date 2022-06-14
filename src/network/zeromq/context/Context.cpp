@@ -147,6 +147,7 @@ auto Context::PairSocket(
 }
 
 auto Context::Pipeline(
+    std::string&& diagnostic,
     std::function<void(zeromq::Message&&)>&& callback,
     const EndpointArgs& subscribe,
     const EndpointArgs& pull,
@@ -157,6 +158,7 @@ auto Context::Pipeline(
 {
     return opentxs::factory::Pipeline(
         *this,
+        std::move(diagnostic),
         std::move(callback),
         subscribe,
         pull,

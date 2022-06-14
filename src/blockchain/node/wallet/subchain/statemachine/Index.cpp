@@ -62,10 +62,15 @@ Index::Imp::Imp(
     , to_rescan_(pipeline_.Internal().ExtraSocket(1))
     , last_indexed_(std::nullopt)
 {
+    tdiag("Imp::Imp");
 }
+
+Index::Imp::~Imp() { tdiag("Imp::~Imp"); }
 
 auto Index::Imp::do_process_update(Message&& msg) noexcept -> void
 {
+    tdiag("do_process_update(&&)");
+
     auto clean = Set<ScanStatus>{get_allocator()};
     auto dirty = Set<block::Position>{get_allocator()};
     decode(parent_.api_, msg, clean, dirty);
@@ -143,7 +148,7 @@ auto Index::Imp::process_key(Message&& in) noexcept -> void
     do_work();
 }
 
-auto Index::Imp::work() noexcept -> bool
+auto Index::Imp::work() noexcept -> int
 {
     const auto need = need_index(last_indexed_);
 
@@ -151,7 +156,7 @@ auto Index::Imp::work() noexcept -> bool
 
     Job::work();
 
-    return false;
+    return -1;
 }
 }  // namespace opentxs::blockchain::node::wallet
 

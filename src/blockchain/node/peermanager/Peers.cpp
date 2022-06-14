@@ -607,11 +607,11 @@ auto PeerManager::Peers::set_default_peer(
     return localhost;
 }
 
-auto PeerManager::Peers::Run() noexcept -> bool
+auto PeerManager::Peers::Run() noexcept -> int
 {
     auto ticket = gatekeeper_.get();
 
-    if (ticket || invalid_peer_) { return false; }
+    if (ticket || invalid_peer_) { return -1; }
 
     const auto target = minimum_peers_.load();
 
@@ -624,7 +624,7 @@ auto PeerManager::Peers::Run() noexcept -> bool
         if (peer) { add_peer(std::move(peer)); }
     }
 
-    return target > peers_.size();
+    return target > peers_.size() ? 100 : 1000;
 }
 
 auto PeerManager::Peers::Shutdown() noexcept -> void

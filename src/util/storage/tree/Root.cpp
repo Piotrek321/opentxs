@@ -113,7 +113,6 @@ auto Root::Migrate(const Driver& to) const -> bool
         });
     } catch (const std::exception& e) {
         LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
-
         return false;
     }
 }

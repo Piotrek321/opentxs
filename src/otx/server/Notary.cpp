@@ -8626,7 +8626,11 @@ void Notary::process_cash_withdrawal(
             replyPurse,
             std::move(token));
 
-        if (bSuccess) { token = requestPurse.Pop(); }
+        if (bSuccess) {
+            token = requestPurse.Pop();
+        } else {
+            break;
+        }
     }
 
     if (bSuccess) {

@@ -70,7 +70,7 @@ public:
     Imp& operator=(const Imp&) = delete;
     Imp& operator=(Imp&&) = delete;
 
-    ~Imp() override = default;
+    ~Imp() override;
 
 protected:
     auto do_startup() noexcept -> void final;
@@ -91,6 +91,6 @@ private:
     auto process_filter(Message&& in, block::Position&& tip) noexcept
         -> void final;
     auto process_key(Message&& in) noexcept -> void final;
-    auto work() noexcept -> bool final;
+    auto work() noexcept -> int final;
 };
 }  // namespace opentxs::blockchain::node::wallet

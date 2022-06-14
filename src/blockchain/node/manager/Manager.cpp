@@ -85,6 +85,7 @@
 #include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "serialization/protobuf/HDPath.pb.h"
 #include "serialization/protobuf/PaymentCode.pb.h"
+#include "util/threadutil.hpp"
 
 namespace opentxs::blockchain::node::internal
 {
@@ -93,6 +94,37 @@ auto Manager::FilterOracle() const noexcept -> const node::FilterOracle&
     return FilterOracleInternal();
 }
 }  // namespace opentxs::blockchain::node::internal
+
+namespace opentxs::blockchain::node
+{
+
+auto print(ManagerJobs job) noexcept -> std::string_view
+{
+    try {
+        static const auto map = Map<ManagerJobs, CString>{
+            {node::ManagerJobs::Shutdown, "Shutdown"},
+            {node::ManagerJobs::SyncReply, "SyncReply"},
+            {node::ManagerJobs::SyncNewBlock, "SyncNewBlock"},
+            {node::ManagerJobs::SubmitBlockHeader, "SubmitBlockHeader"},
+            {node::ManagerJobs::SubmitBlock, "SubmitBlock"},
+            {node::ManagerJobs::Heartbeat, "Heartbeat"},
+            {node::ManagerJobs::SendToAddress, "SendToAddress"},
+            {node::ManagerJobs::SendToPaymentCode, "SendToPaymentCode"},
+            {node::ManagerJobs::StartWallet, "StartWallet"},
+            {node::ManagerJobs::FilterUpdate, "FilterUpdate"},
+            {node::ManagerJobs::StateMachine, "StateMachine"},
+        };
+
+        return map.at(job);
+    } catch (...) {
+        LogError()(__FUNCTION__)("invalid PeerManagerJobs: ")(
+            static_cast<OTZMQWorkType>(job))
+            .Flush();
+
+        OT_FAIL;
+    }
+}
+}  // namespace opentxs::blockchain::node
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -195,13 +227,24 @@ struct NullWallet final : public node::internal::Wallet {
     ~NullWallet() final = default;
 };
 
+auto Base::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::heartbeat, "heartbeat"},
+        {Work::filter, "filter"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 Base::Base(
     const api::Session& api,
     const Type type,
     const node::internal::Config& config,
     const UnallocatedCString& seednode,
     const UnallocatedCString& syncEndpoint) noexcept
-    : Worker(api, 0s)
+    : Worker(api, "Base")
     , chain_(type)
     , filter_type_([&] {
         if (config.generate_cfilters_ || config.use_sync_server_) {
@@ -322,6 +365,7 @@ Base::Base(
     , state_(State::UpdatingHeaders)
     , init_promise_()
     , init_(init_promise_.get_future())
+    , last_job_{}
 {
     OT_ASSERT(database_p_);
     OT_ASSERT(filter_p_);
@@ -399,11 +443,13 @@ Base::Base(
             continue;
         }
     }
+    start();
 }
 
 auto Base::AddBlock(const std::shared_ptr<const bitcoin::block::Block> pBlock)
     const noexcept -> bool
 {
+    tdiag("Base::AddBlock", pBlock.get());
     if (!pBlock) {
         LogError()(OT_PRETTY_CLASS())("invalid ")(print(chain_))(" block")
             .Flush();
@@ -447,6 +493,7 @@ auto Base::AddBlock(const std::shared_ptr<const bitcoin::block::Block> pBlock)
         return false;
     }
 
+    tdiag("QQQ HB Base::AddBlock to AddHeader");
     if (!header_.AddHeader(block.Header().clone())) {
         LogError()(OT_PRETTY_CLASS())("failed to process ")(print(chain_))(
             " header")
@@ -455,6 +502,7 @@ auto Base::AddBlock(const std::shared_ptr<const bitcoin::block::Block> pBlock)
         return false;
     }
 
+    tdiag("about to peer_.BroadcastBlock");
     return peer_.BroadcastBlock(block);
 }
 
@@ -652,23 +700,33 @@ auto Base::pipeline(zmq::Message&& in) -> void
     OT_ASSERT(0 < body.size());
 
     const auto task = body.at(0).as<ManagerJobs>();
+    last_job_ = task;
 
     switch (task) {
         case ManagerJobs::Shutdown: {
+            tdiag("pipeline Shutdown");
             protect_shutdown([this] { shut_down(); });
         } break;
-        case ManagerJobs::SyncReply:
+        case ManagerJobs::SyncReply: {
+            tdiag("pipeline SyncReply");
+            process_sync_data(std::move(in));
+        } break;
         case ManagerJobs::SyncNewBlock: {
+            tdiag("pipeline SyncNewBlock");
             process_sync_data(std::move(in));
         } break;
         case ManagerJobs::SubmitBlockHeader: {
+            MessageMarker m(in);
+            tdiag("pipeline SubmitBlockHeader from ", to_string(m));
             process_header(std::move(in));
             do_work();
         } break;
         case ManagerJobs::SubmitBlock: {
+            tdiag("pipeline SubmitBlock");
             process_block(std::move(in));
         } break;
         case ManagerJobs::Heartbeat: {
+            tdiag("pipeline Heartbeat");
             mempool_.Heartbeat();
             block_.Heartbeat();
             filters_.Heartbeat();
@@ -680,18 +738,23 @@ auto Base::pipeline(zmq::Message&& in) -> void
             reset_heartbeat();
         } break;
         case ManagerJobs::SendToAddress: {
+            tdiag("pipeline SendToAddress");
             process_send_to_address(std::move(in));
         } break;
         case ManagerJobs::SendToPaymentCode: {
+            tdiag("pipeline SendToPaymentCode");
             process_send_to_payment_code(std::move(in));
         } break;
         case ManagerJobs::StartWallet: {
+            tdiag("pipeline init");
             wallet_.Init();
         } break;
         case ManagerJobs::FilterUpdate: {
+            tdiag("pipeline FilterUpdate");
             process_filter_update(std::move(in));
         } break;
         case ManagerJobs::StateMachine: {
+            tdiag("pipeline StateMachine");
             do_work();
         } break;
         default: {
@@ -779,7 +842,10 @@ auto Base::process_header(network::zeromq::Message&& in) noexcept -> void
         headers.emplace_back(instantiate_header(header));
     }
 
-    if (!headers.empty()) { header_.AddHeaders(headers); }
+    if (!headers.empty()) {
+        tdiag("QQQ HB Base::proceess_header to AddHeaders");
+        header_.AddHeaders(headers);
+    }
 
     work_promises_.clear(promise);
 }
@@ -1057,7 +1123,7 @@ auto Base::RequestBlocks(
 
 auto Base::reset_heartbeat() noexcept -> void
 {
-    static constexpr auto interval = 5s;
+    static constexpr auto interval = 2s;
     heartbeat_.SetRelative(interval);
     heartbeat_.Wait([this](const auto& error) {
         if (error) {
@@ -1126,6 +1192,7 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
         if (sync_server_) { sync_server_->Shutdown(); }
 
         if (p2p_requestor_) {
+            tdiag("about to send Shutdown");
             sync_socket_->Send(MakeWork(WorkType::Shutdown));
         }
 
@@ -1139,6 +1206,7 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
 
 auto Base::shut_down() noexcept -> void
 {
+    tdiag("Base::shut_down");
     close_pipeline();
     shutdown_sender_.Activate();
     wallet_.Shutdown();
@@ -1146,6 +1214,7 @@ auto Base::shut_down() noexcept -> void
     if (sync_server_) { sync_server_->Shutdown(); }
     if (p2p_requestor_) { sync_socket_->Send(MakeWork(WorkType::Shutdown)); }
 
+    heartbeat_.Cancel();
     peer_.Shutdown();
     filters_.Shutdown();
     block_.Shutdown();
@@ -1153,14 +1222,19 @@ auto Base::shut_down() noexcept -> void
     // TODO MT-34 investigate what other actions might be needed
 }
 
+auto Base::last_job_str() const noexcept -> std::string
+{
+    return std::string(print(last_job_));
+}
+
 auto Base::StartWallet() noexcept -> void
 {
     pipeline_.Push(MakeWork(ManagerJobs::StartWallet));
 }
 
-auto Base::state_machine() noexcept -> bool
+auto Base::state_machine() noexcept -> int
 {
-    if (!running_.load()) { return false; }
+    if (!running_.load()) { return -1; }
 
     const auto& log = LogTrace();
     log(OT_PRETTY_CLASS())("Starting state machine for ")(print(chain_))
@@ -1249,7 +1323,7 @@ auto Base::state_machine() noexcept -> bool
     log(OT_PRETTY_CLASS())("Completed state machine for ")(print(chain_))
         .Flush();
 
-    return false;
+    return -1;
 }
 
 auto Base::state_machine_headers() noexcept -> void
@@ -1336,6 +1410,8 @@ auto Base::Track(network::zeromq::Message&& work) const noexcept
 
     auto [index, future] = work_promises_.get();
     work.AddFrame(index);
+
+    MessageMarker().mark(work);
     pipeline_.Push(std::move(work));
 
     return std::move(future);
@@ -1371,6 +1447,7 @@ auto Base::Wallet() const noexcept -> const node::Wallet& { return wallet_; }
 
 Base::~Base()
 {
+    tdiag("Base::~Base");
     protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::blockchain::node::implementation

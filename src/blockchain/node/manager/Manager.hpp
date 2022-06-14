@@ -143,7 +143,7 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::blockchain::node::implementation
 {
-class Base : virtual public node::internal::Manager, public Worker<api::Session>
+class Base : public node::internal::Manager, public Worker<api::Session>
 {
 public:
     enum class Work : OTZMQWorkType {
@@ -152,6 +152,8 @@ public:
         filter = OT_ZMQ_NEW_FILTER_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
+
+    static auto to_str(Work) -> std::string;
 
     const Type chain_;
 
@@ -197,6 +199,10 @@ public:
     auto GetType() const noexcept -> Type final { return chain_; }
     auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
     auto HeaderOracle() const noexcept -> const node::HeaderOracle& final
+    {
+        return header_;
+    }
+    auto HeaderOracle() noexcept -> node::HeaderOracle& final
     {
         return header_;
     }
@@ -263,8 +269,10 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
     auto shut_down() noexcept -> void;
+
+    auto last_job_str() const noexcept -> std::string override;
 
 private:
     const cfilter::Type filter_type_;
@@ -383,6 +391,7 @@ private:
     std::atomic<State> state_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
+    ManagerJobs last_job_;
 
     virtual auto instantiate_header(const ReadView payload) const noexcept
         -> std::unique_ptr<block::Header> = 0;

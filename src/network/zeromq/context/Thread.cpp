@@ -34,19 +34,34 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
 #include "util/ScopeGuard.hpp"
+#include "util/threadutil.hpp"
 
 namespace opentxs::network::zeromq::context
 {
+
+using namespace std::literals;
+
 Thread::Thread(zeromq::internal::Pool& parent) noexcept
     : parent_(parent)
+    , tasks_{}
+    , reactor_id_{}
+    , task_mtx_{}
+    , active_cv_{}
+    , active_mtx_{}
     , shutdown_(false)
-    , null_(factory::ZMQSocketNull())
+    , null_skt_(factory::ZMQSocketNull())
     , alloc_()
     , gate_()
     , thread_()
-    , data_(&alloc_)
-    , idle_(true)
+    , receivers_(&alloc_)
 {
+    thread_.running_ = true;
+    thread_.handle_ = std::thread{&Thread::run, this};
+}
+
+auto Thread::SetName(std::string_view name) -> bool
+{
+    return ThreadMonitor::set_name(thread_.handle_.native_handle(), name);
 }
 
 auto Thread::Add(BatchID id, StartArgs&& args) noexcept -> bool
@@ -67,20 +82,30 @@ auto Thread::Add(BatchID id, StartArgs&& args) noexcept -> bool
         return out;
     }();
     parent_.UpdateIndex(id, std::move(args));
-    data_.modify_detach([data = std::move(sockets)](auto& guarded) {
-        for (auto [socket, cb] : data) {
-            assert(cb);
 
-            guarded.data_.emplace_back(std::move(cb));
-            auto& s = guarded.items_.emplace_back();
-            s.socket = socket->Native();
-            s.events = ZMQ_POLLIN;
+    if (from_reactor()) {
+        snc_add(std::move(sockets));
+    } else {
+        std::unique_lock<std::mutex> task_lock(task_mtx_);
+        tasks_.emplace_back([this, skts = std::move(sockets)]() mutable {
+            snc_add(std::move(skts));
+        });
+        active_cv_.notify_one();
+    }
+    return true;
+}
 
-            assert(guarded.items_.size() == guarded.data_.size());
-        }
-    });
-    start();
+auto Thread::snc_add(ThreadStartArgs&& sockets) noexcept -> bool
+{
+    for (auto [socket, cb] : sockets) {
+        assert(cb);
 
+        receivers_.rxcallbacks_.emplace_back(std::move(cb));
+        auto& s = receivers_.socks_.emplace_back();
+        s.socket = socket->Native();
+        s.events = ZMQ_POLLIN;
+    }
+    assert(receivers_.socks_.size() == receivers_.rxcallbacks_.size());
     return true;
 }
 
@@ -101,29 +126,41 @@ auto Thread::Modify(SocketID socket, ModifyCallback cb) noexcept -> AsyncResult
         return {};
     }
 
-    auto promise = std::make_shared<std::promise<bool>>();
-    auto output = std::make_pair(true, promise->get_future());
-    data_.modify_detach([=](auto& data) {
-        if (null_.ID() == socket) {
-            try {
-                cb(null_);
-                promise->set_value(true);
-            } catch (...) {
-                promise->set_value(false);
-            }
-        } else {
-            promise->set_value(parent_.DoModify(socket, cb));
-        }
-    });
+    auto prom = std::promise<bool>{};
+    auto result = std::make_pair(true, prom.get_future());
 
-    return output;
+    if (from_reactor()) {
+        snc_modify(socket, cb, std::move(prom));
+    } else {
+        std::unique_lock<std::mutex> task_lock(task_mtx_);
+        tasks_.emplace_back([this, socket, cb, p = std::move(prom)]() mutable {
+            snc_modify(socket, cb, std::move(p));
+        });
+        active_cv_.notify_one();
+    }
+    return result;
 }
 
-auto Thread::poll(Items& data) noexcept -> void
+auto Thread::snc_modify(
+    SocketID socket,
+    ModifyCallback cb,
+    std::promise<bool>&& prom) noexcept -> void
 {
-    auto post = ScopeGuard{[this] { idle_.store(true); }};
+    if (null_skt_.ID() == socket) {
+        try {
+            cb(null_skt_);
+            prom.set_value(true);
+        } catch (...) {
+            prom.set_value(false);
+        }
+    } else {
+        prom.set_value(parent_.DoModify(socket, cb));
+    }
+}
 
-    if ((0u == data.items_.size()) || shutdown_) {
+auto Thread::poll(Receivers& data) noexcept -> void
+{
+    if (shutdown_) {
         thread_.running_ = false;
 
         return;
@@ -131,8 +168,8 @@ auto Thread::poll(Items& data) noexcept -> void
 
     static constexpr auto timeout = 100ms;
     const auto events = ::zmq_poll(
-        data.items_.data(),
-        static_cast<int>(data.items_.size()),
+        data.socks_.data(),
+        static_cast<int>(data.socks_.size()),
         timeout.count());
 
     if (0 > events) {
@@ -145,8 +182,8 @@ auto Thread::poll(Items& data) noexcept -> void
         return;
     }
 
-    const auto& v = data.items_;
-    auto c = data.data_.begin();
+    const auto& v = data.socks_;
+    auto c = data.rxcallbacks_.begin();
 
     for (auto s = v.begin(), end = v.end(); s != end; ++s, ++c) {
         auto& item = *s;
@@ -161,7 +198,8 @@ auto Thread::poll(Items& data) noexcept -> void
 
             try {
                 callback(std::move(message));
-            } catch (...) {
+            } catch (const std::exception& e) {
+                std::cerr << "Thread::poll exception: " << e.what() << "\n";
             }
         }
     }
@@ -218,84 +256,120 @@ auto Thread::receive_message(void* socket, Message& message) noexcept -> bool
 auto Thread::Remove(BatchID id, UnallocatedVector<socket::Raw*>&& data) noexcept
     -> std::future<bool>
 {
-    auto p = std::make_shared<std::promise<bool>>();
-    auto future = p->get_future();
-    data_.modify_detach(
-        [this, id, sockets = std::move(data), promise = std::move(p)](
-            auto& guarded) {
-            const auto set = [&] {
-                auto out = UnallocatedSet<void*>{};
-                std::transform(
-                    sockets.begin(),
-                    sockets.end(),
-                    std::inserter(out, out.end()),
-                    [](auto* socket) { return socket->Native(); });
+    const auto ticket = gate_.get();
 
-                return out;
-            }();
-            auto s = guarded.items_.begin();
-            auto c = guarded.data_.begin();
+    if (ticket) { return {}; }
 
-            while ((s != guarded.items_.end()) && (c != guarded.data_.end())) {
-                auto* socket = s->socket;
+    auto prom = std::promise<bool>{};
+    auto fut = prom.get_future();
 
-                if (0u == set.count(socket)) {
-                    ++s;
-                    ++c;
-                } else {
-                    s = guarded.items_.erase(s);
-                    c = guarded.data_.erase(c);
-                }
-            }
-
-            assert(guarded.items_.size() == guarded.data_.size());
-
-            parent_.UpdateIndex(id);
-            promise->set_value(true);
+    if (from_reactor()) {
+        snc_remove(id, std::move(data), std::move(prom));
+    } else {
+        std::unique_lock<std::mutex> task_lock(task_mtx_);
+        tasks_.emplace_back([this,
+                             id,
+                             sockets = std::move(data),
+                             promise = std::move(prom)]() mutable {
+            snc_remove(id, std::move(sockets), std::move(promise));
         });
+        active_cv_.notify_one();
+    }
+    return fut;
+}
 
-    return future;
+auto Thread::snc_remove(
+    BatchID id,
+    UnallocatedVector<socket::Raw*>&& sockets,
+    std::promise<bool> prom) noexcept -> void
+{
+    const auto set = [&] {
+        auto out = UnallocatedSet<void*>{};
+        std::transform(
+            sockets.begin(),
+            sockets.end(),
+            std::inserter(out, out.end()),
+            [](auto* socket) { return socket->Native(); });
+
+        return out;
+    }();
+    auto s = receivers_.socks_.begin();
+    auto c = receivers_.rxcallbacks_.begin();
+
+    while ((s != receivers_.socks_.end()) &&
+           (c != receivers_.rxcallbacks_.end())) {
+        auto* socket = s->socket;
+
+        if (0u == set.count(socket)) {
+            ++s;
+            ++c;
+        } else {
+            s = receivers_.socks_.erase(s);
+            c = receivers_.rxcallbacks_.erase(c);
+        }
+    }
+
+    assert(receivers_.socks_.size() == receivers_.rxcallbacks_.size());
+
+    parent_.UpdateIndex(id);
+    prom.set_value(true);
 }
 
 auto Thread::run() noexcept -> void
 {
     Signals::Block();
+    try {
+        reactor_id_ = std::this_thread::get_id();
+        while (thread_.running_) {
+            {
+                // Optionally do externally called tasks like connections
+                // or sockets additions.
+                std::unique_lock<std::mutex> task_lock(task_mtx_);
+                if (!tasks_.empty()) {
+                    tasks_.front()();
+                    tasks_.pop_front();
+                    continue;
+                }
+            }
 
-    while (thread_.running_) {
-        if (auto idle = idle_.exchange(false); idle) {
-            data_.modify_detach([this](auto& data) { poll(data); });
-        } else {
-            using namespace std::literals;
-            Sleep(10us);
+            poll(receivers_);
+
+            {
+                // Block while there are no sockets.
+                std::unique_lock<std::mutex> active_lock(active_mtx_);
+                if (thread_.running_ && receivers_.rxcallbacks_.empty()) {
+                    active_cv_.wait(active_lock);
+                }
+            }
         }
+        // Dispose of outstanding tasks unconditionally.
+        while (!tasks_.empty()) {
+            tasks_.front()();
+            tasks_.pop_front();
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << ThreadMonitor::get_name()
+                  << "Thread::run( exception: " << e.what() << "\n";
+        exit(0);
     }
 }
 
 auto Thread::Shutdown() noexcept -> void
 {
-    shutdown_ = true;
-    data_.modify_detach([](auto& data) {
-        data.items_.clear();
-        data.data_.clear();
-    });
-    wait();
-}
-
-auto Thread::start() noexcept -> void
-{
-    if (auto running = thread_.running_.exchange(true); false == running) {
-        join();
-        thread_.handle_ = std::thread{&Thread::run, this};
-    }
-}
-
-auto Thread::wait() noexcept -> void
-{
     gate_.shutdown();
+    {
+        std::unique_lock<std::mutex> active_lock(active_mtx_);
+        shutdown_ = true;
+        thread_.running_ = false;
+        active_cv_.notify_one();
+    }
     join();
+    receivers_.socks_.clear();
+    receivers_.rxcallbacks_.clear();
 }
 
-Thread::Items::~Items() = default;
+Thread::Receivers::~Receivers() = default;
 
-Thread::~Thread() { wait(); }
+Thread::~Thread() { Shutdown(); }
 }  // namespace opentxs::network::zeromq::context

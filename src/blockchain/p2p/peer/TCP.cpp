@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 #include <chrono>
 #include <cstddef>
+#include <string_view>
 
 #include "blockchain/p2p/peer/Address.hpp"
 #include "blockchain/p2p/peer/Peer.hpp"
@@ -31,12 +32,15 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
+#include "util/threadutil.hpp"
 
 namespace asio = boost::asio;
 using tcp = asio::ip::tcp;
 
 namespace opentxs::blockchain::p2p::peer
 {
+using namespace std::literals;
+
 struct TCPConnectionManager : virtual public ConnectionManager {
     const api::Session& api_;
     const int id_;
@@ -103,6 +107,11 @@ struct TCPConnectionManager : virtual public ConnectionManager {
     }
     auto on_body(zmq::Message&& message) noexcept -> void final
     {
+        MessageMarker mm(message);
+        if (mm) {
+            std::cerr << "TCPConnectionManager::on_body received from "
+                      << to_string(mm) << "\n";
+        }
         auto body = message.Body();
 
         OT_ASSERT(1 < body.size());
@@ -113,6 +122,9 @@ struct TCPConnectionManager : virtual public ConnectionManager {
             out.AddFrame(Task::P2P);
             out.AddFrame(header_);
             out.AddFrame(std::move(body.at(1)));
+
+            MessageMarker m("T..body\0"sv);
+            m.mark(out);
 
             return out;
         }());
@@ -128,6 +140,11 @@ struct TCPConnectionManager : virtual public ConnectionManager {
     }
     auto on_header(zmq::Message&& message) noexcept -> void final
     {
+        MessageMarker mm(message);
+        if (mm) {
+            std::cerr << "TCPConnectionManager::on_header received from "
+                      << to_string(mm) << "\n";
+        }
         auto body = message.Body();
 
         OT_ASSERT(1 < body.size());
@@ -145,6 +162,9 @@ struct TCPConnectionManager : virtual public ConnectionManager {
                 out.AddFrame(Task::P2P);
                 out.AddFrame(std::move(header));
                 out.AddFrame();
+
+                MessageMarker m("QQQ TCPConnectionManager::on_header"sv);
+                m.mark(out);
 
                 return out;
             }());

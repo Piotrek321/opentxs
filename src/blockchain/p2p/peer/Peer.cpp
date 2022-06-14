@@ -32,6 +32,7 @@
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
+#include "util/threadutil.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -51,7 +52,7 @@ Peer::Peer(
     const std::size_t headerSize,
     const std::size_t bodySize,
     std::unique_ptr<internal::Address> address) noexcept
-    : Worker(api, 10ms)
+    : Worker(api, "Peer")
     , network_(network)
     , filter_(filter)
     , block_(block)
@@ -88,11 +89,13 @@ Peer::Peer(
     , activity_(api_, pipeline_)
     , init_promise_()
     , init_(init_promise_.get_future())
+    , last_job_{}
 {
     OT_ASSERT(connection_);
 
     connection_->init();
     init_executor({manager_.Endpoint(Task::Heartbeat), shutdown_endpoint_});
+    start();
     trigger();
 }
 
@@ -186,6 +189,7 @@ auto Peer::check_jobs() noexcept -> void
 
 auto Peer::check_handshake() noexcept -> void
 {
+    tdiag("check_handshake");
     auto& state = state_.handshake_;
 
     if (state.first_action_ && state.second_action_ &&
@@ -212,6 +216,7 @@ auto Peer::check_handshake() noexcept -> void
 
 auto Peer::check_verify() noexcept -> void
 {
+    tdiag("check_verify");
     auto& state = state_.verify_;
 
     if (state.first_action_ &&
@@ -302,6 +307,7 @@ auto Peer::init_connection_manager(
 
 auto Peer::on_connect() noexcept -> void
 {
+    tdiag("on_connect");
     log_(display_chain_)(" peer ")(address_.Display())(" connected").Flush();
 
     try {
@@ -318,13 +324,20 @@ auto Peer::on_init() noexcept -> void { check_init(); }
 
 auto Peer::pipeline(zmq::Message&& message) noexcept -> void
 {
+    MessageMarker m(message);
+    if (m) { tdiag("QQQ message from ", to_string(m)); }
+
     if (false == IsReady(init_)) {
         pipeline_.Push(std::move(message));
 
+        tdiag("Peer::pipeline pushed back, no init");
         return;
     }
 
-    if (false == running_.load()) { return; }
+    if (false == running_.load()) {
+        tdiag("Peer::pipeline ignored, not running");
+        return;
+    }
 
     const auto header = message.Header();
     const auto body = message.Body();
@@ -347,7 +360,10 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
         }
     }();
 
+    last_job_ = task;
+
     if (connectionID == untrusted_connection_id_) {
+        tdiag("Peer::pipeline untrusted");
         if (false == connection_->filter(task)) {
             LogError()(OT_PRETTY_CLASS())("Peer ")(address_.Display())(
                 " sent an internal control message instead of a valid protocol "
@@ -361,33 +377,43 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
 
     switch (task) {
         case Task::Shutdown: {
+            tdiag("Peer::pipeline Shutdown");
             protect_shutdown([this] { shut_down(); });
         } break;
         case Task::Mempool: {
+            tdiag("Peer::pipeline Mempool");
             process_mempool(message);
         } break;
         case Task::Register: {
+            tdiag("Peer::pipeline Register");
             connection_->on_register(std::move(message));
         } break;
         case Task::Connect: {
+            tdiag("Peer::pipeline Connect");
             connection_->on_connect(std::move(message));
         } break;
         case Task::Disconnect: {
+            tdiag("Peer::pipeline Disconnect");
             disconnect();
         } break;
         case Task::Getheaders: {
+            tdiag("Peer::pipeline Getheaders");
             if (State::Run == state_.value_.load()) { request_headers(); }
         } break;
         case Task::Getblock: {
+            tdiag("Peer::pipeline Getblock");
             request_block(std::move(message));
         } break;
         case Task::BroadcastTransaction: {
+            tdiag("Peer::pipeline BroadcastTransaction");
             broadcast_transaction(std::move(message));
         } break;
         case Task::BroadcastBlock: {
+            tdiag("Peer::pipeline BroadcastBlock");
             broadcast_block(std::move(message));
         } break;
         case Task::JobAvailableCfheaders: {
+            //            tdiag("Peer::pipeline JobAvailableCfheaders");
             if (State::Run == state_.value_.load()) {
                 if (cfheader_job_) { break; }
 
@@ -395,6 +421,7 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
             }
         } break;
         case Task::JobAvailableCfilters: {
+            //            tdiag("Peer::pipeline JobAvailableCfilters");
             if (State::Run == state_.value_.load()) {
                 if (cfilter_job_) { break; }
 
@@ -402,6 +429,7 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
             }
         } break;
         case Task::JobAvailableBlock: {
+            tdiag("Peer::pipeline JobAvailableBlock");
             if (State::Run == state_.value_.load()) {
                 if (block_job_) { break; }
 
@@ -409,33 +437,46 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
             }
         } break;
         case Task::ActivityTimeout: {
+            tdiag("Peer::pipeline ActivityTimeout");
             activity_timeout();
         } break;
         case Task::NeedPing: {
+            tdiag("Peer::pipeline NeedPing");
             if (State::Run == state_.value_.load()) { ping(); }
         } break;
         case Task::Body: {
+            tdiag("Peer::pipeline Body");
             activity_.Bump();
             connection_->on_body(std::move(message));
         } break;
         case Task::Header: {
+            tdiag("Peer::pipeline Header");
             activity_.Bump();
             connection_->on_header(std::move(message));
         } break;
-        case Task::P2P:
+        case Task::P2P: {
+            tdiag("Peer::pipeline P2P");
+            activity_.Bump();
+            process_message(std::move(message));
+        } break;
         case Task::ReceiveMessage: {
+            tdiag("Peer::pipeline ReceiveMessage");
             activity_.Bump();
             process_message(std::move(message));
         } break;
         case Task::SendMessage: {
+            tdiag("Peer::pipeline SendMessage");
             transmit(std::move(message));
         } break;
         case Task::Init: {
+            tdiag("Peer::pipeline Init");
             connection_->on_init(std::move(message));
         } break;
-        case Task::Heartbeat:
         case Task::StateMachine: {
-            do_work();
+            tdiag("Peer::pipeline StateMachine");
+            [[fallthrough]];
+            case Task::Heartbeat:
+                do_work();
         } break;
         default: {
             OT_FAIL;
@@ -536,7 +577,7 @@ auto Peer::reset_cfilter_job() noexcept -> void
     if (job) { request_cfilter(); }
 }
 
-auto Peer::send(std::pair<zmq::Frame, zmq::Frame>&& frames) noexcept
+auto Peer::send(std::pair<zmq::Frame, zmq::Frame>&& frames, bool diag) noexcept
     -> SendStatus
 {
     try {
@@ -560,6 +601,7 @@ auto Peer::send(std::pair<zmq::Frame, zmq::Frame>&& frames) noexcept
             out.AddFrame(std::move(payload));
             out.AddFrame(promise);
 
+            if (diag) { MessageMarker().mark(out); }
             return out;
         }());
         auto& [future, promise] = data;
@@ -572,13 +614,19 @@ auto Peer::send(std::pair<zmq::Frame, zmq::Frame>&& frames) noexcept
 
 auto Peer::Shutdown() noexcept -> void
 {
+    tdiag("Shutdown");
     protect_shutdown([this] { shut_down(); });
 }
 
 auto Peer::shut_down() noexcept -> void
 {
+    tdiag("shut_down");
+    // Avoid last message sneaking through to reactor after sending
+    // socket has been closed by pipeline, so stop() first.
+    stop();
     close_pipeline();
     const auto state = state_.value_.exchange(State::Shutdown);
+    const auto addr = address_.Display();
     connection_->stop_external();
     break_promises();
     connection_->shutdown_external();
@@ -587,7 +635,7 @@ auto Peer::shut_down() noexcept -> void
         update_address_activity();
     }
 
-    log_("Disconnected from ")(address_.Display()).Flush();
+    log_("Disconnected from ")(addr).Flush();
     // TODO MT-34 investigate what other actions might be needed
 }
 
@@ -615,11 +663,12 @@ auto Peer::start_verify() noexcept -> void
     }
 }
 
-auto Peer::state_machine() noexcept -> bool
+auto Peer::state_machine() noexcept -> int
 {
+    tdiag("Peer::state_machine");
     log_(OT_PRETTY_CLASS()).Flush();
 
-    if (false == running_.load()) { return false; }
+    if (false == running_.load()) { return -1; }
 
     try {
         switch (state_.value_.load()) {
@@ -703,7 +752,12 @@ auto Peer::state_machine() noexcept -> bool
         disconnect();
     }
 
-    return false;
+    return -1;
+}
+
+auto Peer::last_job_str() const noexcept -> std::string
+{
+    return std::string(print(last_job_));
 }
 
 auto Peer::subscribe() noexcept -> void
@@ -746,9 +800,10 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
     const auto& promiseFrame = body.at(3);
     const auto index = promiseFrame.as<int>();
     auto success = bool{false};
+    const auto payload_size = payload.size();
     auto postcondition =
         ScopeGuard{[&] { send_promises_.SetPromise(index, success); }};
-    log_(OT_PRETTY_CLASS())("Sending ")(header.size() + payload.size())(
+    log_(OT_PRETTY_CLASS())("Sending ")(header.size() + payload_size)(
         " byte message:")
         .Flush();
     LogInsane()(Data::Factory(header)->asHex())(Data::Factory(payload)->asHex())
@@ -791,7 +846,7 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
     }
 
     if (result) {
-        log_(OT_PRETTY_CLASS())("Sent ")(payload.size())(" bytes").Flush();
+        log_(OT_PRETTY_CLASS())("Sent ")(payload_size)(" bytes").Flush();
         success = true;
     } else {
         log_("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(

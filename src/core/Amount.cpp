@@ -353,6 +353,8 @@ auto Amount::Serialize(const AllocateOutput dest) const noexcept -> bool
     return imp_->Serialize(dest);
 }
 
+auto Amount::str() const -> std::string { return imp_->str(); }
+
 auto Amount::swap(Amount& rhs) noexcept -> void { std::swap(imp_, rhs.imp_); }
 
 Amount::~Amount()

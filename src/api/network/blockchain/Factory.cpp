@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "internal/api/network/Factory.hpp"  // IWYU pragma: associated
 
+#include <memory>
+
 #include "api/network/blockchain/Imp.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 

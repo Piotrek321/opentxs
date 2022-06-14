@@ -72,12 +72,17 @@ public:
     ~Imp() final = default;
 
 private:
-    network::zeromq::socket::Raw& to_scan_;
+    auto sProcessReorg(
+        const Lock& headerOracleLock,
+        const block::Position& parent) noexcept -> void;
 
+private:
     auto notify(const block::Position& pos) const noexcept -> void;
-
     auto do_process_update(Message&& msg) noexcept -> void final;
     auto do_startup() noexcept -> void final {}
     auto process_do_rescan(Message&& in) noexcept -> void final;
+
+private:
+    network::zeromq::socket::Raw& to_scan_;
 };
 }  // namespace opentxs::blockchain::node::wallet

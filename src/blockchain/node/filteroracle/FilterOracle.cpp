@@ -84,6 +84,20 @@ auto BlockchainFilterOracle(
 namespace opentxs::blockchain::node::implementation
 {
 
+auto FilterOracle::to_str(FilterOracle::Work value) -> std::string
+{
+    static auto Map = std::map<FilterOracle::Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::block, "block"},
+        {Work::reorg, "reorg"},
+        {Work::reset_filter_tip, "reset_filter_tip"},
+        {Work::heartbeat, "heartbeat"},
+        {Work::full_block, "full_block"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 FilterOracle::FilterOracle(
     const api::Session& api,
     const internal::Config& config,

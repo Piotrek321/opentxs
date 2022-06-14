@@ -90,6 +90,7 @@ Contacts::Contacts(const api::session::Client& api)
     }())
     , publisher_(api_.Network().ZeroMQ().PublishSocket())
     , pipeline_(api_.Network().ZeroMQ().Internal().Pipeline(
+          "Contacts",
           [this](auto&& in) { pipeline(std::move(in)); },
           {{CString{api_.Endpoints().NymCreated()},
             opentxs::network::zeromq::socket::Direction::Connect},
