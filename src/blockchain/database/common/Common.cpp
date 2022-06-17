@@ -49,34 +49,4 @@ auto SyncTables() noexcept -> const UnallocatedVector<SyncTableData>&
     return map;
 }
 
-util::IndexData LoadDBTransaction(
-    const storage::lmdb::LMDB& lmdb,
-    int table,
-    const std::string& str)
-{
-    util::IndexData index{};
-    auto cb = [&index](const ReadView in) {
-        if (sizeof(index) != in.size()) { return; }
-
-        std::memcpy(static_cast<void*>(&index), in.data(), in.size());
-    };
-    lmdb.Load(table, str, cb);
-    return index;
-}
-
-util::IndexData LoadDBTransaction(
-    const storage::lmdb::LMDB& lmdb,
-    int table,
-    const ReadView str)
-{
-    util::IndexData index{};
-    auto cb = [&index](const ReadView in) {
-        if (sizeof(index) != in.size()) { return; }
-
-        std::memcpy(static_cast<void*>(&index), in.data(), in.size());
-    };
-    lmdb.Load(table, str, cb);
-    return index;
-}
-
 }  // namespace opentxs::blockchain::database::common

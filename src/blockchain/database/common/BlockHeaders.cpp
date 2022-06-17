@@ -105,7 +105,6 @@ auto BlockHeader::store(
         const auto bytes = proto.ByteSizeLong();
 
         util::IndexData index = LoadDBTransaction(lmdb_, table_, hash.Bytes());
-        ;
 
         auto cb2 = [&](auto& tx) -> bool {
             const auto result =

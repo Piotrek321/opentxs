@@ -266,7 +266,7 @@ public:
                     tx);
             }
 
-            if (false == tx.Finalize(true)) {
+            if (!tx.Finalize(true)) {
                 throw std::runtime_error{
                     "Failed to commit database transaction"};
             }
@@ -277,7 +277,7 @@ public:
                 api_.Crypto().Blockchain().Internal().ProcessTransactions(
                     chain_, std::move(processed), reason);
 
-            if (false == added) {
+            if (!added) {
                 throw std::runtime_error{
                     "Error adding transaction to activity database"};
             }
@@ -318,23 +318,21 @@ public:
         TXOs& txoCreated) noexcept -> bool
     {
         static const auto block = make_blank<block::Position>::value(api_);
-        auto txoConsumed = TXOs{};
+        TXOs txoConsumed{};
+
+        BatchedMatches batchedMatches{txoCreated.get_allocator()};
+        auto& matches = batchedMatches[block];
+        matches.emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(original.ID()),
+            std::forward_as_tuple(outputIndices, original.clone()));
 
         return AddTransactions(
             account,
             subchain,
             node::TxoState::UnconfirmedSpend,
             node::TxoState::UnconfirmedNew,
-            [&] {
-                auto out = BatchedMatches{txoCreated.get_allocator()};
-                auto& matches = out[block];
-                matches.emplace(
-                    std::piecewise_construct,
-                    std::forward_as_tuple(original.ID()),
-                    std::forward_as_tuple(outputIndices, original.clone()));
-
-                return out;
-            }(),
+            std::move(batchedMatches),
             txoCreated,
             txoConsumed);
     }
@@ -363,7 +361,7 @@ public:
                         }
                     });
 
-                if (false == found) {
+                if (!found) {
                     const auto error = UnallocatedCString{
                         "Input spending " + outpoint.str() +
                         " is not registered with a proposal"};
@@ -403,13 +401,13 @@ public:
                 if (cache.Exists(outpoint)) {
                     auto& existing = cache.GetOutput(outpoint);
 
-                    if (false == change_state(
-                                     cache,
-                                     tx,
-                                     outpoint,
-                                     existing,
-                                     node::TxoState::UnconfirmedNew,
-                                     blank_)) {
+                    if (!change_state(
+                            cache,
+                            tx,
+                            outpoint,
+                            existing,
+                            node::TxoState::UnconfirmedNew,
+                            blank_)) {
                         LogError()(OT_PRETTY_CLASS())(
                             "Error updating created output state")
                             .Flush();
@@ -418,29 +416,23 @@ public:
                         return false;
                     }
                 } else {
-                    const auto [accountID, subchainID] = [&] {
-                        OT_ASSERT(1 == keys.size());
+                    OT_ASSERT(1 == keys.size());
+                    const auto& key = keys.at(0);
+                    const auto& [nodeID, subchain, ix] = key;
+                    auto accountID = api_.Factory().Identifier(nodeID);
+                    auto subchainID =
+                        subchain_.GetSubchainID(accountID, subchain, tx);
 
-                        const auto& key = keys.at(0);
-                        const auto& [nodeID, subchain, index] = key;
-                        auto accountID = api_.Factory().Identifier(nodeID);
-                        auto subchainID =
-                            subchain_.GetSubchainID(accountID, subchain, tx);
-
-                        return std::make_pair(
-                            std::move(accountID), std::move(subchainID));
-                    }();
-
-                    if (false == create_state(
-                                     cache,
-                                     tx,
-                                     false,
-                                     outpoint,
-                                     node::TxoState::UnconfirmedNew,
-                                     blank_,
-                                     accountID,
-                                     subchainID,
-                                     output)) {
+                    if (!create_state(
+                            cache,
+                            tx,
+                            false,
+                            outpoint,
+                            node::TxoState::UnconfirmedNew,
+                            blank_,
+                            accountID,
+                            subchainID,
+                            output)) {
                         LogError()(OT_PRETTY_CLASS())(
                             "Error creating new output state")
                             .Flush();
@@ -465,7 +457,7 @@ public:
                                   tx)
                               .first;
 
-                if (false == rc) {
+                if (!rc) {
                     throw std::runtime_error{
                         "Failed to update proposal created outpoint index"};
                 }
@@ -478,7 +470,7 @@ public:
                              tx)
                          .first;
 
-                if (false == rc) {
+                if (!rc) {
                     throw std::runtime_error{
                         "Failed to update outpoint proposal index"};
                 }
@@ -496,7 +488,7 @@ public:
                     "Error adding transaction to database"};
             }
 
-            if (false == tx.Finalize(true)) {
+            if (!tx.Finalize(true)) {
                 throw std::runtime_error{
                     "Failed to commit database transaction"};
             }
@@ -535,51 +527,40 @@ public:
             const auto stop = std::max<block::Height>(
                 0,
                 start - params::Chains().at(chain_).maturation_interval_ - 1);
-            const auto matured = [&] {
-                auto m = UnallocatedSet<block::Outpoint>{};
-                lmdb_.Read(
-                    generation_,
-                    [&](const auto key, const auto value) {
-                        const auto height = [&] {
-                            auto out = block::Height{};
 
-                            OT_ASSERT(sizeof(out) == key.size());
+            UnallocatedSet<block::Outpoint> matured;
+            lmdb_.Read(
+                generation_,
+                [&](const auto key, const auto value) {
+                    block::Height height{};
+                    OT_ASSERT(sizeof(height) == key.size());
+                    std::memcpy(&height, key.data(), key.size());
 
-                            std::memcpy(&out, key.data(), key.size());
+                    if (is_mature(height, pos)) {
+                        matured.emplace(block::Outpoint{value});
+                    }
 
-                            return out;
-                        }();
+                    return (height > stop);
+                },
+                Dir::Backward);
 
-                        if (is_mature(height, pos)) {
-                            m.emplace(block::Outpoint{value});
-                        }
-
-                        return (height > stop);
-                    },
-                    Dir::Backward);
-
-                return m;
-            }();
             auto tx = lmdb_.TransactionRW();
 
             for (const auto& outpoint : matured) {
                 static constexpr auto state = node::TxoState::ConfirmedNew;
-                const auto& output = cache.GetOutput(outpoint);
+                if (cache.GetOutput(outpoint).State() == state) { continue; }
 
-                if (output.State() == state) { continue; }
-
-                if (false == change_state(cache, tx, outpoint, state, pos)) {
+                if (!change_state(cache, tx, outpoint, state, pos))
                     throw std::runtime_error{"failed to mature output"};
-                } else {
+                else
                     ++changed;
-                }
             }
 
-            if (false == cache.UpdatePosition(pos, tx)) {
+            if (!cache.UpdatePosition(pos, tx)) {
                 throw std::runtime_error{"Failed to update wallet position"};
             }
 
-            if (false == tx.Finalize(true)) {
+            if (!tx.Finalize(true)) {
                 throw std::runtime_error{
                     "Failed to commit database transaction"};
             }
@@ -600,63 +581,56 @@ public:
         auto& cache = *handle;
 
         try {
-            const auto reserved = [&] {
-                auto out = UnallocatedVector<block::Outpoint>{};
-                lmdb_.Load(
-                    proposal_spent_,
-                    id.Bytes(),
-                    [&](const auto bytes) { out.emplace_back(bytes); },
-                    Mode::Multiple);
+            UnallocatedVector<block::Outpoint> reserved;
+            lmdb_.Load(
+                proposal_spent_,
+                id.Bytes(),
+                [&](const auto bytes) { reserved.emplace_back(bytes); },
+                Mode::Multiple);
 
-                return out;
-            }();
-            const auto created = [&] {
-                auto out = UnallocatedVector<block::Outpoint>{};
-                lmdb_.Load(
-                    proposal_created_,
-                    id.Bytes(),
-                    [&](const auto bytes) { out.emplace_back(bytes); },
-                    Mode::Multiple);
+            UnallocatedVector<block::Outpoint> created;
+            lmdb_.Load(
+                proposal_created_,
+                id.Bytes(),
+                [&](const auto bytes) { created.emplace_back(bytes); },
+                Mode::Multiple);
 
-                return out;
-            }();
             auto tx = lmdb_.TransactionRW();
             auto rc{true};
 
-            for (const auto& id : reserved) {
+            for (const auto& outpoint : reserved) {
                 rc = change_state(
                     cache,
                     tx,
-                    id,
+                    outpoint,
                     node::TxoState::UnconfirmedSpend,
                     node::TxoState::ConfirmedNew);
 
-                if (false == rc) {
+                if (!rc) {
                     const auto error = UnallocatedCString{
-                        "failed to reclaim outpoint " + id.str()};
+                        "failed to reclaim outpoint " + outpoint.str()};
 
                     throw std::runtime_error{error};
                 }
 
                 rc = lmdb_.Delete(output_proposal_, id.Bytes(), tx);
 
-                if (false == rc) {
+                if (!rc) {
                     throw std::runtime_error{
                         "Failed to update outpoint - proposal index"};
                 }
             }
 
-            for (const auto& id : created) {
-                auto rc = change_state(
-                    cache,
-                    tx,
-                    id,
-                    node::TxoState::UnconfirmedNew,
-                    node::TxoState::OrphanedNew);
-
-                if (false == rc) {
+            for (const auto& outpoint : created) {
+                if (!change_state(
+                        cache,
+                        tx,
+                        outpoint,
+                        node::TxoState::UnconfirmedNew,
+                        node::TxoState::OrphanedNew)) {
                     const auto error = UnallocatedCString{
-                        "failed to orphan cancelled outpoint " + id.str()};
+                        "failed to orphan cancelled outpoint " +
+                        outpoint.str()};
 
                     throw std::runtime_error{error};
                 }
@@ -665,7 +639,7 @@ public:
             if (lmdb_.Exists(proposal_spent_, id.Bytes())) {
                 rc = lmdb_.Delete(proposal_spent_, id.Bytes(), tx);
 
-                if (false == rc) {
+                if (!rc) {
                     throw std::runtime_error{"failed to erase spent outpoints"};
                 }
             } else {
@@ -677,7 +651,7 @@ public:
             if (lmdb_.Exists(proposal_created_, id.Bytes())) {
                 rc = lmdb_.Delete(proposal_created_, id.Bytes(), tx);
 
-                if (false == rc) {
+                if (!rc) {
                     throw std::runtime_error{
                         "failed to erase created outpoints"};
                 }
@@ -689,11 +663,9 @@ public:
 
             rc = proposals_.CancelProposal(tx, id);
 
-            if (false == rc) {
-                throw std::runtime_error{"failed to cancel proposal"};
-            }
+            if (!rc) { throw std::runtime_error{"failed to cancel proposal"}; }
 
-            if (false == tx.Finalize(true)) {
+            if (!tx.Finalize(true)) {
                 throw std::runtime_error{
                     "Failed to commit database transaction"};
             }
@@ -714,42 +686,35 @@ public:
 
         try {
             if (cache.GetPosition().Decode(api_) != pos) {
-                auto outputs = UnallocatedVector<block::Outpoint>{};
-                const auto heights = [&] {
-                    auto out = UnallocatedSet<block::Height>{};
-                    lmdb_.Read(
-                        generation_,
-                        [&](const auto key, const auto value) {
-                            const auto height = [&] {
-                                auto out = block::Height{};
+                UnallocatedVector<block::Outpoint> outputs{};
+                UnallocatedSet<block::Height> heights;
+                lmdb_.Read(
+                    generation_,
+                    [&](const auto key, const auto value) {
+                        block::Height height{};
 
-                                OT_ASSERT(sizeof(out) == key.size());
+                        OT_ASSERT(sizeof(height) == key.size());
 
-                                std::memcpy(&out, key.data(), key.size());
+                        std::memcpy(&height, key.data(), key.size());
 
-                                return out;
-                            }();
-                            outputs.emplace_back(value);
+                        outputs.emplace_back(value);
 
-                            if (height >= pos.first) {
-                                out.emplace(height);
+                        if (height >= pos.first) {
+                            heights.emplace(height);
 
-                                return true;
-                            } else {
+                            return true;
+                        } else {
 
-                                return false;
-                            }
-                        },
-                        Dir::Backward);
-
-                    return out;
-                }();
+                            return false;
+                        }
+                    },
+                    Dir::Backward);
 
                 for (const auto height : heights) {
                     output = lmdb_.Delete(
                         generation_, static_cast<std::size_t>(height), tx);
 
-                    if (false == output) {
+                    if (!output) {
                         throw std::runtime_error{
                             "failed to delete generation output index"};
                     }
@@ -760,7 +725,7 @@ public:
                     output =
                         change_state(cache, tx, id, State::OrphanedNew, pos);
 
-                    if (false == output) {
+                    if (!output) {
                         throw std::runtime_error{
                             "failed to orphan generation output"};
                     }
@@ -768,7 +733,7 @@ public:
 
                 output = cache.UpdatePosition(pos, tx);
 
-                if (false == output) {
+                if (!output) {
                     throw std::runtime_error{
                         "Failed to update wallet position"};
                 }
@@ -808,7 +773,7 @@ public:
                     return std::nullopt;
                 }
 
-                auto output = std::make_optional<UTXO>(
+                auto utxo = std::make_optional<UTXO>(
                     std::make_pair(outpoint, existing.clone()));
                 auto rc = change_state(
                     cache,
@@ -846,16 +811,15 @@ public:
                     " consumed outpoint ")(outpoint.str())
                     .Flush();
 
-                return output;
+                return utxo;
             };
             const auto select = [&](const auto& group,
                                     const bool changeOnly =
                                         false) -> std::optional<UTXO> {
                 for (const auto& outpoint : fifo(cache, group)) {
                     if (changeOnly) {
-                        const auto& output = cache.GetOutput(outpoint);
-
-                        if (0u == output.Tags().count(node::TxoTag::Change)) {
+                        if (0u == cache.GetOutput(outpoint).Tags().count(
+                                      node::TxoTag::Change)) {
                             continue;
                         }
                     }
@@ -882,12 +846,12 @@ public:
                     cache.GetState(node::TxoState::UnconfirmedNew), changeOnly);
             }
 
-            if (false == output.has_value()) {
+            if (!output.has_value()) {
                 throw std::runtime_error{
                     "No spendable outputs for specified nym"};
             }
 
-            if (false == tx.Finalize(true)) {
+            if (!tx.Finalize(true)) {
                 throw std::runtime_error{
                     "Failed to commit database transaction"};
             }
@@ -913,23 +877,20 @@ public:
 
         try {
             // TODO rebroadcast transactions which have become unconfirmed
-            const auto outpoints = [&] {
-                auto out = UnallocatedSet<block::Outpoint>{};
-                const auto sPosition = db::Position{position};
-                lmdb_.Load(
-                    positions_,
-                    reader(sPosition.data_),
-                    [&](const auto bytes) {
-                        auto outpoint = block::Outpoint{bytes};
+            UnallocatedSet<block::Outpoint> outpoints;
+            const auto sPosition = db::Position{position};
+            lmdb_.Load(
+                positions_,
+                reader(sPosition.data_),
+                [&](const auto bytes) {
+                    auto outpoint = block::Outpoint{bytes};
 
-                        if (has_subchain(cache, subchain, outpoint)) {
-                            out.emplace(std::move(outpoint));
-                        }
-                    },
-                    Mode::Multiple);
+                    if (has_subchain(cache, subchain, outpoint)) {
+                        outpoints.emplace(std::move(outpoint));
+                    }
+                },
+                Mode::Multiple);
 
-                return out;
-            }();
             LogTrace()(OT_PRETTY_CLASS())(outpoints.size())(
                 " affected outpoints")
                 .Flush();
@@ -937,24 +898,25 @@ public:
             for (const auto& id : outpoints) {
                 auto& output = cache.GetOutput(id);
                 using State = node::TxoState;
-                const auto state = [&]() -> std::optional<State> {
-                    switch (output.State()) {
-                        case State::ConfirmedNew:
-                        case State::OrphanedNew: {
+                std::optional<State> state;
 
-                            return State::UnconfirmedNew;
-                        }
-                        case State::ConfirmedSpend:
-                        case State::OrphanedSpend: {
+                switch (output.State()) {
+                    case State::ConfirmedNew:
+                    case State::OrphanedNew: {
 
-                            return State::UnconfirmedSpend;
-                        }
-                        default: {
-
-                            return std::nullopt;
-                        }
+                        state = State::UnconfirmedNew;
+                        break;
                     }
-                }();
+                    case State::ConfirmedSpend:
+                    case State::OrphanedSpend: {
+
+                        state = State::UnconfirmedSpend;
+                        break;
+                    }
+                    default: {
+                        state = std::nullopt;
+                    }
+                }
 
                 if (state.has_value() &&
                     (!change_state(
@@ -1088,20 +1050,19 @@ private:
             return previous + existing.Value();
         };
 
-        const auto unconfirmedSpendTotal = [&] {
-            const auto txos = match(
-                cache,
-                {node::TxoState::UnconfirmedSpend},
-                pNym,
-                pAcct,
-                nullptr,
-                key);
+        const auto txos = match(
+            cache,
+            {node::TxoState::UnconfirmedSpend},
+            pNym,
+            pAcct,
+            nullptr,
+            key);
 
-            return std::accumulate(txos.begin(), txos.end(), Amount{0}, cb);
-        }();
+        auto unconfirmedSpendTotal =
+            std::accumulate(txos.begin(), txos.end(), Amount{0}, cb);
 
         {
-            const auto txos = match(
+            const auto matches = match(
                 cache,
                 {node::TxoState::ConfirmedNew},
                 pNym,
@@ -1110,11 +1071,11 @@ private:
                 key);
             confirmed =
                 unconfirmedSpendTotal +
-                std::accumulate(txos.begin(), txos.end(), Amount{0}, cb);
+                std::accumulate(matches.begin(), matches.end(), Amount{0}, cb);
         }
 
         {
-            const auto txos = match(
+            const auto matches = match(
                 cache,
                 {node::TxoState::UnconfirmedNew},
                 pNym,
@@ -1122,7 +1083,7 @@ private:
                 nullptr,
                 key);
             unconfirmed =
-                std::accumulate(txos.begin(), txos.end(), confirmed, cb) -
+                std::accumulate(matches.begin(), matches.end(), confirmed, cb) -
                 unconfirmedSpendTotal;
         }
 
@@ -1353,7 +1314,7 @@ private:
         const bitcoin::block::internal::Output& output,
         bitcoin::block::internal::Transaction& tx) noexcept(false) -> void
     {
-        if (false == tx.AssociatePreviousOutput(index, output)) {
+        if (!tx.AssociatePreviousOutput(index, output)) {
             throw std::runtime_error{
                 "error associating previous output to input"};
         }
@@ -1393,7 +1354,7 @@ private:
 
             // TODO AddToKey?
 
-            if (false == cache.AddToNym(owner, outpoint, tx)) {
+            if (!cache.AddToNym(owner, outpoint, tx)) {
                 throw std::runtime_error{"Error associating outpoint to nym"};
             }
         }
@@ -1473,7 +1434,7 @@ private:
             if (updateState) {
                 rc = cache.ChangeState(oldState, newState, id, tx);
 
-                if (false == rc) {
+                if (!rc) {
                     throw std::runtime_error{"Failed to update state index"};
                 }
 
@@ -1483,16 +1444,14 @@ private:
             if (updatePosition) {
                 rc = cache.ChangePosition(oldPosition, effective, id, tx);
 
-                if (false == rc) {
+                if (!rc) {
                     throw std::runtime_error{"Failed to update position index"};
                 }
 
                 output.SetMinedPosition(effective);
             }
 
-            auto rc = cache.UpdateOutput(id, output, tx);
-
-            if (false == rc) {
+            if (!cache.UpdateOutput(id, output, tx)) {
                 throw std::runtime_error{"Failed to update output"};
             }
 
@@ -1522,32 +1481,26 @@ private:
             if (id.empty()) { oProposalID = std::nullopt; }
         });
 
-        if (false == oProposalID.has_value()) { return true; }
+        if (!oProposalID.has_value()) { return true; }
 
         const auto& proposalID = oProposalID.value().get();
 
         if (0u < processed.count(proposalID)) { return true; }
 
-        const auto created = [&] {
-            auto out = UnallocatedVector<block::Outpoint>{};
-            lmdb_.Load(
-                proposal_created_,
-                proposalID.Bytes(),
-                [&](const auto bytes) { out.emplace_back(bytes); },
-                Mode::Multiple);
+        UnallocatedVector<block::Outpoint> created;
+        lmdb_.Load(
+            proposal_created_,
+            proposalID.Bytes(),
+            [&](const auto bytes) { created.emplace_back(bytes); },
+            Mode::Multiple);
 
-            return out;
-        }();
-        const auto spent = [&] {
-            auto out = UnallocatedVector<block::Outpoint>{};
-            lmdb_.Load(
-                proposal_spent_,
-                proposalID.Bytes(),
-                [&](const auto bytes) { out.emplace_back(bytes); },
-                Mode::Multiple);
+        UnallocatedVector<block::Outpoint> spent;
 
-            return out;
-        }();
+        lmdb_.Load(
+            proposal_spent_,
+            proposalID.Bytes(),
+            [&](const auto bytes) { spent.emplace_back(bytes); },
+            Mode::Multiple);
 
         for (const auto& newOutpoint : created) {
             const auto rhs = api_.Factory().DataFromBytes(newOutpoint.Txid());
@@ -1651,7 +1604,7 @@ private:
         const block::Position position,
         const AccountID& accountID,
         const SubchainID& subchainID,
-        const bitcoin::block::Output& output) noexcept -> bool
+        const bitcoin::block::Output& output) -> bool
     {
         if (cache.Exists(id)) {
             cache.GetOutput(id);
@@ -1662,30 +1615,23 @@ private:
         }
 
         const auto& pos = effective_position(state, blank_, position);
-        const auto effState = [&] {
-            using State = node::TxoState;
 
-            if (isGeneration) {
-                if (State::ConfirmedNew == state) {
-                    if (is_mature(cache, position.first)) {
+        using State = node::TxoState;
+        State effState{};
 
-                        return State::ConfirmedNew;
-                    } else {
+        if (isGeneration) {
+            if (State::ConfirmedNew != state) {
+                LogError()(OT_PRETTY_CLASS())(
+                    "Invalid state for generation transaction output")
+                    .Flush();
 
-                        return State::Immature;
-                    }
-                } else {
-                    LogError()(OT_PRETTY_CLASS())(
-                        "Invalid state for generation transaction output")
-                        .Flush();
-
-                    OT_FAIL;
-                }
-            } else {
-
-                return state;
+                OT_FAIL;
             }
-        }();
+            effState = is_mature(cache, position.first) ? State::ConfirmedNew
+                                                        : State::Immature;
+        } else {
+            effState = state;
+        }
 
         try {
             {
@@ -1717,9 +1663,7 @@ private:
                     tx,
                     std::move(pOutput));
 
-                if (false == rc) {
-                    throw std::runtime_error{"failed to write output"};
-                }
+                if (!rc) { throw std::runtime_error{"failed to write output"}; }
             }
 
             if (isGeneration) {
@@ -1731,7 +1675,7 @@ private:
                                         tx)
                                     .first;
 
-                if (false == rc) {
+                if (!rc) {
                     throw std::runtime_error{
                         "failed to update generation index"};
                 }
@@ -1756,8 +1700,7 @@ private:
         for (auto& input : inputTx.Inputs()) {
             const auto& outpoint = input.PreviousOutput();
 
-            if (false ==
-                check_proposals(
+            if (!check_proposals(
                     cache, tx, outpoint, block, inputTx.ID(), proposals)) {
                 throw std::runtime_error{"Error updating proposals"};
             }
@@ -1765,7 +1708,7 @@ private:
             out.emplace(outpoint);
         }
     }
-    auto parse_outputs(
+    static auto parse_outputs(
         const Vector<std::uint32_t>& indices,
         bitcoin::block::internal::Transaction& inputTx,
         TXOs& out,
