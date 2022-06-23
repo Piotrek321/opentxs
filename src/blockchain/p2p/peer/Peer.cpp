@@ -11,7 +11,6 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "blockchain/DownloadTask.hpp"
 #include "blockchain/p2p/peer/ConnectionManager.hpp"
 #include "internal/blockchain/database/Peer.hpp"
 #include "internal/blockchain/node/BlockOracle.hpp"
@@ -20,12 +19,10 @@
 #include "internal/blockchain/node/PeerManager.hpp"
 #include "internal/util/Future.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/asio/Socket.hpp"  // IWYU pragma: keep
-#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -188,8 +185,7 @@ auto Peer::check_handshake() noexcept -> void
 {
     auto& state = state_.handshake_;
 
-    if (state.first_action_ && state.second_action_ &&
-        (false == state.done())) {
+    if (state.first_action_ && state.second_action_ && !state.done()) {
         log_(
             address_.Incoming() ? "Incoming connection from "
                                 : "Connected to ")(print(address_.Chain()))(
@@ -215,8 +211,7 @@ auto Peer::check_verify() noexcept -> void
     auto& state = state_.verify_;
 
     if (state.first_action_ &&
-        (state.second_action_ || (false == verify_filter_checkpoint_)) &&
-        (false == state.done())) {
+        (state.second_action_ || !verify_filter_checkpoint_) && !state.done()) {
         state.promise_.set_value();
     }
 
@@ -318,13 +313,13 @@ auto Peer::on_init() noexcept -> void { check_init(); }
 
 auto Peer::pipeline(zmq::Message&& message) noexcept -> void
 {
-    if (false == IsReady(init_)) {
+    if (!IsReady(init_)) {
         pipeline_.Push(std::move(message));
 
         return;
     }
 
-    if (false == running_.load()) { return; }
+    if (!running_.load()) { return; }
 
     const auto header = message.Header();
     const auto body = message.Body();
@@ -333,22 +328,18 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
     OT_ASSERT(0 < body.size());
 
     const auto connectionID = header.at(0).as<std::size_t>();
-    const auto task = [&] {
-        try {
-
-            return body.at(0).as<Task>();
-        } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-            // TODO It's impossible for this exception to happen but it does
-            // anyway from time to time. Somebody really ought to figure out why
-            // someday.
-
-            return Task::Disconnect;
-        }
-    }();
+    Task task{Task::Disconnect};
+    try {
+        task = body.at(0).as<Task>();
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+        // TODO It's impossible for this exception to happen but it does
+        // anyway from time to time. Somebody really ought to figure out why
+        // someday.
+    }
 
     if (connectionID == untrusted_connection_id_) {
-        if (false == connection_->filter(task)) {
+        if (!connection_->filter(task)) {
             LogError()(OT_PRETTY_CLASS())("Peer ")(address_.Display())(
                 " sent an internal control message instead of a valid protocol "
                 "message")
@@ -476,7 +467,7 @@ auto Peer::reset_block_batch() noexcept -> void
     auto& job = block_batch_;
     job.reset();
 
-    if (false == header_checkpoint_verified_) { return; }
+    if (!header_checkpoint_verified_) { return; }
     if (block_job_) { return; }
 
     job.emplace(block_.GetBlockBatch());
@@ -500,7 +491,7 @@ auto Peer::reset_block_job() noexcept -> void
     auto& job = block_job_;
     job = {};
 
-    if (false == header_checkpoint_verified_) { return; }
+    if (!header_checkpoint_verified_) { return; }
     if (block_batch_.has_value()) { return; }
 
     job = block_.GetBlockJob();
@@ -540,7 +531,7 @@ auto Peer::send(std::pair<zmq::Frame, zmq::Frame>&& frames) noexcept
     -> SendStatus
 {
     try {
-        if (false == state_.connect_.future_.get()) {
+        if (!state_.connect_.future_.get()) {
             log_(OT_PRETTY_CLASS())("Unable to send to disconnected peer")
                 .Flush();
 
@@ -552,18 +543,14 @@ auto Peer::send(std::pair<zmq::Frame, zmq::Frame>&& frames) noexcept
 
     if (running_.load()) {
         auto data = send_promises_.NewPromise();
-        pipeline_.Push([&] {
-            auto& [future, promise] = data;
-            auto& [header, payload] = frames;
-            auto out = MakeWork(Task::SendMessage);
-            out.AddFrame(std::move(header));
-            out.AddFrame(std::move(payload));
-            out.AddFrame(promise);
+        auto& [header, payload] = frames;
+        auto work = MakeWork(Task::SendMessage);
+        work.AddFrame(std::move(header));
+        work.AddFrame(std::move(payload));
+        work.AddFrame(data.second);
+        pipeline_.Push(std::move(work));
 
-            return out;
-        }());
         auto& [future, promise] = data;
-
         return std::move(future);
     } else {
         return {};
@@ -619,7 +606,7 @@ auto Peer::state_machine() noexcept -> bool
 {
     log_(OT_PRETTY_CLASS()).Flush();
 
-    if (false == running_.load()) { return false; }
+    if (!running_.load()) { return false; }
 
     try {
         switch (state_.value_.load()) {
@@ -736,13 +723,14 @@ auto Peer::subscribe() noexcept -> void
 
 auto Peer::transmit(zmq::Message&& message) noexcept -> void
 {
-    if (false == running_.load()) { return; }
+    if (!running_.load()) { return; }
 
     OT_ASSERT(message.Body().size() > 3)
 
     auto body = message.Body();
     auto& header = body.at(1);
     auto& payload = body.at(2);
+    auto payloadSize = payload.size();
     const auto& promiseFrame = body.at(3);
     const auto index = promiseFrame.as<int>();
     auto success = bool{false};
@@ -791,7 +779,7 @@ auto Peer::transmit(zmq::Message&& message) noexcept -> void
     }
 
     if (result) {
-        log_(OT_PRETTY_CLASS())("Sent ")(payload.size())(" bytes").Flush();
+        log_(OT_PRETTY_CLASS())("Sent ")(payloadSize)(" bytes").Flush();
         success = true;
     } else {
         log_("Disconnecting ")(display_chain_)(" peer ")(address_.Display())(

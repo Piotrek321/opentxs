@@ -157,7 +157,6 @@ private:
     auto shut_down() noexcept -> void;
 
 protected:
-    using SendFuture = std::future<otx::client::SendResult>;
     using KnownHashes = robin_hood::unordered_flat_set<UnallocatedCString>;
 
     enum class State {
@@ -211,7 +210,7 @@ protected:
             SimpleCallback firstAction,
             const State nextState) noexcept -> bool
         {
-            if ((false == first_run_) && firstAction) {
+            if (!first_run_ && firstAction) {
                 first_run_ = true;
                 started_ = Clock::now();
                 firstAction();
@@ -235,7 +234,7 @@ protected:
             return disconnect;
         }
 
-        StateData(std::atomic<State>& state) noexcept
+        explicit StateData(std::atomic<State>& state) noexcept
             : state_(state)
             , first_run_(false)
             , started_()
@@ -317,7 +316,7 @@ protected:
     auto send(std::pair<zmq::Frame, zmq::Frame>&& data) noexcept -> SendStatus;
     auto update_address_services(
         const UnallocatedSet<p2p::Service>& services) noexcept -> void;
-    auto verifying() noexcept -> bool
+    auto verifying() const noexcept -> bool
     {
         return (State::Verify == state_.value_.load());
     }

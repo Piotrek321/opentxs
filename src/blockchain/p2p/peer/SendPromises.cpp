@@ -30,7 +30,7 @@ auto Peer::SendPromises::NewPromise() -> std::pair<std::future<bool>, int>
     Lock lock(lock_);
     auto [it, added] = map_.emplace(++counter_, std::promise<bool>());
 
-    if (false == added) { return {}; }
+    if (!added) { return {}; }
 
     return {it->second.get_future(), it->first};
 }
