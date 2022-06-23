@@ -13,7 +13,6 @@
 #include "opentxs/blockchain/node/SendResult.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
-#include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
 
 namespace opentxs::blockchain::node
 {
@@ -45,13 +44,9 @@ auto print(SendResult code) noexcept -> std::string_view
             {Code::Sent, "successfully broadcast transaction"sv},
         };
 
-    try {
+    if (map.count(code)) return map.at(code);
 
-        return map.at(code);
-    } catch (...) {
-
-        return "unspecified error"sv;
-    }
+    return "unspecified error"sv;
 }
 
 auto print(TxoState in) noexcept -> std::string_view
@@ -72,13 +67,9 @@ auto print(TxoState in) noexcept -> std::string_view
             {Type::Immature, "newly generated"sv},
         };
 
-    try {
+    if (map.count(in)) return map.at(in);
 
-        return map.at(in);
-    } catch (...) {
-
-        return {};
-    }
+    return {};
 }
 
 auto print(TxoTag in) noexcept -> std::string_view
@@ -91,12 +82,8 @@ auto print(TxoTag in) noexcept -> std::string_view
             {Type::Generation, "generated"sv},
         };
 
-    try {
+    if (map.count(in)) return map.at(in);
 
-        return map.at(in);
-    } catch (...) {
-
-        return {};
-    }
+    return {};
 }
 }  // namespace opentxs::blockchain::node

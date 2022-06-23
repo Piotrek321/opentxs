@@ -109,8 +109,6 @@ namespace opentxs::blockchain::node::wallet
 class Account::Imp final : public Actor<AccountJobs>
 {
 public:
-    auto VerifyState(const State state) const noexcept -> void;
-
     auto ChangeState(const State state, StateSequence reorg) noexcept -> bool;
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void;
     auto ProcessReorg(

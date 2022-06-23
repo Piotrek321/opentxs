@@ -194,7 +194,7 @@ private:
         const block::Hash& stop,
         const std::size_t limit,
         alloc::Resource* alloc) const noexcept -> Hashes;
-    auto blank_hash() const noexcept -> const block::Hash&;
+    static auto blank_hash() noexcept -> const block::Hash&;
     auto blank_position() const noexcept -> const block::Position&;
     auto calculate_reorg(const Lock& lock, const block::Position& tip) const
         noexcept(false) -> Positions;
@@ -230,12 +230,12 @@ private:
         Candidate& candidate,
         UpdateTransaction& update) -> void;
     // Returns true if the child is checkpoint blacklisted
-    auto connect_to_parent(
+    static auto connect_to_parent(
         const Lock& lock,
         const UpdateTransaction& update,
         const block::Header& parent,
         block::Header& child) noexcept -> bool;
-    auto initialize_candidate(
+    static auto initialize_candidate(
         const Lock& lock,
         const block::Header& best,
         const block::Header& parent,
@@ -243,10 +243,10 @@ private:
         Candidates& candidates,
         block::Header& child,
         const block::Hash& stopHash = {}) noexcept(false) -> Candidate&;
-    auto is_disconnected(
+    static auto is_disconnected(
         const block::Hash& parent,
         UpdateTransaction& update) noexcept -> const block::Header*;
-    auto stage_candidate(
+    static auto stage_candidate(
         const Lock& lock,
         const block::Header& best,
         Candidates& candidates,

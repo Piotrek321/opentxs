@@ -7,10 +7,8 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "blockchain/node/HeaderOracle.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <atomic>
 #include <functional>
-#include <iterator>
 #include <stdexcept>
 #include <type_traits>
 
@@ -31,7 +29,6 @@
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/Data.hpp"
-#include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -87,7 +84,7 @@ auto HeaderOracle::Ancestors(
             output.pop_back();
         }
 
-        OT_ASSERT(0 < output.size());
+        OT_ASSERT(!output.empty());
         OT_ASSERT(output.front().first <= check);
 
         return output;
@@ -100,7 +97,7 @@ auto HeaderOracle::Ancestors(
     while (sibling->Height() > current->Height()) {
         sibling = database_.TryLoadHeader(sibling->ParentHash());
 
-        if (false == bool(sibling)) {
+        if (!sibling) {
             sibling = database_.TryLoadHeader(GenesisBlockHash(chain_));
 
             OT_ASSERT(sibling);
@@ -119,7 +116,7 @@ auto HeaderOracle::Ancestors(
         } else if (current->Height() == sibling->Height()) {
             sibling = database_.TryLoadHeader(sibling->ParentHash());
 
-            if (false == bool(sibling)) {
+            if (!sibling) {
                 sibling = database_.TryLoadHeader(GenesisBlockHash(chain_));
 
                 OT_ASSERT(sibling);
@@ -128,10 +125,10 @@ auto HeaderOracle::Ancestors(
 
         current = database_.TryLoadHeader(current->ParentHash());
 
-        if (false == bool(current)) { break; }
+        if (!current) { break; }
     }
 
-    OT_ASSERT(0 < cache.size());
+    OT_ASSERT(!cache.empty());
 
     auto output = Positions{};
     std::move(cache.begin(), cache.end(), std::back_inserter(output));
@@ -183,22 +180,19 @@ auto HeaderOracle::AddHeader(std::unique_ptr<block::Header> header) noexcept
 auto HeaderOracle::AddHeaders(
     UnallocatedVector<std::unique_ptr<block::Header>>& headers) noexcept -> bool
 {
-    if (0 == headers.size()) { return false; }
+    if (headers.empty()) { return false; }
 
     auto lock = Lock{lock_};
     auto update = UpdateTransaction{api_, database_};
 
     for (auto& header : headers) {
-        if (false == bool(header)) {
+        if (!bool(header)) {
             LogError()(OT_PRETTY_CLASS())("Invalid header").Flush();
 
             return false;
         }
 
-        if (false == add_header(lock, update, std::move(header))) {
-
-            return false;
-        }
+        if (!add_header(lock, update, std::move(header))) { return false; }
     }
 
     return database_.ApplyUpdate(update);
@@ -217,7 +211,6 @@ auto HeaderOracle::add_header(
 
     auto& header = update.Stage(std::move(pHeader));
     const auto& current = update.Stage();
-    const auto [currentHeight, currentHash] = current.Position();
     const auto* pParent = is_disconnected(header.ParentHash(), update);
 
     if (nullptr == pParent) {
@@ -291,9 +284,9 @@ auto HeaderOracle::apply_checkpoint(
         const auto [success, found] =
             choose_candidate(ancestor, candidates, update);
 
-        if (false == success) { return false; }
+        if (!success) { return false; }
 
-        if (false == found) {
+        if (!found) {
             const auto fallback = ancestor.Position();
             update.SetReorgParent(fallback);
             update.AddToBestChain(fallback);
@@ -438,18 +431,14 @@ auto HeaderOracle::best_hashes(
     const auto limitIsZero = (0 == limit);
     auto current{start};
     const auto tip = best_chain(lock);
-    const auto last = [&] {
-        if (limitIsZero) {
+    block::Height last = tip.first;
+    if (!limitIsZero) {
+        const auto requestedEnd = block::Height{
+            current + static_cast<block::Height>(limit) -
+            static_cast<block::Height>(1)};
 
-            return tip.first;
-        } else {
-            const auto requestedEnd = block::Height{
-                current + static_cast<block::Height>(limit) -
-                static_cast<block::Height>(1)};
-
-            return std::min<block::Height>(requestedEnd, tip.first);
-        }
-    }();
+        last = std::min<block::Height>(requestedEnd, tip.first);
+    }
 
     while (current <= last) {
         auto hash = database_.BestBlock(current++);
@@ -467,7 +456,7 @@ auto HeaderOracle::best_hashes(
     return output;
 }
 
-auto HeaderOracle::blank_hash() const noexcept -> const block::Hash&
+auto HeaderOracle::blank_hash() noexcept -> const block::Hash&
 {
     static const auto blank = block::Hash{};
 
@@ -509,7 +498,7 @@ auto HeaderOracle::calculate_reorg(const Lock& lock, const block::Position& tip)
         const auto& child = *output.crbegin();
         const auto pHeader = database_.TryLoadHeader(child.second);
 
-        if (false == bool(pHeader)) {
+        if (!pHeader) {
             throw std::runtime_error("Failed to load block header");
         }
 
@@ -543,7 +532,7 @@ auto HeaderOracle::choose_candidate(
         for (const auto& candidate : candidates) {
             if (candidate.blacklisted_) { continue; }
 
-            OT_ASSERT(0 < candidate.chain_.size());
+            OT_ASSERT(!candidate.chain_.empty());
 
             const auto& position = *candidate.chain_.crbegin();
             const auto& tip = update.Header(position.second);
@@ -556,7 +545,7 @@ auto HeaderOracle::choose_candidate(
         const auto& best = *pBest;
 
         for (const auto& candidate : candidates) {
-            OT_ASSERT(0 < candidate.chain_.size());
+            OT_ASSERT(!candidate.chain_.empty());
 
             const auto& position = *candidate.chain_.crbegin();
             const auto& tip = update.Header(position.second);
@@ -568,7 +557,7 @@ auto HeaderOracle::choose_candidate(
                 for (const auto& segment : candidate.chain_) {
                     const auto& [height, hash] = segment;
 
-                    if ((height <= current.Height()) && (false == reorg)) {
+                    if ((height <= current.Height()) && !reorg) {
                         if (hash == update.EffectiveBestBlock(height)) {
                             continue;
                         } else {
@@ -631,7 +620,7 @@ auto HeaderOracle::common_parent(
     auto test{position};
     auto pHeader = database.TryLoadHeader(test.second);
 
-    if (false == bool(pHeader)) { return output; }
+    if (!pHeader) { return output; }
 
     while (0 < test.first) {
         if (is_in_best_chain(lock, test.second).first) {
@@ -666,9 +655,7 @@ auto HeaderOracle::connect_children(
 
     chain.emplace_back(parent.Position());
 
-    if (false == update.EffectiveHasDisconnectedChildren(parent.Hash())) {
-        return;
-    }
+    if (!update.EffectiveHasDisconnectedChildren(parent.Hash())) { return; }
 
     const auto disconnected = update.EffectiveDisconnectedHashes();
     const auto [first, last] = disconnected.equal_range(parent.Hash());
@@ -708,7 +695,7 @@ auto HeaderOracle::DeleteCheckpoint() noexcept -> bool
     auto lock = Lock{lock_};
     auto update = UpdateTransaction{api_, database_};
 
-    if (false == update.EffectiveCheckpoint()) {
+    if (!update.EffectiveCheckpoint()) {
         LogError()(OT_PRETTY_CLASS())("No checkpoint").Flush();
 
         return false;
@@ -737,32 +724,20 @@ auto HeaderOracle::GetDefaultCheckpoint() const noexcept -> CheckpointData
 {
     const auto& checkpoint = params::Chains().at(chain_).checkpoint_;
 
+    auto blockHash = block::Hash{};
+    auto rc = blockHash.DecodeHex(checkpoint.block_hash_);
+    OT_ASSERT(rc);
+
+    auto previousHash = block::Hash{};
+    rc = previousHash.DecodeHex(checkpoint.previous_block_hash_);
+    OT_ASSERT(rc);
+
+    auto filterHeader = cfilter::Header{};
+    rc = filterHeader.DecodeHex(checkpoint.filter_header_);
+    OT_ASSERT(rc);
+
     return CheckpointData{
-        checkpoint.height_,
-        [&] {
-            auto out = block::Hash{};
-            const auto rc = out.DecodeHex(checkpoint.block_hash_);
-
-            OT_ASSERT(rc);
-
-            return out;
-        }(),
-        [&] {
-            auto out = block::Hash{};
-            const auto rc = out.DecodeHex(checkpoint.previous_block_hash_);
-
-            OT_ASSERT(rc);
-
-            return out;
-        }(),
-        [&] {
-            auto out = cfilter::Header{};
-            const auto rc = out.DecodeHex(checkpoint.filter_header_);
-
-            OT_ASSERT(rc);
-
-            return out;
-        }()};
+        checkpoint.height_, blockHash, previousHash, filterHeader};
 }
 
 auto HeaderOracle::GetCheckpoint() const noexcept -> block::Position
@@ -865,9 +840,9 @@ auto HeaderOracle::initialize_candidate(
         position = grandparent->Position();
     }
 
-    if (0 == chain.size()) { chain.emplace_back(position); }
+    if (chain.empty()) { chain.emplace_back(position); }
 
-    OT_ASSERT(0 < chain.size());
+    OT_ASSERT(!chain.empty());
 
     return output;
 }
@@ -893,14 +868,8 @@ auto HeaderOracle::is_disconnected(
 {
     try {
         const auto& header = update.Stage(parent);
+        return header.Internal().IsDisconnected() ? nullptr : &header;
 
-        if (header.Internal().IsDisconnected()) {
-
-            return nullptr;
-        } else {
-
-            return &header;
-        }
     } catch (...) {
 
         return nullptr;
@@ -912,7 +881,7 @@ auto HeaderOracle::is_in_best_chain(const Lock& lock, const block::Hash& hash)
 {
     const auto pHeader = database_.TryLoadHeader(hash);
 
-    if (false == bool(pHeader)) { return {false, -1}; }
+    if (!pHeader) { return {false, -1}; }
 
     const auto& header = *pHeader;
 
@@ -963,34 +932,25 @@ auto HeaderOracle::ProcessSyncData(
     try {
         const auto& blocks = data.Blocks();
 
-        if (0u == blocks.size()) {
-            std::runtime_error{"No blocks in sync data"};
+        if (blocks.empty()) {
+            throw std::runtime_error{"No blocks in sync data"};
         }
 
         auto lock = Lock{lock_};
-        auto previous = [&]() -> block::Hash {
-            const auto& first = blocks.front();
-            const auto height = first.Height();
+        block::Hash previous{};
+        const auto height = blocks.front().Height();
+        if (0 < height) {
+            const auto rc = prior.Assign(database_.BestBlock(height - 1));
+            OT_ASSERT(rc);
 
-            if (0 >= height) {
-
-                return block::Hash{};
-            } else {
-                const auto rc = prior.Assign(database_.BestBlock(height - 1));
-
-                OT_ASSERT(rc);
-
-                return prior;
-            }
-        }();
+            previous = prior;
+        }
 
         for (const auto& block : blocks) {
             auto pHeader = factory::BitcoinBlockHeader(
                 api_, block.Chain(), block.Header());
 
-            if (false == bool(pHeader)) {
-                throw std::runtime_error{"Invalid header"};
-            }
+            if (!pHeader) { throw std::runtime_error{"Invalid header"}; }
 
             const auto& header = *pHeader;
 
@@ -1000,8 +960,8 @@ auto HeaderOracle::ProcessSyncData(
 
             auto hash = block::Hash{header.Hash()};
 
-            if (false == is_in_best_chain(lock, hash).first) {
-                if (false == add_header(lock, update, std::move(pHeader))) {
+            if (!is_in_best_chain(lock, hash).first) {
+                if (!add_header(lock, update, std::move(pHeader))) {
                     throw std::runtime_error{"Failed to process header"};
                 }
             }

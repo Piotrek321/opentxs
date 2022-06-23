@@ -32,14 +32,11 @@ auto HeaderOracle::GenesisBlockHash(const blockchain::Type type)
         }
 
         const auto& data = params::Chains().at(type);
-        const auto [it, added] = cache.emplace(type, [&] {
-            auto out = block::Hash();
-            const auto rc = out.DecodeHex(data.genesis_hash_hex_);
+        block::Hash hash{};
+        const auto rc = hash.DecodeHex(data.genesis_hash_hex_);
+        OT_ASSERT(rc);
 
-            OT_ASSERT(rc);
-
-            return out;
-        }());
+        const auto [it, added] = cache.emplace(type, hash);
 
         return it->second;
     } catch (...) {

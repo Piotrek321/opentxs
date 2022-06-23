@@ -140,7 +140,6 @@ private:
     AccountMap accounts_;
     std::optional<StateSequence> startup_reorg_;
 
-    auto do_reorg() noexcept -> void;
     template <typename Callback>
     auto for_each(const Callback& cb) noexcept -> void
     {

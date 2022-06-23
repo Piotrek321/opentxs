@@ -11,7 +11,6 @@
 
 #include <boost/smart_ptr/make_shared.hpp>
 #include <chrono>
-#include <exception>
 #include <string_view>
 #include <utility>
 
@@ -26,12 +25,8 @@
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Endpoints.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
@@ -41,19 +36,12 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
-#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -195,7 +183,7 @@ auto Account::Imp::ChangeState(const State state, StateSequence reorg) noexcept
         }
     }
 
-    if (false == output) {
+    if (!output) {
         LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
             print(state_))(" to ")(print(state))
             .Flush();
@@ -550,7 +538,7 @@ auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> bool
         };
         for_each(cb);
 
-        if (false == success) { return false; }
+        if (!success) { return false; }
 
         reorgs_.emplace(id);
         disable_automatic_processing_ = true;
@@ -572,11 +560,6 @@ auto Account::Imp::transition_state_shutdown() noexcept -> bool
     signal_shutdown();
 
     return true;
-}
-
-auto Account::Imp::VerifyState(const State state) const noexcept -> void
-{
-    OT_ASSERT(state == state_);
 }
 
 auto Account::Imp::work() noexcept -> bool { return false; }
@@ -637,11 +620,6 @@ auto Account::ChangeState(const State state, StateSequence reorg) noexcept
     -> bool
 {
     return imp_->ChangeState(state, reorg);
-}
-
-auto Account::VerifyState(const State state) const noexcept -> void
-{
-    imp_->VerifyState(state);
 }
 
 Account::~Account()

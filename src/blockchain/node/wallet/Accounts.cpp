@@ -12,50 +12,38 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <atomic>
 #include <chrono>
-#include <cstddef>
 #include <mutex>
 #include <stdexcept>
 #include <string_view>
-#include <type_traits>
 #include <utility>
 
-#include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Wallet.hpp"
 #include "internal/blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/wallet/Account.hpp"
-#include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Endpoints.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/LMDB.hpp"
 #include "util/Work.hpp"
@@ -180,16 +168,14 @@ auto Accounts::Imp::do_startup() noexcept -> void
         log_(OT_PRETTY_CLASS())(name_)(" last wallet position is stale")
             .Flush();
         startup_reorg_.emplace(++reorg_counter_);
-        pipeline_.Push([&](const auto& ancestor, const auto& tip) {
-            auto out = MakeWork(Work::reorg);
-            out.AddFrame(chain_);
-            out.AddFrame(ancestor.second);
-            out.AddFrame(ancestor.first);
-            out.AddFrame(tip.second);
-            out.AddFrame(tip.first);
 
-            return out;
-        }(parent, best));
+        auto work = MakeWork(Work::reorg);
+        work.AddFrame(chain_);
+        work.AddFrame(parent.second);
+        work.AddFrame(parent.first);
+        work.AddFrame(best.second);
+        work.AddFrame(best.first);
+        pipeline_.Push(std::move(work));
     }
 }
 
@@ -210,9 +196,9 @@ auto Accounts::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 
 auto Accounts::Imp::process_block_header(Message&& in) noexcept -> void
 {
-    if (startup_reorg_.has_value()) { defer(std::move(in)); }
-
     const auto body = in.Body();
+
+    if (startup_reorg_.has_value()) { defer(std::move(in)); }
 
     if (3 >= body.size()) {
         LogError()(OT_PRETTY_CLASS())(name_)(": invalid message").Flush();
@@ -296,7 +282,7 @@ auto Accounts::Imp::process_reorg(
     const block::Position& ancestor,
     const block::Position& tip) noexcept -> void
 {
-    if (false == transition_state_reorg()) {
+    if (!transition_state_reorg()) {
         LogError()(OT_PRETTY_CLASS())(
             name_)(" failed to transaction to reorg state (possibly due to "
                    "startup condition")
@@ -315,12 +301,12 @@ auto Accounts::Imp::process_reorg(
             a.second.ProcessReorg(lock, tx, errors, ancestor);
         });
 
-        if (false == db_.FinalizeReorg(tx, ancestor)) { ++errors; }
+        if (!db_.FinalizeReorg(tx, ancestor)) { ++errors; }
 
         try {
             if (0 < errors) { throw std::runtime_error{"Prepare step failed"}; }
 
-            if (false == tx.Finalize(true)) {
+            if (!tx.Finalize(true)) {
 
                 throw std::runtime_error{"Finalize transaction failed"};
             }
@@ -332,7 +318,7 @@ auto Accounts::Imp::process_reorg(
     }
 
     try {
-        if (false == db_.AdvanceTo(tip)) {
+        if (!db_.AdvanceTo(tip)) {
 
             throw std::runtime_error{"Advance chain failed"};
         }
@@ -407,24 +393,15 @@ auto Accounts::Imp::state_normal(const Work work, Message&& msg) noexcept
 
 auto Accounts::Imp::transition_state_reorg() noexcept -> bool
 {
-    const auto id = [this] {
-        if (startup_reorg_.has_value()) {
+    const auto id =
+        startup_reorg_.has_value() ? startup_reorg_.value() : ++reorg_counter_;
 
-            return startup_reorg_.value();
-        } else {
-
-            return ++reorg_counter_;
-        }
-    }();
     log_(OT_PRETTY_CLASS())(name_)(": processing reorg ")(id).Flush();
 
-    if (false == startup_reorg_.has_value()) {
-        to_children_.SendDeferred([=] {
-            auto out = MakeWork(AccountJobs::prepare_reorg);
-            out.AddFrame(id);
-
-            return out;
-        }());
+    if (!startup_reorg_.has_value()) {
+        auto work = MakeWork(AccountJobs::prepare_reorg);
+        work.AddFrame(id);
+        to_children_.SendDeferred(std::move(work));
     }
 
     auto success{true};

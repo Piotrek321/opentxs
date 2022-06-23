@@ -62,7 +62,6 @@ public:
     [[nodiscard]] auto ChangeState(
         const State state,
         StateSequence reorg = {}) noexcept -> bool;
-    auto VerifyState(const State state) const noexcept -> void;
 
     auto ProcessReorg(
         const Lock& headerOracleLock,

@@ -14,7 +14,6 @@
 #include "core/Worker.hpp"
 #include "internal/blockchain/database/Wallet.hpp"
 #include "internal/blockchain/node/Factory.hpp"
-#include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/node/wallet/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -54,7 +53,7 @@ auto lock_for_reorg(
     auto lock = std::unique_lock<std::timed_mutex>{mutex, std::defer_lock};
     auto failures{-1};
 
-    while (false == lock.owns_lock()) {
+    while (!lock.owns_lock()) {
         if (++failures < 300) {
             lock.try_lock_for(997ms);
         } else {
@@ -206,9 +205,9 @@ auto Wallet::Init() noexcept -> void
     trigger();
 }
 
-auto Wallet::pipeline(network::zeromq::Message&& in) noexcept -> void
+auto Wallet::pipeline(network::zeromq::Message&& in) -> void
 {
-    if (false == running_.load()) { return; }
+    if (!running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -219,15 +218,7 @@ auto Wallet::pipeline(network::zeromq::Message&& in) noexcept -> void
         OT_FAIL;
     }
 
-    const auto work = [&] {
-        try {
-
-            return body.at(0).as<Work>();
-        } catch (...) {
-
-            OT_FAIL;
-        }
-    }();
+    const auto work = body.at(0).as<Work>();
     const auto start = Clock::now();
 
     switch (work) {
@@ -273,7 +264,7 @@ auto Wallet::StartRescan() const noexcept -> bool
 
 auto Wallet::state_machine() noexcept -> bool
 {
-    if (false == running_.load()) { return false; }
+    if (!running_.load()) { return false; }
 
     return proposals_.Run();
 }

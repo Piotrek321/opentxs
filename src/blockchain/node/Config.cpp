@@ -14,11 +14,7 @@ namespace opentxs::blockchain::node::internal
 auto Config::print() const noexcept -> UnallocatedCString
 {
     constexpr auto print_bool = [](const bool in) {
-        if (in) {
-            return "true";
-        } else {
-            return "false";
-        }
+        return in ? "true" : "false";
     };
 
     auto output = std::stringstream{};

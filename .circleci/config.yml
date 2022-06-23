@@ -5,8 +5,9 @@ parameters:
     default: "14"
     type: string
   docker-image-ci-tag:
-    default: "9"
+    default: "35-1"
     type: string
+
 
 executors:
   host_executor:
@@ -73,7 +74,10 @@ jobs:
       - run:
           name: "build"
           command: |
-            docker run --mount type=bind,src=/home/circleci/project,dst=/home/src --mount type=bind,src=/home/circleci/opentxs-for-android/<<parameters.arch>>,dst=/home/output -i <<parameters.docker-image>> <<parameters.arch>> all
+            docker run \
+              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
+              --mount type=bind,src=/home/circleci/opentxs-for-android/<<parameters.arch>>,dst=/home/output \
+              -i <<parameters.docker-image>> <<parameters.arch>> all
   build-linux:
     parameters:
       docker-image:
@@ -90,7 +94,11 @@ jobs:
       - run:
           name: "build"
           command: |
-            docker run --mount type=bind,src=/home/circleci/project,dst=/home/src --mount type=bind,src=/tmp/opentxs,dst=/home/output -i --entrypoint /usr/bin/build-opentxs-<<parameters.compiler>> <<parameters.docker-image>> <<parameters.flavor>> 
+            docker run \
+              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
+              --mount type=bind,src=/tmp/opentxs,dst=/home/output \
+              -i --entrypoint /usr/bin/build-opentxs-<<parameters.compiler>>.sh \
+              <<parameters.docker-image>> <<parameters.flavor>> 
       - run:
           name: "persist task identifier (CI debugging)"
           command: |
@@ -124,7 +132,10 @@ jobs:
       - run:
           name: "test"
           command: |
-            docker run --mount type=bind,src=/home/circleci/project,dst=/home/src --mount type=bind,src=/tmp/opentxs,dst=/home/output -i --entrypoint /usr/bin/test-opentxs <<parameters.docker-image>> "<<parameters.ctest-params>>"
+            docker run \
+              --mount type=bind,src=/home/circleci/project,dst=/home/src,readonly \
+              --mount type=bind,src=/tmp/opentxs,dst=/home/output \
+              -i --entrypoint /usr/bin/test-opentxs.sh <<parameters.docker-image>> "<<parameters.ctest-params>>"
 
 workflows:
   opentxs-android:
@@ -138,14 +149,14 @@ workflows:
     jobs:
       - build-linux:
           name: build-linux-<<matrix.compiler>>-<<matrix.flavor>>
-          docker-image: opentransactions/ci:<<pipeline.parameters.docker-image-ci-tag>>
+          docker-image: polishcode/matterfi-ci-fedora:<<pipeline.parameters.docker-image-ci-tag>>
           matrix:
             parameters:
               compiler: [gcc, clang]
               flavor: [test01, test02, test03, test04, test05, test06, test07, test08, nopch, full]
       - test-linux:
           name: test-linux-<<matrix.compiler>>-<<matrix.flavor>>
-          docker-image: opentransactions/ci:<<pipeline.parameters.docker-image-ci-tag>>
+          docker-image: polishcode/matterfi-ci-fedora:<<pipeline.parameters.docker-image-ci-tag>>
           #currently (2022-04-25) failing tests:
             # ottest-blockchain-regtest-basic
             # ottest-blockchain-regtest-reorg

@@ -112,7 +112,7 @@ protected:
     WalletDescription core_wallet_;
     std::map<std::string, WalletDescription> auxiliary_wallets_;
 
-    void SetUp() override;
+    virtual void SetUp() override;
 
     auto CreateNym(
         const ot::api::session::Client& api,
@@ -244,7 +244,8 @@ class Regtest_fixture_round_robin : public Regtest_fixture_simple
 {
 public:
     int instance_ = 2;
-    void SetUp() override;
+
+    virtual void SetUp() override;
 };
 
 }  // namespace ottest
