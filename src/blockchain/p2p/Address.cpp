@@ -19,7 +19,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainPeerAddress.pb.h"
@@ -61,7 +60,7 @@ auto BlockchainAddress(
 
 auto BlockchainAddress(
     const api::Session& api,
-    const proto::BlockchainPeerAddress serialized) noexcept
+    const proto::BlockchainPeerAddress& serialized) noexcept
     -> std::unique_ptr<blockchain::p2p::internal::Address>
 {
     try {

@@ -13,12 +13,10 @@
 #include "blockchain/p2p/peer/Peer.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
-#include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
 
@@ -106,14 +104,10 @@ struct ZMQConnectionManager : virtual public ConnectionManager {
         std::unique_ptr<SendPromise> promise) noexcept -> void final
     {
         OT_ASSERT(header_bytes_ <= header.size());
-
-        const auto sent = pipeline_.Send([&] {
-            auto out = network::zeromq::tagged_message(Task::P2P);
-            out.AddFrame(std::move(header));
-            out.AddFrame(std::move(payload));
-
-            return out;
-        }());
+        auto message = network::zeromq::tagged_message(Task::P2P);
+        message.AddFrame(std::move(header));
+        message.AddFrame(std::move(payload));
+        const auto sent = pipeline_.Send(std::move(message));
 
         try {
             if (promise) { promise->set_value(sent); }
@@ -166,12 +160,9 @@ struct ZMQIncomingConnectionManager final : public ZMQConnectionManager {
     }
     auto on_init(zmq::Message&&) noexcept -> void final
     {
-        pipeline_.Send([&] {
-            auto out = MakeWork(Task::Register);
-            out.AddFrame(id_);
-
-            return out;
-        }());
+        auto work = MakeWork(Task::Register);
+        work.AddFrame(id_);
+        pipeline_.Send(std::move(work));
     }
     auto on_register(zmq::Message&&) noexcept -> void final
     {

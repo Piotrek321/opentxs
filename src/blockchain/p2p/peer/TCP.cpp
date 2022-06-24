@@ -16,10 +16,8 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -75,7 +73,7 @@ struct TCPConnectionManager : virtual public ConnectionManager {
 
     auto connect() noexcept -> void override
     {
-        OT_ASSERT(0 < connection_id_.size());
+        OT_ASSERT(!connection_id_.empty());
 
         LogVerbose()(OT_PRETTY_CLASS())("Connecting to ")(endpoint_.str())
             .Flush();
@@ -106,16 +104,13 @@ struct TCPConnectionManager : virtual public ConnectionManager {
         auto body = message.Body();
 
         OT_ASSERT(1 < body.size());
+        zmq::Message msg{};
+        msg.StartBody();
+        msg.AddFrame(Task::P2P);
+        msg.AddFrame(header_);
+        msg.AddFrame(std::move(body.at(1)));
 
-        parent_.process_message([&] {
-            auto out = zmq::Message{};
-            out.StartBody();
-            out.AddFrame(Task::P2P);
-            out.AddFrame(header_);
-            out.AddFrame(std::move(body.at(1)));
-
-            return out;
-        }());
+        parent_.process_message(std::move(msg));
         run();
     }
     auto on_connect(zmq::Message&&) noexcept -> void final
@@ -139,26 +134,20 @@ struct TCPConnectionManager : virtual public ConnectionManager {
             header_->Assign(header.Bytes());
             receive(static_cast<OTZMQWorkType>(Task::Body), size);
         } else {
-            parent_.process_message([&] {
-                auto out = zmq::Message{};
-                out.StartBody();
-                out.AddFrame(Task::P2P);
-                out.AddFrame(std::move(header));
-                out.AddFrame();
-
-                return out;
-            }());
+            zmq::Message msg{};
+            msg.StartBody();
+            msg.AddFrame(Task::P2P);
+            msg.AddFrame(std::move(header));
+            msg.AddFrame();
+            parent_.process_message(std::move(msg));
             run();
         }
     }
     auto on_init(zmq::Message&&) noexcept -> void final
     {
-        pipeline_.Send([&] {
-            auto out = MakeWork(WorkType::AsioRegister);
-            out.AddFrame(id_);
-
-            return out;
-        }());
+        auto work = MakeWork(WorkType::AsioRegister);
+        work.AddFrame(id_);
+        pipeline_.Send(std::move(work));
     }
     auto on_register(zmq::Message&& message) noexcept -> void final
     {
@@ -173,7 +162,7 @@ struct TCPConnectionManager : virtual public ConnectionManager {
         const auto start = static_cast<const std::byte*>(id.data());
         const_cast<Space&>(connection_id_).assign(start, start + id.size());
 
-        OT_ASSERT(0 < connection_id_.size());
+        OT_ASSERT(!connection_id_.empty());
 
         try {
             connection_id_promise_.set_value();

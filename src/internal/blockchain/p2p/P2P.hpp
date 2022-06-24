@@ -69,6 +69,6 @@ auto BlockchainAddress(
     -> std::unique_ptr<blockchain::p2p::internal::Address>;
 auto BlockchainAddress(
     const api::Session& api,
-    const proto::BlockchainPeerAddress serialized) noexcept
+    const proto::BlockchainPeerAddress& serialized) noexcept
     -> std::unique_ptr<blockchain::p2p::internal::Address>;
 }  // namespace opentxs::factory
