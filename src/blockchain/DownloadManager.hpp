@@ -83,49 +83,48 @@ protected:
 
         OT_ASSERT(0 < buffer_.size());
 
-        const auto size = [&] {
+        std::size_t size{};
+        {
             const auto unallocated = this->unallocated(lock);
-            const auto batch = downcast().batch_size(unallocated);
-
-            return std::min<std::size_t>(unallocated, batch);
-        }();
+            const auto batchSize = downcast().batch_size(unallocated);
+            size = std::min<std::size_t>(unallocated, batchSize);
+        }
 
         LogTrace()(OT_PRETTY_CLASS())(size)(" ")(log_)(" items to download")
             .Flush();
 
         if (0 == size) { return {}; }
 
-        auto output = BatchType{
-            ++last_batch_,
-            [&] {
-                auto output = typename BatchType::Vector{};
-                auto i = buffer_.begin();
-                std::advance(i, next_);
+        typename BatchType::Vector tasks{};
+        {
+            auto i = buffer_.begin();
+            std::advance(i, next_);
 
-                for (; i != buffer_.end(); ++i) {
-                    const auto& task = *i;
+            for (; i != buffer_.end(); ++i) {
+                const auto& task = *i;
 
-                    if (auto expected{State::New};
-                        false == task->state_.compare_exchange_strong(
-                                     expected, State::Downloading)) {
-                        if (0 == output.size()) {
-                            continue;
-                        } else {
-                            break;
-                        }
+                if (auto expected{State::New};
+                    false == task->state_.compare_exchange_strong(
+                                 expected, State::Downloading)) {
+                    if (0 == tasks.size()) {
+                        continue;
+                    } else {
+                        break;
                     }
-
-                    LogTrace()(OT_PRETTY_CLASS())("queueing ")(
-                        log_)(" item at height ")(task->position_.first)(
-                        " for download")
-                        .Flush();
-                    output.emplace_back(task);
-
-                    if (output.size() == size) { break; }
                 }
 
-                return output;
-            }(),
+                LogTrace()(OT_PRETTY_CLASS())("queueing ")(
+                    log_)(" item at height ")(task->position_.first)(
+                    " for download")
+                    .Flush();
+                tasks.emplace_back(task);
+
+                if (tasks.size() == size) { break; }
+            }
+        }
+        auto output = BatchType{
+            ++last_batch_,
+            std::move(tasks),
             [=](const auto& batch) { finish_downloading(batch); },
             std::move(extra)};
 
@@ -156,7 +155,7 @@ protected:
         ExtraData extra,
         Previous prior = std::nullopt) noexcept
     {
-        if (0 == positions.size()) { return; }
+        if (positions.empty()) { return; }
 
         if (prior) { OT_ASSERT(prior->first.first <= positions.front().first); }
 
@@ -186,28 +185,25 @@ protected:
                 {
                     using Data = std::tuple<Position, Finished, std::size_t>;
 
-                    auto data = [&]() -> Data {
-                        if (0 <= next) {
-                            OT_ASSERT(lastGoodTask);
+                    Data data{};
 
-                            const auto& task = *lastGoodTask;
+                    if (0 <= next) {
+                        OT_ASSERT(lastGoodTask);
+                        const auto& task = *lastGoodTask;
+                        data = {
+                            task.position_,
+                            task.output_,
+                            static_cast<std::size_t>(next)};
+                    } else {
+                        OT_ASSERT(prior.has_value());
+                        OT_ASSERT(0 == buffer_.size());
 
-                            return {
-                                task.position_,
-                                task.output_,
-                                static_cast<std::size_t>(next)};
-                        } else {
-                            OT_ASSERT(prior.has_value());
-                            OT_ASSERT(0 == buffer_.size());
-
-                            auto previous = prior.value();
-
-                            return {
-                                std::move(previous.first),
-                                std::move(previous.second),
-                                0};
-                        }
-                    }();
+                        auto previous = prior.value();
+                        data = {
+                            std::move(previous.first),
+                            std::move(previous.second),
+                            0};
+                    }
 
                     auto& [position, finished, index] = data;
 
@@ -267,17 +263,6 @@ protected:
     ~Manager() = default;
 
 private:
-    struct BatchData {
-        Position first_;
-        Position last_;
-
-        BatchData(Position first, Position last) noexcept
-            : first_(std::move(first))
-            , last_(std::move(last))
-        {
-        }
-    };
-
     using TaskPtr = std::shared_ptr<TaskType>;
     using Buffer = UnallocatedDeque<TaskPtr>;
     using BatchID = typename BatchType::ID;

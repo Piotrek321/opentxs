@@ -61,8 +61,8 @@ auto parse_pkt_block(
 
         auto proofCS = network::blockchain::bitcoin::CompactSize{};
 
-        if (false == network::blockchain::bitcoin::DecodeSize(
-                         it, expectedSize, in.size(), proofCS)) {
+        if (!network::blockchain::bitcoin::DecodeSize(
+                it, expectedSize, in.size(), proofCS)) {
             throw std::runtime_error("Failed to decode proof size");
         }
 
@@ -125,7 +125,7 @@ Block::Block(
 
 auto Block::extra_bytes() const noexcept -> std::size_t
 {
-    if (false == proof_bytes_.has_value()) {
+    if (!proof_bytes_.has_value()) {
         auto cb = [](const auto& previous, const auto& in) -> std::size_t {
             const auto& [type, proof] = in;
             const auto cs =
@@ -162,7 +162,7 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
 
         const auto cs = network::blockchain::bitcoin::CompactSize{proof.size()};
 
-        if (false == cs.Encode(preallocated(remaining, it))) {
+        if (!cs.Encode(preallocated(remaining, it))) {
             LogError()(OT_PRETTY_CLASS())("Failed to serialize proof size")
                 .Flush();
 

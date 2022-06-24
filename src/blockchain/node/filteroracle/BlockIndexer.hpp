@@ -116,7 +116,6 @@ public:
         database::Cfilter& db,
         const HeaderOracle& header,
         const internal::BlockOracle& block,
-        const internal::Manager& node,
         FilterOracle& parent,
         const blockchain::Type chain,
         const cfilter::Type type,
@@ -138,7 +137,6 @@ private:
     database::Cfilter& db_;
     const HeaderOracle& header_;
     const internal::BlockOracle& block_;
-    const internal::Manager& node_;
     FilterOracle& parent_;
     const blockchain::Type chain_;
     const cfilter::Type type_;

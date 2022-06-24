@@ -44,7 +44,8 @@ auto print(SendResult code) noexcept -> std::string_view
             {Code::Sent, "successfully broadcast transaction"sv},
         };
 
-    if (map.count(code)) return map.at(code);
+    if (const auto iter = map.find(code); iter != map.end())
+        return iter->second;
 
     return "unspecified error"sv;
 }
@@ -67,7 +68,7 @@ auto print(TxoState in) noexcept -> std::string_view
             {Type::Immature, "newly generated"sv},
         };
 
-    if (map.count(in)) return map.at(in);
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
 
     return {};
 }
@@ -82,7 +83,7 @@ auto print(TxoTag in) noexcept -> std::string_view
             {Type::Generation, "generated"sv},
         };
 
-    if (map.count(in)) return map.at(in);
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
 
     return {};
 }

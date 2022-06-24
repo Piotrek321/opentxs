@@ -93,7 +93,7 @@ namespace opentxs::blockchain::internal
 class BitReader
 {
 public:
-    auto eof() -> bool;
+    auto eof() const -> bool;
     auto read(std::size_t nbits) -> std::uint64_t;
 
     BitReader(const Vector<std::byte>& data);

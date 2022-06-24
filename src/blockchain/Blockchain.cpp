@@ -8,11 +8,9 @@
 #include "internal/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 
 #include <boost/container/flat_map.hpp>
-#include <boost/multiprecision/cpp_int.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
-#include <iterator>
 #include <limits>
 #include <stdexcept>
 #include <string_view>
@@ -26,18 +24,13 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
-#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
 {
@@ -45,8 +38,6 @@ constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
 
     return (one << n) - one;
 }
-
-namespace bmp = boost::multiprecision;
 
 namespace opentxs::blockchain
 {
@@ -83,7 +74,7 @@ BitReader::BitReader(const Vector<std::byte>& data)
 {
 }
 
-auto BitReader::eof() -> bool { return (len_ == 0u && n_ == 0u); }
+auto BitReader::eof() const -> bool { return (len_ == 0u && n_ == 0u); }
 
 auto BitReader::read(std::size_t nbits) -> std::uint64_t
 {
@@ -317,7 +308,7 @@ auto DecodeSerializedCfilter(const ReadView bytes) noexcept(false)
     const auto haveElementCount = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, bytes.size(), elementCount, csBytes);
 
-    if (false == haveElementCount) {
+    if (!haveElementCount) {
         throw std::runtime_error("Failed to decode CompactSize");
     }
 
@@ -338,12 +329,11 @@ auto DecodeSerializedCfilter(const ReadView bytes) noexcept(false)
 
 auto DefaultFilter(const Type type) noexcept -> cfilter::Type
 {
-    try {
+    if (const auto iter = params::Chains().find(type);
+        iter != params::Chains().end())
+        return iter->second.default_filter_type_;
 
-        return params::Chains().at(type).default_filter_type_;
-    } catch (...) {
-        return cfilter::Type::Unknown;
-    }
+    return cfilter::Type::Unknown;
 }
 
 auto Deserialize(const Type chain, const std::uint8_t type) noexcept
@@ -379,7 +369,7 @@ auto Deserialize(const api::Session& api, const ReadView in) noexcept
         std::advance(it, sizeof(output.first));
         auto bytes = output.second.WriteInto()(size);
 
-        if (false == bytes.valid(size)) { return output; }
+        if (!bytes.valid(size)) { return output; }
 
         std::memcpy(bytes, it, bytes);
     }
@@ -396,7 +386,7 @@ auto FilterHashToHeader(
     auto preimage = api.Factory().DataFromBytes(hash);
     auto output = cfilter::Header{};
 
-    if (0u == previous.size()) {
+    if (previous.empty()) {
         preimage->Concatenate(blank.data(), blank.size());
     } else {
         preimage->Concatenate(previous.data(), previous.size());
@@ -496,13 +486,11 @@ const UnallocatedMap<Service, UnallocatedCString> service_name_map_{
 
 auto DisplayService(const Service service) noexcept -> UnallocatedCString
 {
-    try {
+    if (const auto iter = service_name_map_.find(service);
+        iter != service_name_map_.end())
+        return iter->second;
 
-        return service_name_map_.at(service);
-    } catch (...) {
-
-        return {};
-    }
+    return {};
 }
 }  // namespace opentxs::blockchain::p2p
 #undef BITMASK

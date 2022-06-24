@@ -158,7 +158,6 @@ FilterOracle::FilterOracle(
                 database_,
                 header_,
                 block,
-                node_,
                 *this,
                 chain,
                 default_type_,
