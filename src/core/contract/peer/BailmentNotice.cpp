@@ -8,7 +8,6 @@
 #include "core/contract/peer/BailmentNotice.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <stdexcept>
 #include <utility>
 
 #include "Proto.hpp"
@@ -26,9 +25,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/PendingBailment.pb.h"
 
 namespace opentxs
 {
@@ -56,7 +53,7 @@ auto Factory::BailmentNotice(
 
         auto& reply = *output;
 
-        if (false == ParentType::Finish(reply, reason)) { return {}; }
+        if (!ParentType::Finish(reply, reason)) { return {}; }
 
         return std::move(output);
     } catch (const std::exception& e) {
@@ -74,7 +71,7 @@ auto Factory::BailmentNotice(
 {
     using ReturnType = contract::peer::request::implementation::BailmentNotice;
 
-    if (false == proto::Validate(serialized, VERBOSE)) {
+    if (!proto::Validate(serialized, VERBOSE)) {
         LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
             .Flush();
@@ -87,7 +84,7 @@ auto Factory::BailmentNotice(
         auto& contract = *output;
         Lock lock(contract.lock_);
 
-        if (false == contract.validate(lock)) {
+        if (!contract.validate(lock)) {
             LogError()("opentxs::Factory::")(__func__)(": Invalid request.")
                 .Flush();
 

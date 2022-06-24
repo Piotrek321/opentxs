@@ -72,7 +72,7 @@ protected:
 
     auto clear_signatures(const Lock& lock) noexcept -> void;
     virtual auto first_time_init(const Lock& lock) noexcept(false) -> void;
-    virtual auto init_serialized(const Lock& lock) noexcept(false) -> void;
+    auto init_serialized(const Lock& lock) noexcept(false) -> void;
     virtual auto update_signature(
         const Lock& lock,
         const PasswordPrompt& reason) -> bool;

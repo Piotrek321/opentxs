@@ -37,11 +37,11 @@ namespace opentxs
 {
 auto BlockchainToUnit(const blockchain::Type type) noexcept -> UnitType
 {
-    try {
-        return blockchain::params::Chains().at(type).itemtype_;
-    } catch (...) {
-        return UnitType::Unknown;
-    }
+    if (const auto iter = blockchain::params::Chains().find(type);
+        iter != blockchain::params::Chains().end())
+        return iter->second.itemtype_;
+
+    return UnitType::Unknown;
 }
 
 auto UnitToBlockchain(const UnitType type) noexcept -> blockchain::Type
@@ -60,11 +60,10 @@ auto UnitToBlockchain(const UnitType type) noexcept -> blockchain::Type
     };
     static const auto map{build()};
 
-    try {
-        return map.at(type);
-    } catch (...) {
-        return blockchain::Type::Unknown;
-    }
+    if (const auto iter = map.find(type); iter != map.end())
+        return iter->second;
+
+    return blockchain::Type::Unknown;
 }
 
 auto print(const blockchain::block::Position& in) noexcept -> UnallocatedCString
@@ -157,24 +156,20 @@ auto FilterHash(
 
 auto HasSegwit(const Type type) noexcept -> bool
 {
-    try {
+    if (const auto iter = blockchain::params::Chains().find(type);
+        iter != blockchain::params::Chains().end())
+        return iter->second.segwit_;
 
-        return params::Chains().at(type).segwit_;
-    } catch (...) {
-
-        return false;
-    }
+    return false;
 }
 
 auto IsTestnet(const Type type) noexcept -> bool
 {
-    try {
+    if (const auto iter = blockchain::params::Chains().find(type);
+        iter != blockchain::params::Chains().end())
+        return iter->second.testnet_;
 
-        return params::Chains().at(type).testnet_;
-    } catch (...) {
-
-        return false;
-    }
+    return false;
 }
 
 auto MerkleHash(

@@ -62,7 +62,7 @@ public:
     {
         auto expect{State::Downloading};
 
-        if (false == state_.compare_exchange_strong(expect, State::Update)) {
+        if (!state_.compare_exchange_strong(expect, State::Update)) {
             LogVerbose()(log_)(" download job ")(id_)(" for block ")(
                 print(position_))(" failed state check")
                 .Flush();
@@ -99,9 +99,7 @@ public:
     {
         auto expect{State::Processing};
 
-        if (false == state_.compare_exchange_strong(expect, State::Update)) {
-            return;
-        }
+        if (!state_.compare_exchange_strong(expect, State::Update)) { return; }
 
         try {
             process_.set_value(std::move(data));
@@ -121,9 +119,7 @@ public:
     {
         auto expect{State::Processing};
 
-        if (false == state_.compare_exchange_strong(expect, State::Update)) {
-            return;
-        }
+        if (!state_.compare_exchange_strong(expect, State::Update)) { return; }
 
         LogVerbose()("Redownloading ")(log_)(" job ")(id_)(" for block ")(
             print(position_))
@@ -150,9 +146,7 @@ public:
     {
         auto expect{State::Processing};
 
-        if (false == state_.compare_exchange_strong(expect, State::Update)) {
-            return;
-        }
+        if (!state_.compare_exchange_strong(expect, State::Update)) { return; }
 
         LogVerbose()("Redownloading ")(log_)(" job ")(id_)(" for block ")(
             print(position_))
@@ -177,7 +171,7 @@ public:
         , output_(process_.get_future())
         , previous_(std::move(previous))
         , id_(id())
-        , log_(std::move(log))
+        , log_(log)
     {
     }
 
@@ -218,7 +212,7 @@ public:
     const ExtraData extra_;
     mutable std::atomic<std::size_t> downloaded_;
 
-    operator bool() const noexcept { return 0 < data_.size(); }
+    explicit operator bool() const noexcept { return 0 < data_.size(); }
 
     auto Elapsed() const noexcept { return Clock::now() - last_activity_; }
     auto isDownloaded() const noexcept -> bool
