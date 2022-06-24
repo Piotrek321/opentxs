@@ -26,7 +26,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -38,7 +38,6 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Sodium.hpp"
 
 namespace std
@@ -145,7 +144,7 @@ auto hash<opentxs::crypto::Parameters>::operator()(
     static const auto key = opentxs::crypto::sodium::SiphashKey{};
     const auto preimage = rhs.Internal().Hash();
 
-    return opentxs::crypto::sodium::Siphash(key, preimage->Bytes());
+    return opentxs::crypto::sodium::Siphash(key, preimage.Bytes());
 }
 
 auto hash<opentxs::crypto::Seed>::operator()(
@@ -209,20 +208,20 @@ auto hash<opentxs::Amount>::operator()(
     return opentxs::crypto::sodium::Siphash(key, opentxs::reader(buffer));
 }
 
-auto hash<opentxs::FixedByteArray<32>>::operator()(
-    const opentxs::FixedByteArray<32>& data) const noexcept -> std::size_t
-{
-    static const auto hasher = hash<opentxs::OTData>{};
-
-    return hasher(data);
-}
-
-auto hash<opentxs::OTData>::operator()(const opentxs::Data& data) const noexcept
-    -> std::size_t
+auto hash<opentxs::ByteArray>::operator()(
+    const opentxs::ByteArray& data) const noexcept -> std::size_t
 {
     static const auto key = opentxs::crypto::sodium::SiphashKey{};
 
     return opentxs::crypto::sodium::Siphash(key, data.Bytes());
+}
+
+auto hash<opentxs::FixedByteArray<32>>::operator()(
+    const opentxs::FixedByteArray<32>& data) const noexcept -> std::size_t
+{
+    static const auto hasher = hash<opentxs::ByteArray>{};
+
+    return hasher(data);
 }
 
 auto hash<opentxs::OTIdentifier>::operator()(

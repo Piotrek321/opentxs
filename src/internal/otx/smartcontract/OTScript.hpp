@@ -66,7 +66,7 @@ public:
     explicit OTScript(const String& strValue);
     explicit OTScript(const char* new_string);
     explicit OTScript(const UnallocatedCString& new_string);
-    OTScript(const char* new_string, size_t sizeLength);
+    OTScript(const char* new_string, std::size_t sizeLength);
 
     virtual ~OTScript();
 
@@ -76,7 +76,7 @@ public:
         OTSmartContract& parent) noexcept -> void;
     void SetScript(const String& strValue);
     void SetScript(const char* new_string);
-    void SetScript(const char* new_string, size_t sizeLength);
+    void SetScript(const char* new_string, std::size_t sizeLength);
     void SetScript(const UnallocatedCString& new_string);
 
     void SetDisplayFilename(UnallocatedCString str_display_filename)

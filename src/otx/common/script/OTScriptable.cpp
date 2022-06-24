@@ -32,6 +32,7 @@
 #include "internal/otx/smartcontract/OTScript.hpp"
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
@@ -2225,7 +2226,7 @@ auto vectorToString(const UnallocatedVector<std::int64_t>& v)
 {
     std::stringstream ss;
 
-    for (size_t i = 0; i < v.size(); ++i) {
+    for (auto i = 0_uz; i < v.size(); ++i) {
         if (i != 0) { ss << " "; }
         ss << v[i];
     }

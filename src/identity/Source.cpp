@@ -19,7 +19,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -191,10 +191,10 @@ Source::Source(const Source& rhs) noexcept
 {
 }
 
-auto Source::asData() const -> OTData
+auto Source::asData() const -> ByteArray
 {
     auto serialized = proto::NymIDSource{};
-    if (false == Serialize(serialized)) { return OTData{nullptr}; }
+    if (false == Serialize(serialized)) { return ByteArray{nullptr}; }
 
     return factory_.InternalSession().Data(serialized);
 }
@@ -258,7 +258,7 @@ auto Source::NymID() const noexcept -> OTNymID
 
     switch (type_) {
         case identity::SourceType::PubKey: {
-            nymID->CalculateDigest(asData()->Bytes());
+            nymID->CalculateDigest(asData().Bytes());
 
         } break;
         case identity::SourceType::Bip47: {

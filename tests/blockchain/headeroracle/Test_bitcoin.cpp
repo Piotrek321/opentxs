@@ -20,12 +20,12 @@ TEST_F(Test_HeaderOracle_btc, stage_headers)
 {
     for (const auto& hex : bitcoin_) {
         const auto raw = [&] {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
 
             return out;
         }();
-        auto pHeader = api_.Factory().BlockHeader(type_, raw->Bytes());
+        auto pHeader = api_.Factory().BlockHeader(type_, raw.Bytes());
 
         ASSERT_TRUE(pHeader);
 

@@ -566,7 +566,7 @@ TEST_F(Test_Authority, Unlock_DefaultSetup_ShouldReturnProperData2)
 
 TEST_F(Test_Authority, TransportKey_DefaultSetup_ShouldReturnTrue)
 {
-    auto publicKey = ot::Data::Factory();
+    auto publicKey = ot::ByteArray{};
     EXPECT_TRUE(authority_->TransportKey(publicKey, words_, reason_));
 }
 
@@ -579,7 +579,7 @@ TEST_F(
 
 TEST_F(Test_Authority, Verify_DefaultSetup_ShouldReturnProperData)
 {
-    auto publicKey2 = ot::Data::Factory();
+    auto publicKey2 = ot::ByteArray{};
     ot::proto::Signature signature2;
     EXPECT_FALSE(authority_->Verify(
         publicKey2, signature2, opentxs::crypto::key::asymmetric::Role::Auth));
@@ -589,7 +589,7 @@ TEST_F(
     Test_Authority,
     Verify_WithCredentialsEqualToMasterCredID_ShouldReturnFalse)
 {
-    auto publicKey = ot::Data::Factory();
+    auto publicKey = ot::ByteArray{};
     ot::proto::Signature signature;
     *signature.mutable_credentialid() = authority_->GetMasterCredID()->str();
 
@@ -598,7 +598,7 @@ TEST_F(
 }
 TEST_F(Test_Authority, Verify_WithChildKeyCredential_ShouldReturnFalse)
 {
-    auto publicKey = ot::Data::Factory();
+    auto publicKey = ot::ByteArray{};
 
     ot::crypto::Parameters parameters{
         ot::crypto::ParameterType::ed25519,

@@ -21,6 +21,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
+#include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
@@ -59,13 +61,13 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
         const auto& hex = params::Chains().at(chain_).genesis_block_hex_;
         const auto data = api_.Factory().DataFromHex(hex);
 
-        if (data->empty()) {
+        if (data.empty()) {
             LogError()(OT_PRETTY_CLASS())("Invalid genesis hex").Flush();
 
             return {};
         }
 
-        return api_.Factory().BitcoinBlock(chain_, data->Bytes());
+        return api_.Factory().BitcoinBlock(chain_, data.Bytes());
     } else {
         const auto bytes = common_.BlockLoad(block);
 

@@ -19,9 +19,10 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -58,8 +59,8 @@ auto BitcoinP2PMerkleblock(
     std::memcpy(static_cast<void*>(&raw_item), it, sizeof(raw_item));
     it += sizeof(raw_item);
 
-    const auto block_header = Data::Factory(
-        raw_item.block_header_.data(), raw_item.block_header_.size());
+    const auto block_header =
+        ByteArray{raw_item.block_header_.data(), raw_item.block_header_.size()};
     const bitcoin::TxnCount txn_count = raw_item.txn_count_.value();
     // --------------------------------------------------------
     expectedSize += sizeof(std::byte);
@@ -82,7 +83,7 @@ auto BitcoinP2PMerkleblock(
         return nullptr;
     }
 
-    UnallocatedVector<OTData> hashes;
+    UnallocatedVector<ByteArray> hashes;
 
     if (hashCount > 0) {
         for (std::size_t ii = 0; ii < hashCount; ii++) {
@@ -97,7 +98,7 @@ auto BitcoinP2PMerkleblock(
             }
 
             hashes.push_back(
-                Data::Factory(it, sizeof(bitcoin::BlockHeaderHashField)));
+                ByteArray{it, sizeof(bitcoin::BlockHeaderHashField)});
             it += sizeof(bitcoin::BlockHeaderHashField);
         }
     }
@@ -158,7 +159,7 @@ auto BitcoinP2PMerkleblock(
     const blockchain::Type network,
     const Data& block_header,
     const std::uint32_t txn_count,
-    const UnallocatedVector<OTData>& hashes,
+    const UnallocatedVector<ByteArray>& hashes,
     const UnallocatedVector<std::byte>& flags)
     -> blockchain::p2p::bitcoin::message::Merkleblock*
 {
@@ -177,10 +178,10 @@ Merkleblock::Merkleblock(
     const blockchain::Type network,
     const Data& block_header,
     const TxnCount txn_count,
-    const UnallocatedVector<OTData>& hashes,
+    const UnallocatedVector<ByteArray>& hashes,
     const UnallocatedVector<std::byte>& flags) noexcept
     : Message(api, network, bitcoin::Command::merkleblock)
-    , block_header_(Data::Factory(block_header))
+    , block_header_(block_header)
     , txn_count_(txn_count)
     , hashes_(hashes)
     , flags_(flags)
@@ -195,10 +196,10 @@ Merkleblock::Merkleblock(
     std::unique_ptr<Header> header,
     const Data& block_header,
     const TxnCount txn_count,
-    const UnallocatedVector<OTData>& hashes,
+    const UnallocatedVector<ByteArray>& hashes,
     const UnallocatedVector<std::byte>& flags) noexcept(false)
     : Message(api, std::move(header))
-    , block_header_(Data::Factory(block_header))
+    , block_header_(block_header)
     , txn_count_(txn_count)
     , hashes_(hashes)
     , flags_(flags)
@@ -249,7 +250,7 @@ auto Merkleblock::payload(AllocateOutput out) const noexcept -> bool
         std::advance(i, cs1.size());
 
         for (const auto& hash : hashes_) {
-            std::memcpy(i, hash->data(), standard_hash_size_);
+            std::memcpy(i, hash.data(), standard_hash_size_);
             std::advance(i, standard_hash_size_);
         }
 

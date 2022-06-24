@@ -100,6 +100,7 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 
+class ByteArray;
 class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
@@ -391,7 +392,7 @@ protected:
     using Outpoint = ot::blockchain::block::Outpoint;
     using Script = ot::blockchain::bitcoin::block::Script;
     using UTXO = ot::blockchain::node::Wallet::UTXO;
-    using Key = ot::OTData;
+    using Key = ot::ByteArray;
     using Amount = ot::Amount;
     using OutpointMetadata = std::tuple<Key, Amount, Pattern>;
     using Expected = ot::UnallocatedMap<Outpoint, OutpointMetadata>;

@@ -23,14 +23,15 @@ struct Bip158Vector {
     ot::UnallocatedCString filter_header_;
     ot::UnallocatedCString notes_;
 
-    auto Block(const ot::api::Session& api) const noexcept -> ot::OTData;
-    auto BlockHash(const ot::api::Session& api) const noexcept -> ot::OTData;
-    auto Filter(const ot::api::Session& api) const noexcept -> ot::OTData;
-    auto FilterHeader(const ot::api::Session& api) const noexcept -> ot::OTData;
+    auto Block(const ot::api::Session& api) const noexcept -> ot::ByteArray;
+    auto BlockHash(const ot::api::Session& api) const noexcept -> ot::ByteArray;
+    auto Filter(const ot::api::Session& api) const noexcept -> ot::ByteArray;
+    auto FilterHeader(const ot::api::Session& api) const noexcept
+        -> ot::ByteArray;
     auto PreviousFilterHeader(const ot::api::Session& api) const noexcept
-        -> ot::OTData;
+        -> ot::ByteArray;
     auto PreviousOutputs(const ot::api::Session& api) const noexcept
-        -> ot::UnallocatedVector<ot::OTData>;
+        -> ot::UnallocatedVector<ot::ByteArray>;
 };
 
 auto GetBchCfilter1307544() noexcept -> const std::array<std::uint8_t, 381319>&;
@@ -44,5 +45,5 @@ auto some_moron_wrote_the_bytes_backwards(const ot::UnallocatedCString& in)
 auto parse_hex(
     const ot::api::Session& api,
     const ot::UnallocatedCString& hex,
-    const bool reverse = false) noexcept -> ot::OTData;
+    const bool reverse = false) noexcept -> ot::ByteArray;
 }  // namespace ottest

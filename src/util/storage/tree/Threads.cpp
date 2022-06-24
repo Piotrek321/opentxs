@@ -23,6 +23,8 @@
 #include "internal/serialization/protobuf/verify/StorageBlockchainTransactions.hpp"
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -98,9 +100,9 @@ auto Threads::BlockchainThreadMap(const Data& txid) const noexcept
 }
 
 auto Threads::BlockchainTransactionList() const noexcept
-    -> UnallocatedVector<OTData>
+    -> UnallocatedVector<ByteArray>
 {
-    auto output = UnallocatedVector<OTData>{};
+    auto output = UnallocatedVector<ByteArray>{};
     Lock lock(blockchain_.lock_);
     std::transform(
         std::begin(blockchain_.map_),
@@ -211,10 +213,10 @@ void Threads::init(const UnallocatedCString& hash)
 
             OT_ASSERT(loaded && index);
 
-            auto txid = Data::Factory();
-            txid->Assign(index->txid());
+            auto txid = ByteArray{};
+            txid.Assign(index->txid());
 
-            OT_ASSERT(false == txid->empty());
+            OT_ASSERT(false == txid.empty());
 
             auto& data = blockchain_.map_[std::move(txid)];
 
@@ -444,7 +446,7 @@ auto Threads::serialize() const -> proto::StorageNymList
 
         auto index = proto::StorageBlockchainTransactions{};
         index.set_version(1);
-        index.set_txid(UnallocatedCString{txid->Bytes()});
+        index.set_txid(UnallocatedCString{txid.Bytes()});
         std::for_each(std::begin(data), std::end(data), [&](const auto& id) {
             OT_ASSERT(false == id->empty());
 

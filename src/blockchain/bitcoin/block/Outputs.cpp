@@ -23,6 +23,7 @@
 #include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"
 #include "opentxs/blockchain/bitcoin/block/Outputs.hpp"
+#include "opentxs/core/ByteArray.hpp"  // IWYU pragma: keep
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"

@@ -18,7 +18,6 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"

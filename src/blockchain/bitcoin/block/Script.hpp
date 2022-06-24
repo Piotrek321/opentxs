@@ -18,7 +18,7 @@
 #include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/bitcoin/block/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -37,6 +37,7 @@ class Blockchain;
 class Session;
 }  // namespace api
 
+class ByteArray;
 class PaymentCode;
 // }  // namespace v1
 }  // namespace opentxs
@@ -77,7 +78,7 @@ public:
         const std::uint8_t version,
         const PaymentCode& recipient) const noexcept -> bool final;
     auto LikelyPubkeyHashes(const api::Session& api) const noexcept
-        -> UnallocatedVector<OTData> final;
+        -> UnallocatedVector<ByteArray> final;
     auto M() const noexcept -> std::optional<std::uint8_t> final;
     auto MultisigPubkey(const std::size_t position) const noexcept
         -> std::optional<ReadView> final;

@@ -30,13 +30,13 @@ TEST(FixedByteArray, hex)
 
     EXPECT_TRUE(value.DecodeHex(test_hex_));
 
-    auto data = ot::Data::Factory();
+    auto data = ot::ByteArray{};
 
-    EXPECT_TRUE(data->DecodeHex(test_hex_));
+    EXPECT_TRUE(data.DecodeHex(test_hex_));
     EXPECT_EQ(value, data);
 
     const auto fromFixed = value.asHex();
-    const auto fromData = data->asHex();
+    const auto fromData = data.asHex();
 
     EXPECT_EQ(fromFixed, test_hex_);
     EXPECT_EQ(fromData, test_hex_);
@@ -91,22 +91,22 @@ TEST(FixedByteArray, extract_with_data_overloads_check_values_and_corner_cases)
     EXPECT_TRUE(value.DecodeHex(
         "0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"sv));
 
-    auto data8 = ot::Data::Factory();
+    auto data8 = ot::ByteArray{};
     EXPECT_FALSE(value.Extract(1, data8, 32));
     EXPECT_FALSE(value.Extract(100, data8, 32));
     EXPECT_FALSE(
         value.Extract(std::numeric_limits<std::size_t>::max(), data8, 32));
     EXPECT_TRUE(value.Extract(1, data8, 0));
 
-    auto data16 = ot::Data::Factory();
+    auto data16 = ot::ByteArray{};
     EXPECT_FALSE(value.Extract(2, data16, 31));
     EXPECT_TRUE(value.Extract(2, data16, 0));
 
-    auto data32 = ot::Data::Factory();
+    auto data32 = ot::ByteArray{};
     EXPECT_FALSE(value.Extract(4, data32, 29));
     EXPECT_TRUE(value.Extract(4, data32, 0));
 
-    auto data64 = ot::Data::Factory();
+    auto data64 = ot::ByteArray{};
     EXPECT_FALSE(value.Extract(8, data64, 25));
     EXPECT_TRUE(value.Extract(8, data64, 0));
 }

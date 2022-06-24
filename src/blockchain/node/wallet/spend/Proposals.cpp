@@ -36,7 +36,7 @@
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/node/SendResult.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -335,11 +335,11 @@ private:
         try {
             if (sent) {
                 auto bytes = api_.Factory().Data();
-                transaction.Serialize(bytes->WriteInto());
-                LogError()("Broadcasting ")(print(chain_))(" transaction ")(
-                    txid->asHex())
+                transaction.Serialize(bytes.WriteInto());
+                LogError()("Broadcasting ")(print(chain_))(" transaction ")
+                    .asHex(txid)
                     .Flush();
-                LogError()(bytes->asHex()).Flush();
+                LogError().asHex(bytes).Flush();
             } else {
                 throw std::runtime_error{"Failed to send tx"};
             }

@@ -13,7 +13,6 @@
 #include "internal/identity/credential/Credential.hpp"
 #include "internal/identity/credential/Types.hpp"
 #include "internal/util/Mutex.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
@@ -57,7 +56,8 @@ class Signature;
 class VerificationSet;
 }  // namespace proto
 
-class OTPassword;
+class ByteArray;
+class Data;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1
@@ -99,7 +99,7 @@ public:
     auto SelfSignature(CredentialModeFlag version = PUBLIC_VERSION) const
         -> Signature final;
     using Signable::Serialize;
-    auto Serialize() const noexcept -> OTData final;
+    auto Serialize() const noexcept -> ByteArray final;
     auto Serialize(
         SerializedType& serialized,
         const SerializationModeFlag asPrivate,

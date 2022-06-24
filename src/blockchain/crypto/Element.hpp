@@ -23,7 +23,7 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -83,8 +83,9 @@ public:
         -> UnallocatedCString final;
     auto Confirmed() const noexcept -> Txids final;
     auto Contact() const noexcept -> OTIdentifier final;
-    auto Elements() const noexcept -> UnallocatedSet<OTData> final;
-    auto elements(const rLock& lock) const noexcept -> UnallocatedSet<OTData>;
+    auto Elements() const noexcept -> UnallocatedSet<ByteArray> final;
+    auto elements(const rLock& lock) const noexcept
+        -> UnallocatedSet<ByteArray>;
     auto ID() const noexcept -> const Identifier& final { return parent_.ID(); }
     auto IncomingTransactions() const noexcept
         -> UnallocatedSet<UnallocatedCString> final;
@@ -111,7 +112,7 @@ public:
         return parent_;
     }
     auto PrivateKey(const PasswordPrompt& reason) const noexcept -> ECKey final;
-    auto PubkeyHash() const noexcept -> OTData final;
+    auto PubkeyHash() const noexcept -> ByteArray final;
     auto Serialize() const noexcept -> SerializedType final;
     auto Subchain() const noexcept -> crypto::Subchain final
     {

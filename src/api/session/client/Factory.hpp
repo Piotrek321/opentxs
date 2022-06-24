@@ -27,7 +27,6 @@
 #include "internal/otx/common/Ledger.hpp"
 #include "internal/otx/common/OTTransaction.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"

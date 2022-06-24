@@ -38,7 +38,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -435,7 +435,7 @@ auto OTMarket::GetRecentTradeList(Armored& ascOutput, std::int32_t& nTradeCount)
     // The market already keeps a list of recent trades (informational only)
     //
 
-    const size_t sizeList = m_pTradeList->GetTradeDataMarketCount();
+    const std::size_t sizeList = m_pTradeList->GetTradeDataMarketCount();
     nTradeCount = static_cast<std::int32_t>(sizeList);
 
     if (nTradeCount == 0) {
@@ -463,11 +463,10 @@ auto OTMarket::GetRecentTradeList(Armored& ascOutput, std::int32_t& nTradeCount)
         // Now we need to translate pBuffer into strOutput.
 
         const std::uint8_t* pUint = pBuffer->GetData();
-        const size_t theSize = pBuffer->GetSize();
+        const std::size_t theSize = pBuffer->GetSize();
 
         if ((nullptr != pUint) || (theSize < 2)) {
-            auto theData =
-                Data::Factory(pUint, static_cast<std::uint32_t>(theSize));
+            auto theData = ByteArray{pUint, theSize};
 
             // This function will base64 ENCODE theData,
             // and then Set() that as the string contents.
@@ -629,11 +628,10 @@ auto OTMarket::GetOfferList(
         // Now we need to translate pBuffer into strOutput.
 
         const std::uint8_t* pUint = pBuffer->GetData();
-        const size_t theSize = pBuffer->GetSize();
+        const std::size_t theSize = pBuffer->GetSize();
 
         if (nullptr != pUint) {
-            auto theData =
-                Data::Factory(pUint, static_cast<std::uint32_t>(theSize));
+            auto theData = ByteArray{pUint, theSize};
             // This function will base64 ENCODE theData,
             // and then Set() that as the string contents.
             ascOutput.SetData(theData);

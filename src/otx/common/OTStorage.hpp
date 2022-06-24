@@ -302,9 +302,9 @@ public:
     virtual auto WriteToOStream(std::ostream& outStream) -> bool = 0;
 
     virtual auto GetData() -> const std::uint8_t* = 0;
-    virtual auto GetSize() -> size_t = 0;
+    virtual auto GetSize() -> std::size_t = 0;
 
-    virtual void SetData(const std::uint8_t* pData, size_t theSize) = 0;
+    virtual void SetData(const std::uint8_t* pData, std::size_t theSize) = 0;
 };
 
 // PACKER (now OTPacker since MsgPack also has a "Packer" in a #define).
@@ -716,8 +716,8 @@ protected:                                                                     \
                                                                                \
 public:                                                                        \
     auto Get##name##Count()->std::size_t;                                      \
-    auto Get##name(size_t nIndex)->name*;                                      \
-    auto Remove##name(size_t nIndex##name)->bool;                              \
+    auto Get##name(std::size_t nIndex)->name*;                                 \
+    auto Remove##name(std::size_t nIndex##name)->bool;                         \
     auto Add##name(name& disownObject)->bool
 
 // Serialized types...

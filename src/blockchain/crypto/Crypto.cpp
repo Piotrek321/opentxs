@@ -24,6 +24,7 @@
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

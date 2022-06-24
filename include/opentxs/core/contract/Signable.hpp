@@ -7,7 +7,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -21,6 +20,8 @@ namespace proto
 {
 class Signature;
 }  // namespace proto
+
+class ByteArray;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -37,7 +38,7 @@ public:
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Nym() const noexcept -> Nym_p = 0;
     virtual auto Terms() const noexcept -> const UnallocatedCString& = 0;
-    virtual auto Serialize() const noexcept -> OTData = 0;
+    virtual auto Serialize() const noexcept -> ByteArray = 0;
     virtual auto Validate() const noexcept -> bool = 0;
     virtual auto Version() const noexcept -> VersionNumber = 0;
 

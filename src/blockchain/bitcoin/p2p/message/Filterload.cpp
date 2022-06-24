@@ -18,9 +18,8 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/BloomFilter.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -41,8 +40,8 @@ auto BitcoinP2PFilterload(
         return nullptr;
     }
 
-    std::unique_ptr<blockchain::BloomFilter> pFilter{
-        factory::BloomFilter(api, Data::Factory(payload, size))};
+    std::unique_ptr<blockchain::BloomFilter> pFilter{factory::BloomFilter(
+        api, ByteArray{static_cast<const std::byte*>(payload), size})};
 
     if (false == bool(pFilter)) {
         LogError()("opentxs::factory::")(__func__)(": Invalid filter").Flush();

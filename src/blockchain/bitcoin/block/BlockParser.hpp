@@ -32,7 +32,6 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/block/Block.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"

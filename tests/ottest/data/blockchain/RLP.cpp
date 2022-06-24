@@ -50,7 +50,7 @@ auto GetRLPVectors(const ot::api::Session& api) noexcept
             OT_ASSERT(hex.is_string());
 
             const auto str = hex.as_string();
-            auto rc = vector.encoded_->DecodeHex({str.data(), str.size()});
+            auto rc = vector.encoded_.DecodeHex({str.data(), str.size()});
 
             OT_ASSERT(rc);
 

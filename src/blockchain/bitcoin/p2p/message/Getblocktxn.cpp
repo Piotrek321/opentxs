@@ -19,9 +19,9 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -53,8 +53,7 @@ auto BitcoinP2PGetblocktxn(
     }
     const auto* it{static_cast<const std::byte*>(payload)};
     // --------------------------------------------------------
-    OTData block_hash =
-        Data::Factory(it, sizeof(bitcoin::BlockHeaderHashField));
+    ByteArray block_hash = ByteArray{it, sizeof(bitcoin::BlockHeaderHashField)};
     it += sizeof(bitcoin::BlockHeaderHashField);
     // --------------------------------------------------------
     // Next load up the transaction count (CompactSize)
@@ -140,17 +139,23 @@ auto Getblocktxn::payload(AllocateOutput out) const noexcept -> bool
     try {
         if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-        auto bytes = block_hash_->size();
-        auto data = UnallocatedVector<OTData>{};
+        auto bytes = block_hash_.size();
+        auto data = UnallocatedVector<ByteArray>{};
         data.reserve(1u + txn_indices_.size());
-        const auto& count = data.emplace_back(
-            Data::Factory(CompactSize(txn_indices_.size()).Encode()));
-        bytes += count->size();
+        const auto& count = data.emplace_back([&]() -> ByteArray {
+            const auto temp = CompactSize(txn_indices_.size()).Encode();
+
+            return {temp.data(), temp.size()};
+        }());
+        bytes += count.size();
 
         for (const auto& index : txn_indices_) {
-            const auto& cs =
-                data.emplace_back(Data::Factory(CompactSize(index).Encode()));
-            bytes += cs->size();
+            const auto& cs = data.emplace_back([&]() -> ByteArray {
+                const auto temp = CompactSize(index).Encode();
+
+                return {temp.data(), temp.size()};
+            }());
+            bytes += cs.size();
         }
 
         auto output = out(bytes);
@@ -160,12 +165,12 @@ auto Getblocktxn::payload(AllocateOutput out) const noexcept -> bool
         }
 
         auto* i = output.as<std::byte>();
-        std::memcpy(i, block_hash_->data(), block_hash_->size());
-        std::advance(i, block_hash_->size());
+        std::memcpy(i, block_hash_.data(), block_hash_.size());
+        std::advance(i, block_hash_.size());
 
         for (const auto& cs : data) {
-            std::memcpy(i, cs->data(), cs->size());
-            std::advance(i, cs->size());
+            std::memcpy(i, cs.data(), cs.size());
+            std::advance(i, cs.size());
         }
         return true;
     } catch (const std::exception& e) {
@@ -182,7 +187,7 @@ Getblocktxn::Getblocktxn(
     const Data& block_hash,
     const UnallocatedVector<std::size_t>& txn_indices) noexcept
     : Message(api, network, bitcoin::Command::getblocktxn)
-    , block_hash_(Data::Factory(block_hash))
+    , block_hash_(block_hash)
     , txn_indices_(txn_indices)
 {
     init_hash();
@@ -196,7 +201,7 @@ Getblocktxn::Getblocktxn(
     const Data& block_hash,
     const UnallocatedVector<std::size_t>& txn_indices) noexcept(false)
     : Message(api, std::move(header))
-    , block_hash_(Data::Factory(block_hash))
+    , block_hash_(block_hash)
     , txn_indices_(txn_indices)
 {
     verify_checksum();

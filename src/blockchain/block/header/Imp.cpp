@@ -17,7 +17,6 @@
 #include "opentxs/blockchain/bitcoin/NumericHash.hpp"
 #include "opentxs/blockchain/bitcoin/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep

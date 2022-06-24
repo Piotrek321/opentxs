@@ -21,11 +21,11 @@ TEST_F(Test_HeaderOracle_btc, stage_headers)
 {
     for (const auto& hex : bitcoin_) {
         const auto raw = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(hex);
-        auto pHeader = api_.Factory().BlockHeader(type_, raw->Bytes());
+        auto pHeader = api_.Factory().BlockHeader(type_, raw.Bytes());
 
         ASSERT_TRUE(pHeader);
 
@@ -34,12 +34,12 @@ TEST_F(Test_HeaderOracle_btc, stage_headers)
 
     for (const auto& hex : bitcoin_) {
         const auto raw = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(hex);
         auto pHeader = api_.Factory().BlockHeader(
-            ot::blockchain::Type::BitcoinCash, raw->Bytes());
+            ot::blockchain::Type::BitcoinCash, raw.Bytes());
 
         ASSERT_TRUE(pHeader);
 

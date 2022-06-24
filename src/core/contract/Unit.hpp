@@ -16,7 +16,6 @@
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -44,6 +43,7 @@ class Signature;
 }  // namespace proto
 
 class AccountVisitor;
+class ByteArray;
 class Factory;
 class PasswordPrompt;
 class String;
@@ -74,7 +74,7 @@ public:
     {
         return short_name_;
     }
-    auto Serialize() const noexcept -> OTData override;
+    auto Serialize() const noexcept -> ByteArray override;
     auto Serialize(AllocateOutput destination, bool includeNym = false) const
         -> bool override;
     auto Serialize(SerializedType&, bool includeNym = false) const

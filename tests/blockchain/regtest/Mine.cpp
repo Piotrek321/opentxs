@@ -59,27 +59,27 @@ TEST_F(Regtest_fixture_single, generate_block)
     {
         const auto serialized = [&] {
             auto output = miner_.Factory().Data();
-            tx->Internal().Serialize(output->WriteInto());
+            tx->Internal().Serialize(output.WriteInto());
 
             return output;
         }();
 
-        ASSERT_GT(serialized->size(), 0);
+        ASSERT_GT(serialized.size(), 0);
 
         const auto recovered = miner_.Factory().BitcoinTransaction(
-            test_chain_, serialized->Bytes(), true);
+            test_chain_, serialized.Bytes(), true);
 
         ASSERT_TRUE(recovered);
 
         const auto serialized2 = [&] {
             auto output = miner_.Factory().Data();
-            recovered->Internal().Serialize(output->WriteInto());
+            recovered->Internal().Serialize(output.WriteInto());
 
             return output;
         }();
 
         EXPECT_EQ(recovered->ID(), tx->ID());
-        EXPECT_EQ(serialized.get(), serialized2.get());
+        EXPECT_EQ(serialized, serialized2);
     }
 
     auto block = miner_.Factory().BitcoinBlock(
@@ -96,15 +96,15 @@ TEST_F(Regtest_fixture_single, generate_block)
 
     const auto serialized = [&] {
         auto output = miner_.Factory().Data();
-        block->Serialize(output->WriteInto());
+        block->Serialize(output.WriteInto());
 
         return output;
     }();
 
-    ASSERT_GT(serialized->size(), 0);
+    ASSERT_GT(serialized.size(), 0);
 
     const auto recovered =
-        miner_.Factory().BitcoinBlock(test_chain_, serialized->Bytes());
+        miner_.Factory().BitcoinBlock(test_chain_, serialized.Bytes());
 
     EXPECT_TRUE(recovered);
 }

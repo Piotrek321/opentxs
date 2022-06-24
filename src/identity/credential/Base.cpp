@@ -24,6 +24,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/Signable.hpp"
@@ -119,7 +120,7 @@ void Base::add_master_signature(
 auto Base::asString(const bool asPrivate) const -> UnallocatedCString
 {
     auto credential = SerializedType{};
-    auto dataCredential = Data::Factory();
+    auto dataCredential = ByteArray{};
     auto stringCredential = String::Factory();
     if (false == Serialize(credential, asPrivate, WITH_SIGNATURES)) {
         return {};
@@ -347,7 +348,7 @@ auto Base::serialize(
     return serializedCredential;
 }
 
-auto Base::Serialize() const noexcept -> OTData
+auto Base::Serialize() const noexcept -> ByteArray
 {
     auto serialized = proto::Credential{};
     Serialize(serialized, Private() ? AS_PRIVATE : AS_PUBLIC, WITH_SIGNATURES);

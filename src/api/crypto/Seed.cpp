@@ -36,7 +36,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32.hpp"
@@ -252,7 +252,7 @@ auto Seed::Bip32Root(
         const auto& seed = get_seed(lock, seedID, reason);
         const auto entropy = factory_.DataFromBytes(seed.Entropy().Bytes());
 
-        return entropy->asHex();
+        return entropy.asHex();
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 

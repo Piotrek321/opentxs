@@ -28,7 +28,6 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -115,7 +114,7 @@ public:
         const noexcept -> bool;
     auto StoreHeaders(
         const cfilter::Type type,
-        const Vector<CFHeaderParams> headers) const noexcept -> bool;
+        const Vector<CFHeaderParams>& headers) const noexcept -> bool;
 
     Filters(
         const api::Session& api,

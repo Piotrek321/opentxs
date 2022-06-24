@@ -7,11 +7,14 @@
 #include <opentxs/opentxs.hpp>
 #include <cstddef>
 #include <iterator>
+#include <string_view>
 
 namespace ot = opentxs;
 
 namespace ottest
 {
+using namespace std::literals;
+
 TEST(Message, Factory)
 {
     auto multipartMessage = ot::network::zeromq::Message{};
@@ -32,12 +35,11 @@ TEST(Message, AddFrame)
 TEST(Message, AddFrame_Data)
 {
     auto multipartMessage = ot::network::zeromq::Message{};
-
-    auto& message =
-        multipartMessage.AddFrame(ot::Data::Factory("testString", 10));
+    static constexpr auto string = "testString"sv;
+    auto& message = multipartMessage.AddFrame(string.data(), string.size());
     ASSERT_EQ(multipartMessage.size(), 1);
     ASSERT_NE(nullptr, message.data());
-    ASSERT_EQ(message.size(), 10);
+    ASSERT_EQ(message.size(), string.size());
 
     auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("testString", messageString.c_str());

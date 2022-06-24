@@ -73,7 +73,6 @@ class VerificationSet;
 
 class Data;
 class Factory;
-class OTPassword;
 class PasswordPrompt;
 class PaymentCode;
 class Signature;

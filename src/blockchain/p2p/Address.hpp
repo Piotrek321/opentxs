@@ -12,7 +12,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -42,7 +42,7 @@ public:
     static auto instantiate_services(const SerializedType& serialized) noexcept
         -> UnallocatedSet<Service>;
 
-    auto Bytes() const noexcept -> OTData final { return bytes_; }
+    auto Bytes() const noexcept -> ByteArray final { return bytes_; }
     auto Chain() const noexcept -> blockchain::Type final { return chain_; }
     auto Display() const noexcept -> UnallocatedCString final;
     auto ID() const noexcept -> const Identifier& final { return id_; }
@@ -110,7 +110,7 @@ private:
     const OTIdentifier id_;
     const Protocol protocol_;
     const Network network_;
-    const OTData bytes_;
+    const ByteArray bytes_;
     const std::uint16_t port_;
     const blockchain::Type chain_;
     const Time previous_last_connected_;

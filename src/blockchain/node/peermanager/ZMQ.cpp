@@ -68,7 +68,7 @@ public:
         }
 
         return external_->Start(
-            address.Bytes()->str() + ':' + std::to_string(address.Port()));
+            address.Bytes().str() + ':' + std::to_string(address.Port()));
     }
 
     auto LookupIncomingSocket(const int id) noexcept(false)
@@ -112,7 +112,7 @@ public:
         -> ZMQIncomingConnectionManager& = delete;
 
 private:
-    using ConnectionID = OTData;
+    using ConnectionID = ByteArray;
     using CachedMessages = std::queue<network::zeromq::Message>;
     using PeerData =
         std::tuple<ConnectionID, ConnectionID, bool, CachedMessages>;

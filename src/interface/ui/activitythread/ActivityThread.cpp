@@ -37,8 +37,8 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Contact.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -514,7 +514,7 @@ auto ActivityThread::process_item(
             const auto txid = Widget::api_.Factory().DataFromBytes(item.txid());
             const auto pTx =
                 Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(
-                    txid->asHex());
+                    txid.asHex());
             const auto chain = static_cast<blockchain::Type>(item.chain());
 
             if (!pTx) { throw std::runtime_error{"transaction not found"}; }

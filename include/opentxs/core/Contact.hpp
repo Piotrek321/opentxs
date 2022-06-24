@@ -21,7 +21,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -68,6 +68,8 @@ class Contact;
 class Nym;
 }  // namespace proto
 
+class ByteArray;
+class Data;
 class Identifier;
 class PaymentCode;
 // }  // namespace v1
@@ -99,8 +101,10 @@ public:
     auto BestPhoneNumber() const -> UnallocatedCString;
     auto BestSocialMediaProfile(
         const identity::wot::claim::ClaimType type) const -> UnallocatedCString;
-    auto BlockchainAddresses() const -> UnallocatedVector<
-        std::tuple<OTData, blockchain::crypto::AddressStyle, blockchain::Type>>;
+    auto BlockchainAddresses() const -> UnallocatedVector<std::tuple<
+        ByteArray,
+        blockchain::crypto::AddressStyle,
+        blockchain::Type>>;
     auto Data() const -> std::shared_ptr<identity::wot::claim::Data>;
     auto EmailAddresses(bool active = true) const -> UnallocatedCString;
     auto ID() const -> const Identifier&;

@@ -16,7 +16,6 @@
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/Mutex.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -47,6 +46,7 @@ namespace proto
 class Signature;
 }  // namespace proto
 
+class ByteArray;
 class Factory;
 class NymFile;
 class PasswordPrompt;
@@ -78,7 +78,7 @@ public:
     auto RemoteNym() const -> const identity::Nym& final;
     auto RemoteNymboxHash() const -> OTIdentifier final;
     auto Request() const -> RequestNumber final;
-    auto Serialize() const noexcept -> OTData final;
+    auto Serialize() const noexcept -> ByteArray final;
     auto Serialize(proto::Context& out) const -> bool final;
     auto VerifyAcknowledgedNumber(const RequestNumber& req) const -> bool final;
     auto VerifyAvailableNumber(const TransactionNumber& number) const

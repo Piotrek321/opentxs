@@ -21,6 +21,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -135,7 +136,10 @@ auto Reply::Recipient() const -> const identifier::Nym&
     return imp_->Recipient();
 }
 
-auto Reply::Serialize() const noexcept -> OTData { return imp_->Serialize(); }
+auto Reply::Serialize() const noexcept -> ByteArray
+{
+    return imp_->Serialize();
+}
 
 auto Reply::Serialize(AllocateOutput destination) const -> bool
 {
@@ -333,7 +337,7 @@ auto Reply::Imp::id_version(const Lock& lock) const -> proto::ServerReply
     return output;
 }
 
-auto Reply::Imp::Serialize() const noexcept -> OTData
+auto Reply::Imp::Serialize() const noexcept -> ByteArray
 {
     Lock lock(lock_);
 

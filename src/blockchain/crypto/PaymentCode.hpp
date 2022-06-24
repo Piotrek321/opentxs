@@ -27,7 +27,6 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -74,6 +73,7 @@ class Bip47Channel;
 class HDPath;
 }  // namespace proto
 
+class Data;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs

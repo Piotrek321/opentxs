@@ -52,7 +52,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/UnitType.hpp"

@@ -53,7 +53,7 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/Unit.hpp"
@@ -8434,7 +8434,7 @@ void Notary::process_cash_deposit(
             "'from' account ID on the deposit item.")
             .Flush();
     } else {
-        auto rawPurse = Data::Factory();
+        auto rawPurse = ByteArray{};
         depositItem.GetAttachment(rawPurse);
         const auto serializedPurse = proto::Factory<proto::Purse>(rawPurse);
 
@@ -8554,7 +8554,7 @@ void Notary::process_cash_withdrawal(
     std::shared_ptr<otx::blind::Mint> pMint{nullptr};
     ExclusiveAccount pMintCashReserveAcct{};
 
-    auto rawPurse = Data::Factory();
+    auto rawPurse = ByteArray{};
     requestItem.GetAttachment(rawPurse);
     const auto serializedPurse = proto::Factory<proto::Purse>(rawPurse);
 

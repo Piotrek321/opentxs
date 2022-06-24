@@ -11,6 +11,8 @@
 
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -27,20 +29,30 @@
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
+#include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/core/ByteArray.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
@@ -303,14 +315,14 @@ auto Process::Imp::process_mempool(Message&& in) noexcept -> void
     // as mempool transactions even if they are erroneously received from peers
     // on a subsequent run of the application
     if (0u < txid_cache_.count(txid)) {
-        log_(OT_PRETTY_CLASS())(parent_.name_)(" transaction ")(txid->asHex())(
-            " already process as confirmed")
+        log_(OT_PRETTY_CLASS())(parent_.name_)(" transaction ")
+            .asHex(txid)(" already process as confirmed")
             .Flush();
 
         return;
     }
 
-    if (auto tx = parent_.mempool_oracle_.Query(txid->Bytes()); tx) {
+    if (auto tx = parent_.mempool_oracle_.Query(txid.Bytes()); tx) {
         parent_.ProcessTransaction(*tx, log_);
     }
 }

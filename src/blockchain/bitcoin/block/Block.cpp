@@ -28,8 +28,6 @@
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/block/Block.hpp"
@@ -38,6 +36,7 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/core/ByteArray.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
@@ -292,9 +291,9 @@ auto Block::at(const ReadView txid) const noexcept -> const value_type&
 
         return transactions_.at(txid);
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS())("transaction ")(
-            api_.Factory().DataFromBytes(txid)->asHex())(
-            " not found in block ")(header_.Hash().asHex())
+        LogError()(OT_PRETTY_CLASS())("transaction ")
+            .asHex(txid)(" not found in block ")
+            .asHex(header_.Hash())
             .Flush();
 
         return null_tx_;

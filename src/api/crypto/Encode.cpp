@@ -8,6 +8,7 @@
 #include "api/crypto/Encode.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <regex>
@@ -23,6 +24,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
@@ -74,7 +76,7 @@ auto Encode::Base64Decode(const UnallocatedCString&& input, RawData& output)
 {
     output.resize(::Base64decode_len(input.data()), 0x0);
 
-    const size_t decoded =
+    const std::size_t decoded =
         ::Base64decode(reinterpret_cast<char*>(output.data()), input.data());
 
     if (0 == decoded) { return false; }
@@ -140,21 +142,21 @@ auto Encode::IdentifierEncode(const void* data, const std::size_t size) const
 {
     if (0 == size) { return {}; }
 
-    auto preimage = Data::Factory(data, size);
-    auto checksum = Data::Factory();
+    auto preimage = ByteArray{static_cast<const std::byte*>(data), size};
+    auto checksum = ByteArray{};
     auto hash = crypto_.Hash().Digest(
         opentxs::crypto::HashType::Sha256DC,
-        preimage->Bytes(),
-        checksum->WriteInto());
+        preimage.Bytes(),
+        checksum.WriteInto());
 
-    OT_ASSERT(4 == checksum->size())
+    OT_ASSERT(4 == checksum.size())
     OT_ASSERT(hash)
 
     preimage += checksum;
 
     return bitcoin_base58::EncodeBase58(
-        static_cast<const unsigned char*>(preimage->data()),
-        static_cast<const unsigned char*>(preimage->data()) + preimage->size());
+        static_cast<const unsigned char*>(preimage.data()),
+        static_cast<const unsigned char*>(preimage.data()) + preimage.size());
 }
 
 auto Encode::IdentifierEncode(const Data& input) const -> UnallocatedCString
@@ -169,21 +171,21 @@ auto Encode::IdentifierEncode(const Secret& input) const -> UnallocatedCString
     if (0 == bytes.size()) { return {}; }
 
     auto preimage =
-        Data::Factory(bytes.data(), bytes.size());  // TODO should be secret
-    auto checksum = Data::Factory();
+        ByteArray{bytes.data(), bytes.size()};  // TODO should be secret
+    auto checksum = ByteArray{};
     auto hash = crypto_.Hash().Digest(
         opentxs::crypto::HashType::Sha256DC,
-        preimage->Bytes(),
-        checksum->WriteInto());
+        preimage.Bytes(),
+        checksum.WriteInto());
 
-    OT_ASSERT(4 == checksum->size())
+    OT_ASSERT(4 == checksum.size())
     OT_ASSERT(hash)
 
     preimage += checksum;
 
     return bitcoin_base58::EncodeBase58(
-        static_cast<const unsigned char*>(preimage->data()),
-        static_cast<const unsigned char*>(preimage->data()) + preimage->size());
+        static_cast<const unsigned char*>(preimage.data()),
+        static_cast<const unsigned char*>(preimage.data()) + preimage.size());
 }
 
 auto Encode::IdentifierDecode(const UnallocatedCString& input) const
@@ -200,12 +202,13 @@ auto Encode::IdentifierDecode(const UnallocatedCString& input) const
 
     const auto output = UnallocatedCString{
         reinterpret_cast<const char*>(vector.data()), vector.size() - 4};
-    auto checksum = Data::Factory();
-    const auto incoming = Data::Factory(vector.data() + (vector.size() - 4), 4);
+    auto checksum = ByteArray{};
+    const auto incoming =
+        ByteArray{std::next(vector.data(), vector.size() - 4), 4};
     auto hash = crypto_.Hash().Digest(
-        opentxs::crypto::HashType::Sha256DC, output, checksum->WriteInto());
+        opentxs::crypto::HashType::Sha256DC, output, checksum.WriteInto());
 
-    OT_ASSERT(4 == checksum->size())
+    OT_ASSERT(4 == checksum.size())
     OT_ASSERT(hash)
 
     if (incoming != checksum) {
@@ -226,7 +229,7 @@ auto Encode::IsBase62(const UnallocatedCString& str) const -> bool
 
 auto Encode::Nonce(const std::uint32_t size) const -> OTString
 {
-    auto unusedOutput = Data::Factory();
+    auto unusedOutput = ByteArray{};
 
     return Nonce(size, unusedOutput);
 }
@@ -283,15 +286,14 @@ auto Encode::Z85Encode(const UnallocatedCString& input) const
     }
 }
 
-auto Encode::Z85Decode(const Data& input) const -> OTData
+auto Encode::Z85Decode(const Data& input) const -> ByteArray
 {
-    auto output = Data::Factory();
+    auto output = ByteArray{};
 
-    if (opentxs::network::zeromq::Z85ToRaw(
-            input.Bytes(), output->WriteInto())) {
+    if (opentxs::network::zeromq::Z85ToRaw(input.Bytes(), output.WriteInto())) {
         return output;
     } else {
-        return Data::Factory();
+        return ByteArray{};
     }
 }
 

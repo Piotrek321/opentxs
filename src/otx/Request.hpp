@@ -9,7 +9,6 @@
 #include "core/contract/Signable.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/Mutex.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -38,6 +37,7 @@ namespace proto
 class Signature;
 }  // namespace proto
 
+class ByteArray;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -90,7 +90,7 @@ private:
     auto full_version(const Lock& lock) const -> proto::ServerRequest;
     auto id_version(const Lock& lock) const -> proto::ServerRequest;
     auto Name() const noexcept -> UnallocatedCString final { return {}; }
-    auto Serialize() const noexcept -> OTData final;
+    auto Serialize() const noexcept -> ByteArray final;
     auto serialize(const Lock& lock, proto::ServerRequest& serialized) const
         -> bool;
     auto signature_version(const Lock& lock) const -> proto::ServerRequest;

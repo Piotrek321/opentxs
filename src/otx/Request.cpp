@@ -24,6 +24,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
@@ -83,7 +84,10 @@ auto Request::Initiator() const -> const identifier::Nym&
     return imp_->Initiator();
 }
 
-auto Request::Serialize() const noexcept -> OTData { return imp_->Serialize(); }
+auto Request::Serialize() const noexcept -> ByteArray
+{
+    return imp_->Serialize();
+}
 
 auto Request::Serialize(AllocateOutput destination) const -> bool
 {
@@ -288,7 +292,7 @@ auto Request::Imp::Number() const -> RequestNumber
     return number_;
 }
 
-auto Request::Imp::Serialize() const noexcept -> OTData
+auto Request::Imp::Serialize() const noexcept -> ByteArray
 {
     Lock lock(lock_);
 

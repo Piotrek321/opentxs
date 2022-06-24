@@ -35,7 +35,7 @@ BlockchainBalanceItem::BlockchainBalanceItem(
     const identifier::Nym& nymID,
     const Identifier& accountID,
     [[maybe_unused]] const blockchain::Type chain,
-    const OTData txid,
+    const ByteArray txid,
     const opentxs::Amount amount,
     const UnallocatedCString memo,
     const UnallocatedCString text) noexcept
@@ -92,7 +92,7 @@ auto BlockchainBalanceItem::reindex(
     const auto& tx = *pTx;
     auto output = BalanceItem::reindex(key, custom);
     const auto chain = extract_custom<blockchain::Type>(custom, 3);
-    const auto txid = extract_custom<OTData>(custom, 5);
+    const auto txid = extract_custom<ByteArray>(custom, 5);
     const auto amount = tx.NetBalanceChange(nym_id_);
     const auto memo = tx.Memo();
     const auto text = extract_custom<UnallocatedCString>(custom, 4);

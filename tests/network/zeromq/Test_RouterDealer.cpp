@@ -439,9 +439,7 @@ TEST_F(Test_RouterDealer, Dealer_3_Router_Dealer_Router)
             for (auto it = input.begin(); it != input.end(); ++it) {
                 auto& frame = *it;
                 if (0 < frame.size()) {
-                    ot::OTData data =
-                        ot::Data::Factory(frame.data(), frame.size());
-                    replyMessage.AddFrame(data.get());
+                    replyMessage.AddFrame(frame);
                 } else {
                     replyMessage.AddFrame();
                 }

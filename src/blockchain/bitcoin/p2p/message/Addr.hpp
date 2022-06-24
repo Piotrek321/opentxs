@@ -17,7 +17,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -46,6 +46,8 @@ struct Address;
 }  // namespace internal
 }  // namespace p2p
 }  // namespace blockchain
+
+class ByteArray;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -70,7 +72,7 @@ public:
     using AddressVector = UnallocatedVector<pAddress>;
 
     static auto ExtractAddress(AddressByteField in) noexcept
-        -> std::pair<p2p::Network, OTData>;
+        -> std::pair<p2p::Network, ByteArray>;
     static auto SerializeTimestamp(const ProtocolVersion version) noexcept
         -> bool;
 

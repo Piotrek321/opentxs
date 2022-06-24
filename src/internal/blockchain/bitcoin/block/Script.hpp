@@ -9,7 +9,7 @@
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Script.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -39,7 +39,7 @@ public:
 
     virtual auto clone() const noexcept -> std::unique_ptr<Script> = 0;
     virtual auto LikelyPubkeyHashes(const api::Session& api) const noexcept
-        -> UnallocatedVector<OTData> = 0;
+        -> UnallocatedVector<ByteArray> = 0;
     virtual auto SigningSubscript(const blockchain::Type chain) const noexcept
         -> std::unique_ptr<Script> = 0;
 

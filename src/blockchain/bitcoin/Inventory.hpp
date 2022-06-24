@@ -11,9 +11,19 @@
 
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
+
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+class ByteArray;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::blockchain::bitcoin
 {
@@ -71,7 +81,7 @@ private:
 
     static auto decode_hash(
         const void* payload,
-        const std::size_t size) noexcept(false) -> OTData;
+        const std::size_t size) noexcept(false) -> ByteArray;
     static auto decode_type(
         const void* payload,
         const std::size_t size) noexcept(false) -> Type;

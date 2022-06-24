@@ -11,7 +11,7 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -35,6 +35,7 @@ class Header;
 }  // namespace p2p
 }  // namespace blockchain
 
+class Data;
 class Factory;
 // }  // namespace v1
 }  // namespace opentxs
@@ -46,7 +47,7 @@ class Filteradd final : virtual public internal::Filteradd,
                         public implementation::Message
 {
 public:
-    auto Element() const noexcept -> OTData final { return element_; }
+    auto Element() const noexcept -> ByteArray final { return element_; }
 
     Filteradd(
         const api::Session& api,
@@ -64,7 +65,7 @@ public:
     ~Filteradd() final = default;
 
 private:
-    const OTData element_;
+    const ByteArray element_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

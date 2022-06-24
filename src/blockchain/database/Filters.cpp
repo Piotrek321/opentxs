@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "blockchain/database/Filters.hpp"  // IWYU pragma: associated
 
+#include <boost/container/flat_map.hpp>
+#include <boost/container/vector.hpp>
+#include <cstddef>
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -24,7 +28,9 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database
@@ -103,7 +109,7 @@ auto Filters::import_genesis(const blockchain::Type chain) const noexcept
             api_,
             style,
             blockchain::internal::BlockHashToFilterKey(blockHash.Bytes()),
-            bytes->Bytes(),
+            bytes.Bytes(),
             {});  // TODO allocator
 
         OT_ASSERT(gcs.IsValid());
@@ -267,7 +273,7 @@ auto Filters::StoreFilters(
 
 auto Filters::StoreHeaders(
     const cfilter::Type type,
-    const Vector<CFHeaderParams> headers) const noexcept -> bool
+    const Vector<CFHeaderParams>& headers) const noexcept -> bool
 {
     return common_.StoreFilterHeaders(type, headers);
 }

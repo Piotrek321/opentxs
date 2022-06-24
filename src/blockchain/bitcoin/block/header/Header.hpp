@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <boost/endian/buffers.hpp>
+#include <boost/endian/conversion.hpp>
+#include <array>
 #include <cstdint>
 #include <memory>
 
@@ -17,6 +20,7 @@
 //#include "opentxs/blockchain/bitcoin/NumericHash.hpp"
 //#include "opentxs/blockchain/bitcoin/Work.hpp"
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -50,6 +54,8 @@ class Hash;
 }  // namespace block
 }  // namespace blockchain
 
+class ByteArray;
+// }  // namespace v1
 }  // namespace opentxs
 
 namespace opentxs::blockchain::bitcoin::block
@@ -63,7 +69,7 @@ public:
     }
 
     virtual auto MerkleRoot() const noexcept -> const blockchain::block::Hash&;
-    virtual auto Encode() const noexcept -> OTData;
+    virtual auto Encode() const noexcept -> ByteArray;
     virtual auto Nonce() const noexcept -> std::uint32_t { return {}; }
     virtual auto nBits() const noexcept -> std::uint32_t { return {}; }
     virtual auto Timestamp() const noexcept -> Time { return {}; }

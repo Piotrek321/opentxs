@@ -36,7 +36,7 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/AddressType.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -506,7 +506,7 @@ void Notary::Start()
 
     OT_ASSERT(connectInfo);
 
-    auto pubkey = Data::Factory();
+    auto pubkey = ByteArray{};
     auto privateKey = server_.TransportKey(pubkey);
     message_processor_.init((AddressType::Inproc == type), port, privateKey);
     message_processor_.Start();

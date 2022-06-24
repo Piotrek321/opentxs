@@ -18,6 +18,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/util/Log.hpp"

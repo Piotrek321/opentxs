@@ -53,7 +53,6 @@ class Parameters;
 }  // namespace crypto
 
 class Data;
-class OTPassword;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1

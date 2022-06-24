@@ -30,7 +30,6 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -122,7 +121,9 @@ namespace proto
 class HDPath;
 }  // namespace proto
 
+class ByteArray;
 class Contact;
+class Data;
 class PasswordPrompt;
 class PaymentCode;
 // }  // namespace v1
@@ -157,7 +158,8 @@ struct Blockchain::Imp {
         const noexcept -> UnallocatedCString;
     auto address_prefix(
         const Style style,
-        const opentxs::blockchain::Type chain) const noexcept(false) -> OTData;
+        const opentxs::blockchain::Type chain) const noexcept(false)
+        -> ByteArray;
     auto AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
@@ -257,7 +259,7 @@ struct Blockchain::Imp {
             transactions,
         const PasswordPrompt& reason) const noexcept -> bool;
     auto PubkeyHash(const opentxs::blockchain::Type chain, const Data& pubkey)
-        const noexcept(false) -> OTData;
+        const noexcept(false) -> ByteArray;
     auto RecipientContact(const Key& key) const noexcept -> OTIdentifier;
     auto Release(const Key key) const noexcept -> bool;
     virtual auto ReportScan(

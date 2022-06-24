@@ -47,7 +47,6 @@ class Frame;
 }  // namespace network
 
 class Data;
-class OTPassword;
 class Secret;
 // }  // namespace v1
 }  // namespace opentxs

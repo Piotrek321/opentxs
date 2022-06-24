@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "opentxs/core/Data.hpp"
-
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
@@ -17,6 +15,8 @@ namespace proto
 class ContactData;
 class VerificationSet;
 }  // namespace proto
+
+class ByteArray;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -33,7 +33,7 @@ public:
         -> bool = 0;
     virtual auto GetVerificationSet(
         proto::VerificationSet& serialized) const noexcept -> bool = 0;
-    virtual auto Hash() const noexcept -> OTData = 0;
+    virtual auto Hash() const noexcept -> ByteArray = 0;
 
     virtual auto SetContactData(const proto::ContactData& contactData) noexcept
         -> void = 0;

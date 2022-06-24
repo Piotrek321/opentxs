@@ -383,7 +383,7 @@ public:
     {
         for (const auto& [key, value] : base_58_) {
             auto input = client_.Factory().Data();
-            input->DecodeHex(key);
+            input.DecodeHex(key);
             const auto output = crypto_.Encode().IdentifierEncode(input);
 
             EXPECT_EQ(value, output);
@@ -396,11 +396,11 @@ public:
     {
         for (const auto& [key, value] : base_58_) {
             auto expected = client_.Factory().Data();
-            expected->DecodeHex(key);
+            expected.DecodeHex(key);
             const auto decoded = crypto_.Encode().IdentifierDecode(value);
             const auto output = client_.Factory().DataFromBytes(decoded);
 
-            EXPECT_EQ(expected.get(), output.get());
+            EXPECT_EQ(expected, output);
         }
 
         return true;
@@ -412,12 +412,10 @@ public:
             auto input = client_.Factory().Data();
             auto output = client_.Factory().Data();
 
-            EXPECT_TRUE(input->DecodeHex(hash));
+            EXPECT_TRUE(input.DecodeHex(hash));
             EXPECT_TRUE(crypto_.Hash().Digest(
-                ot::crypto::HashType::Ripemd160,
-                preimage,
-                output->WriteInto()));
-            EXPECT_EQ(output.get(), input.get());
+                ot::crypto::HashType::Ripemd160, preimage, output.WriteInto()));
+            EXPECT_EQ(output, input);
         }
 
         return true;
@@ -426,8 +424,8 @@ public:
     auto get_seed(const ot::UnallocatedCString& hex) const -> ot::OTSecret
     {
         auto data = client_.Factory().Data();
-        data->DecodeHex(hex);
-        auto output = client_.Factory().SecretFromBytes(data->Bytes());
+        data.DecodeHex(hex);
+        auto output = client_.Factory().SecretFromBytes(data.Bytes());
 
         return output;
     }
@@ -438,9 +436,9 @@ public:
             [[maybe_unused]] const auto& [words, node, xprv] = value;
             auto data = client_.Factory().Data();
 
-            EXPECT_TRUE(data->DecodeHex(node));
+            EXPECT_TRUE(data.DecodeHex(node));
 
-            const auto seed = client_.Factory().SecretFromBytes(data->Bytes());
+            const auto seed = client_.Factory().SecretFromBytes(data.Bytes());
             const auto seedID = library.SeedID(seed->Bytes())->str();
             const auto serialized =
                 library.DeriveKey(ot::crypto::EcdsaCurve::secp256k1, seed, {});
@@ -498,15 +496,15 @@ public:
         EXPECT_EQ(lDepth, rDepth);
         EXPECT_EQ(lParent, rParent);
         EXPECT_EQ(lIndex, rIndex);
-        EXPECT_EQ(lChainCode.get(), rChainCode.get());
-        EXPECT_EQ(lKeyData.get(), rKeyData.get());
+        EXPECT_EQ(lChainCode, rChainCode);
+        EXPECT_EQ(lKeyData, rKeyData);
 
         output &= (lNetwork == rNetwork);
         output &= (lDepth == rDepth);
         output &= (lParent == rParent);
         output &= (lIndex == rIndex);
-        output &= (lChainCode.get() == rChainCode.get());
-        output &= (lKeyData.get() == rKeyData.get());
+        output &= (lChainCode == rChainCode);
+        output &= (lKeyData == rKeyData);
 
         return output;
     }
@@ -539,15 +537,15 @@ public:
         EXPECT_EQ(lDepth, rDepth);
         EXPECT_EQ(lParent, rParent);
         EXPECT_EQ(lIndex, rIndex);
-        EXPECT_EQ(lChainCode.get(), rChainCode.get());
-        EXPECT_EQ(lKey.get(), rKey.get());
+        EXPECT_EQ(lChainCode, rChainCode);
+        EXPECT_EQ(lKey, rKey);
 
         output &= (lNetwork == rNetwork);
         output &= (lDepth == rDepth);
         output &= (lParent == rParent);
         output &= (lIndex == rIndex);
-        output &= (lChainCode.get() == rChainCode.get());
-        output &= (lKey.get() == rKey.get());
+        output &= (lChainCode == rChainCode);
+        output &= (lKey == rKey);
 
         return output;
     }
@@ -597,19 +595,19 @@ public:
     {
         for (const auto& [hex, value] : bip_39_) {
             const auto& [words, seed, xprv] = value;
-            auto data = ot::Data::Factory();
+            auto data = ot::ByteArray{};
 
-            EXPECT_TRUE(data->DecodeHex(hex));
+            EXPECT_TRUE(data.DecodeHex(hex));
 
             const auto entropy =
-                client_.Factory().SecretFromBytes(data->Bytes());
+                client_.Factory().SecretFromBytes(data.Bytes());
             const auto passphrase = client_.Factory().SecretFromText("TREZOR");
             const auto targetWords = client_.Factory().SecretFromText(words);
 
-            EXPECT_TRUE(data->DecodeHex(seed));
+            EXPECT_TRUE(data.DecodeHex(seed));
 
             const auto targetRoot =
-                client_.Factory().SecretFromBytes(data->Bytes());
+                client_.Factory().SecretFromBytes(data.Bytes());
             auto calculatedWords = client_.Factory().Secret(0);
             auto calculatedRoot = client_.Factory().Secret(0);
 

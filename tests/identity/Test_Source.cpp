@@ -319,7 +319,7 @@ TEST_F(Test_Source, Verify_seedPubKeySourceBip47_ShouldReturnTrue)
         key->set_mode(proto::KEYMODE_PUBLIC);
         key->set_type(proto::AKEYTYPE_SECP256K1);
         key->set_role(static_cast<proto::KeyRole>(i));
-        *key->mutable_key() = pubkey->str();
+        *key->mutable_key() = pubkey.str();
     }
     auto* masterData = credential.mutable_masterdata();
     masterData->set_version(version_);

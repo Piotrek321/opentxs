@@ -17,6 +17,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -57,7 +58,7 @@ public:
         BlockHeaderHashField stop_hash_;
 
         Raw(ProtocolVersionUnsigned version,
-            const UnallocatedVector<OTData>& header_hashes,
+            const UnallocatedVector<ByteArray>& header_hashes,
             const Data& stop_hash) noexcept(false)
             : version_(version)
             , header_hashes_()
@@ -72,11 +73,11 @@ public:
             for (const auto& hash : header_hashes) {
                 BlockHeaderHashField tempHash;
 
-                if (hash->size() != sizeof(tempHash)) {
+                if (hash.size() != sizeof(tempHash)) {
                     throw std::runtime_error("Invalid hash");
                 }
 
-                std::memcpy(tempHash.data(), hash->data(), hash->size());
+                std::memcpy(tempHash.data(), hash.data(), hash.size());
                 header_hashes_.push_back(tempHash);
             }
         }
@@ -88,14 +89,11 @@ public:
         }
     };
 
-    auto getHashes() const noexcept -> const UnallocatedVector<OTData>&
+    auto getHashes() const noexcept -> const UnallocatedVector<ByteArray>&
     {
         return header_hashes_;
     }
-    auto getStopHash() const noexcept -> OTData
-    {
-        return Data::Factory(stop_hash_);
-    }
+    auto getStopHash() const noexcept -> ByteArray { return stop_hash_; }
     auto hashCount() const noexcept -> std::size_t
     {
         return header_hashes_.size();
@@ -111,13 +109,13 @@ public:
         const api::Session& api,
         const blockchain::Type network,
         const bitcoin::ProtocolVersionUnsigned version,
-        const UnallocatedVector<OTData>& header_hashes,
+        const UnallocatedVector<ByteArray>& header_hashes,
         const Data& stop_hash) noexcept;
     Getblocks(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const bitcoin::ProtocolVersionUnsigned version,
-        const UnallocatedVector<OTData>& header_hashes,
+        const UnallocatedVector<ByteArray>& header_hashes,
         const Data& stop_hash) noexcept(false);
     Getblocks(const Getblocks&) = delete;
     Getblocks(Getblocks&&) = delete;
@@ -128,7 +126,7 @@ public:
 
 private:
     const bitcoin::ProtocolVersionUnsigned version_;
-    const UnallocatedVector<OTData> header_hashes_;
-    const OTData stop_hash_;
+    const UnallocatedVector<ByteArray> header_hashes_;
+    const ByteArray stop_hash_;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

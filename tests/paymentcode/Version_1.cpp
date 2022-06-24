@@ -105,12 +105,12 @@ TEST_F(Test_PaymentCode_v1, blind)
     const auto blind = alice_pc_secret_.Blind(
         bob_pc_public_,
         alice_blind_secret_,
-        outpoint->Bytes(),
-        data->WriteInto(),
+        outpoint.Bytes(),
+        data.WriteInto(),
         reason_);
 
     ASSERT_TRUE(blind);
-    EXPECT_EQ(data.get(), expected.get());
+    EXPECT_EQ(data, expected);
 }
 
 TEST_F(Test_PaymentCode_v1, unblind)
@@ -122,7 +122,7 @@ TEST_F(Test_PaymentCode_v1, unblind)
     const auto& expected = GetPaymentCodeVectors1().alice_.payment_code_;
     auto data = api_.Factory().Data();
     const auto pPC = bob_pc_secret_.Unblind(
-        blinded->Bytes(), alice_blind_public_, outpoint->Bytes(), reason_);
+        blinded.Bytes(), alice_blind_public_, outpoint.Bytes(), reason_);
 
     EXPECT_GT(pPC.Version(), 0u);
     EXPECT_EQ(pPC.asBase58(), expected);

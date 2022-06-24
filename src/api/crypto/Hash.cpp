@@ -20,6 +20,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -27,7 +28,6 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "smhasher/src/MurmurHash3.h"
 
 namespace opentxs::factory
@@ -146,11 +146,10 @@ auto Hash::Digest(
     const AllocateOutput destination) const noexcept -> bool
 {
     const auto type = static_cast<opentxs::crypto::HashType>(hash);
-    auto temp =
-        Data::Factory();  // TODO IdentifierEncode should accept ReadView
+    auto temp = ByteArray{};  // TODO IdentifierEncode should accept ReadView
 
     try {
-        if (false == Digest(type, data, temp->WriteInto())) {
+        if (false == Digest(type, data, temp.WriteInto())) {
 
             throw std::runtime_error{"failed to calculate hash"};
         }

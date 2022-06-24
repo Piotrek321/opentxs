@@ -34,7 +34,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -130,6 +130,7 @@ class Context;
 }  // namespace zeromq
 }  // namespace network
 
+class Data;
 class Flag;
 // }  // namespace v1
 }  // namespace opentxs
@@ -207,8 +208,8 @@ public:
         const database::BlockStorage policy_;
         const UnallocatedCString& shutdown_endpoint_;
         const bool invalid_peer_;
-        const OTData localhost_peer_;
-        const OTData default_peer_;
+        const ByteArray localhost_peer_;
+        const ByteArray default_peer_;
         const UnallocatedSet<blockchain::p2p::Service> preferred_services_;
         const blockchain::p2p::bitcoin::Nonce nonce_;
         std::atomic<std::size_t> minimum_peers_;
@@ -227,7 +228,7 @@ public:
         static auto set_default_peer(
             const UnallocatedCString& node,
             const Data& localhost,
-            bool& invalidPeer) noexcept -> OTData;
+            bool& invalidPeer) noexcept -> ByteArray;
 
         auto get_default_peer() const noexcept -> Endpoint;
         auto get_dns_peer() const noexcept -> Endpoint;

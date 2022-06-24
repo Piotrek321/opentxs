@@ -27,7 +27,6 @@
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs::factory
@@ -204,11 +203,13 @@ auto Request::Debug() const noexcept -> UnallocatedCString
     }();
     const auto credentials = Credentials();
     output << "Version: " << Version() << "\n";
-    output << "Request ID: 0x" << Data::Factory(req.data(), req.size())->asHex()
+    output << "Request ID: 0x"
+           << to_hex(reinterpret_cast<const std::byte*>(req.data()), req.size())
            << "\n";
     output << "Domain: " << Domain() << "\n";
     output << "Address: " << Address() << "\n";
-    output << "Identity: 0x" << Data::Factory(id.data(), id.size())->asHex()
+    output << "Identity: 0x"
+           << to_hex(reinterpret_cast<const std::byte*>(id.data()), id.size())
            << "\n";
     output << "Mechanism: " << mechanism << "\n";
 
@@ -224,7 +225,11 @@ auto Request::Debug() const noexcept -> UnallocatedCString
         } break;
         case Mechanism::Curve: {
             for (const auto& credential : credentials) {
-                output << "* Pubkey: 0x" << Data::Factory(credential)->asHex()
+                output << "* Pubkey: 0x"
+                       << to_hex(
+                              reinterpret_cast<const std::byte*>(
+                                  credential.data()),
+                              credential.size())
                        << '\n';
             }
         } break;

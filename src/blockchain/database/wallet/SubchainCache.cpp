@@ -7,10 +7,12 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/database/wallet/SubchainCache.hpp"  // IWYU pragma: associated
 
+#include <boost/exception/exception.hpp>
 #include <chrono>  // IWYU pragma: keep
 #include <cstring>
 #include <mutex>
 #include <stdexcept>
+#include <utility>
 
 #include "blockchain/database/wallet/Pattern.hpp"
 #include "blockchain/database/wallet/Position.hpp"
@@ -21,7 +23,8 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -416,12 +419,12 @@ auto SubchainCache::subchain_index(
     const VersionNumber version) const noexcept -> pSubchainIndex
 {
     auto preimage = api_.Factory().Data();
-    preimage->Assign(subaccount);
-    preimage->Concatenate(&subchain, sizeof(subchain));
-    preimage->Concatenate(&type, sizeof(type));
-    preimage->Concatenate(&version, sizeof(version));
+    preimage.Assign(subaccount);
+    preimage.Concatenate(&subchain, sizeof(subchain));
+    preimage.Concatenate(&type, sizeof(type));
+    preimage.Concatenate(&version, sizeof(version));
     auto output = api_.Factory().Identifier();
-    output->CalculateDigest(preimage->Bytes());
+    output->CalculateDigest(preimage.Bytes());
 
     return output;
 }

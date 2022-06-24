@@ -27,7 +27,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -74,6 +74,8 @@ class GCS;
 }  // namespace proto
 
 class Amount;
+class ByteArray;
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -195,7 +197,7 @@ auto GCS(
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
-    const Vector<OTData>& elements,
+    const Vector<ByteArray>& elements,
     alloc::Default alloc) noexcept -> blockchain::GCS;
 auto GCS(
     const api::Session& api,

@@ -38,6 +38,7 @@ namespace proto
 class ServerRequest;
 }  // namespace proto
 
+class ByteArray;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -68,7 +69,7 @@ public:
 
     auto Initiator() const -> const identifier::Nym&;
     auto Number() const -> RequestNumber;
-    auto Serialize() const noexcept -> OTData;
+    auto Serialize() const noexcept -> ByteArray;
     auto Serialize(AllocateOutput destination) const -> bool;
     OPENTXS_NO_EXPORT auto Serialize(proto::ServerRequest& serialized) const
         -> bool;

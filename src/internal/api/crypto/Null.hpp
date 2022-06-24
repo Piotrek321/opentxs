@@ -10,6 +10,7 @@
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -110,7 +111,7 @@ public:
     auto DecodeAddress(const UnallocatedCString&) const noexcept
         -> DecodedAddress final
     {
-        static const auto data = OTData{id_.get()};
+        static const auto data = ByteArray{id_.get()};
 
         return {data, {}, {}, {}};
     }
@@ -252,7 +253,7 @@ public:
         return {};
     }
     auto PubkeyHash(const opentxs::blockchain::Type, const Data&) const
-        noexcept(false) -> OTData final
+        noexcept(false) -> ByteArray final
     {
         throw std::runtime_error{""};
     }

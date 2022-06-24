@@ -20,7 +20,7 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "util/Sodium.hpp"
 
@@ -58,13 +58,13 @@ auto HDNode::Assign(const EcdsaCurve& curve, Bip32::Key& output) const
 
     if (EcdsaCurve::secp256k1 == curve) {
         privateKey->Assign(privateOut);
-        publicKey->Assign(publicOut);
+        publicKey.Assign(publicOut);
     } else {
         const auto expanded = sodium::ExpandSeed(
             {reinterpret_cast<const char*>(privateOut.data()),
              privateOut.size()},
             privateKey->WriteInto(Secret::Mode::Mem),
-            publicKey->WriteInto());
+            publicKey.WriteInto());
 
         if (false == expanded) {
             throw std::runtime_error("Failed to expand seed");

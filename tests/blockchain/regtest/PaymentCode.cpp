@@ -442,7 +442,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
         memo_outgoing_);
     const auto& txid = transactions_ptxid_.emplace_back(future.get().second);
 
-    ASSERT_FALSE(txid->empty());
+    ASSERT_FALSE(txid.empty());
 
     {
         const auto pTX =
@@ -452,7 +452,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
 
         const auto& tx = *pTX;
         EXPECT_TRUE(txos_alice_.SpendUnconfirmed(
-            {transactions_ptxid_.at(0)->Bytes(), 0}));
+            {transactions_ptxid_.at(0).Bytes(), 0}));
         EXPECT_TRUE(txos_alice_.AddUnconfirmed(tx, 1, SendHD()));
         // NOTE do not update Bob's txos since the recipient payment code
         // subaccount does not exist yet.
@@ -463,7 +463,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
         const auto amount = ot::blockchain::Amount{1000000000};
         expected_.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple(txid->Bytes(), 0),
+            std::forward_as_tuple(txid.Bytes(), 0),
             std::forward_as_tuple(
                 client_1_.Factory().DataFromBytes(element.Key()->PublicKey()),
                 amount,
@@ -474,7 +474,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
         const auto amount = ot::blockchain::Amount{8999999684};
         expected_.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple(txid->Bytes(), 1),
+            std::forward_as_tuple(txid.Bytes(), 1),
             std::forward_as_tuple(
                 client_1_.Factory().DataFromBytes(element.Key()->PublicKey()),
                 amount,
@@ -491,7 +491,7 @@ TEST_F(Regtest_payment_code, first_outgoing_transaction)
     const auto& me = alice_.nym_id_;
     const auto self = contact.ContactID(me);
     const auto other = contact.ContactID(bob_.nym_id_);
-    const auto& txid = transactions_ptxid_.at(1).get();
+    const auto& txid = transactions_ptxid_.at(1);
     const auto pTX = blockchain.LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);
@@ -887,7 +887,7 @@ TEST_F(Regtest_payment_code, confirm_send)
     account_list_bob_.expected_ += 0;
     account_tree_alice_.expected_ += 2;
     account_tree_bob_.expected_ += 0;
-    const auto& txid = transactions_ptxid_.at(1).get();
+    const auto& txid = transactions_ptxid_.at(1);
     const auto extra = [&] {
         auto output = ot::UnallocatedVector<Transaction>{};
         const auto pTX = output.emplace_back(
@@ -1308,7 +1308,7 @@ TEST_F(Regtest_payment_code, bob_first_incoming_transaction)
     const auto& me = bob_.nym_id_;
     const auto self = contact.ContactID(me);
     const auto other = contact.ContactID(alice_.nym_id_);
-    const auto& txid = transactions_ptxid_.at(1).get();
+    const auto& txid = transactions_ptxid_.at(1);
     const auto pTX = blockchain.LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);
@@ -1386,7 +1386,7 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
         memo_outgoing_);
     const auto& txid = transactions_ptxid_.emplace_back(future.get().second);
 
-    ASSERT_FALSE(txid->empty());
+    ASSERT_FALSE(txid.empty());
 
     {
         const auto pTX =
@@ -1396,7 +1396,7 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
 
         const auto& tx = *pTX;
         EXPECT_TRUE(txos_alice_.SpendUnconfirmed(
-            {transactions_ptxid_.at(1)->Bytes(), 1}));
+            {transactions_ptxid_.at(1).Bytes(), 1}));
         EXPECT_TRUE(txos_bob_.AddUnconfirmed(tx, 0, ReceivePC()));
         EXPECT_TRUE(txos_alice_.AddUnconfirmed(tx, 1, SendHD()));
     }
@@ -1406,7 +1406,7 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
         const auto amount = ot::blockchain::Amount{1500000000};
         expected_.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple(txid->Bytes(), 0),
+            std::forward_as_tuple(txid.Bytes(), 0),
             std::forward_as_tuple(
                 client_1_.Factory().DataFromBytes(element.Key()->PublicKey()),
                 amount,
@@ -1417,7 +1417,7 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
         const auto amount = ot::blockchain::Amount{7499999448};
         expected_.emplace(
             std::piecewise_construct,
-            std::forward_as_tuple(txid->Bytes(), 1),
+            std::forward_as_tuple(txid.Bytes(), 1),
             std::forward_as_tuple(
                 element.PubkeyHash(), amount, Pattern::PayToPubkeyHash));
     }
@@ -1641,7 +1641,7 @@ TEST_F(Regtest_payment_code, alice_second_outgoing_transaction)
     const auto& me = alice_.nym_id_;
     const auto self = contact.ContactID(me);
     const auto other = contact.ContactID(bob_.nym_id_);
-    const auto& txid = transactions_ptxid_.at(2).get();
+    const auto& txid = transactions_ptxid_.at(2);
     const auto pTX = blockchain.LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);

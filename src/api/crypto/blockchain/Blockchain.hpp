@@ -43,7 +43,6 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -110,7 +109,9 @@ namespace proto
 class HDPath;
 }  // namespace proto
 
+class ByteArray;
 class Contact;
+class Data;
 class Options;
 class PasswordPrompt;
 class PaymentCode;
@@ -235,7 +236,7 @@ public:
         const PasswordPrompt& reason) const noexcept(false)
         -> const opentxs::blockchain::crypto::PaymentCode& final;
     auto PubkeyHash(const Chain chain, const Data& pubkey) const noexcept(false)
-        -> OTData final;
+        -> ByteArray final;
     auto ProcessContact(const Contact& contact) const noexcept -> bool final;
     auto ProcessMergedContact(const Contact& parent, const Contact& child)
         const noexcept -> bool final;

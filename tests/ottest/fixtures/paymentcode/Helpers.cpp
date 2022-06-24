@@ -76,7 +76,7 @@ auto PaymentCodeFixture::blinding_key_secret(
 
     if (false == bool(var)) {
         const auto decoded = api.Factory().DataFromHex(privateKey);
-        const auto key = api.Factory().SecretFromBytes(decoded->Bytes());
+        const auto key = api.Factory().SecretFromBytes(decoded.Bytes());
         var = api.Crypto().Asymmetric().InstantiateSecp256k1Key(key, reason);
     }
 

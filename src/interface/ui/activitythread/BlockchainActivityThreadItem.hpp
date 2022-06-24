@@ -13,7 +13,7 @@
 #include "interface/ui/activitythread/ActivityThreadItem.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -56,8 +56,12 @@ public:
     static auto extract(
         const api::session::Client& api,
         const identifier::Nym& nymID,
-        CustomData& custom) noexcept -> std::
-        tuple<OTData, opentxs::Amount, UnallocatedCString, UnallocatedCString>;
+        CustomData& custom) noexcept
+        -> std::tuple<
+            ByteArray,
+            opentxs::Amount,
+            UnallocatedCString,
+            UnallocatedCString>;
 
     auto Amount() const noexcept -> opentxs::Amount final;
     auto DisplayAmount() const noexcept -> UnallocatedCString final;
@@ -70,7 +74,7 @@ public:
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,
         CustomData& custom,
-        OTData&& txid,
+        ByteArray&& txid,
         opentxs::Amount amount,
         UnallocatedCString&& displayAmount,
         UnallocatedCString&& memo) noexcept;
@@ -85,7 +89,7 @@ public:
     ~BlockchainActivityThreadItem() final = default;
 
 private:
-    const OTData txid_;
+    const ByteArray txid_;
     UnallocatedCString display_amount_;
     UnallocatedCString memo_;
     opentxs::Amount amount_;

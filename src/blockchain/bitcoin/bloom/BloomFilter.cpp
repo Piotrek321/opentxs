@@ -25,10 +25,10 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/BloomFilter.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -57,9 +57,11 @@ auto BloomFilter(const api::Session& api, const Data& serialized)
     }
 
     const auto filterSize = serialized.size() - sizeof(raw);
-    auto filter = (0 == filterSize)
-                      ? Data::Factory()
-                      : Data::Factory(serialized.data(), filterSize);
+    auto filter =
+        (0 == filterSize)
+            ? ByteArray{}
+            : ByteArray{
+                  static_cast<const std::byte*>(serialized.data()), filterSize};
     std::memcpy(
         reinterpret_cast<std::byte*>(&raw),
         static_cast<const std::byte*>(serialized.data()) + filterSize,

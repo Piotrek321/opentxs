@@ -277,7 +277,7 @@ auto PeerManager::Peers::Disconnect(const int id) noexcept -> void
 
 auto PeerManager::Peers::get_default_peer() const noexcept -> Endpoint
 {
-    if (localhost_peer_.get() == default_peer_) { return {}; }
+    if (localhost_peer_ == default_peer_) { return {}; }
 
     const auto& data = params::Chains().at(chain_);
 
@@ -514,7 +514,7 @@ auto PeerManager::Peers::get_types() const noexcept
         default: {
             auto ipv4data = api_.Network().Asio().GetPublicAddress4().get();
 
-            if (!ipv4data->empty()) { output.insert(Type::ipv4); }
+            if (!ipv4data.empty()) { output.insert(Type::ipv4); }
         }
     }
 
@@ -529,7 +529,7 @@ auto PeerManager::Peers::get_types() const noexcept
         default: {
             auto ipv6data = api_.Network().Asio().GetPublicAddress6().get();
 
-            if (!ipv6data->empty()) { output.insert(Type::ipv6); }
+            if (!ipv6data.empty()) { output.insert(Type::ipv6); }
         }
     }
 
@@ -609,13 +609,13 @@ auto PeerManager::Peers::previous_failure_timeout(
 auto PeerManager::Peers::set_default_peer(
     const UnallocatedCString& node,
     const Data& localhost,
-    bool& invalidPeer) noexcept -> OTData
+    bool& invalidPeer) noexcept -> ByteArray
 {
     if (!node.empty()) {
         try {
             const auto bytes = ip::make_address_v4(node).to_bytes();
 
-            return Data::Factory(bytes.data(), bytes.size());
+            return {bytes.data(), bytes.size()};
         } catch (...) {
             invalidPeer = true;
         }

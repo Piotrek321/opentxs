@@ -19,7 +19,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -67,7 +67,7 @@ public:
     static constexpr auto fail_byte_ = std::byte{0x01};
 
     const opentxs::blockchain::Type chain_;
-    const OTData txid_;
+    const ByteArray txid_;
     const bool success_;
     PushTransactionReply* parent_;
 
@@ -106,7 +106,7 @@ public:
 
         out.AddFrame(Buffer{static_cast<std::uint32_t>(type)});
         out.AddFrame(Buffer{static_cast<std::uint32_t>(chain_)});
-        opentxs::copy(txid_->Bytes(), out.AppendBytes());
+        opentxs::copy(txid_.Bytes(), out.AppendBytes());
         out.AddFrame([this] {
             if (success_) {
 
@@ -123,13 +123,13 @@ public:
     Imp() noexcept
         : Base::Imp()
         , chain_(opentxs::blockchain::Type::Unknown)
-        , txid_(opentxs::Data::Factory())
+        , txid_(opentxs::ByteArray{})
         , success_(false)
         , parent_(nullptr)
     {
     }
     Imp(const opentxs::blockchain::Type chain,
-        OTData&& id,
+        ByteArray&& id,
         bool success) noexcept
         : Base::Imp(MessageType::pushtx_reply)
         , chain_(chain)

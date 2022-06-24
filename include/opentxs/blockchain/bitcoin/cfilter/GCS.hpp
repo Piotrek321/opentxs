@@ -9,7 +9,7 @@
 
 #include <cstdint>
 
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -64,7 +64,7 @@ public:
     auto Serialize(AllocateOutput out) const noexcept -> bool;
     auto Test(const Data& target) const noexcept -> bool;
     auto Test(const ReadView target) const noexcept -> bool;
-    auto Test(const Vector<OTData>& targets) const noexcept -> bool;
+    auto Test(const Vector<ByteArray>& targets) const noexcept -> bool;
     auto Test(const Vector<Space>& targets) const noexcept -> bool;
 
     auto swap(GCS& rhs) noexcept -> void;

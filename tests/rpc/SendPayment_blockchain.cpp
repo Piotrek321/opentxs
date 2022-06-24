@@ -100,7 +100,7 @@ protected:
 
             OT_ASSERT(output);
 
-            transactions_ptxid_.emplace_back(output->ID()).get();
+            transactions_ptxid_.emplace_back(output->ID());
 
             return output;
         })

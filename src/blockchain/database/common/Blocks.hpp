@@ -15,7 +15,6 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"

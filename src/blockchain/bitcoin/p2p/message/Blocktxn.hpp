@@ -11,7 +11,7 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -34,6 +34,8 @@ class Header;
 }  // namespace bitcoin
 }  // namespace p2p
 }  // namespace blockchain
+
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -43,7 +45,10 @@ namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 class Blocktxn final : public internal::Blocktxn, public implementation::Message
 {
 public:
-    auto BlockTransactions() const noexcept -> OTData final { return payload_; }
+    auto BlockTransactions() const noexcept -> ByteArray final
+    {
+        return payload_;
+    }
 
     Blocktxn(
         const api::Session& api,
@@ -61,7 +66,7 @@ public:
     ~Blocktxn() final = default;
 
 private:
-    const OTData payload_;
+    const ByteArray payload_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

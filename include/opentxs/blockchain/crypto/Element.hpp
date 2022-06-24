@@ -9,7 +9,6 @@
 
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Time.hpp"
@@ -32,6 +31,7 @@ class Subaccount;
 }  // namespace crypto
 }  // namespace blockchain
 
+class ByteArray;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -57,7 +57,7 @@ public:
     virtual auto Parent() const noexcept -> const Subaccount& = 0;
     virtual auto PrivateKey(const PasswordPrompt& reason) const noexcept
         -> ECKey = 0;
-    virtual auto PubkeyHash() const noexcept -> OTData = 0;
+    virtual auto PubkeyHash() const noexcept -> ByteArray = 0;
     virtual auto Subchain() const noexcept -> crypto::Subchain = 0;
     virtual auto Unconfirmed() const noexcept -> Txids = 0;
 

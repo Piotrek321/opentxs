@@ -32,12 +32,12 @@ auto Asio::Close(const Endpoint& endpoint) const noexcept -> bool
     return imp_->Close(endpoint);
 }
 
-auto Asio::GetPublicAddress4() const noexcept -> std::shared_future<OTData>
+auto Asio::GetPublicAddress4() const noexcept -> std::shared_future<ByteArray>
 {
     return imp_->GetPublicAddress4();
 }
 
-auto Asio::GetPublicAddress6() const noexcept -> std::shared_future<OTData>
+auto Asio::GetPublicAddress6() const noexcept -> std::shared_future<ByteArray>
 {
     return imp_->GetPublicAddress6();
 }

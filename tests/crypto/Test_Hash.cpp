@@ -407,8 +407,8 @@ TEST_F(Test_Hash, MurmurHash3)
     for (const auto& [input, seed, expected] : murmur_) {
         std::uint32_t calculated{0};
         const auto plaintext = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(input);
         crypto_.Hash().MurmurHash3_32(seed, plaintext, calculated);
@@ -420,51 +420,51 @@ TEST_F(Test_Hash, MurmurHash3)
 TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA1)
 {
     for (const auto& [P, S, c, dkLen, DK] : pbkdf_sha1_) {
-        const auto salt = ot::Data::Factory(S.data(), S.size());
+        const auto salt = ot::ByteArray{S.data(), S.size()};
         const auto expected = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(DK);
-        auto output = ot::Data::Factory();
+        auto output = ot::ByteArray{};
 
         EXPECT_TRUE(crypto_.Hash().PKCS5_PBKDF2_HMAC(
             P, salt, c, ot::crypto::HashType::Sha1, dkLen, output));
-        EXPECT_EQ(output.get(), expected.get());
+        EXPECT_EQ(output, expected);
     }
 }
 
 TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA256)
 {
     for (const auto& [P, S, c, dkLen, DK] : pbkdf_sha256_) {
-        const auto salt = ot::Data::Factory(S.data(), S.size());
+        const auto salt = ot::ByteArray{S.data(), S.size()};
         const auto expected = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(DK);
-        auto output = ot::Data::Factory();
+        auto output = ot::ByteArray{};
 
         EXPECT_TRUE(crypto_.Hash().PKCS5_PBKDF2_HMAC(
             P, salt, c, ot::crypto::HashType::Sha256, dkLen, output));
-        EXPECT_EQ(output.get(), expected.get());
+        EXPECT_EQ(output, expected);
     }
 }
 
 TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA512)
 {
     for (const auto& [P, S, c, dkLen, DK] : pbkdf_sha512_) {
-        const auto salt = ot::Data::Factory(S.data(), S.size());
+        const auto salt = ot::ByteArray{S.data(), S.size()};
         const auto expected = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(DK);
-        auto output = ot::Data::Factory();
+        auto output = ot::ByteArray{};
 
         EXPECT_TRUE(crypto_.Hash().PKCS5_PBKDF2_HMAC(
             P, salt, c, ot::crypto::HashType::Sha512, dkLen, output));
-        EXPECT_EQ(output.get(), expected.get());
+        EXPECT_EQ(output, expected);
     }
 }
 
@@ -472,38 +472,38 @@ TEST_F(Test_Hash, HMAC_SHA2)
 {
     for (const auto& [key, d, sha256, sha512] : hmac_sha2_) {
         const auto data = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(d);
         const auto dataPassword = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(key);
         const auto expected256 = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(sha256);
         const auto expected512 = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(sha512);
-        auto output256 = ot::Data::Factory();
-        auto output512 = ot::Data::Factory();
+        auto output256 = ot::ByteArray{};
+        auto output512 = ot::ByteArray{};
 
         EXPECT_TRUE(crypto_.Hash().HMAC(
             ot::crypto::HashType::Sha256,
-            dataPassword->Bytes(),
-            data->Bytes(),
-            output256->WriteInto()));
+            dataPassword.Bytes(),
+            data.Bytes(),
+            output256.WriteInto()));
         EXPECT_TRUE(crypto_.Hash().HMAC(
             ot::crypto::HashType::Sha512,
-            dataPassword->Bytes(),
-            data->Bytes(),
-            output512->WriteInto()));
+            dataPassword.Bytes(),
+            data.Bytes(),
+            output512.WriteInto()));
 
         EXPECT_EQ(output256, expected256);
         EXPECT_EQ(output512, expected512);
@@ -514,13 +514,13 @@ TEST_F(Test_Hash, scrypt_rfc7914)
 {
     for (const auto& [input, salt, N, r, p, size, hex] : scrypt_rfc7914_) {
         const auto expected = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(hex);
-        auto hash = ot::Data::Factory();
-        const auto success = crypto_.Hash().Scrypt(
-            input, salt, N, r, p, size, hash->WriteInto());
+        auto hash = ot::ByteArray{};
+        const auto success =
+            crypto_.Hash().Scrypt(input, salt, N, r, p, size, hash.WriteInto());
 
         EXPECT_TRUE(success);
         EXPECT_EQ(hash, expected);
@@ -531,28 +531,28 @@ TEST_F(Test_Hash, scrypt_litecoin)
 {
     for (const auto& [input, salt, N, r, p, size, hex] : scrypt_litecoin_) {
         const auto expected = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(hex);
         const auto preimage = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(input);
-        auto hash = ot::Data::Factory();
+        auto hash = ot::ByteArray{};
 
-        ASSERT_EQ(preimage->size(), 80);
-        ASSERT_EQ(expected->size(), 32);
+        ASSERT_EQ(preimage.size(), 80);
+        ASSERT_EQ(expected.size(), 32);
 
         const auto success = crypto_.Hash().Scrypt(
-            preimage->Bytes(),
-            preimage->Bytes(),
+            preimage.Bytes(),
+            preimage.Bytes(),
             N,
             r,
             p,
             size,
-            hash->WriteInto());
+            hash.WriteInto());
 
         EXPECT_TRUE(success);
         EXPECT_EQ(hash, expected);
@@ -563,38 +563,34 @@ TEST_F(Test_Hash, nist_short)
 {
     for (const auto& [input, sha1, sha256, sha512] : nist_hashes_) {
         const auto eSha1 = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(sha1);
         const auto eSha256 = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(sha256);
         const auto eSha512 = [](const auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
             return out;
         }(sha512);
-        auto calculatedSha1 = ot::Data::Factory();
-        auto calculatedSha256 = ot::Data::Factory();
-        auto calculatedSha512 = ot::Data::Factory();
+        auto calculatedSha1 = ot::ByteArray{};
+        auto calculatedSha256 = ot::ByteArray{};
+        auto calculatedSha512 = ot::ByteArray{};
 
         EXPECT_TRUE(crypto_.Hash().Digest(
-            ot::crypto::HashType::Sha1, input, calculatedSha1->WriteInto()));
+            ot::crypto::HashType::Sha1, input, calculatedSha1.WriteInto()));
         EXPECT_TRUE(crypto_.Hash().Digest(
-            ot::crypto::HashType::Sha256,
-            input,
-            calculatedSha256->WriteInto()));
+            ot::crypto::HashType::Sha256, input, calculatedSha256.WriteInto()));
         EXPECT_TRUE(crypto_.Hash().Digest(
-            ot::crypto::HashType::Sha512,
-            input,
-            calculatedSha512->WriteInto()));
+            ot::crypto::HashType::Sha512, input, calculatedSha512.WriteInto()));
 
-        EXPECT_EQ(calculatedSha1.get(), eSha1);
-        EXPECT_EQ(calculatedSha256.get(), eSha256);
-        EXPECT_EQ(calculatedSha512.get(), eSha512);
+        EXPECT_EQ(calculatedSha1, eSha1);
+        EXPECT_EQ(calculatedSha256, eSha256);
+        EXPECT_EQ(calculatedSha512, eSha512);
     }
 }
 
@@ -602,23 +598,23 @@ TEST_F(Test_Hash, nist_million_characters)
 {
     const auto& [input, sha1, sha256, sha512] = nist_one_million_;
     const auto eSha1 = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(sha1);
     const auto eSha256 = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(sha256);
     const auto eSha512 = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(sha512);
-    auto calculatedSha1 = ot::Data::Factory();
-    auto calculatedSha256 = ot::Data::Factory();
-    auto calculatedSha512 = ot::Data::Factory();
+    auto calculatedSha1 = ot::ByteArray{};
+    auto calculatedSha256 = ot::ByteArray{};
+    auto calculatedSha512 = ot::ByteArray{};
     constexpr auto copies = 1000000_uz;
     const auto& character = input.at(0);
     const ot::UnallocatedVector<char> preimage(copies, character);
@@ -629,15 +625,15 @@ TEST_F(Test_Hash, nist_million_characters)
     ASSERT_EQ(preimage.at(copies - 1u), character);
 
     EXPECT_TRUE(crypto_.Hash().Digest(
-        ot::crypto::HashType::Sha1, view, calculatedSha1->WriteInto()));
+        ot::crypto::HashType::Sha1, view, calculatedSha1.WriteInto()));
     EXPECT_TRUE(crypto_.Hash().Digest(
-        ot::crypto::HashType::Sha256, view, calculatedSha256->WriteInto()));
+        ot::crypto::HashType::Sha256, view, calculatedSha256.WriteInto()));
     EXPECT_TRUE(crypto_.Hash().Digest(
-        ot::crypto::HashType::Sha512, view, calculatedSha512->WriteInto()));
+        ot::crypto::HashType::Sha512, view, calculatedSha512.WriteInto()));
 
-    EXPECT_EQ(calculatedSha1.get(), eSha1);
-    EXPECT_EQ(calculatedSha256.get(), eSha256);
-    EXPECT_EQ(calculatedSha512.get(), eSha512);
+    EXPECT_EQ(calculatedSha1, eSha1);
+    EXPECT_EQ(calculatedSha256, eSha256);
+    EXPECT_EQ(calculatedSha512, eSha512);
 }
 
 TEST_F(Test_Hash, nist_gigabyte_string)
@@ -645,25 +641,25 @@ TEST_F(Test_Hash, nist_gigabyte_string)
     const auto& [input, sha1, sha256, sha512] = nist_one_gigabyte_;
     // TODO c++20
     const auto eSha1 = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(sha1);
     // TODO c++20
     const auto eSha256 = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(sha256);
     // TODO c++20
     const auto eSha512 = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(sha512);
-    auto calculatedSha1 = ot::Data::Factory();
-    auto calculatedSha256 = ot::Data::Factory();
-    auto calculatedSha512 = ot::Data::Factory();
+    auto calculatedSha1 = ot::ByteArray{};
+    auto calculatedSha256 = ot::ByteArray{};
+    auto calculatedSha512 = ot::ByteArray{};
     constexpr auto copies = 16777216_uz;
     constexpr auto size = 1073741824_uz;
     auto preimage = ot::UnallocatedVector<char>{};
@@ -681,14 +677,14 @@ TEST_F(Test_Hash, nist_gigabyte_string)
 
     ASSERT_EQ(preimage.size(), size);
     EXPECT_TRUE(crypto_.Hash().Digest(
-        ot::crypto::HashType::Sha1, view, calculatedSha1->WriteInto()));
+        ot::crypto::HashType::Sha1, view, calculatedSha1.WriteInto()));
     EXPECT_TRUE(crypto_.Hash().Digest(
-        ot::crypto::HashType::Sha256, view, calculatedSha256->WriteInto()));
+        ot::crypto::HashType::Sha256, view, calculatedSha256.WriteInto()));
     EXPECT_TRUE(crypto_.Hash().Digest(
-        ot::crypto::HashType::Sha512, view, calculatedSha512->WriteInto()));
-    EXPECT_EQ(calculatedSha1.get(), eSha1);
-    EXPECT_EQ(calculatedSha256.get(), eSha256);
-    EXPECT_EQ(calculatedSha512.get(), eSha512);
+        ot::crypto::HashType::Sha512, view, calculatedSha512.WriteInto()));
+    EXPECT_EQ(calculatedSha1, eSha1);
+    EXPECT_EQ(calculatedSha256, eSha256);
+    EXPECT_EQ(calculatedSha512, eSha512);
 }
 
 TEST_F(Test_Hash, argon2i)
@@ -715,7 +711,7 @@ TEST_F(Test_Hash, argon2i)
             return api.Factory().DataFromBytes(secret->Bytes());
         }();
 
-        EXPECT_EQ(hash->asHex(), hex);
+        EXPECT_EQ(hash.asHex(), hex);
     }
 }
 
@@ -743,7 +739,7 @@ TEST_F(Test_Hash, argon2id)
             return api.Factory().DataFromBytes(secret->Bytes());
         }();
 
-        EXPECT_EQ(hash->asHex(), hex);
+        EXPECT_EQ(hash.asHex(), hex);
     }
 }
 }  // namespace ottest

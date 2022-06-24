@@ -20,7 +20,7 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Amount.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -81,9 +81,9 @@ auto Notification::calculate_id(
     const opentxs::PaymentCode& code) noexcept -> OTIdentifier
 {
     auto preimage = api.Factory().DataFromBytes(code.ID().Bytes());
-    preimage->Concatenate(&chain, sizeof(chain));
+    preimage.Concatenate(&chain, sizeof(chain));
     auto output = api.Factory().Identifier();
-    output->CalculateDigest(preimage->Bytes());
+    output->CalculateDigest(preimage.Bytes());
 
     return output;
 }

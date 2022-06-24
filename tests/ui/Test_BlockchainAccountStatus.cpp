@@ -63,7 +63,7 @@ public:
         const auto& api = *local.api_;
         const auto path = [&] {
             auto out = api.Factory().Data();
-            local.nym_->PaymentCodePath(out->WriteInto());
+            local.nym_->PaymentCodePath(out.WriteInto());
 
             return out;
         }();
@@ -73,7 +73,7 @@ public:
                 local.nym_id_,
                 api.Factory().PaymentCode(local.payment_code_),
                 api.Factory().PaymentCode(remote.payment_code_),
-                path->Bytes(),
+                path.Bytes(),
                 chain_,
                 local.Reason()));
     }

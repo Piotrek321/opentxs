@@ -30,7 +30,6 @@ class AsymmetricKey;
 }  // namespace proto
 
 class Data;
-class OTPassword;
 class PasswordPrompt;
 class Secret;
 class Signature;

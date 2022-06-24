@@ -23,7 +23,6 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/rpc/Types.hpp"
 #include "opentxs/interface/rpc/request/Base.hpp"

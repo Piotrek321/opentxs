@@ -15,7 +15,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 
 namespace opentxs::blockchain::bitcoin::block
 {
@@ -26,9 +26,9 @@ auto Header::Imp::MerkleRoot() const noexcept -> const blockchain::block::Hash&
     return blank;
 }
 
-auto Header::Imp::Encode() const noexcept -> OTData
+auto Header::Imp::Encode() const noexcept -> ByteArray
 {
-    static const auto blank = Data::Factory();
+    static const auto blank = ByteArray{};
 
     return blank;
 }
@@ -82,7 +82,7 @@ auto Header::MerkleRoot() const noexcept -> const blockchain::block::Hash&
     return imp_bitcoin_->MerkleRoot();
 }
 
-auto Header::Encode() const noexcept -> OTData
+auto Header::Encode() const noexcept -> ByteArray
 {
     return imp_bitcoin_->Encode();
 }

@@ -27,13 +27,12 @@ extern "C" {
 #include "internal/crypto/library/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 
@@ -676,11 +675,11 @@ auto Sodium::sha1(const ReadView data, WritableView& output) const -> bool
             .finalize()
             .print_hex(hex.data());
         const auto hash = [&]() {
-            auto out = Data::Factory();
-            out->DecodeHex({hex.data(), hex.size()});
+            auto out = ByteArray{};
+            out.DecodeHex({hex.data(), hex.size()});
             return out;
         }();
-        std::memcpy(output.data(), hash->data(), hash->size());
+        std::memcpy(output.data(), hash.data(), hash.size());
 
         return true;
     } catch (const std::exception& e) {

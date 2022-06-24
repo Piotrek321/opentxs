@@ -19,9 +19,9 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -43,7 +43,9 @@ auto BitcoinP2PFilteradd(
     }
 
     return new ReturnType(
-        api, std::move(pHeader), Data::Factory(payload, size));
+        api,
+        std::move(pHeader),
+        ByteArray{static_cast<const std::byte*>(payload), size});
 }
 
 auto BitcoinP2PFilteradd(
@@ -85,7 +87,7 @@ auto Filteradd::payload(AllocateOutput out) const noexcept -> bool
     try {
         if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-        const auto element = element_->size();
+        const auto element = element_.size();
         const auto cs = CompactSize(element).Encode();
         const auto bytes = cs.size() + element;
         auto output = out(bytes);
@@ -97,7 +99,7 @@ auto Filteradd::payload(AllocateOutput out) const noexcept -> bool
         auto* i = output.as<std::byte>();
         std::memcpy(i, cs.data(), cs.size());
         std::advance(i, cs.size());
-        std::memcpy(i, element_->data(), element);
+        std::memcpy(i, element_.data(), element);
         std::advance(i, element);
 
         return true;

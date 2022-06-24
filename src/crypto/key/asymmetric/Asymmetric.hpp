@@ -13,7 +13,7 @@
 
 #include "Proto.hpp"
 #include "internal/util/Mutex.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
@@ -62,6 +62,7 @@ class Ciphertext;
 class HDPath;
 }  // namespace proto
 
+class Data;
 class Identifier;
 class OTSignatureMetadata;
 class PasswordPrompt;
@@ -76,7 +77,7 @@ class Asymmetric : virtual public key::Asymmetric
 public:
     auto CalculateHash(
         const crypto::HashType hashType,
-        const PasswordPrompt& password) const noexcept -> OTData final;
+        const PasswordPrompt& password) const noexcept -> ByteArray final;
     auto CalculateTag(
         const identity::Authority& nym,
         const crypto::key::asymmetric::Algorithm type,
@@ -118,7 +119,7 @@ public:
     auto Path(proto::HDPath& output) const noexcept -> bool override;
     auto PrivateKey(const PasswordPrompt& reason) const noexcept
         -> ReadView final;
-    auto PublicKey() const noexcept -> ReadView final { return key_->Bytes(); }
+    auto PublicKey() const noexcept -> ReadView final { return key_.Bytes(); }
     auto Role() const noexcept -> opentxs::crypto::key::asymmetric::Role final
     {
         return role_;
@@ -169,7 +170,7 @@ protected:
     const VersionNumber version_;
     const crypto::key::asymmetric::Algorithm type_;
     const opentxs::crypto::key::asymmetric::Role role_;
-    const OTData key_;
+    const ByteArray key_;
     mutable OTSecret plaintext_key_;
     mutable std::mutex lock_;
     std::unique_ptr<const proto::Ciphertext> encrypted_key_;
@@ -228,7 +229,7 @@ protected:
         const bool hasPublic,
         const bool hasPrivate,
         const VersionNumber version,
-        OTData&& pubkey,
+        ByteArray&& pubkey,
         EncryptedExtractor get,
         PlaintextExtractor getPlaintext = {}) noexcept(false);
     Asymmetric(
@@ -247,7 +248,7 @@ protected:
     Asymmetric(const Asymmetric& rhs, const ReadView newPublic) noexcept;
     Asymmetric(
         const Asymmetric& rhs,
-        OTData&& newPublicKey,
+        ByteArray&& newPublicKey,
         OTSecret&& newSecretKey) noexcept;
 
 private:
@@ -267,7 +268,7 @@ private:
     const std::unique_ptr<const OTSignatureMetadata> metadata_;
     bool has_private_;
 
-    auto SerializeKeyToData(const proto::AsymmetricKey& rhs) const -> OTData;
+    auto SerializeKeyToData(const proto::AsymmetricKey& rhs) const -> ByteArray;
 
     static auto hashtype_map() noexcept -> const HashTypeMap&;
     static auto signaturerole_map() noexcept -> const SignatureRoleMap&;

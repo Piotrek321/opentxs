@@ -19,7 +19,7 @@
 #include "internal/otx/server/Types.hpp"
 #include "internal/util/Lockable.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
@@ -76,7 +76,7 @@ namespace server
 class Server;
 }  // namespace server
 
-class OTPassword;
+class Data;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1
@@ -111,7 +111,7 @@ public:
 
 private:
     // connection identifier, old format
-    using ConnectionData = std::pair<OTData, bool>;
+    using ConnectionData = std::pair<ByteArray, bool>;
 
     static constexpr auto zap_domain_{"opentxs-otx"};
 
@@ -133,7 +133,7 @@ private:
     mutable std::shared_mutex connection_map_lock_;
 
     static auto get_connection(
-        const network::zeromq::Message& incoming) noexcept -> OTData;
+        const network::zeromq::Message& incoming) noexcept -> ByteArray;
 
     auto extract_proto(const network::zeromq::Frame& incoming) const noexcept
         -> proto::ServerRequest;

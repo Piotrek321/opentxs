@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "internal/crypto/library/Null.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/crypto/key/Ed25519.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
@@ -67,9 +68,9 @@ public:
         return {};
     }
     auto CalculateHash(const crypto::HashType, const PasswordPrompt&)
-        const noexcept -> OTData final
+        const noexcept -> ByteArray final
     {
-        return Data::Factory();
+        return ByteArray{};
     }
     auto CalculateID(Identifier&) const noexcept -> bool final { return false; }
     auto CalculateTag(

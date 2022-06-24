@@ -17,7 +17,6 @@ extern "C" {
 #include "crypto/library/EcdsaProvider.hpp"
 #include "internal/crypto/library/Secp256k1.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
@@ -52,7 +51,7 @@ class Parameters;
 class Parameters;
 }  // namespace crypto
 
-class OTPassword;
+class ByteArray;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1
@@ -126,7 +125,7 @@ private:
     static auto blank_private() noexcept -> ReadView;
 
     auto hash(const crypto::HashType type, const ReadView data) const
-        noexcept(false) -> OTData;
+        noexcept(false) -> ByteArray;
     auto parsed_public_key(const ReadView bytes) const noexcept(false)
         -> ::secp256k1_pubkey;
     auto parsed_signature(const ReadView bytes) const noexcept(false)

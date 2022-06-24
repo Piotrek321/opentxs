@@ -19,6 +19,7 @@
 #include <string_view>
 #include <utility>
 
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Container.hpp"
 
 extern "C" {
@@ -351,8 +352,8 @@ private:
             api_,
             filterType,
             opentxs::blockchain::internal::BlockHashToFilterKey(
-                blockHash->Bytes()),
-            bytes->Bytes(),
+                blockHash.Bytes()),
+            bytes.Bytes(),
             {});  // TODO allocator
 
         OT_ASSERT(gcs.IsValid());
@@ -369,7 +370,7 @@ private:
             0,
             filterType,
             gcs.ElementCount(),
-            header->Bytes(),
+            header.Bytes(),
             reader(filter));
 
         Store(chain, items);

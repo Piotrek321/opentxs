@@ -13,15 +13,14 @@
 #include <functional>
 #include <iterator>
 #include <stdexcept>
-#include <type_traits>
 
 #include "blockchain/bitcoin/p2p/Header.hpp"
 #include "blockchain/bitcoin/p2p/Message.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
 // opentxs::blockchain::p2p::bitcoin::message::implementation::Addr::"
@@ -191,38 +190,38 @@ Addr::BitcoinFormat_31402::BitcoinFormat_31402()
 }
 
 auto Addr::ExtractAddress(AddressByteField in) noexcept
-    -> std::pair<p2p::Network, OTData>
+    -> std::pair<p2p::Network, ByteArray>
 {
-    std::pair<p2p::Network, OTData> output{
-        Network::ipv6, Data::Factory(in.data(), in.size())};
+    std::pair<p2p::Network, ByteArray> output{
+        Network::ipv6, ByteArray{in.data(), in.size()}};
     auto& [type, bytes] = output;
-    auto prefix = Data::Factory();
+    auto prefix = ByteArray{};
 
-    if (bytes->Extract(AddressVersion::cjdns_prefix()->size(), prefix) &&
+    if (bytes.Extract(AddressVersion::cjdns_prefix().size(), prefix) &&
         AddressVersion::cjdns_prefix() == prefix) {
         type = Network::cjdns;
     } else if (
-        bytes->Extract(AddressVersion::ipv4_prefix()->size(), prefix) &&
+        bytes.Extract(AddressVersion::ipv4_prefix().size(), prefix) &&
         AddressVersion::ipv4_prefix() == prefix) {
         type = Network::ipv4;
-        bytes->Extract(
-            bytes->size() - AddressVersion::ipv4_prefix()->size(),
+        bytes.Extract(
+            bytes.size() - AddressVersion::ipv4_prefix().size(),
             prefix,
-            AddressVersion::ipv4_prefix()->size());
+            AddressVersion::ipv4_prefix().size());
         bytes = prefix;
 
-        OT_ASSERT(4 == bytes->size());
+        OT_ASSERT(4 == bytes.size());
     } else if (
-        bytes->Extract(AddressVersion::onion_prefix()->size(), prefix) &&
+        bytes.Extract(AddressVersion::onion_prefix().size(), prefix) &&
         AddressVersion::onion_prefix() == prefix) {
         type = Network::onion2;
-        bytes->Extract(
-            bytes->size() - AddressVersion::onion_prefix()->size(),
+        bytes.Extract(
+            bytes.size() - AddressVersion::onion_prefix().size(),
             prefix,
-            AddressVersion::onion_prefix()->size());
+            AddressVersion::onion_prefix().size());
         bytes = prefix;
 
-        OT_ASSERT(10 == bytes->size());
+        OT_ASSERT(10 == bytes.size());
     }
 
     return output;

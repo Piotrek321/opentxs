@@ -34,7 +34,7 @@ public:
         Terms,
         (),
         (const, noexcept, override));
-    MOCK_METHOD(OTData, Serialize, (), (const, noexcept, override));
+    MOCK_METHOD(ByteArray, Serialize, (), (const, noexcept, override));
     MOCK_METHOD(bool, Validate, (), (const, noexcept, override));
     MOCK_METHOD(VersionNumber, Version, (), (const, noexcept, override));
     MOCK_METHOD(Signable*, clone, (), (const, noexcept, override));

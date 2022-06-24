@@ -14,6 +14,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
@@ -117,7 +118,7 @@ auto RSA::serialize(const Lock& lock, Serialized& output) const noexcept -> bool
     if (false == Asymmetric::serialize(lock, output)) { return false; }
 
     if (crypto::key::asymmetric::Role::Encrypt == role_) {
-        output.set_params(params_->data(), params_->size());
+        output.set_params(params_.data(), params_.size());
     }
 
     return true;

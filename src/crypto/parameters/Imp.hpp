@@ -10,7 +10,7 @@
 #include <optional>
 
 #include "internal/crypto/Parameters.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/ParameterType.hpp"
@@ -64,7 +64,7 @@ public:
     OTKeypair source_keypair_;
     std::shared_ptr<proto::ContactData> contact_data_;
     std::shared_ptr<proto::VerificationSet> verification_set_;
-    mutable std::optional<OTData> hashed_;
+    mutable std::optional<ByteArray> hashed_;
 
     auto operator<(const Parameters& rhs) const noexcept -> bool final;
     auto operator==(const Parameters& rhs) const noexcept -> bool final;
@@ -73,7 +73,7 @@ public:
         -> bool final;
     auto GetVerificationSet(proto::VerificationSet& serialized) const noexcept
         -> bool final;
-    auto Hash() const noexcept -> OTData final;
+    auto Hash() const noexcept -> ByteArray final;
     auto clone() const noexcept -> Imp*;
 
     auto SetContactData(const proto::ContactData& contactData) noexcept

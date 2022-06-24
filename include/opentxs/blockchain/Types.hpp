@@ -22,7 +22,6 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -32,6 +31,8 @@ namespace opentxs  // NOLINT
 // inline namespace v1
 // {
 class Amount;
+class ByteArray;
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -50,7 +51,7 @@ using UnconfirmedBalance = Amount;
 using Balance = std::pair<ConfirmedBalance, UnconfirmedBalance>;
 using PatternID = std::uint64_t;
 using Hash = Data;
-using pHash = OTData;
+using pHash = ByteArray;
 
 OPENTXS_EXPORT auto print(Type) noexcept -> std::string_view;
 }  // namespace opentxs::blockchain

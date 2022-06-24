@@ -13,9 +13,12 @@
 
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -40,7 +43,7 @@ public:
         const auto type = address.Type();
         const auto port = address.Port();
         Space bytes{};
-        copy(address.Bytes()->Bytes(), writer(bytes));
+        copy(address.Bytes().Bytes(), writer(bytes));
 
         try {
             auto lock = Lock{lock_};

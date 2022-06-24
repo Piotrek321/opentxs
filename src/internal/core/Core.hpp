@@ -14,7 +14,6 @@
 
 #include "internal/otx/common/NymFile.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -22,7 +21,6 @@
 #include "serialization/protobuf/ContactEnums.pb.h"
 #include "serialization/protobuf/ContractEnums.pb.h"
 #include "serialization/protobuf/PeerEnums.pb.h"
-#include "util/Blank.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -47,17 +45,6 @@ class Secret;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
-
-namespace opentxs
-{
-template <typename T>
-struct make_blank;
-
-template <>
-struct make_blank<OTData> {
-    static auto value(const api::Session&) -> OTData { return Data::Factory(); }
-};
-}  // namespace opentxs
 
 namespace opentxs::internal
 {

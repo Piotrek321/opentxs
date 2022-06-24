@@ -12,7 +12,7 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -64,7 +64,9 @@ class LMDB;
 }  // namespace lmdb
 }  // namespace storage
 
+class ByteArray;
 class Contact;
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -109,9 +111,9 @@ public:
 
 private:
     using ContactToElement =
-        UnallocatedMap<OTIdentifier, UnallocatedSet<OTData>>;
+        UnallocatedMap<OTIdentifier, UnallocatedSet<ByteArray>>;
     using ElementToContact =
-        UnallocatedMap<OTData, UnallocatedSet<OTIdentifier>>;
+        UnallocatedMap<ByteArray, UnallocatedSet<OTIdentifier>>;
     using TransactionToPattern =
         UnallocatedMap<pTxid, UnallocatedSet<PatternID>>;
     using PatternToTransaction =
@@ -130,8 +132,8 @@ private:
 
     auto update_contact(
         const Lock& lock,
-        const UnallocatedSet<OTData>& existing,
-        const UnallocatedSet<OTData>& incoming,
+        const UnallocatedSet<ByteArray>& existing,
+        const UnallocatedSet<ByteArray>& incoming,
         const Identifier& contactID) const noexcept -> UnallocatedVector<pTxid>;
 };
 }  // namespace opentxs::blockchain::database::common

@@ -20,9 +20,9 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs::blockchain::p2p::bitcoin
@@ -67,22 +67,22 @@ const CommandMap command_map_{
 };
 const CommandReverseMap command_reverse_map_{reverse_map(command_map_)};
 
-auto AddressVersion::cjdns_prefix() -> OTData
+auto AddressVersion::cjdns_prefix() -> ByteArray
 {
-    auto out = Data::Factory();
-    out->DecodeHex("0xfc");
+    auto out = ByteArray{};
+    out.DecodeHex("0xfc");
     return out;
 }
-auto AddressVersion::ipv4_prefix() -> OTData
+auto AddressVersion::ipv4_prefix() -> ByteArray
 {
-    auto out = Data::Factory();
-    out->DecodeHex("0x00000000000000000000ffff");
+    auto out = ByteArray{};
+    out.DecodeHex("0x00000000000000000000ffff");
     return out;
 }
-auto AddressVersion::onion_prefix() -> OTData
+auto AddressVersion::onion_prefix() -> ByteArray
 {
-    auto out = Data::Factory();
-    out->DecodeHex("0xfd87d87eeb43");
+    auto out = ByteArray{};
+    out.DecodeHex("0xfd87d87eeb43");
     return out;
 }
 
@@ -132,17 +132,17 @@ auto AddressVersion::Encode(const Network type, const Data& bytes)
             auto encoded{ipv4_prefix()};
             encoded += bytes;
 
-            OT_ASSERT(output.size() == encoded->size());
+            OT_ASSERT(output.size() == encoded.size());
 
-            std::memcpy(output.data(), encoded->data(), output.size());
+            std::memcpy(output.data(), encoded.data(), output.size());
         } break;
         case Network::onion2: {
             auto encoded{onion_prefix()};
             encoded += bytes;
 
-            OT_ASSERT(output.size() == encoded->size());
+            OT_ASSERT(output.size() == encoded.size());
 
-            std::memcpy(output.data(), encoded->data(), output.size());
+            std::memcpy(output.data(), encoded.data(), output.size());
         } break;
         case Network::onion3:
         case Network::eep:
@@ -155,12 +155,12 @@ auto AddressVersion::Encode(const Network type, const Data& bytes)
     return output;
 }
 
-auto BitcoinString(const UnallocatedCString& in) noexcept -> OTData
+auto BitcoinString(const UnallocatedCString& in) noexcept -> ByteArray
 {
     const auto size = CompactSize(in.size()).Encode();
-    auto output = Data::Factory(size.data(), size.size());
+    auto output = ByteArray{size.data(), size.size()};
 
-    if (false == in.empty()) { output->Concatenate(in.data(), in.size()); }
+    if (false == in.empty()) { output.Concatenate(in.data(), in.size()); }
 
     return output;
 }

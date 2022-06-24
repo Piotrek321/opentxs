@@ -38,7 +38,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -424,10 +424,10 @@ auto Workflow::UUID(
     LogTrace()(OT_PRETTY_STATIC(Workflow))("UUID for notary ")(
         notary)(" and transaction number ")(number)(" is ");
     auto preimage = api.Factory().Data();
-    preimage->Assign(notary);
-    preimage->Concatenate(&number, sizeof(number));
+    preimage.Assign(notary);
+    preimage.Concatenate(&number, sizeof(number));
     auto output = Identifier::Factory();
-    output->CalculateDigest(preimage->Bytes());
+    output->CalculateDigest(preimage.Bytes());
     LogTrace()(output).Flush();
 
     return output;

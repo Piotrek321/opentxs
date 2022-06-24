@@ -24,13 +24,12 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/BlockchainAddress.pb.h"
 
@@ -208,16 +207,16 @@ auto Element::Contact() const noexcept -> OTIdentifier
     return contact_;
 }
 
-auto Element::Elements() const noexcept -> UnallocatedSet<OTData>
+auto Element::Elements() const noexcept -> UnallocatedSet<ByteArray>
 {
     auto lock = rLock{lock_};
 
     return elements(lock);
 }
 
-auto Element::elements(const rLock&) const noexcept -> UnallocatedSet<OTData>
+auto Element::elements(const rLock&) const noexcept -> UnallocatedSet<ByteArray>
 {
-    auto output = UnallocatedSet<OTData>{};
+    auto output = UnallocatedSet<ByteArray>{};
     auto pubkey = api_.Factory().DataFromBytes(pkey_->PublicKey());
 
     try {
@@ -345,7 +344,7 @@ auto Element::PrivateKey(const PasswordPrompt& reason) const noexcept -> ECKey
     return pkey_;
 }
 
-auto Element::PubkeyHash() const noexcept -> OTData
+auto Element::PubkeyHash() const noexcept -> ByteArray
 {
     auto lock = rLock{lock_};
     const auto key = api_.Factory().DataFromBytes(pkey_->PublicKey());
@@ -384,11 +383,11 @@ auto Element::Serialize() const noexcept -> Element::SerializedType
         output.set_modified(Clock::to_time_t(timestamp_));
 
         for (const auto& txid : unconfirmed_) {
-            output.add_unconfirmed(txid->str());
+            output.add_unconfirmed(txid.str());
         }
 
         for (const auto& txid : confirmed_) {
-            output.add_confirmed(txid->str());
+            output.add_confirmed(txid.str());
         }
     }
 
@@ -481,7 +480,7 @@ auto Element::update_element(rLock& lock) const noexcept -> void
     auto hashes = UnallocatedVector<ReadView>{};
     std::transform(
         std::begin(elements), std::end(elements), std::back_inserter(hashes), [
-        ](const auto& in) -> auto { return in->Bytes(); });
+        ](const auto& in) -> auto{ return in.Bytes(); });
     lock.unlock();
     parent_.Internal().UpdateElement(hashes);
 }

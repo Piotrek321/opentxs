@@ -32,7 +32,6 @@ class Socket;
 }  // namespace zeromq
 }  // namespace network
 
-class OTPassword;
 class Secret;
 // }  // namespace v1
 }  // namespace opentxs

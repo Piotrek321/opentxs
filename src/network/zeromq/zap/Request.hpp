@@ -10,7 +10,6 @@
 
 #include "internal/util/P0330.hpp"
 #include "network/zeromq/message/Message.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"

@@ -15,7 +15,7 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"

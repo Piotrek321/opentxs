@@ -336,7 +336,7 @@ auto BlockchainAccountActivity::process_contact(const Message& in) noexcept
 
     const auto contactID = Widget::api_.Factory().Identifier(body.at(1))->str();
     const auto txids = [&] {
-        auto out = UnallocatedSet<OTData>{};
+        auto out = UnallocatedSet<ByteArray>{};
         for_each_row([&](const auto& row) {
             for (const auto& id : row.Contacts()) {
                 if (contactID == id) {
@@ -489,7 +489,7 @@ auto BlockchainAccountActivity::process_txid(
         new UnallocatedCString{
             Widget::api_.Crypto().Blockchain().ActivityDescription(
                 primary_id_, chain_, tx)},
-        new OTData{tx.ID()},
+        new ByteArray{tx.ID()},
         new int{conf},
     };
     add_item(rowID, sortKey, custom);

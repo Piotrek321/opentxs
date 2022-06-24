@@ -17,7 +17,6 @@
 #include <memory>
 #include <optional>
 
-#include "internal/api/crypto/Blockchain.hpp"
 #include "ottest/fixtures/blockchain/Activity.hpp"
 #include "ottest/fixtures/common/Counter.hpp"
 

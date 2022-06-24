@@ -41,7 +41,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Algorithm.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
@@ -531,8 +531,8 @@ auto Transaction::ExtractElements(const cfilter::Type style) const noexcept
         std::make_move_iterator(temp.end()));
 
     if (cfilter::Type::ES == style) {
-        const auto* data = static_cast<const std::byte*>(txid_->data());
-        output.emplace_back(data, data + txid_->size());
+        const auto* data = static_cast<const std::byte*>(txid_.data());
+        output.emplace_back(data, data + txid_.size());
     }
 
     LogTrace()(OT_PRETTY_CLASS())("extracted ")(output.size())(
@@ -879,7 +879,7 @@ auto Transaction::Serialize() const noexcept -> std::optional<SerializeType>
         output.add_chain(translate(UnitToClaim(BlockchainToUnit(chain))));
     }
 
-    output.set_txid(txid_->str());
+    output.set_txid(txid_.str());
     output.set_txversion(version_);
     output.set_locktime(lock_time_);
 
@@ -899,7 +899,7 @@ auto Transaction::Serialize() const noexcept -> std::optional<SerializeType>
     // TODO repeated string conflicts = 14;
     output.set_memo(cache_.memo());
     output.set_segwit_flag(std::to_integer<std::uint32_t>(segwit_flag_));
-    output.set_wtxid(wtxid_->str());
+    output.set_wtxid(wtxid_.str());
     output.set_is_generation(is_generation_);
     const auto& [height, hash] = cache_.position();
 

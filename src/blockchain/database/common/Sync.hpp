@@ -20,7 +20,6 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/util/Bytes.hpp"

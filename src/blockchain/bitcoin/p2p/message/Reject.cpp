@@ -23,7 +23,6 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace be = boost::endian;
 
@@ -134,13 +133,13 @@ auto BitcoinP2PReject(
     // Because the code means different things depending on
     // what got rejected.
     //
-    auto extra = Data::Factory();
+    auto extra = ByteArray{};
 
     // better than hardcoding "32"
     expectedSize += sizeof(bitcoin::BlockHeaderHashField);
 
     if (expectedSize <= size) {
-        extra->Concatenate(it, sizeof(bitcoin::BlockHeaderHashField));
+        extra.Concatenate(it, sizeof(bitcoin::BlockHeaderHashField));
         std::advance(it, sizeof(bitcoin::BlockHeaderHashField));
     }
     // -----------------------------------------------
@@ -195,7 +194,7 @@ Reject::Reject(
     , message_(message)
     , code_(code)
     , reason_(reason)
-    , extra_(Data::Factory(extra))
+    , extra_(extra)
 {
     init_hash();
 }
@@ -211,7 +210,7 @@ Reject::Reject(
     , message_(message)
     , code_(code)
     , reason_(reason)
-    , extra_(Data::Factory(extra))
+    , extra_(extra)
 {
     verify_checksum();
 }
@@ -226,7 +225,7 @@ auto Reject::payload(AllocateOutput out) const noexcept -> bool
         const auto code =
             be::little_uint8_buf_t{static_cast<std::uint8_t>(code_)};
         const auto bytes =
-            message->size() + reason->size() + sizeof(code) + extra_->size();
+            message.size() + reason.size() + sizeof(code) + extra_.size();
 
         auto output = out(bytes);
 
@@ -235,16 +234,16 @@ auto Reject::payload(AllocateOutput out) const noexcept -> bool
         }
 
         auto* i = output.as<std::byte>();
-        std::memcpy(i, message->data(), message->size());
-        std::advance(i, message->size());
+        std::memcpy(i, message.data(), message.size());
+        std::advance(i, message.size());
         std::memcpy(i, static_cast<const void*>(&code), sizeof(code));
         std::advance(i, sizeof(code));
-        std::memcpy(i, reason->data(), reason->size());
-        std::advance(i, reason->size());
+        std::memcpy(i, reason.data(), reason.size());
+        std::advance(i, reason.size());
 
-        if (false == extra_->empty()) {
-            std::memcpy(i, extra_->data(), extra_->size());
-            std::advance(i, extra_->size());
+        if (false == extra_.empty()) {
+            std::memcpy(i, extra_.data(), extra_.size());
+            std::advance(i, extra_.size());
         }
 
         return true;

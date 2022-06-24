@@ -29,7 +29,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -147,18 +147,18 @@ auto Account::ConsensusHash(
     Identifier& theOutput,
     const PasswordPrompt& reason) const -> bool
 {
-    auto preimage = Data::Factory();
+    auto preimage = ByteArray{};
 
     const auto& nymid = GetNymID();
     if (false == nymid.empty()) {
-        preimage->Concatenate(nymid.data(), nymid.size());
+        preimage.Concatenate(nymid.data(), nymid.size());
     } else {
         LogError()(OT_PRETTY_CLASS())("Missing nym id.").Flush();
     }
 
     const auto& serverid = context.Notary();
     if (false == serverid.empty()) {
-        preimage->Concatenate(serverid.data(), serverid.size());
+        preimage.Concatenate(serverid.data(), serverid.size());
     } else {
         LogError()(OT_PRETTY_CLASS())("Missing server id.").Flush();
     }
@@ -166,13 +166,13 @@ auto Account::ConsensusHash(
     auto accountid{api_.Factory().Identifier()};
     GetIdentifier(accountid);
     if (false == accountid->empty()) {
-        preimage->Concatenate(accountid->data(), accountid->size());
+        preimage.Concatenate(accountid->data(), accountid->size());
     } else {
         LogError()(OT_PRETTY_CLASS())("Missing account id.").Flush();
     }
 
     if (false == balanceAmount_->empty()) {
-        preimage->Concatenate(
+        preimage.Concatenate(
             balanceAmount_->Get(), balanceAmount_->GetLength());
     } else {
         LogError()(OT_PRETTY_CLASS())("No account balance.").Flush();
@@ -186,7 +186,7 @@ auto Account::ConsensusHash(
         const_cast<Account&>(*this).GetInboxHash(inboxhash);
     }
     if (false == inboxhash->empty()) {
-        preimage->Concatenate(inboxhash->data(), inboxhash->size());
+        preimage.Concatenate(inboxhash->data(), inboxhash->size());
     } else {
         LogError()(OT_PRETTY_CLASS())("Empty inbox hash.").Flush();
     }
@@ -197,19 +197,19 @@ auto Account::ConsensusHash(
         const_cast<Account&>(*this).GetOutboxHash(outboxhash);
     }
     if (false == outboxhash->empty()) {
-        preimage->Concatenate(outboxhash->data(), outboxhash->size());
+        preimage.Concatenate(outboxhash->data(), outboxhash->size());
     } else {
         LogError()(OT_PRETTY_CLASS())("Empty outbox hash.").Flush();
     }
 
     const auto& issuednumbers = context.IssuedNumbers();
     for (const auto num : issuednumbers) {
-        preimage->Concatenate(&num, sizeof(num));
+        preimage.Concatenate(&num, sizeof(num));
     }
 
     theOutput.clear();
 
-    bool bCalcDigest = theOutput.CalculateDigest(preimage->Bytes());
+    bool bCalcDigest = theOutput.CalculateDigest(preimage.Bytes());
 
     if (false == bCalcDigest) {
         theOutput.clear();

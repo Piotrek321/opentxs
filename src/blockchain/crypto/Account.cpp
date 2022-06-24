@@ -32,7 +32,7 @@
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -88,8 +88,8 @@ Account::Account(
         auto out = api_.Factory().Identifier();
         auto preimage = api_.Factory().DataFromBytes(nym_id_->Bytes());
         const auto chain = parent.Chain();
-        preimage->Concatenate(&chain, sizeof(chain));
-        out->CalculateDigest(preimage->Bytes());
+        preimage.Concatenate(&chain, sizeof(chain));
+        out->CalculateDigest(preimage.Bytes());
 
         return out;
     }())

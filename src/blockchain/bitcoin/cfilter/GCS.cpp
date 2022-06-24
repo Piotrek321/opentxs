@@ -40,13 +40,13 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/GCS.pb.h"
 #include "util/Container.hpp"
 
@@ -73,7 +73,7 @@ auto GCS(
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
-    const Vector<OTData>& elements,
+    const Vector<ByteArray>& elements,
     alloc::Default alloc) noexcept -> blockchain::GCS
 {
     using ReturnType = blockchain::implementation::GCS;
@@ -82,9 +82,9 @@ auto GCS(
         auto effective = blockchain::GCS::Targets{alloc};
 
         for (const auto& element : elements) {
-            if (element->empty()) { continue; }
+            if (element.empty()) { continue; }
 
-            effective.emplace_back(element->Bytes());
+            effective.emplace_back(element.Bytes());
         }
 
         dedup(effective);
@@ -593,7 +593,7 @@ auto GCS::Hash() const noexcept -> cfilter::Hash
 }
 
 auto GCS::hashed_set_construct(
-    const Vector<OTData>& elements,
+    const Vector<ByteArray>& elements,
     allocator_type alloc) const noexcept -> gcs::Elements
 {
     return hashed_set_construct(transform(elements, alloc), alloc);
@@ -785,7 +785,7 @@ auto GCS::Test(const ReadView target) const noexcept -> bool
     return false;
 }
 
-auto GCS::Test(const Vector<OTData>& targets) const noexcept -> bool
+auto GCS::Test(const Vector<ByteArray>& targets) const noexcept -> bool
 {
     const auto size =
         targets.size() * ((2 * sizeof(ReadView)) + sizeof(gcs::Element));
@@ -827,7 +827,7 @@ auto GCS::test(const gcs::Elements& targets) const noexcept -> bool
     return 0 < matches.size();
 }
 
-auto GCS::transform(const Vector<OTData>& in, allocator_type alloc) noexcept
+auto GCS::transform(const Vector<ByteArray>& in, allocator_type alloc) noexcept
     -> Targets
 {
     auto output = Targets{alloc};
@@ -835,7 +835,7 @@ auto GCS::transform(const Vector<OTData>& in, allocator_type alloc) noexcept
         std::begin(in),
         std::end(in),
         std::back_inserter(output),
-        [](const auto& i) { return i->Bytes(); });
+        [](const auto& i) { return i.Bytes(); });
 
     return output;
 }
@@ -963,7 +963,7 @@ auto GCS::Test(const ReadView target) const noexcept -> bool
     return imp_->Test(target);
 }
 
-auto GCS::Test(const Vector<OTData>& targets) const noexcept -> bool
+auto GCS::Test(const Vector<ByteArray>& targets) const noexcept -> bool
 {
     return imp_->Test(targets);
 }

@@ -22,7 +22,7 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -47,7 +47,7 @@ auto HD::CalculateFingerprint(
     const ReadView key) noexcept -> Bip32Fingerprint
 {
     auto output = Bip32Fingerprint{0};
-    auto digest = Data::Factory();
+    auto digest = ByteArray{};
 
     if (33 != key.size()) {
         LogError()(OT_PRETTY_STATIC(HD))("Invalid public key").Flush();
@@ -56,7 +56,7 @@ auto HD::CalculateFingerprint(
     }
 
     const auto hashed =
-        hash.Digest(crypto::HashType::Bitcoin, key, digest->WriteInto());
+        hash.Digest(crypto::HashType::Bitcoin, key, digest.WriteInto());
 
     if (false == hashed) {
         LogError()(OT_PRETTY_STATIC(HD))("Failed to calculate public key hash")
@@ -65,7 +65,7 @@ auto HD::CalculateFingerprint(
         return output;
     }
 
-    if (false == digest->Extract(output)) {
+    if (false == digest.Extract(output)) {
         LogError()(OT_PRETTY_STATIC(HD))("Failed to set output").Flush();
 
         return {};

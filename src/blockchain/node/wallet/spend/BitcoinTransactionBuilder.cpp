@@ -59,7 +59,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -108,44 +108,117 @@ struct BitcoinTransactionBuilder::Imp {
             change_keys_.emplace(keyID);
             auto isNotification{false};
 
-            using Position = bitcoin::block::Script::Position;
-            auto pScript = factory::BitcoinScript(
-                chain_,
-                create_elements(data, element, isNotification),
-                Position::Output);
+            auto pOutput = [&] {
+                auto elements = [&] {
+                    namespace bb = opentxs::blockchain::bitcoin::block;
+                    namespace bi = bb::internal;
+                    auto out = bb::ScriptElements{};
 
-            if (!pScript) {
-                throw std::runtime_error{"Failed to construct script"};
-            }
+                    if (const auto size{data.notification().size()}; 1 < size) {
+                        throw std::runtime_error{
+                            "Multiple notifications not yet supported"};
+                    } else if (1 == size) {
+                        const auto& notif = data.notification(0);
+                        const auto recipient =
+                            api_.Factory().InternalSession().PaymentCode(
+                                notif.recipient());
+                        const auto message =
+                            UnallocatedCString{
+                                "Constructing notification transaction to "} +
+                            recipient.asBase58();
+                        const auto reason =
+                            api_.Factory().PasswordPrompt(message);
+                        const auto pc = [&] {
+                            auto out =
+                                api_.Factory().InternalSession().PaymentCode(
+                                    notif.sender());
+                            const auto& path = notif.path();
+                            auto seed{path.root()};
+                            const auto rc = out.Internal().AddPrivateKeys(
+                                seed, *path.child().rbegin(), reason);
 
-            if (std::numeric_limits<std::uint32_t>::max() < outputs_.size()) {
-                throw std::runtime_error{"too many outputs"};
-            }
+                            if (false == rc) {
+                                throw std::runtime_error{
+                                    "Failed to load private keys"};
+                            }
 
-            auto pOutput = factory::BitcoinTransactionOutput(
-                api_,
-                chain_,
-                static_cast<std::uint32_t>(outputs_.size()),
-                Amount{0},
-                std::move(pScript),
-                {keyID});
+                            return out;
+                        }();
+                        const auto pKey = element.PrivateKey(reason);
 
-            if (!pOutput) {
+                        if (!pKey) {
+                            throw std::runtime_error{
+                                "Failed to load private change key"};
+                        }
+
+                        const auto& key = *pKey;
+                        const auto keys = pc.GenerateNotificationElements(
+                            recipient, key, reason);
+
+                        if (3u != keys.size()) {
+                            throw std::runtime_error{
+                                "Failed to obtain notification elements"};
+                        }
+
+                        out.emplace_back(bi::Opcode(bb::OP::ONE));
+                        out.emplace_back(bi::PushData(reader(keys.at(0))));
+                        out.emplace_back(bi::PushData(reader(keys.at(1))));
+                        out.emplace_back(bi::PushData(reader(keys.at(2))));
+                        out.emplace_back(bi::Opcode(bb::OP::THREE));
+                        out.emplace_back(bi::Opcode(bb::OP::CHECKMULTISIG));
+                        isNotification = true;
+                    } else {
+                        const auto pkh = element.PubkeyHash();
+                        out.emplace_back(bi::Opcode(bb::OP::DUP));
+                        out.emplace_back(bi::Opcode(bb::OP::HASH160));
+                        out.emplace_back(bi::PushData(pkh.Bytes()));
+                        out.emplace_back(bi::Opcode(bb::OP::EQUALVERIFY));
+                        out.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
+                    }
+
+                    return out;
+                }();
+                using Position = bitcoin::block::Script::Position;
+                auto pScript = factory::BitcoinScript(
+                    chain_, std::move(elements), Position::Output);
+
+                if (false == bool(pScript)) {
+                    throw std::runtime_error{"Failed to construct script"};
+                }
+
+                if (std::numeric_limits<std::uint32_t>::max() <
+                    outputs_.size()) {
+                    throw std::runtime_error{"too many outputs"};
+                }
+
+                return factory::BitcoinTransactionOutput(
+                    api_,
+                    chain_,
+                    static_cast<std::uint32_t>(outputs_.size()),
+                    Amount{0},
+                    std::move(pScript),
+                    {keyID});
+            }();
+
+            if (false == bool(pOutput)) {
                 throw std::runtime_error{"Failed to construct output"};
             }
 
             if (isNotification) { pOutput->AddTag(TxoTag::Notification); }
 
-            output_value_ += pOutput->Value();
-            output_total_ += pOutput->CalculateSize();
+            {
+                auto& output = *pOutput;
+                output_value_ += output.Value();
+                output_total_ += output.CalculateSize();
 
-            OT_ASSERT(!pOutput->Keys().empty());
+                OT_ASSERT(0 < output.Keys().size());
 
-            pOutput->SetPayee(self_contact_);
-            pOutput->SetPayer(self_contact_);
-            pOutput->AddTag(TxoTag::Change);
+                output.SetPayee(self_contact_);
+                output.SetPayer(self_contact_);
+                output.AddTag(TxoTag::Change);
 
-            if (isNotification) { pOutput->AddTag(TxoTag::Notification); }
+                if (isNotification) { output.AddTag(TxoTag::Notification); }
+            }
 
             change_.emplace_back(std::move(pOutput));
             output_count_ = outputs_.size() + change_.size();
@@ -534,7 +607,7 @@ private:
             return false;
         }
 
-        auto keys = UnallocatedVector<OTData>{};
+        auto keys = UnallocatedVector<ByteArray>{};
         auto signatures = UnallocatedVector<Space>{};
         auto views = bitcoin::block::internal::Input::Signatures{};
         const auto& api = api_.Crypto().Blockchain();
@@ -611,7 +684,7 @@ private:
         const bitcoin::block::internal::Output& spends,
         bitcoin::block::internal::Input& input) const noexcept -> bool
     {
-        auto keys = UnallocatedVector<OTData>{};
+        auto keys = UnallocatedVector<ByteArray>{};
         auto signatures = UnallocatedVector<Space>{};
         auto views = bitcoin::block::internal::Input::Signatures{};
         const auto& api = api_.Crypto().Blockchain();
@@ -687,7 +760,7 @@ private:
         const bitcoin::block::internal::Output& spends,
         bitcoin::block::internal::Input& input) const noexcept -> bool
     {
-        auto keys = UnallocatedVector<OTData>{};
+        auto keys = UnallocatedVector<ByteArray>{};
         auto signatures = UnallocatedVector<Space>{};
         auto views = bitcoin::block::internal::Input::Signatures{};
         const auto& api = api_.Crypto().Blockchain();
@@ -740,7 +813,7 @@ private:
 
             OT_ASSERT(!key.PublicKey().empty());
 
-            views.emplace_back(reader(sig), pubkey->Bytes());
+            views.emplace_back(reader(sig), pubkey.Bytes());
         }
 
         if (views.empty()) {
@@ -827,8 +900,9 @@ private:
                 "account ")(account)(" subchain"
                                      " ")(static_cast<std::uint32_t>(subchain))(
                 " index ")(index)(" does not correspond to the "
-                                  "expected public key. Got ")(got->asHex())(
-                " expected ")(expected->asHex())
+                                  "expected public key. Got ")
+                .asHex(got)(" expected ")
+                .asHex(expected)
                 .Flush();
 
             OT_FAIL;
@@ -1161,7 +1235,7 @@ private:
                 return {};
             }
 
-            if (element.PubkeyHash()->Bytes() != expected.value()) {
+            if (element.PubkeyHash().Bytes() != expected.value()) {
                 LogError()(OT_PRETTY_CLASS())(
                     "Provided public key does not match expected hash")
                     .Flush();
@@ -1263,7 +1337,7 @@ private:
             const auto pkh = element.PubkeyHash();
             elements.emplace_back(bi::Opcode(bb::OP::DUP));
             elements.emplace_back(bi::Opcode(bb::OP::HASH160));
-            elements.emplace_back(bi::PushData(pkh->Bytes()));
+            elements.emplace_back(bi::PushData(pkh.Bytes()));
             elements.emplace_back(bi::Opcode(bb::OP::EQUALVERIFY));
             elements.emplace_back(bi::Opcode(bb::OP::CHECKSIG));
         }

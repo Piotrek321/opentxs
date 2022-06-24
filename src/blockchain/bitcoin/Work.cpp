@@ -8,6 +8,7 @@
 #include "blockchain/bitcoin/Work.hpp"  // IWYU pragma: associated
 
 #include <boost/exception/exception.hpp>
+#include <cstddef>
 #include <iterator>
 #include <memory>
 #include <utility>
@@ -17,6 +18,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/NumericHash.hpp"
 #include "opentxs/blockchain/bitcoin/Work.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -28,17 +30,17 @@ auto Work(const UnallocatedCString& hex) -> blockchain::Work*
 {
     using ReturnType = blockchain::implementation::Work;
     using ValueType = ReturnType::Type;
-    auto bytes = Data::Factory();
-    bytes->DecodeHex(hex);
+    auto bytes =  ByteArray{};
+    bytes.DecodeHex(hex);
 
-    if (bytes->empty()) { return new ReturnType(); }
+    if (bytes.empty()) { return new ReturnType(); }
 
     ValueType value{};
     bmp::cpp_int i;
 
     try {
         // Interpret bytes as big endian
-        bmp::import_bits(i, bytes->begin(), bytes->end(), 8, true);
+        bmp::import_bits(i, bytes.begin(), bytes.end(), 8, true);
         value = ValueType{i};
     } catch (...) {
         LogError()("opentxs::factory::")(__func__)(": Failed to decode work")
@@ -205,6 +207,7 @@ auto Work::asHex() const noexcept -> UnallocatedCString
         return {};
     }
 
-    return opentxs::Data::Factory(bytes.data(), bytes.size())->asHex();
+    return to_hex(
+        reinterpret_cast<const std::byte*>(bytes.data()), bytes.size());
 }
 }  // namespace opentxs::blockchain::implementation

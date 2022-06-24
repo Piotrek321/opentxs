@@ -35,6 +35,7 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -129,8 +130,8 @@ auto BlockchainImp::ActivityDescription(
         const auto pTx = LoadTransactionBitcoin(txid);
 
         if (false == bool(pTx)) {
-            LogError()(OT_PRETTY_CLASS())("failed to load transaction ")(
-                txid->asHex())
+            LogError()(OT_PRETTY_CLASS())("failed to load transaction ")
+                .asHex(txid)
                 .Flush();
 
             return {};
@@ -241,7 +242,7 @@ auto BlockchainImp::broadcast_update_signal(
         std::end(transactions),
         [this, &db](const auto& txid) {
             auto proto = proto::BlockchainTransaction{};
-            const auto tx = db.LoadTransaction(txid->Bytes(), proto);
+            const auto tx = db.LoadTransaction(txid.Bytes(), proto);
 
             OT_ASSERT(tx);
 

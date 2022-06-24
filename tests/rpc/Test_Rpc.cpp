@@ -59,10 +59,10 @@
 #define ADDCLAIM_SECTION_VERSION 6
 #define CONTACTITEM_VERSION 6
 
-using namespace opentxs;
-
-namespace
+namespace ottest
 {
+namespace ot = opentxs;
+
 class Test_Rpc : public ::testing::Test
 {
 public:
@@ -1608,4 +1608,4 @@ TEST_F(Test_Rpc, Get_Transaction_Data)
         // TODO
     }
 }
-}  // namespace
+}  // namespace ottest

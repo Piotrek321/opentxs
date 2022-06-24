@@ -9,7 +9,6 @@
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -32,6 +31,7 @@ namespace proto
 class BlockchainPeerAddress;
 }  // namespace proto
 
+class ByteArray;
 class Identifier;
 
 using OTBlockchainAddress = Pimpl<blockchain::p2p::Address>;
@@ -46,7 +46,7 @@ class OPENTXS_EXPORT Address
 public:
     using SerializedType = proto::BlockchainPeerAddress;
 
-    virtual auto Bytes() const noexcept -> OTData = 0;
+    virtual auto Bytes() const noexcept -> ByteArray = 0;
     virtual auto Chain() const noexcept -> blockchain::Type = 0;
     virtual auto Display() const noexcept -> UnallocatedCString = 0;
     virtual auto ID() const noexcept -> const Identifier& = 0;

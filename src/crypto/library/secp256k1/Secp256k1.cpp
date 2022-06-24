@@ -26,13 +26,12 @@ extern "C" {
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Util.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 extern "C" {
 auto get_x_value(
@@ -381,7 +380,7 @@ auto Secp256k1::Sign(
         const bool signatureCreated = ::secp256k1_ecdsa_sign(
             context_,
             output.as<::secp256k1_ecdsa_signature>(),
-            reinterpret_cast<const unsigned char*>(digest->data()),
+            reinterpret_cast<const unsigned char*>(digest.data()),
             reinterpret_cast<const unsigned char*>(priv.data()),
             nullptr,
             nullptr);
@@ -434,7 +433,7 @@ auto Secp256k1::SignDER(
         const bool signatureCreated = ::secp256k1_ecdsa_sign(
             context_,
             &sig,
-            reinterpret_cast<const unsigned char*>(digest->data()),
+            reinterpret_cast<const unsigned char*>(digest.data()),
             reinterpret_cast<const unsigned char*>(priv.data()),
             nullptr,
             nullptr);
@@ -488,7 +487,7 @@ auto Secp256k1::Verify(
         return 1 == ::secp256k1_ecdsa_verify(
                         context_,
                         &sig,
-                        reinterpret_cast<const unsigned char*>(digest->data()),
+                        reinterpret_cast<const unsigned char*>(digest.data()),
                         &parsed);
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
@@ -498,20 +497,20 @@ auto Secp256k1::Verify(
 }
 
 auto Secp256k1::hash(const crypto::HashType type, const ReadView data) const
-    noexcept(false) -> OTData
+    noexcept(false) -> ByteArray
 {
-    auto output = Data::Factory();
+    auto output = ByteArray{};
 
-    if (false == crypto_.Hash().Digest(type, data, output->WriteInto())) {
+    if (false == crypto_.Hash().Digest(type, data, output.WriteInto())) {
         throw std::runtime_error("Failed to obtain contract hash");
     }
 
-    if (0 == output->size()) { throw std::runtime_error("Invalid hash"); }
+    if (0 == output.size()) { throw std::runtime_error("Invalid hash"); }
 
-    output->resize(32);
+    output.resize(32);
 
-    OT_ASSERT(nullptr != output->data());
-    OT_ASSERT(32 == output->size());
+    OT_ASSERT(nullptr != output.data());
+    OT_ASSERT(32 == output.size());
 
     return output;
 }

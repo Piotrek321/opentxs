@@ -25,6 +25,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -158,10 +159,10 @@ auto Base::calculate_id(
     if (!server) { throw std::runtime_error("Invalid notary nym"); }
 
     auto preimage = api.Factory().Data();
-    preimage->Assign(client->ID());
-    preimage.get() += server->ID();
+    preimage.Assign(client->ID());
+    preimage += server->ID();
 
-    return api.Factory().Identifier(preimage->Bytes());
+    return api.Factory().Identifier(preimage.Bytes());
 }
 
 auto Base::consume_available(const Lock& lock, const TransactionNumber& number)
@@ -595,7 +596,7 @@ auto Base::serialize(const Lock& lock, const otx::ConsensusType type) const
     return output;
 }
 
-auto Base::Serialize() const noexcept -> OTData
+auto Base::Serialize() const noexcept -> ByteArray
 {
     return api_.Factory().InternalSession().Data([&] {
         auto proto = proto::Context{};

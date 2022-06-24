@@ -15,7 +15,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -86,7 +86,7 @@ public:
     using Style = opentxs::blockchain::crypto::AddressStyle;
     using Subchain = opentxs::blockchain::crypto::Subchain;
     using DecodedAddress =
-        std::tuple<OTData, Style, UnallocatedSet<Chain>, bool>;
+        std::tuple<ByteArray, Style, UnallocatedSet<Chain>, bool>;
     using ContactList = UnallocatedSet<OTIdentifier>;
     using Txid = opentxs::blockchain::block::Txid;
     using TxidHex = UnallocatedCString;

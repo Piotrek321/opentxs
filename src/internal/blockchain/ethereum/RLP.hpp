@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <variant>
 
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -40,7 +40,7 @@ class Node;
 namespace opentxs::blockchain::ethereum::rlp
 {
 using Null = std::monostate;
-using String = OTData;
+using String = ByteArray;
 using Sequence = Vector<Node>;
 using Data = std::variant<Null, String, Sequence>;
 

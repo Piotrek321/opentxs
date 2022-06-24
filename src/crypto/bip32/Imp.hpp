@@ -12,7 +12,6 @@
 #include "crypto/HDNode.hpp"
 #include "internal/crypto/Crypto.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -40,6 +39,8 @@ class HD;
 class EcdsaProvider;
 }  // namespace crypto
 
+class ByteArray;
+class Data;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1
@@ -122,7 +123,8 @@ private:
         const HDNode& node,
         const be::big_uint32_buf_t i,
         const WritableView& data) const noexcept -> void;
-    auto decode(const UnallocatedCString& serialized) const noexcept -> OTData;
+    auto decode(const UnallocatedCString& serialized) const noexcept
+        -> ByteArray;
     auto derive_private(
         HDNode& node,
         Bip32Fingerprint& parent,

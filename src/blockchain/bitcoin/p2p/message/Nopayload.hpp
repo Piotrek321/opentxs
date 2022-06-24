@@ -16,7 +16,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 

@@ -25,6 +25,7 @@
 #include "internal/util/storage/drivers/Drivers.hpp"
 #include "internal/util/storage/drivers/Factory.hpp"
 #include "opentxs/api/network/Asio.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -278,7 +279,7 @@ auto Storage::BlockchainThreadMap(const identifier::Nym& nym, const Data& txid)
 }
 
 auto Storage::BlockchainTransactionList(
-    const identifier::Nym& nym) const noexcept -> UnallocatedVector<OTData>
+    const identifier::Nym& nym) const noexcept -> UnallocatedVector<ByteArray>
 {
     const auto& nyms = Root().Tree().Nyms();
 

@@ -18,7 +18,6 @@
 #include "internal/crypto/key/Null.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Nym.hpp"

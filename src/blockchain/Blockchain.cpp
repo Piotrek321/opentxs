@@ -34,11 +34,10 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
 {
@@ -85,7 +84,7 @@ auto BitReader::read(std::size_t nbits) -> std::uint64_t
 
         // n_ starts out as zero. Therefore this if() will resolve to true.
         // This is because accum_ contains no data, since all the input data
-        // is in the OTData member raw_data_.
+        // is in the ByteArray member raw_data_.
         if (!n_) {
             // Let's say the raw data contains 500 bytes. so len_ is 500,
             // and definitely larger than 4 bytes.
@@ -193,7 +192,7 @@ void BitWriter::write(std::size_t nbits, std::uint64_t value)
         // smaller of (64 - 7) and 19. Why? 64 bits minus 7 (57) represents
         // the number of bits left in accum_ for writing to, before it runs
         // out of space and would have to be flushed to the output_ variable
-        // OTData. Why do I care if 19 is smaller than 57? Well if I'm
+        // ByteArray. Why do I care if 19 is smaller than 57? Well if I'm
         // writing 19 bits, and there are 57 still available to write in
         // before flushing, then I know I'm writing all 19 bits. But what if
         // there were only 10 bits left in accum_ instead of 57? Then I
@@ -383,12 +382,12 @@ auto FilterHashToHeader(
     auto output = cfilter::Header{};
 
     if (0u == previous.size()) {
-        preimage->Concatenate(blank.data(), blank.size());
+        preimage.Concatenate(blank.data(), blank.size());
     } else {
-        preimage->Concatenate(previous.data(), previous.size());
+        preimage.Concatenate(previous.data(), previous.size());
     }
 
-    FilterHash(api, Type::Bitcoin, preimage->Bytes(), output.WriteInto());
+    FilterHash(api, Type::Bitcoin, preimage.Bytes(), output.WriteInto());
 
     return output;
 }

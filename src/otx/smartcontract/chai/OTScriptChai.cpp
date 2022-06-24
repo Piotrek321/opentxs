@@ -39,6 +39,7 @@
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -326,7 +327,7 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
                 //                boost::shared_ptr<const UnallocatedCString>
                 //                filename;
 
-                for (size_t j = 1; j < ee.call_stack.size(); ++j) {
+                for (auto j = 1_uz; j < ee.call_stack.size(); ++j) {
                     if (ee.call_stack[j].identifier !=
                             chaiscript::AST_Node_Type::Block &&
                         ee.call_stack[j].identifier !=
@@ -508,7 +509,7 @@ OTScriptChai::OTScriptChai(const char* new_string)
 {
 }
 
-OTScriptChai::OTScriptChai(const char* new_string, size_t sizeLength)
+OTScriptChai::OTScriptChai(const char* new_string, std::size_t sizeLength)
     : OTScript(new_string, sizeLength)
     , chai_(new chaiscript::ChaiScript)
 {

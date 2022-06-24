@@ -46,7 +46,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
@@ -936,7 +936,7 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
     reply.SetBool(false);
     reply.SetEnum(msgIn.enum_);
     const auto& api = server_.API();
-    auto serialized = Data::Factory();
+    auto serialized = ByteArray{};
 
     switch (static_cast<contract::Type>(msgIn.enum_)) {
         case contract::Type::nym: {
@@ -1322,8 +1322,8 @@ auto UserCommandProcessor::cmd_issue_basket(ReplyMessage& reply) const -> bool
 
     OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_issue_basket);
 
-    auto serialized = proto::Factory<proto::UnitDefinition>(
-        Data::Factory(msgIn.m_ascPayload));
+    auto serialized =
+        proto::Factory<proto::UnitDefinition>(ByteArray{msgIn.m_ascPayload});
 
     if (false == proto::Validate(serialized, VERBOSE)) {
         LogError()(OT_PRETTY_CLASS())("Invalid contract.").Flush();
@@ -2054,12 +2054,12 @@ auto UserCommandProcessor::cmd_register_contract(ReplyMessage& reply) const
     switch (type) {
         case (contract::Type::nym): {
             const auto nym =
-                proto::Factory<proto::Nym>(Data::Factory(msgIn.m_ascPayload));
+                proto::Factory<proto::Nym>(ByteArray{msgIn.m_ascPayload});
             reply.SetSuccess(bool(server_.API().Wallet().Internal().Nym(nym)));
         } break;
         case (contract::Type::notary): {
             const auto server = proto::Factory<proto::ServerContract>(
-                Data::Factory(msgIn.m_ascPayload));
+                ByteArray{msgIn.m_ascPayload});
             try {
                 server_.API().Wallet().Internal().Server(server);
                 reply.SetSuccess(true);
@@ -2072,7 +2072,7 @@ auto UserCommandProcessor::cmd_register_contract(ReplyMessage& reply) const
             try {
                 server_.API().Wallet().Internal().UnitDefinition(
                     proto::Factory<proto::UnitDefinition>(
-                        Data::Factory(msgIn.m_ascPayload)));
+                        ByteArray{msgIn.m_ascPayload}));
                 reply.SetSuccess(true);
             } catch (const std::exception& e) {
                 LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
@@ -2111,8 +2111,8 @@ auto UserCommandProcessor::cmd_register_instrument_definition(
     } catch (...) {
     }
 
-    const auto serialized = proto::Factory<proto::UnitDefinition>(
-        Data::Factory(msgIn.m_ascPayload));
+    const auto serialized =
+        proto::Factory<proto::UnitDefinition>(ByteArray{msgIn.m_ascPayload});
 
     if (contract::UnitType::Basket == translate(serialized.type())) {
         LogError()(OT_PRETTY_CLASS())("Incorrect unit type.").Flush();
@@ -2184,8 +2184,8 @@ auto UserCommandProcessor::cmd_register_nym(ReplyMessage& reply) const -> bool
 
     OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_create_user_acct);
 
-    auto serialized = proto::Factory<proto::Nym>(
-        Data::Factory(reply.Original().m_ascPayload));
+    auto serialized =
+        proto::Factory<proto::Nym>(ByteArray{reply.Original().m_ascPayload});
     auto sender_nym = server_.API().Wallet().Internal().Nym(serialized);
 
     if (false == bool(sender_nym)) {

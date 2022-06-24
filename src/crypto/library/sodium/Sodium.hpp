@@ -53,7 +53,6 @@ class Ciphertext;
 }  // namespace proto
 
 class Data;
-class OTPassword;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1

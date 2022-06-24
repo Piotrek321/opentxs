@@ -35,12 +35,13 @@ namespace std
 template <>
 struct hash<opentxs::proto::ContactSectionVersion> {
     auto operator()(const opentxs::proto::ContactSectionVersion&) const noexcept
-        -> size_t;
+        -> std::size_t;
 };
 
 template <>
 struct hash<opentxs::proto::EnumLang> {
-    auto operator()(const opentxs::proto::EnumLang&) const noexcept -> size_t;
+    auto operator()(const opentxs::proto::EnumLang&) const noexcept
+        -> std::size_t;
 };
 }  // namespace std
 

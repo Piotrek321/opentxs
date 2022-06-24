@@ -14,7 +14,6 @@ namespace opentxs  // NOLINT
 // inline namespace v1
 // {
 class Factory;
-class OTPassword;
 class Secret;
 // }  // namespace v1
 }  // namespace opentxs

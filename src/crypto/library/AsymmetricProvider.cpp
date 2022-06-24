@@ -21,7 +21,7 @@ extern "C" {
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -132,13 +132,13 @@ auto AsymmetricProvider::SeedToCurveKey(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey) const noexcept -> bool
 {
-    auto edPublic = Data::Factory();
+    auto edPublic = ByteArray{};
     auto edPrivate = Context().Factory().Secret(0);
 
     if (false == sodium::ExpandSeed(
                      seed,
                      edPrivate->WriteInto(Secret::Mode::Mem),
-                     edPublic->WriteInto())) {
+                     edPublic.WriteInto())) {
         LogError()(OT_PRETTY_CLASS())("Failed to expand seed.").Flush();
 
         return false;
@@ -151,7 +151,7 @@ auto AsymmetricProvider::SeedToCurveKey(
     }
 
     return sodium::ToCurveKeypair(
-        edPrivate->Bytes(), edPublic->Bytes(), privateKey, publicKey);
+        edPrivate->Bytes(), edPublic.Bytes(), privateKey, publicKey);
 }
 
 auto AsymmetricProvider::SignContract(
@@ -171,7 +171,7 @@ auto AsymmetricProvider::SignContract(
     }();
     auto signature = api.Factory().Data();
     bool success =
-        Sign(reader(plaintext), theKey, hashType, signature->WriteInto());
+        Sign(reader(plaintext), theKey, hashType, signature.WriteInto());
     output.SetData(signature, true);  // true means, "yes, with newlines in the
                                       // b64-encoded output, please."
 
@@ -204,6 +204,6 @@ auto AsymmetricProvider::VerifyContractSignature(
         return out;
     }();
 
-    return Verify(reader(plaintext), key, signature->Bytes(), hashType);
+    return Verify(reader(plaintext), key, signature.Bytes(), hashType);
 }
 }  // namespace opentxs::crypto::implementation

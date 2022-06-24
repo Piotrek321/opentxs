@@ -47,7 +47,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/Data.hpp"
@@ -501,12 +501,12 @@ auto FilterOracle::ProcessBlock(
     const auto params = blockchain::internal::GetFilterParams(filterType);
     const auto elements = [&] {
         const auto input = block.Internal().ExtractElements(filterType);
-        auto output = Vector<OTData>{};
+        auto output = Vector<ByteArray>{};
         std::transform(
             input.begin(),
             input.end(),
             std::back_inserter(output),
-            [&](const auto& element) -> OTData {
+            [&](const auto& element) -> ByteArray {
                 return api_.Factory().DataFromBytes(reader(element));
             });
 

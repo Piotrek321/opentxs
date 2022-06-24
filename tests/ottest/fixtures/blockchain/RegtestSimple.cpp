@@ -133,15 +133,15 @@ auto Regtest_fixture_simple::TransactionGenerator(
         test_chain_, height, std::move(output), coinbase_fun_);
 
     const auto& txid =
-        transactions_ptxid_.emplace_back(output_transaction->ID()).get();
+        transactions_ptxid_.emplace_back(output_transaction->ID());
 
     for (auto i = Index{0}; i < Index{count}; ++i) {
-        auto& [bytes, amount, pattern] = meta.at(i);
+        auto& [bytes, amount_, pattern] = meta.at(i);
         expected_.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(txid.Bytes(), i),
             std::forward_as_tuple(
-                std::move(bytes), std::move(amount), std::move(pattern)));
+                std::move(bytes), std::move(amount_), std::move(pattern)));
     }
 
     return output_transaction;
@@ -596,7 +596,7 @@ Regtest_fixture_simple::CollectTransactionsForFeeCalculations(
                 all_transactions.begin(),
                 all_transactions.end(),
                 [&prevOutTrxId](const auto& transaction) {
-                    return transaction->asHex() == prevOutTrxId;
+                    return transaction.asHex() == prevOutTrxId;
                 });
 
             if (iter != all_transactions.end()) {

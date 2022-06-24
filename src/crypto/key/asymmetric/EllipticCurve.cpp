@@ -15,6 +15,7 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
@@ -101,7 +102,7 @@ EllipticCurve::EllipticCurve(
           true,
           (false == privateKey.empty()),
           version,
-          OTData{publicKey},
+          ByteArray{publicKey},
           [&](auto&, auto&) -> EncryptedKey {
               return encrypt_key(sessionKey, reason, true, privateKey.Bytes());
           })
@@ -130,7 +131,7 @@ EllipticCurve::EllipticCurve(
           true,
           (false == privateKey.empty()),
           version,
-          OTData{publicKey},
+          ByteArray{publicKey},
           {})
     , ecdsa_(ecdsa)
 {
@@ -158,7 +159,7 @@ EllipticCurve::EllipticCurve(
           [&] {
               auto pubkey = rhs.api_.Factory().Data();
               const auto rc = rhs.ecdsa_.ScalarMultiplyBase(
-                  newSecretKey->Bytes(), pubkey->WriteInto());
+                  newSecretKey->Bytes(), pubkey.WriteInto());
 
               if (rc) {
 
@@ -242,7 +243,7 @@ auto EllipticCurve::IncrementPublic(const opentxs::Secret& rhs) const noexcept
 {
     try {
         auto newKey = Space{};
-        auto rc = ecdsa_.PubkeyAdd(key_->Bytes(), rhs.Bytes(), writer(newKey));
+        auto rc = ecdsa_.PubkeyAdd(key_.Bytes(), rhs.Bytes(), writer(newKey));
 
         if (false == rc) {
             throw std::runtime_error("Failed to increment public key");

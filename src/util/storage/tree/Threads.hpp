@@ -12,7 +12,7 @@
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/Mutex.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Types.hpp"
@@ -31,6 +31,8 @@ class Mailbox;
 class Nym;
 class Thread;
 }  // namespace storage
+
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -45,7 +47,7 @@ public:
     auto BlockchainThreadMap(const Data& txid) const noexcept
         -> UnallocatedVector<OTIdentifier>;
     auto BlockchainTransactionList() const noexcept
-        -> UnallocatedVector<OTData>;
+        -> UnallocatedVector<ByteArray>;
     auto Exists(const UnallocatedCString& id) const -> bool;
     using ot_super::List;
     auto List(const bool unreadOnly) const -> ObjectList;
@@ -78,7 +80,7 @@ private:
     friend Nym;
 
     struct BlockchainThreadIndex {
-        using Txid = OTData;
+        using Txid = ByteArray;
         using ThreadID = OTIdentifier;
 
         mutable std::mutex lock_{};

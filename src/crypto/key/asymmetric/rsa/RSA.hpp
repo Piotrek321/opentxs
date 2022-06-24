@@ -11,7 +11,7 @@
 #include "crypto/key/asymmetric/Asymmetric.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
@@ -47,7 +47,7 @@ class AsymmetricKey;
 class Ciphertext;
 }  // namespace proto
 
-class OTPassword;
+class Data;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1
@@ -60,7 +60,7 @@ class RSA final : public key::RSA, public Asymmetric
 {
 public:
     auto asPublic() const noexcept -> std::unique_ptr<key::Asymmetric> final;
-    auto Params() const noexcept -> ReadView final { return params_->Bytes(); }
+    auto Params() const noexcept -> ReadView final { return params_.Bytes(); }
     auto SigHashType() const noexcept -> crypto::HashType final
     {
         return crypto::HashType::Sha256;
@@ -87,7 +87,7 @@ public:
     ~RSA() final = default;
 
 private:
-    const OTData params_;
+    const ByteArray params_;
 
     static auto deserialize_key(
         const api::Session& api,

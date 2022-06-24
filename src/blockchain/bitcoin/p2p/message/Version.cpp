@@ -20,9 +20,8 @@
 #include "blockchain/bitcoin/p2p/Header.hpp"
 #include "blockchain/bitcoin/p2p/Message.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -363,12 +362,12 @@ auto Version::payload(AllocateOutput out) const noexcept -> bool
     try {
         if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-        auto userAgent = Data::Factory();
+        auto userAgent = ByteArray{};
         auto bytes = sizeof(BitcoinFormat_1);
 
         if (106 <= version_) {
             userAgent = BitcoinString(user_agent_);
-            bytes += sizeof(BitcoinFormat_106) + userAgent->size();
+            bytes += sizeof(BitcoinFormat_106) + userAgent.size();
         }
 
         if (209 <= version_) { bytes += sizeof(BitcoinFormat_209); }
@@ -398,8 +397,8 @@ auto Version::payload(AllocateOutput out) const noexcept -> bool
                 nonce_};
             std::memcpy(i, static_cast<const void*>(&data2), sizeof(data2));
             std::advance(i, sizeof(data2));
-            std::memcpy(i, userAgent->data(), userAgent->size());
-            std::advance(i, userAgent->size());
+            std::memcpy(i, userAgent.data(), userAgent.size());
+            std::advance(i, userAgent.size());
         }
 
         if (209 <= version_) {

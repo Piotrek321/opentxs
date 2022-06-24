@@ -50,6 +50,7 @@
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Activity.hpp"
@@ -64,7 +65,7 @@
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -2959,9 +2960,9 @@ void Server::process_accept_cron_receipt_reply(
         //
         bool bWeFoundIt = false;
 
-        size_t nTradeDataNymCount = pList->GetTradeDataNymCount();
+        std::size_t nTradeDataNymCount = pList->GetTradeDataNymCount();
 
-        for (size_t nym_count = 0; nym_count < nTradeDataNymCount;
+        for (auto nym_count = 0_uz; nym_count < nTradeDataNymCount;
              ++nym_count) {
             OTDB::TradeDataNym* pTradeData = pList->GetTradeDataNym(nym_count);
 
@@ -3565,8 +3566,7 @@ auto Server::process_check_nym_response(
         return true;
     }
 
-    auto serialized =
-        proto::Factory<proto::Nym>(Data::Factory(reply.m_ascPayload));
+    auto serialized = proto::Factory<proto::Nym>(ByteArray{reply.m_ascPayload});
 
     auto nym = client.Wallet().Internal().Nym(serialized);
 
@@ -3802,7 +3802,7 @@ auto Server::process_get_market_list_response(
         return true;
     }
 
-    auto serialized = Data::Factory();
+    auto serialized = ByteArray{};
 
     if ((reply.m_ascPayload->GetLength() <= 2) ||
         (false == reply.m_ascPayload->GetData(serialized))) {
@@ -3827,8 +3827,7 @@ auto Server::process_get_market_list_response(
     auto& buffer = *pBuffer;
 
     buffer.SetData(
-        static_cast<const std::uint8_t*>(serialized->data()),
-        serialized->size());
+        static_cast<const std::uint8_t*>(serialized.data()), serialized.size());
 
     std::unique_ptr<OTDB::MarketList> pMarketList(
         dynamic_cast<OTDB::MarketList*>(
@@ -3895,7 +3894,7 @@ auto Server::process_get_market_offers_response(
         return true;
     }
 
-    auto serialized = Data::Factory();
+    auto serialized = ByteArray{};
 
     if ((reply.m_ascPayload->GetLength() <= 2) ||
         (false == reply.m_ascPayload->GetData(serialized))) {
@@ -3917,8 +3916,7 @@ auto Server::process_get_market_offers_response(
     auto& buffer = *pBuffer;
 
     buffer.SetData(
-        static_cast<const std::uint8_t*>(serialized->data()),
-        serialized->size());
+        static_cast<const std::uint8_t*>(serialized.data()), serialized.size());
 
     std::unique_ptr<OTDB::OfferListMarket> pOfferList(
         dynamic_cast<OTDB::OfferListMarket*>(
@@ -3990,7 +3988,7 @@ auto Server::process_get_market_recent_trades_response(
         return true;
     }
 
-    auto serialized = Data::Factory();
+    auto serialized = ByteArray{};
 
     if ((reply.m_ascPayload->GetLength() <= 2) ||
         (false == reply.m_ascPayload->GetData(serialized))) {
@@ -4013,8 +4011,7 @@ auto Server::process_get_market_recent_trades_response(
     auto& buffer = *pBuffer;
 
     buffer.SetData(
-        static_cast<const std::uint8_t*>(serialized->data()),
-        serialized->size());
+        static_cast<const std::uint8_t*>(serialized.data()), serialized.size());
 
     std::unique_ptr<OTDB::TradeListMarket> pTradeList(
         dynamic_cast<OTDB::TradeListMarket*>(
@@ -4105,7 +4102,7 @@ auto Server::process_get_nym_market_offers_response(
         return true;
     }
 
-    auto serialized = Data::Factory();
+    auto serialized = ByteArray{};
 
     if ((reply.m_ascPayload->GetLength() <= 2) ||
         (false == reply.m_ascPayload->GetData(serialized))) {
@@ -4127,8 +4124,7 @@ auto Server::process_get_nym_market_offers_response(
     auto& buffer = *pBuffer;
 
     buffer.SetData(
-        static_cast<const std::uint8_t*>(serialized->data()),
-        serialized->size());
+        static_cast<const std::uint8_t*>(serialized.data()), serialized.size());
 
     std::unique_ptr<OTDB::OfferListNym> pOfferList(
         dynamic_cast<OTDB::OfferListNym*>(
@@ -4280,7 +4276,7 @@ auto Server::process_get_unit_definition_response(
         return false;
     }
 
-    const auto raw = Data::Factory(reply.m_ascPayload);
+    const auto raw = ByteArray{reply.m_ascPayload};
 
     switch (static_cast<contract::Type>(reply.enum_)) {
         case contract::Type::nym: {
@@ -4893,7 +4889,7 @@ auto Server::process_register_nym_response(
     const Message& reply) -> bool
 {
     auto serialized =
-        proto::Factory<proto::Context>(Data::Factory(reply.m_ascPayload));
+        proto::Factory<proto::Context>(ByteArray{reply.m_ascPayload});
     auto verified = proto::Validate(serialized, VERBOSE);
 
     if (false == verified) {
@@ -5200,7 +5196,7 @@ void Server::process_response_transaction_cash_deposit(
     }
 
     const auto& item = *pItem;
-    auto rawPurse = Data::Factory();
+    auto rawPurse = ByteArray{};
     item.GetAttachment(rawPurse);
     const auto serializedPurse = proto::Factory<proto::Purse>(rawPurse);
 
@@ -6233,7 +6229,7 @@ void Server::process_incoming_cash_withdrawal(
     const auto& nym = *nym_;
     const auto& serverNym = *remote_nym_;
     const auto& nymID = nym.ID();
-    auto rawPurse = Data::Factory();
+    auto rawPurse = ByteArray{};
     item.GetAttachment(rawPurse);
     const auto serializedPurse = proto::Factory<proto::Purse>(rawPurse);
 

@@ -18,9 +18,8 @@ extern "C" {
 #include <string_view>
 
 #include "internal/util/P0330.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::crypto::sodium
 {
@@ -35,11 +34,11 @@ auto ExpandSeed(
         return false;
     }
 
-    auto hashed = Data::Factory();
+    auto hashed = ByteArray{};
     auto nSeed{seed};
 
     if (crypto_sign_SEEDBYTES != seed.size()) {
-        auto allocator = hashed->WriteInto();
+        auto allocator = hashed.WriteInto();
 
         if (false == bool(allocator)) {
             LogError()(__func__)(": Failed to get hash allocator").Flush();
@@ -68,7 +67,7 @@ auto ExpandSeed(
             return false;
         }
 
-        nSeed = hashed->Bytes();
+        nSeed = hashed.Bytes();
     }
 
     if ((nullptr == nSeed.data()) || (crypto_sign_SEEDBYTES != nSeed.size())) {

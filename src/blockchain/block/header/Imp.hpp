@@ -18,7 +18,7 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
@@ -98,7 +98,7 @@ protected:
 
     const api::Session& api_;
     const block::Hash hash_;
-    const OTData pow_;
+    const ByteArray pow_;
     const block::Hash parent_hash_;
     const blockchain::Type type_;
 

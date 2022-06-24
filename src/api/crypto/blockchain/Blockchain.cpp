@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "api/crypto/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -19,7 +18,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
@@ -360,7 +359,7 @@ auto Blockchain::ProcessTransactions(
 
 auto Blockchain::PubkeyHash(
     [[maybe_unused]] const Chain chain,
-    const Data& pubkey) const noexcept(false) -> OTData
+    const Data& pubkey) const noexcept(false) -> ByteArray
 {
     return imp_->PubkeyHash(chain, pubkey);
 }

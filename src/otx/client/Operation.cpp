@@ -54,6 +54,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/Unit.hpp"

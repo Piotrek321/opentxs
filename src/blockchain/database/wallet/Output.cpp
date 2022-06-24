@@ -53,7 +53,7 @@
 #include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -1305,8 +1305,7 @@ private:
 
         for (const auto& [txid, transaction] : blockMatches) {
             const auto& [indices, pTx] = transaction;
-            log(OT_PRETTY_CLASS())("parsing transaction ")(txid->asHex())
-                .Flush();
+            log(OT_PRETTY_CLASS())("parsing transaction ").asHex(txid).Flush();
 
             OT_ASSERT(pTx);
 

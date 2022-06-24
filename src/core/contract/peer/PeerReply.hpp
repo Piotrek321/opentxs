@@ -9,7 +9,6 @@
 
 #include "core/contract/Signable.hpp"
 #include "internal/util/Mutex.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/NoticeAcknowledgement.hpp"
@@ -54,6 +53,7 @@ class PeerRequest;
 class Signature;
 }  // namespace proto
 
+class ByteArray;
 class Factory;
 class PasswordPrompt;
 // }  // namespace v1
@@ -84,7 +84,7 @@ public:
     {
         return id_->str();
     }
-    auto Serialize() const noexcept -> OTData final;
+    auto Serialize() const noexcept -> ByteArray final;
     auto Serialize(SerializedType&) const -> bool override;
     auto Server() const -> const identifier::Notary& final { return server_; }
     auto SetAlias(const UnallocatedCString&) noexcept -> bool final

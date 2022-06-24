@@ -186,8 +186,8 @@ TEST_F(Test_BIP44, balance_elements)
         const auto fromSecret = api_.Factory().DataFromBytes(secBytes);
 
         std::cout << "Failure at row " << std::to_string(i) << '\n';
-        EXPECT_EQ(fromPublic->asHex(), correct->asHex());
-        EXPECT_EQ(fromSecret->asHex(), correct->asHex());
+        EXPECT_EQ(fromPublic.asHex(), correct.asHex());
+        EXPECT_EQ(fromSecret.asHex(), correct.asHex());
 
         return output;
     };

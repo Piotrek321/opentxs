@@ -44,7 +44,7 @@ public:
     OTScriptChai();
     OTScriptChai(const String& strValue);
     OTScriptChai(const char* new_string);
-    OTScriptChai(const char* new_string, size_t sizeLength);
+    OTScriptChai(const char* new_string, std::size_t sizeLength);
     OTScriptChai(const UnallocatedCString& new_string);
     OTScriptChai(const OTScriptChai&) = delete;
     OTScriptChai(OTScriptChai&&) = delete;

@@ -18,7 +18,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -59,7 +58,7 @@ BlockchainActivityThreadItem::BlockchainActivityThreadItem(
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,
     CustomData& custom,
-    OTData&& txid,
+    ByteArray&& txid,
     opentxs::Amount amount,
     UnallocatedCString&& displayAmount,
     UnallocatedCString&& memo) noexcept
@@ -71,7 +70,7 @@ BlockchainActivityThreadItem::BlockchainActivityThreadItem(
 {
     OT_ASSERT(false == nym_id_.empty())
     OT_ASSERT(false == item_id_.empty())
-    OT_ASSERT(false == txid_->empty())
+    OT_ASSERT(false == txid_.empty())
 }
 
 auto BlockchainActivityThreadItem::Amount() const noexcept -> opentxs::Amount
@@ -93,16 +92,18 @@ auto BlockchainActivityThreadItem::extract(
     const api::session::Client& api,
     const identifier::Nym& nymID,
     CustomData& custom) noexcept -> std::
-    tuple<OTData, opentxs::Amount, UnallocatedCString, UnallocatedCString>
+    tuple<ByteArray, opentxs::Amount, UnallocatedCString, UnallocatedCString>
 {
-    return std::
-        tuple<OTData, opentxs::Amount, UnallocatedCString, UnallocatedCString>{
-            api.Factory().DataFromBytes(
-                ui::implementation::extract_custom<UnallocatedCString>(
-                    custom, 5)),
-            ui::implementation::extract_custom<opentxs::Amount>(custom, 6),
-            ui::implementation::extract_custom<UnallocatedCString>(custom, 7),
-            ui::implementation::extract_custom<UnallocatedCString>(custom, 8)};
+    return std::tuple<
+        ByteArray,
+        opentxs::Amount,
+        UnallocatedCString,
+        UnallocatedCString>{
+        api.Factory().DataFromBytes(
+            ui::implementation::extract_custom<UnallocatedCString>(custom, 5)),
+        ui::implementation::extract_custom<opentxs::Amount>(custom, 6),
+        ui::implementation::extract_custom<UnallocatedCString>(custom, 7),
+        ui::implementation::extract_custom<UnallocatedCString>(custom, 8)};
 }
 
 auto BlockchainActivityThreadItem::Memo() const noexcept -> UnallocatedCString

@@ -57,7 +57,6 @@ namespace proto
 class AsymmetricKey;
 }  // namespace proto
 
-class OTPassword;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1

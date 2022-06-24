@@ -45,7 +45,6 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Contact.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
@@ -144,7 +143,7 @@ auto NotificationStateData::handle_confirmed_matches(
             .asHex(txid)(" contains a version ")(version)(" notification for ")(
                 pc_display_)
             .Flush();
-        const auto tx = block.at(txid->Bytes());
+        const auto tx = block.at(txid.Bytes());
 
         OT_ASSERT(tx);
 
@@ -168,9 +167,9 @@ auto NotificationStateData::handle_mempool_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        log_(OT_PRETTY_CLASS())(print(node_.Chain()))(" mempool transaction ")(
-            txid->asHex())(" contains a version ")(
-            version)(" notification for ")(pc_display_)
+        log_(OT_PRETTY_CLASS())(print(node_.Chain()))(" mempool transaction ")
+            .asHex(txid)(" contains a version ")(version)(" notification for ")(
+                pc_display_)
             .Flush();
         process(match, *tx, reason);
     }

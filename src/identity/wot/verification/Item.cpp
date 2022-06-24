@@ -15,7 +15,7 @@
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -168,10 +168,10 @@ auto Item::calculate_id(
 {
     const auto serialized = id_form(version, claim, value, start, end, valid);
     auto preimage = api.Factory().InternalSession().Data(serialized);
-    preimage.get() += nym;
+    preimage += nym;
     auto output = api.Factory().Identifier();
 
-    if (false == output->CalculateDigest(preimage->Bytes())) {
+    if (false == output->CalculateDigest(preimage.Bytes())) {
         throw std::runtime_error("Unable to calculate ID");
     }
 

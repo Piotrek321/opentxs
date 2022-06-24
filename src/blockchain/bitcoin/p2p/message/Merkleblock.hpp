@@ -12,7 +12,7 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -36,6 +36,8 @@ class Header;
 }  // namespace bitcoin
 }  // namespace p2p
 }  // namespace blockchain
+
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -53,12 +55,9 @@ public:
         Raw() noexcept;
     };
 
-    auto getBlockHeader() const noexcept -> OTData
-    {
-        return Data::Factory(block_header_);
-    }
+    auto getBlockHeader() const noexcept -> ByteArray { return block_header_; }
     auto getTxnCount() const noexcept -> TxnCount { return txn_count_; }
-    auto getHashes() const noexcept -> const UnallocatedVector<OTData>&
+    auto getHashes() const noexcept -> const UnallocatedVector<ByteArray>&
     {
         return hashes_;
     }
@@ -72,14 +71,14 @@ public:
         const blockchain::Type network,
         const Data& block_header,
         const TxnCount txn_count,
-        const UnallocatedVector<OTData>& hashes,
+        const UnallocatedVector<ByteArray>& hashes,
         const UnallocatedVector<std::byte>& flags) noexcept;
     Merkleblock(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const Data& block_header,
         const TxnCount txn_count,
-        const UnallocatedVector<OTData>& hashes,
+        const UnallocatedVector<ByteArray>& hashes,
         const UnallocatedVector<std::byte>& flags) noexcept(false);
     Merkleblock(const Merkleblock&) = delete;
     Merkleblock(Merkleblock&&) = delete;
@@ -89,9 +88,9 @@ public:
     ~Merkleblock() final = default;
 
 private:
-    const OTData block_header_;
+    const ByteArray block_header_;
     const TxnCount txn_count_{};
-    const UnallocatedVector<OTData> hashes_;
+    const UnallocatedVector<ByteArray> hashes_;
     const UnallocatedVector<std::byte> flags_;
 
     using implementation::Message::payload;

@@ -19,8 +19,8 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -41,10 +41,11 @@ auto BitcoinP2PCmpctblock(
         return nullptr;
     }
 
-    const auto raw_cmpctblock(Data::Factory(payload, size));
-    // --------------------------------------------------------
     try {
-        return new ReturnType(api, std::move(pHeader), raw_cmpctblock);
+        return new ReturnType(
+            api,
+            std::move(pHeader),
+            ByteArray{static_cast<const std::byte*>(payload), size});
     } catch (...) {
         LogError()("opentxs::factory::")(__func__)(": Checksum failure")
             .Flush();
@@ -75,7 +76,7 @@ Cmpctblock::Cmpctblock(
     const blockchain::Type network,
     const Data& raw_cmpctblock) noexcept
     : Message(api, network, bitcoin::Command::cmpctblock)
-    , raw_cmpctblock_(Data::Factory(raw_cmpctblock))
+    , raw_cmpctblock_(raw_cmpctblock)
 {
     init_hash();
 }
@@ -87,7 +88,7 @@ Cmpctblock::Cmpctblock(
     std::unique_ptr<Header> header,
     const Data& raw_cmpctblock) noexcept(false)
     : Message(api, std::move(header))
-    , raw_cmpctblock_(Data::Factory(raw_cmpctblock))
+    , raw_cmpctblock_(raw_cmpctblock)
 {
     verify_checksum();
 }
@@ -97,7 +98,7 @@ auto Cmpctblock::payload(AllocateOutput out) const noexcept -> bool
     try {
         if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-        const auto bytes = raw_cmpctblock_->size();
+        const auto bytes = raw_cmpctblock_.size();
         auto output = out(bytes);
 
         if (false == output.valid(bytes)) {
@@ -105,7 +106,7 @@ auto Cmpctblock::payload(AllocateOutput out) const noexcept -> bool
         }
 
         auto* i = output.as<std::byte>();
-        std::memcpy(i, raw_cmpctblock_->data(), bytes);
+        std::memcpy(i, raw_cmpctblock_.data(), bytes);
         std::advance(i, bytes);
 
         return true;

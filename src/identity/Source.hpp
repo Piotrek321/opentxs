@@ -11,7 +11,6 @@
 
 #include "Proto.hpp"
 #include "internal/util/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -55,6 +54,7 @@ class NymIDSource;
 class Signature;
 }  // namespace proto
 
+class ByteArray;
 class Factory;
 class PasswordPrompt;
 // }  // namespace v1
@@ -118,7 +118,7 @@ private:
     static auto translate(const proto::SourceType in) noexcept
         -> identity::SourceType;
 
-    auto asData() const -> OTData;
+    auto asData() const -> ByteArray;
 
     Source(
         const api::session::Factory& factory,

@@ -27,6 +27,7 @@
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -287,12 +288,12 @@ auto Wallet::StoreTransaction(
 
 auto Wallet::update_contact(
     const Lock& lock,
-    const UnallocatedSet<OTData>& existing,
-    const UnallocatedSet<OTData>& incoming,
+    const UnallocatedSet<ByteArray>& existing,
+    const UnallocatedSet<ByteArray>& incoming,
     const Identifier& contactID) const noexcept -> UnallocatedVector<pTxid>
 {
-    auto newAddresses = UnallocatedVector<OTData>{};
-    auto removedAddresses = UnallocatedVector<OTData>{};
+    auto newAddresses = UnallocatedVector<ByteArray>{};
+    auto removedAddresses = UnallocatedVector<ByteArray>{};
     auto output = UnallocatedVector<pTxid>{};
     std::set_difference(
         std::begin(incoming),
@@ -311,7 +312,7 @@ auto Wallet::update_contact(
         std::end(removedAddresses),
         [&](const auto& element) {
             element_to_contact_[element].erase(contactID);
-            const auto pattern = blockchain_.IndexItem(element->Bytes());
+            const auto pattern = blockchain_.IndexItem(element.Bytes());
 
             try {
                 const auto& transactions = pattern_to_transactions_.at(pattern);
@@ -327,7 +328,7 @@ auto Wallet::update_contact(
         std::end(newAddresses),
         [&](const auto& element) {
             element_to_contact_[element].insert(contactID);
-            const auto pattern = blockchain_.IndexItem(element->Bytes());
+            const auto pattern = blockchain_.IndexItem(element.Bytes());
 
             try {
                 const auto& transactions = pattern_to_transactions_.at(pattern);
@@ -346,7 +347,7 @@ auto Wallet::update_contact(
 auto Wallet::UpdateContact(const opentxs::Contact& contact) const noexcept
     -> UnallocatedVector<pTxid>
 {
-    auto incoming = UnallocatedSet<OTData>{};
+    auto incoming = UnallocatedSet<ByteArray>{};
 
     {
         auto data = contact.BlockchainAddresses();
@@ -369,8 +370,8 @@ auto Wallet::UpdateMergedContact(
     const opentxs::Contact& parent,
     const opentxs::Contact& child) const noexcept -> UnallocatedVector<pTxid>
 {
-    auto deleted = UnallocatedSet<OTData>{};
-    auto incoming = UnallocatedSet<OTData>{};
+    auto deleted = UnallocatedSet<ByteArray>{};
+    auto incoming = UnallocatedSet<ByteArray>{};
 
     {
         auto data = child.BlockchainAddresses();
@@ -397,7 +398,7 @@ auto Wallet::UpdateMergedContact(
     std::for_each(
         std::begin(deleted), std::end(deleted), [&](const auto& element) {
             element_to_contact_[element].erase(deletedID);
-            const auto pattern = blockchain_.IndexItem(element->Bytes());
+            const auto pattern = blockchain_.IndexItem(element.Bytes());
 
             try {
                 const auto& transactions = pattern_to_transactions_.at(pattern);

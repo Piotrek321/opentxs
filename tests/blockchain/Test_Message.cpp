@@ -94,14 +94,14 @@ TEST_F(Test_Message, getblocks)
     namespace bitcoin = ot::blockchain::p2p::bitcoin;
 
     bitcoin::ProtocolVersionUnsigned version{2};
-    ot::UnallocatedVector<ot::OTData> header_hashes;
+    ot::UnallocatedVector<ot::ByteArray> header_hashes;
     for (int ii = 0; ii < 10; ii++) {
-        ot::OTData header_hash = ot::Data::Factory();
-        header_hash->Randomize(32);
+        ot::ByteArray header_hash = ot::ByteArray{};
+        header_hash.Randomize(32);
         header_hashes.push_back(header_hash);
     }
-    ot::OTData stop_hash = ot::Data::Factory();
-    stop_hash->Randomize(32);
+    ot::ByteArray stop_hash = ot::ByteArray{};
+    stop_hash.Randomize(32);
 
     std::unique_ptr<bitcoin::message::Getblocks> pMessage{
         ot::factory::BitcoinP2PGetblocks(
@@ -124,14 +124,14 @@ TEST_F(Test_Message, getblocks)
     std::unique_ptr<bitcoin::Header> pHeader{ot::factory::BitcoinP2PHeader(
         api_, ot::blockchain::Type::BitcoinCash, frame.at(0))};
 
-    if (payload->size() > 0) {
+    if (payload.size() > 0) {
         std::unique_ptr<bitcoin::Message> pLoadedMsg{
             ot::factory::BitcoinP2PMessage(
                 api_,
                 std::move(pHeader),
                 70015,
-                payload->data(),
-                payload->size())};
+                payload.data(),
+                payload.size())};
         ASSERT_TRUE(pMessage->payload() == pLoadedMsg->payload());
     } else {
         std::unique_ptr<bitcoin::Message> pLoadedMsg{

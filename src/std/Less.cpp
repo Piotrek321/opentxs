@@ -16,7 +16,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
@@ -197,18 +197,18 @@ auto less<opentxs::ui::implementation::ContactListSortKey>::operator()(
     return false;
 }
 
+auto less<opentxs::ByteArray>::operator()(
+    const opentxs::ByteArray& lhs,
+    const opentxs::ByteArray& rhs) const -> bool
+{
+    return lhs < rhs;
+}
+
 auto less<opentxs::FixedByteArray<32>>::operator()(
     const opentxs::FixedByteArray<32>& lhs,
     const opentxs::FixedByteArray<32>& rhs) const -> bool
 {
     return lhs < rhs;
-}
-
-auto less<opentxs::Pimpl<opentxs::Data>>::operator()(
-    const opentxs::OTData& lhs,
-    const opentxs::OTData& rhs) const -> bool
-{
-    return lhs.get() < rhs.get();
 }
 
 auto less<opentxs::OTIdentifier>::operator()(

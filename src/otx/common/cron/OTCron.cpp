@@ -27,7 +27,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -172,11 +172,10 @@ auto OTCron::GetNym_OfferList(
         // Now we need to translate pBuffer into strOutput.
 
         const std::uint8_t* pUint = pBuffer->GetData();
-        const size_t theSize = pBuffer->GetSize();
+        const std::size_t theSize = pBuffer->GetSize();
 
         if ((nullptr != pUint) || (theSize < 2)) {
-            auto theData =
-                Data::Factory(pUint, static_cast<std::uint32_t>(theSize));
+            auto theData = ByteArray{pUint, theSize};
 
             // This function will base64 ENCODE theData,
             // and then Set() that as the string contents.
@@ -321,11 +320,10 @@ auto OTCron::GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount)
         // Now we need to translate pBuffer into strOutput.
 
         const std::uint8_t* pUint = pBuffer->GetData();
-        const size_t theSize = pBuffer->GetSize();
+        const std::size_t theSize = pBuffer->GetSize();
 
         if ((theSize > 0) && (nullptr != pUint)) {
-            auto theData =
-                Data::Factory(pUint, static_cast<std::uint32_t>(theSize));
+            auto theData = ByteArray{pUint, theSize};
 
             // This function will base64 ENCODE theData,
             // and then Set() that as the string contents.

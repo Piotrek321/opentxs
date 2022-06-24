@@ -20,7 +20,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -42,6 +41,9 @@ namespace zeromq
 class Frame;
 }  // namespace zeromq
 }  // namespace network
+
+class ByteArray;
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -53,10 +55,10 @@ namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 class Message : virtual public bitcoin::Message
 {
 public:
-    auto Encode() const -> OTData final;
+    auto Encode() const -> ByteArray final;
     auto header() const noexcept -> const Header& final { return *header_; }
     using bitcoin::Message::payload;
-    auto payload() const noexcept -> OTData final;
+    auto payload() const noexcept -> ByteArray final;
     auto Transmit() const noexcept -> std::pair<zmq::Frame, zmq::Frame> final;
 
     auto header() noexcept -> Header& { return *header_; }
@@ -89,6 +91,6 @@ protected:
     Message(const api::Session& api, std::unique_ptr<Header> header) noexcept;
 
 private:
-    auto calculate_checksum(const Data& payload) const noexcept -> OTData;
+    auto calculate_checksum(const Data& payload) const noexcept -> ByteArray;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

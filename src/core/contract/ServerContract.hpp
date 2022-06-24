@@ -11,7 +11,7 @@
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "internal/util/Mutex.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -38,8 +38,8 @@ namespace proto
 class Signature;
 }  // namespace proto
 
+class Data;
 class Factory;
-class OTPassword;
 class PasswordPrompt;
 class String;
 // }  // namespace v1
@@ -59,7 +59,7 @@ public:
         const AddressType& preferred) const -> bool final;
     auto EffectiveName() const -> UnallocatedCString final;
     auto Name() const noexcept -> UnallocatedCString final { return name_; }
-    auto Serialize() const noexcept -> OTData final;
+    auto Serialize() const noexcept -> ByteArray final;
     auto Serialize(AllocateOutput destination, bool includeNym = false) const
         -> bool final;
     auto Serialize(proto::ServerContract& output, bool includeNym = false) const
@@ -82,7 +82,7 @@ public:
         const UnallocatedCString& terms,
         const UnallocatedCString& name,
         UnallocatedList<contract::Server::Endpoint>&& endpoints,
-        OTData&& key,
+        ByteArray&& key,
         OTNotaryID&& id,
         Signatures&& signatures = {});
     Server(
@@ -102,7 +102,7 @@ private:
 
     const UnallocatedList<contract::Server::Endpoint> listen_params_;
     const UnallocatedCString name_;
-    const OTData transport_key_;
+    const ByteArray transport_key_;
 
     static auto extract_endpoints(
         const proto::ServerContract& serialized) noexcept

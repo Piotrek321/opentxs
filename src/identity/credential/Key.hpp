@@ -63,7 +63,6 @@ class Signature;
 }  // namespace proto
 
 class Data;
-class OTPassword;
 class PasswordPrompt;
 class Signature;
 // }  // namespace v1

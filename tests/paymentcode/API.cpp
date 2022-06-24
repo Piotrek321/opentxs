@@ -105,7 +105,7 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
         const auto& key = *pKey;
 
-        EXPECT_EQ(expected->Bytes(), key.PublicKey());
+        EXPECT_EQ(expected.Bytes(), key.PublicKey());
 
         const auto& element2 =
             alice_.Crypto().Blockchain().GetKey(element.KeyID());
@@ -123,7 +123,7 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
         const auto& key = *pKey;
 
-        EXPECT_EQ(expected->Bytes(), key.PublicKey());
+        EXPECT_EQ(expected.Bytes(), key.PublicKey());
 
         const auto& element2 =
             alice_.Crypto().Blockchain().GetKey(element.KeyID());
@@ -209,7 +209,7 @@ TEST_F(Test_PaymentCodeAPI, bob)
 
         const auto& key = *pKey;
 
-        EXPECT_EQ(expected->Bytes(), key.PublicKey());
+        EXPECT_EQ(expected.Bytes(), key.PublicKey());
 
         const auto& element2 =
             bob_.Crypto().Blockchain().GetKey(element.KeyID());
@@ -227,7 +227,7 @@ TEST_F(Test_PaymentCodeAPI, bob)
 
         const auto& key = *pKey;
 
-        EXPECT_EQ(expected->Bytes(), key.PublicKey());
+        EXPECT_EQ(expected.Bytes(), key.PublicKey());
 
         const auto& element2 =
             bob_.Crypto().Blockchain().GetKey(element.KeyID());

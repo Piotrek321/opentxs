@@ -16,9 +16,8 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -39,9 +38,10 @@ auto BitcoinP2PBlock(
         return nullptr;
     }
 
-    const auto raw_block(Data::Factory(payload, size));
-
-    return new ReturnType(api, std::move(pHeader), raw_block);
+    return new ReturnType(
+        api,
+        std::move(pHeader),
+        ByteArray{static_cast<const std::byte*>(payload), size});
 }
 
 auto BitcoinP2PBlock(
@@ -81,7 +81,7 @@ Block::Block(
 auto Block::payload(AllocateOutput out) const noexcept -> bool
 {
     try {
-        if (false == copy(payload_->Bytes(), out)) {
+        if (false == copy(payload_.Bytes(), out)) {
             throw std::runtime_error{"failed to serialize payload"};
         }
 

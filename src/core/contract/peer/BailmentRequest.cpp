@@ -20,6 +20,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"

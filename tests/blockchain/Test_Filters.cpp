@@ -25,7 +25,7 @@ using namespace opentxs::literals;
 
 const auto params_ = ot::blockchain::internal::GetFilterParams(
     ot::blockchain::cfilter::Type::Basic_BIP158);
-using Hash = ot::OTData;
+using Hash = ot::ByteArray;
 auto stress_test_ = ot::Vector<Hash>{};
 
 class Test_Filters : public ::testing::Test
@@ -50,7 +50,7 @@ public:
     {
         const auto& vector = gcs_.at(0);
         const auto block = api_.Factory().DataFromHex(vector.block_hash_);
-        auto elements = ot::Vector<ot::OTData>{};
+        auto elements = ot::Vector<ot::ByteArray>{};
 
         for (const auto& element : vector.previous_) {
             elements.emplace_back(api_.Factory().DataFromHex(element));
@@ -64,7 +64,7 @@ public:
             api_,
             params_.first,
             params_.second,
-            ot::blockchain::internal::BlockHashToFilterKey(block->Bytes()),
+            ot::blockchain::internal::BlockHashToFilterKey(block.Bytes()),
             elements,
             {});
 
@@ -74,12 +74,12 @@ public:
 
         const auto encoded = [&] {
             auto out = api_.Factory().Data();
-            gcs.Encode(out->WriteInto());
+            gcs.Encode(out.WriteInto());
 
             return out;
         }();
 
-        EXPECT_EQ(vector.filter_, encoded->asHex());
+        EXPECT_EQ(vector.filter_, encoded.asHex());
 
         return true;
     }
@@ -221,10 +221,10 @@ TEST_F(Test_Filters, bloom_filter)
     ot::UnallocatedCString s3("justus");
     ot::UnallocatedCString s4("fellowtraveler");
 
-    const auto object1(ot::Data::Factory(s1.data(), s1.length()));
-    const auto object2(ot::Data::Factory(s2.data(), s2.length()));
-    const auto object3(ot::Data::Factory(s3.data(), s3.length()));
-    const auto object4(ot::Data::Factory(s4.data(), s4.length()));
+    const auto object1(ot::ByteArray{s1.data(), s1.length()});
+    const auto object2(ot::ByteArray{s2.data(), s2.length()});
+    const auto object3(ot::ByteArray{s3.data(), s3.length()});
+    const auto object4(ot::ByteArray{s4.data(), s4.length()});
 
     ot::OTBloomFilter pFilter{ot::factory::BloomFilter(
         api_, 9873485, ot::blockchain::BloomUpdateFlag::None, 5, 0.001)};
@@ -351,16 +351,16 @@ TEST_F(Test_Filters, gcs)
     const auto s4 = ot::UnallocatedCString{"fellowtraveler"};
     const auto s5 = ot::UnallocatedCString{"islajames"};
     const auto s6 = ot::UnallocatedCString{"timewaitsfornoman"};
-    const auto object1(ot::Data::Factory(s1.data(), s1.length()));
-    const auto object2(ot::Data::Factory(s2.data(), s2.length()));
-    const auto object3(ot::Data::Factory(s3.data(), s3.length()));
-    const auto object4(ot::Data::Factory(s4.data(), s4.length()));
-    const auto object5(ot::Data::Factory(s5.data(), s5.length()));
-    const auto object6(ot::Data::Factory(s6.data(), s6.length()));
+    const auto object1(ot::ByteArray{s1.data(), s1.length()});
+    const auto object2(ot::ByteArray{s2.data(), s2.length()});
+    const auto object3(ot::ByteArray{s3.data(), s3.length()});
+    const auto object4(ot::ByteArray{s4.data(), s4.length()});
+    const auto object5(ot::ByteArray{s5.data(), s5.length()});
+    const auto object6(ot::ByteArray{s6.data(), s6.length()});
 
     auto includedElements =
-        ot::Vector<ot::OTData>{object1, object2, object3, object4};
-    auto excludedElements = ot::Vector<ot::OTData>{object5, object6};
+        ot::Vector<ot::ByteArray>{object1, object2, object3, object4};
+    auto excludedElements = ot::Vector<ot::ByteArray>{object5, object6};
     auto key = ot::UnallocatedCString{"0123456789abcdef"};
     const auto gcs = ot::factory::GCS(
         api_, params_.first, params_.second, key, includedElements, {});
@@ -376,13 +376,13 @@ TEST_F(Test_Filters, gcs)
     EXPECT_FALSE(gcs.Test(excludedElements));
 
     const auto partial = ot::Vector<ot::ReadView>{
-        object1->Bytes(), object4->Bytes(), object5->Bytes(), object6->Bytes()};
+        object1.Bytes(), object4.Bytes(), object5.Bytes(), object6.Bytes()};
     const auto matches = gcs.Match(partial);
 
     EXPECT_TRUE(2 == matches.size());
 
-    const auto good1 = object1->str();
-    const auto good2 = object4->str();
+    const auto good1 = object1.str();
+    const auto good2 = object4.str();
 
     for (const auto& match : matches) {
         EXPECT_TRUE((good1 == *match) || (good2 == *match));
@@ -417,9 +417,9 @@ TEST_F(Test_Filters, bip158_case_1665877)
         "c0bc6bbd8159136b4d48fb4e1709c2dc175cc2172d27110d750648ff2a43d2b8133550"
         "b263e994f9a0f4351e852968fba21f41a27628e900");
 
-    auto key = ot::blockchain::internal::BlockHashToFilterKey(block->Bytes());
+    auto key = ot::blockchain::internal::BlockHashToFilterKey(block.Bytes());
     const auto gcs = ot::factory::GCS(
-        api_, params_.first, params_.second, key, 154, encodedGCS->Bytes(), {});
+        api_, params_.first, params_.second, key, 154, encodedGCS.Bytes(), {});
 
     ASSERT_TRUE(gcs.IsValid());
     EXPECT_TRUE(gcs.Test(script));
@@ -443,37 +443,37 @@ TEST_F(Test_Filters, bip158_headers)
         "0xf06c381b7d46b1f8df603de51f25fda128dff8cbe8f204357e5e2bef11fd6a18");
     const auto expected_3 = api_.Factory().DataFromHex(
         "0x2a9d721212af044cec24f188631cff7b516fb1576a31d2b67c25b75adfaa638d");
-    auto previous = blank->Bytes();
-    auto hash = bc::FilterToHash(api_, filter_0->Bytes());
+    auto previous = blank.Bytes();
+    auto hash = bc::FilterToHash(api_, filter_0.Bytes());
     auto calculated_a = bc::FilterHashToHeader(api_, hash.Bytes(), previous);
-    auto calculated_b = bc::FilterToHeader(api_, filter_0->Bytes(), previous);
+    auto calculated_b = bc::FilterToHeader(api_, filter_0.Bytes(), previous);
 
     EXPECT_EQ(calculated_a, calculated_b);
-    EXPECT_EQ(calculated_a, expected_0.get());
+    EXPECT_EQ(calculated_a, expected_0);
 
-    previous = expected_0->Bytes();
-    hash = bc::FilterToHash(api_, filter_1->Bytes());
+    previous = expected_0.Bytes();
+    hash = bc::FilterToHash(api_, filter_1.Bytes());
     calculated_a = bc::FilterHashToHeader(api_, hash.Bytes(), previous);
-    calculated_b = bc::FilterToHeader(api_, filter_1->Bytes(), previous);
+    calculated_b = bc::FilterToHeader(api_, filter_1.Bytes(), previous);
 
     EXPECT_EQ(calculated_a, calculated_b);
-    EXPECT_EQ(calculated_a, expected_1.get());
+    EXPECT_EQ(calculated_a, expected_1);
 
-    previous = expected_1->Bytes();
-    hash = bc::FilterToHash(api_, filter_2->Bytes());
+    previous = expected_1.Bytes();
+    hash = bc::FilterToHash(api_, filter_2.Bytes());
     calculated_a = bc::FilterHashToHeader(api_, hash.Bytes(), previous);
-    calculated_b = bc::FilterToHeader(api_, filter_2->Bytes(), previous);
+    calculated_b = bc::FilterToHeader(api_, filter_2.Bytes(), previous);
 
     EXPECT_EQ(calculated_a, calculated_b);
-    EXPECT_EQ(calculated_a, expected_2.get());
+    EXPECT_EQ(calculated_a, expected_2);
 
-    previous = expected_2->Bytes();
-    hash = bc::FilterToHash(api_, filter_3->Bytes());
+    previous = expected_2.Bytes();
+    hash = bc::FilterToHash(api_, filter_3.Bytes());
     calculated_a = bc::FilterHashToHeader(api_, hash.Bytes(), previous);
-    calculated_b = bc::FilterToHeader(api_, filter_3->Bytes(), previous);
+    calculated_b = bc::FilterToHeader(api_, filter_3.Bytes(), previous);
 
     EXPECT_EQ(calculated_a, calculated_b);
-    EXPECT_EQ(calculated_a, expected_3.get());
+    EXPECT_EQ(calculated_a, expected_3);
 }
 
 TEST_F(Test_Filters, hash)
@@ -490,13 +490,13 @@ TEST_F(Test_Filters, hash)
         params_.second,
         bc::BlockHashToFilterKey(block_0.Bytes()),
         1,
-        filter_0->Bytes(),
+        filter_0.Bytes(),
         {});
 
     ASSERT_TRUE(gcs.IsValid());
 
     const auto hash_a = gcs.Hash();
-    const auto hash_b = bc::FilterToHash(api_, preimage->Bytes());
+    const auto hash_b = bc::FilterToHash(api_, preimage.Bytes());
 
     EXPECT_EQ(hash_a, hash_b);
 }
@@ -508,10 +508,10 @@ TEST_F(Test_Filters, init_array)
 
     {
         auto& first = stress_test_.emplace_back(api_.Factory().Data());
-        first->SetSize(32);
+        first.SetSize(32);
 
         ASSERT_TRUE(
-            api_.Crypto().Util().RandomizeMemory(first->data(), first->size()));
+            api_.Crypto().Util().RandomizeMemory(first.data(), first.size()));
     }
 
     while (stress_test_.size() < count) {
@@ -519,9 +519,7 @@ TEST_F(Test_Filters, init_array)
         auto& next = stress_test_.emplace_back(api_.Factory().Data());
 
         EXPECT_TRUE(api_.Crypto().Hash().Digest(
-            ot::crypto::HashType::Sha256,
-            previous->Bytes(),
-            next->WriteInto()));
+            ot::crypto::HashType::Sha256, previous.Bytes(), next.WriteInto()));
     }
 }
 
@@ -533,8 +531,8 @@ TEST_F(Test_Filters, test_set_intersection)
         ot::blockchain::cfilter::Type::ES);
     const auto hash = [&] {
         auto out = api_.Factory().Data();
-        out->SetSize(32);
-        api_.Crypto().Util().RandomizeMemory(out->data(), out->size());
+        out.SetSize(32);
+        api_.Crypto().Util().RandomizeMemory(out.data(), out.size());
 
         return out;
     }();
@@ -542,7 +540,7 @@ TEST_F(Test_Filters, test_set_intersection)
         api_,
         params.first,
         params.second,
-        bc::BlockHashToFilterKey(hash->Bytes()),
+        bc::BlockHashToFilterKey(hash.Bytes()),
         stress_test_,
         {});
 
@@ -577,7 +575,7 @@ TEST_F(Test_Filters, test_set_intersection)
             subset.begin(),
             subset.end(),
             std::back_inserter(out),
-            [](const auto& i) { return i->Bytes(); });
+            [](const auto& i) { return i.Bytes(); });
 
         return out;
     }();

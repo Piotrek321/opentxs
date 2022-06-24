@@ -15,7 +15,7 @@
 
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -96,7 +96,7 @@ auto StringToProto(const String& input) -> Output
         return Output();
     } else {
 
-        return Factory<Output>(Data::Factory(armored));
+        return Factory<Output>(ByteArray{armored});
     }
 }
 }  // namespace opentxs::proto

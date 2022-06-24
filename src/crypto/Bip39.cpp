@@ -29,7 +29,7 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
@@ -119,20 +119,20 @@ auto Bip39::entropy_to_words(
         return false;
     }
 
-    auto newData = opentxs::Data::Factory();  // TODO should be secret
-    auto digestOutput = opentxs::Data::Factory();
+    auto newData = opentxs::ByteArray{};  // TODO should be secret
+    auto digestOutput = opentxs::ByteArray{};
 
     if (false == crypto_.Hash().Digest(
                      opentxs::crypto::HashType::Sha256,
                      bytes,
-                     digestOutput->WriteInto())) {
+                     digestOutput.WriteInto())) {
         LogError()(OT_PRETTY_CLASS())(
             "Digest(opentxs::crypto::HashType::Sha256...) failed.")
             .Flush();
 
         return false;
     } else {
-        newData->Concatenate(bytes);
+        newData.Concatenate(bytes);
         newData += digestOutput;
     }
 
@@ -149,7 +149,7 @@ auto Bip39::entropy_to_words(
             const auto byteIndex =
                 bitIndex / static_cast<std::size_t>(ByteBits);
             auto indexed_byte = std::byte{0};
-            const bool bExtracted = newData->Extract(
+            const bool bExtracted = newData.Extract(
                 reinterpret_cast<std::uint8_t&>(indexed_byte), byteIndex);
 
             if (!bExtracted) {
@@ -318,8 +318,8 @@ auto Bip39::words_to_root_bip39(
         salt += UnallocatedCString{passphrase.Bytes()};
     }
 
-    auto dataOutput = opentxs::Data::Factory();  // TODO should be secret
-    const auto dataSalt = opentxs::Data::Factory(salt.data(), salt.size());
+    auto dataOutput = opentxs::ByteArray{};  // TODO should be secret
+    const auto dataSalt = opentxs::ByteArray{salt.data(), salt.size()};
     crypto_.Hash().PKCS5_PBKDF2_HMAC(
         words,
         dataSalt,
@@ -327,7 +327,7 @@ auto Bip39::words_to_root_bip39(
         crypto::HashType::Sha512,
         HmacOutputSizeBytes,
         dataOutput);
-    bip32RootNode.Assign(dataOutput->Bytes());
+    bip32RootNode.Assign(dataOutput.Bytes());
 
     return true;
 }

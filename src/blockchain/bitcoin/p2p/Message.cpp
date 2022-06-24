@@ -29,9 +29,10 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -229,20 +230,21 @@ Message::Message(
     OT_ASSERT(header_);
 }
 
-auto Message::Encode() const -> OTData
+auto Message::Encode() const -> ByteArray
 {
     auto output = api_.Factory().Data();
-    header().Serialize(output->WriteInto());
+    header().Serialize(output.WriteInto());
     output += payload();
 
     return output;
 }
 
-auto Message::calculate_checksum(const Data& payload) const noexcept -> OTData
+auto Message::calculate_checksum(const Data& payload) const noexcept
+    -> ByteArray
 {
-    auto output = Data::Factory();
+    auto output = ByteArray{};
     P2PMessageHash(
-        api_, header().Network(), payload.Bytes(), output->WriteInto());
+        api_, header().Network(), payload.Bytes(), output.WriteInto());
 
     return output;
 }
@@ -250,14 +252,14 @@ auto Message::calculate_checksum(const Data& payload) const noexcept -> OTData
 auto Message::init_hash() noexcept -> void
 {
     const auto data = payload();
-    const auto size = data->size();
+    const auto size = data.size();
     header().SetChecksum(size, calculate_checksum(data));
 }
 
-auto Message::payload() const noexcept -> OTData
+auto Message::payload() const noexcept -> ByteArray
 {
     auto out = api_.Factory().Data();
-    payload(out->WriteInto());
+    payload(out.WriteInto());
 
     return out;
 }
@@ -279,9 +281,9 @@ auto Message::verify_checksum() const noexcept(false) -> void
 
     if (provided != calculated) {
         LogError()(OT_PRETTY_CLASS())("Checksum failure").Flush();
-        LogError()("*  Calculated Payload:  ")(payload()->asHex()).Flush();
-        LogError()("*  Calculated Checksum: ")(calculated->asHex()).Flush();
-        LogError()("*  Provided Checksum:   ")(provided.asHex()).Flush();
+        LogError()("*  Calculated Payload:  ").asHex(payload()).Flush();
+        LogError()("*  Calculated Checksum: ").asHex(calculated).Flush();
+        LogError()("*  Provided Checksum:   ").asHex(provided).Flush();
 
         throw std::runtime_error("checksum failure");
     }

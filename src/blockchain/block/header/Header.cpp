@@ -24,9 +24,8 @@
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 
 namespace opentxs::factory
@@ -54,7 +53,7 @@ auto GenesisBlockHeader(
                 blockchain::params::Chains().at(type).genesis_header_hex_;
             const auto data = api.Factory().DataFromHex(hex);
 
-            return factory::BitcoinBlockHeader(api, type, data->Bytes());
+            return factory::BitcoinBlockHeader(api, type, data.Bytes());
         }
         case blockchain::Type::Unknown:
         case blockchain::Type::Ethereum_frontier:
@@ -95,7 +94,7 @@ auto Header::Imp::IncrementalWork() const noexcept -> OTWork
 
 auto Header::Imp::NumericHash() const noexcept -> OTNumericHash
 {
-    static const auto blankData = Data::Factory();
+    static const auto blankData = ByteArray{};
     static const auto blankHash =
         OTNumericHash{factory::NumericHash(blankData)};
 

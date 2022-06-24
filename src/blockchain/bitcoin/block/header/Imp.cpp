@@ -34,7 +34,7 @@
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -506,10 +506,10 @@ auto Header::check_pow() const noexcept -> bool
     return NumericHash() < Target();
 }
 
-auto Header::Encode() const noexcept -> OTData
+auto Header::Encode() const noexcept -> ByteArray
 {
     auto output = api_.Factory().Data();
-    Serialize(output->WriteInto());
+    Serialize(output.WriteInto());
 
     return output;
 }
@@ -517,7 +517,7 @@ auto Header::Encode() const noexcept -> OTData
 auto Header::find_nonce() noexcept(false) -> void
 {
     auto& hash = const_cast<blockchain::block::Hash&>(hash_);
-    auto& pow = const_cast<OTData&>(pow_);
+    auto& pow = const_cast<ByteArray&>(pow_);
     auto& nonce = const_cast<std::uint32_t&>(nonce_);
     auto bytes = BitcoinFormat{};
     auto view = ReadView{};

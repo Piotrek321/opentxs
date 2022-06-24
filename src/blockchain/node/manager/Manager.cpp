@@ -14,6 +14,7 @@
 #include <chrono>
 #include <iomanip>
 #include <iosfwd>
+#include <iterator>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
@@ -33,6 +34,7 @@
 #include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/PeerManager.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/node/Wallet.hpp"
@@ -45,8 +47,10 @@
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -65,16 +69,22 @@
 #include "opentxs/blockchain/node/SendResult.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/Amount.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/network/p2p/PushTransaction.hpp"
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -85,6 +95,8 @@
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
+#include "serialization/protobuf/BlockchainTransactionProposedNotification.pb.h"
+#include "serialization/protobuf/BlockchainTransactionProposedOutput.pb.h"
 #include "serialization/protobuf/HDPath.pb.h"
 #include "serialization/protobuf/PaymentCode.pb.h"
 #include "util/Thread.hpp"
@@ -349,7 +361,7 @@ Base::Base(
 
             auto data = api_.Factory().Data();
             const auto bytes = boost.to_v4().to_bytes();
-            data->Assign(bytes.data(), bytes.size());
+            data.Assign(bytes.data(), bytes.size());
 
             auto address = opentxs::factory::BlockchainAddress(
                 api_,
@@ -382,13 +394,20 @@ Base::Base(
 
             auto data = api_.Factory().Data();
             const auto bytes = boost.to_v6().to_bytes();
-            data->Assign(bytes.data(), bytes.size());
+            data.Assign(bytes.data(), bytes.size());
 
             auto address = opentxs::factory::BlockchainAddress(
                 api_,
                 blockchain::p2p::Protocol::bitcoin,
                 blockchain::p2p::Network::ipv6,
-                data,
+                [&] {
+                    auto out = api_.Factory().Data();
+                    const auto v6 = boost.to_v6();
+                    const auto bytes = v6.to_bytes();
+                    out.Assign(bytes.data(), bytes.size());
+
+                    return out;
+                }(),
                 params::Chains().at(chain_).default_port_,
                 chain_,
                 {},
@@ -851,14 +870,14 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
                 [[fallthrough]];
             }
             case Style::P2PKH: {
-                output.set_pubkeyhash(data->str());
+                output.set_pubkeyhash(data.str());
             } break;
             case Style::P2WSH: {
                 output.set_segwit(true);
                 [[fallthrough]];
             }
             case Style::P2SH: {
-                output.set_scripthash(data->str());
+                output.set_scripthash(data.str());
             } break;
             default: {
                 rc = SendResult::UnsupportedAddressFormat;
@@ -971,11 +990,11 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
         txout.set_paymentcodechannel(account.ID().str());
         const auto pubkey = api_.Factory().DataFromBytes(key.PublicKey());
         LogVerbose()(OT_PRETTY_CLASS())(" using derived public key ")(
-            pubkey->asHex())(" at "
+            pubkey.asHex())(" at "
                              "index"
                              " ")(index.value())(" for outgoing transaction")
             .Flush();
-        txout.set_pubkey(pubkey->str());
+        txout.set_pubkey(pubkey.str());
         txout.set_contact(UnallocatedCString{contact->Bytes()});
 
         if (account.IsNotified()) {

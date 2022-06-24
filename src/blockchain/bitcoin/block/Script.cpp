@@ -32,6 +32,7 @@
 #include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"  // IWYU pragma: keep
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
@@ -714,7 +715,7 @@ auto Script::ExtractPatterns(const api::Session& api) const noexcept
         std::end(hashes),
         std::back_inserter(output),
         [&](const auto& hash) -> auto {
-            return api.Crypto().Blockchain().IndexItem(hash->Bytes());
+            return api.Crypto().Blockchain().IndexItem(hash.Bytes());
         });
 
     return output;
@@ -857,9 +858,9 @@ auto Script::last_opcode(const ScriptElements& script) noexcept -> OP
 }
 
 auto Script::LikelyPubkeyHashes(const api::Session& api) const noexcept
-    -> UnallocatedVector<OTData>
+    -> UnallocatedVector<ByteArray>
 {
-    auto output = UnallocatedVector<OTData>{};
+    auto output = UnallocatedVector<ByteArray>{};
 
     switch (type_) {
         case Pattern::PayToPubkeyHash: {
@@ -877,7 +878,7 @@ auto Script::LikelyPubkeyHashes(const api::Session& api) const noexcept
                 OT_ASSERT(key.has_value());
 
                 blockchain::PubkeyHash(
-                    api, chain_, key.value(), hash->WriteInto());
+                    api, chain_, key.value(), hash.WriteInto());
                 output.emplace_back(std::move(hash));
             }
         } break;
@@ -887,7 +888,7 @@ auto Script::LikelyPubkeyHashes(const api::Session& api) const noexcept
 
             OT_ASSERT(key.has_value());
 
-            blockchain::PubkeyHash(api, chain_, key.value(), hash->WriteInto());
+            blockchain::PubkeyHash(api, chain_, key.value(), hash.WriteInto());
             output.emplace_back(std::move(hash));
         } break;
         case Pattern::Coinbase:
@@ -913,7 +914,7 @@ auto Script::LikelyPubkeyHashes(const api::Session& api) const noexcept
                         api,
                         chain_,
                         reader(element.data_.value()),
-                        hash->WriteInto());
+                        hash.WriteInto());
                     output.emplace_back(std::move(hash));
                 }
             }
@@ -1039,9 +1040,9 @@ auto Script::Print() const noexcept -> UnallocatedCString
         }
 
         if (data) {
-            auto item = Data::Factory();
-            item->Assign(reader(data.value()));
-            output << " (" << item->size() << ") bytes : " << item->asHex();
+            auto item = ByteArray{};
+            item.Assign(reader(data.value()));
+            output << " (" << item.size() << ") bytes : " << item.asHex();
         }
 
         output << '\n';

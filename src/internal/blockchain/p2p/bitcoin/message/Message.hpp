@@ -29,7 +29,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
@@ -87,6 +87,8 @@ namespace zeromq
 class Frame;
 }  // namespace zeromq
 }  // namespace network
+
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -98,9 +100,9 @@ namespace opentxs::blockchain::p2p::bitcoin
 struct Message {
     static auto MaxPayload() -> std::size_t;
 
-    virtual auto Encode() const -> OTData = 0;
+    virtual auto Encode() const -> ByteArray = 0;
     virtual auto header() const noexcept -> const Header& = 0;
-    virtual auto payload() const noexcept -> OTData = 0;
+    virtual auto payload() const noexcept -> ByteArray = 0;
     virtual auto payload(AllocateOutput) const noexcept -> bool = 0;
     virtual auto Transmit() const noexcept
         -> std::pair<zmq::Frame, zmq::Frame> = 0;
@@ -183,12 +185,12 @@ struct Addr : virtual public bitcoin::Message {
     ~Addr() override = default;
 };
 struct Block : virtual public bitcoin::Message {
-    virtual auto GetBlock() const noexcept -> OTData = 0;
+    virtual auto GetBlock() const noexcept -> ByteArray = 0;
 
     ~Block() override = default;
 };
 struct Blocktxn : virtual public bitcoin::Message {
-    virtual auto BlockTransactions() const noexcept -> OTData = 0;
+    virtual auto BlockTransactions() const noexcept -> ByteArray = 0;
 
     ~Blocktxn() override = default;
 };
@@ -234,7 +236,7 @@ struct Cfilter : virtual public bitcoin::Message {
     ~Cfilter() override = default;
 };
 struct Filteradd : virtual public bitcoin::Message {
-    virtual auto Element() const noexcept -> OTData = 0;
+    virtual auto Element() const noexcept -> ByteArray = 0;
 
     ~Filteradd() override = default;
 };
@@ -536,7 +538,7 @@ auto BitcoinP2PGetblocks(
     const api::Session& api,
     const blockchain::Type network,
     const std::uint32_t version,
-    const UnallocatedVector<OTData>& header_hashes,
+    const UnallocatedVector<ByteArray>& header_hashes,
     const Data& stop_hash) -> blockchain::p2p::bitcoin::message::Getblocks*;
 auto BitcoinP2PGetblocktxn(
     const api::Session& api,
@@ -658,7 +660,7 @@ auto BitcoinP2PMerkleblock(
     const blockchain::Type network,
     const Data& block_header,
     const std::uint32_t txn_count,
-    const UnallocatedVector<OTData>& hashes,
+    const UnallocatedVector<ByteArray>& hashes,
     const UnallocatedVector<std::byte>& flags)
     -> blockchain::p2p::bitcoin::message::Merkleblock*;
 auto BitcoinP2PNotfound(

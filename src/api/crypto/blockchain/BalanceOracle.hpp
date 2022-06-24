@@ -15,7 +15,7 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Timer.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/util/Allocated.hpp"
@@ -44,6 +44,8 @@ class Raw;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
+
+class ByteArray;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -79,7 +81,7 @@ protected:
     auto work() noexcept -> bool override;
 
 private:
-    using Subscribers = Set<OTData>;
+    using Subscribers = Set<ByteArray>;
     using Data = std::pair<Balance, Subscribers>;
     using NymData = Map<OTNymID, Data>;
     using ChainData = std::pair<Data, NymData>;

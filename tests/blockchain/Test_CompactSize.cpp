@@ -60,13 +60,13 @@ auto decode_hex(const ot::UnallocatedCString& hex) -> CompactSize::Bytes
 {
     CompactSize::Bytes output{};
     auto bytes = [](auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
 
         return out;
     }(hex);
 
-    for (const auto& byte : bytes.get()) { output.emplace_back(byte); }
+    for (const auto& byte : bytes) { output.emplace_back(byte); }
 
     return output;
 }
@@ -75,13 +75,18 @@ TEST(Test_CompactSize, encode)
 {
     for (const auto& [number, hex] : vector_1_) {
         CompactSize encoded(number);
+        // TODO c++20
         const auto expectedRaw = [](auto& hex) {
-            auto out = ot::Data::Factory();
-            out->DecodeHex(hex);
+            auto out = ot::ByteArray{};
+            out.DecodeHex(hex);
 
             return out;
         }(hex);
-        const auto calculatedRaw = ot::Data::Factory(encoded.Encode());
+        const auto calculatedRaw = [&] {
+            const auto temp = encoded.Encode();
+
+            return ot::ByteArray{temp.data(), temp.size()};
+        }();
 
         EXPECT_EQ(calculatedRaw, expectedRaw);
     }

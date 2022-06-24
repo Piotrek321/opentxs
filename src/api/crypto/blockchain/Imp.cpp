@@ -45,6 +45,8 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
+#include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -256,7 +258,7 @@ auto Blockchain::Imp::ActivityDescription(
 
 auto Blockchain::Imp::address_prefix(
     const Style style,
-    const opentxs::blockchain::Type chain) const noexcept(false) -> OTData
+    const opentxs::blockchain::Type chain) const noexcept(false) -> ByteArray
 {
     return api_.Factory().DataFromHex(
         address_prefix_map_.at(address_style_map_.at({style, chain}).first));
@@ -462,7 +464,7 @@ auto Blockchain::Imp::DecodeAddress(
         auto& [data, style, chains, supported] = output;
         supported = false;
 
-        if (0 == data->size()) { return output; }
+        if (0 == data.size()) { return output; }
         if (Style::Unknown == style) { return output; }
         if (0 == chains.size()) { return output; }
 
@@ -550,7 +552,7 @@ auto Blockchain::Imp::decode_bech23(const UnallocatedCString& encoded)
                 }
             }
 
-            copy(reader(bytes), data->WriteInto());
+            copy(reader(bytes), data.WriteInto());
             chains.emplace(hrp_reverse_map_.at(result.hrp));
 
             return std::move(output);
@@ -577,16 +579,16 @@ auto Blockchain::Imp::decode_legacy(const UnallocatedCString& encoded)
             api_.Crypto().Encode().IdentifierDecode(encoded));
         auto type = api_.Factory().Data();
 
-        if (0 == bytes->size()) { throw std::runtime_error("not base58"); }
+        if (0 == bytes.size()) { throw std::runtime_error("not base58"); }
 
         try {
-            switch (bytes->size()) {
+            switch (bytes.size()) {
                 case 21: {
-                    bytes->Extract(1, type, 0);
+                    bytes.Extract(1, type, 0);
                     auto prefix{Prefix::Unknown};
 
                     try {
-                        prefix = address_prefix_reverse_map_.at(type->asHex());
+                        prefix = address_prefix_reverse_map_.at(type.asHex());
                     } catch (...) {
                         throw std::runtime_error(
                             "unable to decode version byte");
@@ -599,7 +601,7 @@ auto Blockchain::Imp::decode_legacy(const UnallocatedCString& encoded)
                         chains.emplace(decodeChain);
                     }
 
-                    bytes->Extract(20, data, 1);
+                    bytes.Extract(20, data, 1);
                 } break;
                 default: {
                     throw std::runtime_error("unknown address format");
@@ -1032,11 +1034,11 @@ auto Blockchain::Imp::p2pkh(
     try {
         auto preimage = address_prefix(Style::P2PKH, chain);
 
-        OT_ASSERT(1 == preimage->size());
+        OT_ASSERT(1 == preimage.size());
 
         preimage += pubkeyHash;
 
-        OT_ASSERT(21 == preimage->size());
+        OT_ASSERT(21 == preimage.size());
 
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
@@ -1054,11 +1056,11 @@ auto Blockchain::Imp::p2sh(
     try {
         auto preimage = address_prefix(Style::P2SH, chain);
 
-        OT_ASSERT(1 == preimage->size());
+        OT_ASSERT(1 == preimage.size());
 
         preimage += pubkeyHash;
 
-        OT_ASSERT(21 == preimage->size());
+        OT_ASSERT(21 == preimage.size());
 
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
@@ -1166,7 +1168,7 @@ auto Blockchain::Imp::ProcessTransactions(
 
 auto Blockchain::Imp::PubkeyHash(
     [[maybe_unused]] const opentxs::blockchain::Type chain,
-    const Data& pubkey) const noexcept(false) -> OTData
+    const Data& pubkey) const noexcept(false) -> ByteArray
 {
     if (pubkey.empty()) { throw std::runtime_error("Empty pubkey"); }
 
@@ -1174,12 +1176,12 @@ auto Blockchain::Imp::PubkeyHash(
         throw std::runtime_error("Incorrect pubkey size");
     }
 
-    auto output = Data::Factory();
+    auto output = ByteArray{};
 
     if (false == api_.Crypto().Hash().Digest(
                      opentxs::crypto::HashType::Bitcoin,
                      pubkey.Bytes(),
-                     output->WriteInto())) {
+                     output.WriteInto())) {
         throw std::runtime_error("Unable to calculate hash.");
     }
 

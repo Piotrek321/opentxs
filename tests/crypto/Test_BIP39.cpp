@@ -482,7 +482,7 @@ TEST_F(Test_BIP39, pkt_seed_import)
             return out;
         }();
 
-        EXPECT_EQ(secret->asHex(), expected_secret_keys_.at(i));
+        EXPECT_EQ(secret.asHex(), expected_secret_keys_.at(i));
     }
 }
 }  // namespace ottest

@@ -35,6 +35,7 @@ namespace proto
 class HDPath;
 }  // namespace proto
 
+class ByteArray;
 class Contact;
 class Identifier;
 // }  // namespace v1
@@ -87,7 +88,7 @@ public:
     /// Throws std::runtime_error if type is invalid
     virtual auto PubkeyHash(
         const opentxs::blockchain::Type chain,
-        const Data& pubkey) const noexcept(false) -> OTData = 0;
+        const Data& pubkey) const noexcept(false) -> ByteArray = 0;
     virtual auto ReportScan(
         const Chain chain,
         const identifier::Nym& owner,

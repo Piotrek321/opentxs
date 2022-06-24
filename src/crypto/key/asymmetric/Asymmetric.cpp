@@ -85,7 +85,7 @@ Asymmetric::Asymmetric(
     const bool hasPublic,
     const bool hasPrivate,
     const VersionNumber version,
-    OTData&& pubkey,
+    ByteArray&& pubkey,
     EncryptedExtractor get,
     PlaintextExtractor getPlaintext) noexcept(false)
     : api_(api)
@@ -106,7 +106,7 @@ Asymmetric::Asymmetric(
     , encrypted_key_([&] {
         if (hasPrivate && get) {
 
-            return get(const_cast<Data&>(key_.get()), plaintext_key_);
+            return get(const_cast<ByteArray&>(key_), plaintext_key_);
         } else {
 
             return EncryptedKey{};
@@ -173,7 +173,7 @@ Asymmetric::Asymmetric(const Asymmetric& rhs) noexcept
           rhs.has_public_,
           rhs.has_private_,
           rhs.version_,
-          OTData{rhs.key_},
+          ByteArray{rhs.key_},
           [&](auto&, auto&) -> EncryptedKey {
               if (rhs.encrypted_key_) {
 
@@ -203,7 +203,7 @@ Asymmetric::Asymmetric(const Asymmetric& rhs, const ReadView newPublic) noexcept
 
 Asymmetric::Asymmetric(
     const Asymmetric& rhs,
-    OTData&& newPublicKey,
+    ByteArray&& newPublicKey,
     OTSecret&& newSecretKey) noexcept
     : api_(rhs.api_)
     , version_(rhs.version_)
@@ -214,7 +214,7 @@ Asymmetric::Asymmetric(
     , lock_()
     , encrypted_key_(EncryptedKey{})
     , provider_(rhs.provider_)
-    , has_public_(false == key_->empty())
+    , has_public_(false == key_.empty())
     , metadata_(std::make_unique<OTSignatureMetadata>(api_))
     , has_private_(false == plaintext_key_->empty())
 {
@@ -250,19 +250,19 @@ auto Asymmetric::operator==(const proto::AsymmetricKey& rhs) const noexcept
 
 auto Asymmetric::CalculateHash(
     const crypto::HashType hashType,
-    const PasswordPrompt& reason) const noexcept -> OTData
+    const PasswordPrompt& reason) const noexcept -> ByteArray
 {
     auto lock = Lock{lock_};
     auto output = api_.Factory().Data();
     const auto hashed = api_.Crypto().Hash().Digest(
         hashType,
         has_private_ ? private_key(lock, reason) : PublicKey(),
-        output->WriteInto());
+        output.WriteInto());
 
     if (false == hashed) {
         LogError()(OT_PRETTY_CLASS())("Failed to calculate hash").Flush();
 
-        return Data::Factory();
+        return ByteArray{};
     }
 
     return output;
@@ -653,7 +653,7 @@ auto Asymmetric::serialize(const Lock&, Serialized& output) const noexcept
     output.set_version(version_);
     output.set_role(opentxs::translate(role_));
     output.set_type(static_cast<proto::AsymmetricKeyType>(type_));
-    output.set_key(key_->data(), key_->size());
+    output.set_key(key_.data(), key_.size());
 
     if (has_private_) {
         output.set_mode(proto::KEYMODE_PRIVATE);
@@ -669,7 +669,7 @@ auto Asymmetric::serialize(const Lock&, Serialized& output) const noexcept
 }
 
 auto Asymmetric::SerializeKeyToData(
-    const proto::AsymmetricKey& serializedKey) const -> OTData
+    const proto::AsymmetricKey& serializedKey) const -> ByteArray
 {
     return api_.Factory().InternalSession().Data(serializedKey);
 }

@@ -22,11 +22,11 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/NumericHash.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace be = boost::endian;
 
@@ -146,8 +146,8 @@ auto NumberToHash(const api::Session& api, ReadView hex) noexcept -> pHash
     const auto hash = api.Factory().DataFromHex(hex);
     auto out = api.Factory().Data();
 
-    for (auto i{hash->size()}; i > 0u; --i) {
-        out += std::to_integer<std::uint8_t>(hash->at(i - 1u));
+    for (auto i{hash.size()}; i > 0u; --i) {
+        out += std::to_integer<std::uint8_t>(hash.at(i - 1u));
     }
 
     return out;
@@ -220,7 +220,7 @@ auto NumericHash::asHex(const std::size_t minimumBytes) const noexcept
 
     while (minimumBytes > bytes.size()) { bytes.insert(bytes.begin(), 0x0); }
 
-    return opentxs::Data::Factory(bytes.data(), bytes.size())->asHex();
+    return ByteArray{bytes.data(), bytes.size()}.asHex();
 }
 }  // namespace opentxs::blockchain::implementation
 // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)

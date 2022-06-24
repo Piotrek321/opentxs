@@ -20,7 +20,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -209,7 +209,7 @@ auto Request::IDVersion(const Lock& lock) const -> SerializedType
     return contract;
 }
 
-auto Request::Serialize() const noexcept -> OTData
+auto Request::Serialize() const noexcept -> ByteArray
 {
     Lock lock(lock_);
 

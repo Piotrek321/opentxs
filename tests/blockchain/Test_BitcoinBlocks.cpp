@@ -28,14 +28,14 @@ struct Test_BitcoinBlock : public ::testing::Test {
     const ot::api::session::Client& api_;
 
     auto CompareElements(
-        const ot::Vector<ot::OTData>& input,
+        const ot::Vector<ot::ByteArray>& input,
         ot::UnallocatedVector<ot::UnallocatedCString> expected) const -> bool
     {
         auto inputHex = ot::Vector<ot::UnallocatedCString>{};
         auto difference = ot::Vector<ot::UnallocatedCString>{};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(inputHex), [
-            ](const auto& in) -> auto { return in->asHex(); });
+            ](const auto& in) -> auto{ return in.asHex(); });
 
         EXPECT_EQ(expected.size(), inputHex.size());
 
@@ -81,12 +81,12 @@ struct Test_BitcoinBlock : public ::testing::Test {
 
         const auto encoded = [&] {
             auto out = api_.Factory().Data();
-            genesisFilter.Encode(out->WriteInto());
+            genesisFilter.Encode(out.WriteInto());
 
             return out;
         }();
 
-        EXPECT_EQ(filter.asHex(), encoded->asHex());
+        EXPECT_EQ(filter.asHex(), encoded.asHex());
         EXPECT_EQ(header.asHex(), genesisHeader.asHex());
 
         return true;
@@ -96,9 +96,9 @@ struct Test_BitcoinBlock : public ::testing::Test {
         const Bip158Vector& vector,
         const ot::blockchain::block::Block& block,
         const std::size_t encodedElements) const noexcept
-        -> ot::Vector<ot::OTData>
+        -> ot::Vector<ot::ByteArray>
     {
-        auto output = ot::Vector<ot::OTData>{};
+        auto output = ot::Vector<ot::ByteArray>{};
 
         for (const auto& bytes : block.Internal().ExtractElements(
                  ot::blockchain::cfilter::Type::Basic_BIP158)) {
@@ -112,7 +112,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
         EXPECT_TRUE(CompareElements(output, expectedElements));
 
         for (auto& bytes : previousOutputs) {
-            if ((nullptr != bytes->data()) && (0 != bytes->size())) {
+            if ((nullptr != bytes.data()) && (0 != bytes.size())) {
                 output.emplace_back(std::move(bytes));
             }
         }
@@ -134,7 +134,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
     {
         const auto& [genesisHex, filterMap] = genesis_block_data_.at(chain);
         const auto bytes = api_.Factory().DataFromHex(genesisHex);
-        const auto block = api_.Factory().BitcoinBlock(chain, bytes->Bytes());
+        const auto block = api_.Factory().BitcoinBlock(chain, bytes.Bytes());
 
         EXPECT_TRUE(block);
 
@@ -165,25 +165,25 @@ struct Test_BitcoinBlock : public ::testing::Test {
 
             const auto compressed1 = [&] {
                 auto out = api_.Factory().Data();
-                cfilter.Compressed(out->WriteInto());
+                cfilter.Compressed(out.WriteInto());
 
                 return out;
             }();
             const auto compressed2 = [&] {
                 auto out = api_.Factory().Data();
-                cfilter2.Compressed(out->WriteInto());
+                cfilter2.Compressed(out.WriteInto());
 
                 return out;
             }();
             const auto encoded1 = [&] {
                 auto out = api_.Factory().Data();
-                cfilter.Encode(out->WriteInto());
+                cfilter.Encode(out.WriteInto());
 
                 return out;
             }();
             const auto encoded2 = [&] {
                 auto out = api_.Factory().Data();
-                cfilter2.Encode(out->WriteInto());
+                cfilter2.Encode(out.WriteInto());
 
                 return out;
             }();
@@ -195,14 +195,14 @@ struct Test_BitcoinBlock : public ::testing::Test {
         static const auto blank = ot::blockchain::cfilter::Header{};
         const auto filter = [&] {
             auto out = api_.Factory().Data();
-            cfilter.Encode(out->WriteInto());
+            cfilter.Encode(out.WriteInto());
 
             return out;
         }();
         const auto header = cfilter.Header(blank);
         const auto& [expectedFilter, expectedHeader] = filterMap.at(filterType);
 
-        EXPECT_EQ(filter->asHex(), expectedFilter);
+        EXPECT_EQ(filter.asHex(), expectedFilter);
         EXPECT_EQ(header.asHex(), expectedHeader);
         EXPECT_TRUE(CompareToOracle(chain, filterType, filter, header));
 
@@ -308,15 +308,15 @@ TEST_F(Test_BitcoinBlock, pkt_mainnet)
 
     const auto& [genesisHex, filterMap] = genesis_block_data_.at(chain);
     const auto bytes = api_.Factory().DataFromHex(genesisHex);
-    const auto pBlock = api_.Factory().BitcoinBlock(chain, bytes->Bytes());
+    const auto pBlock = api_.Factory().BitcoinBlock(chain, bytes.Bytes());
 
     ASSERT_TRUE(pBlock);
 
     const auto& block = *pBlock;
     auto raw = api_.Factory().Data();
 
-    EXPECT_TRUE(block.Serialize(raw->WriteInto()));
-    EXPECT_EQ(raw.get(), bytes.get());
+    EXPECT_TRUE(block.Serialize(raw.WriteInto()));
+    EXPECT_EQ(raw, bytes);
 
     api_.Network().Blockchain().Stop(chain);
 }
@@ -372,7 +372,7 @@ TEST_F(Test_BitcoinBlock, bip158)
     for (const auto& vector : GetBip158Vectors()) {
         const auto raw = vector.Block(api_);
         const auto pBlock = api_.Factory().BitcoinBlock(
-            ot::blockchain::Type::Bitcoin_testnet3, raw->Bytes());
+            ot::blockchain::Type::Bitcoin_testnet3, raw.Bytes());
 
         ASSERT_TRUE(pBlock);
 
@@ -388,10 +388,10 @@ TEST_F(Test_BitcoinBlock, bip158)
             namespace bb = ot::blockchain::bitcoin;
             auto expectedSize = 1_uz;
             const auto* it =
-                static_cast<bb::ByteIterator>(encodedFilter->data());
+                static_cast<bb::ByteIterator>(encodedFilter.data());
 
             ASSERT_TRUE(opentxs::network::blockchain::bitcoin::DecodeSize(
-                it, expectedSize, encodedFilter->size(), encodedElements));
+                it, expectedSize, encodedFilter.size(), encodedElements));
         }
 
         static const auto params = ot::blockchain::internal::GetFilterParams(
@@ -408,17 +408,17 @@ TEST_F(Test_BitcoinBlock, bip158)
 
         const auto filter = [&] {
             auto out = api_.Factory().Data();
-            cfilter.Encode(out->WriteInto());
+            cfilter.Encode(out.WriteInto());
 
             return out;
         }();
 
-        EXPECT_EQ(filter.get(), encodedFilter.get());
+        EXPECT_EQ(filter, encodedFilter);
 
         const auto header =
-            cfilter.Header(vector.PreviousFilterHeader(api_)->Bytes());
+            cfilter.Header(vector.PreviousFilterHeader(api_).Bytes());
 
-        EXPECT_EQ(vector.FilterHeader(api_).get(), header);
+        EXPECT_EQ(vector.FilterHeader(api_), header);
     }
 }
 
@@ -432,15 +432,15 @@ TEST_F(Test_BitcoinBlock, gcs_headers)
         const auto cfilter = ot::factory::GCS(
             api_,
             ot::blockchain::cfilter::Type::Basic_BIP158,
-            ot::blockchain::internal::BlockHashToFilterKey(blockHash->Bytes()),
-            encodedFilter->Bytes(),
+            ot::blockchain::internal::BlockHashToFilterKey(blockHash.Bytes()),
+            encodedFilter.Bytes(),
             {});
 
         ASSERT_TRUE(cfilter.IsValid());
 
-        const auto header = cfilter.Header(previousHeader->Bytes());
+        const auto header = cfilter.Header(previousHeader.Bytes());
 
-        EXPECT_EQ(header, vector.FilterHeader(api_).get());
+        EXPECT_EQ(header, vector.FilterHeader(api_));
     }
 }
 
@@ -449,15 +449,15 @@ TEST_F(Test_BitcoinBlock, serialization)
     for (const auto& vector : GetBip158Vectors()) {
         const auto raw = vector.Block(api_);
         const auto pBlock = api_.Factory().BitcoinBlock(
-            ot::blockchain::Type::Bitcoin_testnet3, raw->Bytes());
+            ot::blockchain::Type::Bitcoin_testnet3, raw.Bytes());
 
         ASSERT_TRUE(pBlock);
 
         const auto& block = *pBlock;
         auto serialized = api_.Factory().Data();
 
-        EXPECT_TRUE(block.Serialize(serialized->WriteInto()));
-        EXPECT_EQ(raw.get(), serialized);
+        EXPECT_TRUE(block.Serialize(serialized.WriteInto()));
+        EXPECT_EQ(raw, serialized);
     }
 }
 
@@ -476,15 +476,15 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307544)
     const auto cfilter = ot::factory::GCS(
         api_,
         ot::blockchain::cfilter::Type::Basic_BCHVariant,
-        ot::blockchain::internal::BlockHashToFilterKey(blockHash->Bytes()),
+        ot::blockchain::internal::BlockHashToFilterKey(blockHash.Bytes()),
         encodedFilter,
         {});
 
     ASSERT_TRUE(cfilter.IsValid());
 
-    const auto header = cfilter.Header(previousHeader->Bytes());
+    const auto header = cfilter.Header(previousHeader.Bytes());
 
-    EXPECT_EQ(header, expectedHeader.get());
+    EXPECT_EQ(header, expectedHeader);
 }
 
 TEST_F(Test_BitcoinBlock, bch_filter_1307723)
@@ -502,14 +502,14 @@ TEST_F(Test_BitcoinBlock, bch_filter_1307723)
     const auto cfilter = ot::factory::GCS(
         api_,
         ot::blockchain::cfilter::Type::Basic_BCHVariant,
-        ot::blockchain::internal::BlockHashToFilterKey(blockHash->Bytes()),
+        ot::blockchain::internal::BlockHashToFilterKey(blockHash.Bytes()),
         encodedFilter,
         {});
 
     ASSERT_TRUE(cfilter.IsValid());
 
-    const auto header = cfilter.Header(previousHeader->Bytes());
+    const auto header = cfilter.Header(previousHeader.Bytes());
 
-    EXPECT_EQ(header, expectedHeader.get());
+    EXPECT_EQ(header, expectedHeader);
 }
 }  // namespace ottest

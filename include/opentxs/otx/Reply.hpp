@@ -39,6 +39,7 @@ class OTXPush;
 class ServerReply;
 }  // namespace proto
 
+class ByteArray;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -83,7 +84,7 @@ public:
     auto Number() const -> RequestNumber;
     auto Push() const -> std::shared_ptr<const proto::OTXPush>;
     auto Recipient() const -> const identifier::Nym&;
-    auto Serialize() const noexcept -> OTData;
+    auto Serialize() const noexcept -> ByteArray;
     auto Serialize(AllocateOutput destination) const -> bool;
     auto Serialize(proto::ServerReply& serialized) const -> bool;
     auto Server() const -> const identifier::Notary&;

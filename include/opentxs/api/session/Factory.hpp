@@ -17,7 +17,6 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/BasketContract.hpp"
@@ -139,6 +138,7 @@ class Server;
 }  // namespace context
 }  // namespace otx
 
+class ByteArray;
 class Secret;
 class PaymentCode;
 // }  // namespace v1
@@ -336,18 +336,18 @@ public:
         const display::Definition& displayDefinition,
         const Amount& redemptionIncrement) const noexcept(false)
         -> OTCurrencyContract = 0;
-    virtual auto Data() const -> OTData = 0;
-    virtual auto Data(const opentxs::Armored& input) const -> OTData = 0;
+    virtual auto Data() const -> ByteArray = 0;
+    virtual auto Data(const opentxs::Armored& input) const -> ByteArray = 0;
     virtual auto Data(const opentxs::network::zeromq::Frame& input) const
-        -> OTData = 0;
-    virtual auto Data(const std::uint8_t input) const -> OTData = 0;
-    virtual auto Data(const std::uint32_t input) const -> OTData = 0;
+        -> ByteArray = 0;
+    virtual auto Data(const std::uint8_t input) const -> ByteArray = 0;
+    virtual auto Data(const std::uint32_t input) const -> ByteArray = 0;
     virtual auto Data(const UnallocatedVector<unsigned char>& input) const
-        -> OTData = 0;
+        -> ByteArray = 0;
     virtual auto Data(const UnallocatedVector<std::byte>& input) const
-        -> OTData = 0;
-    virtual auto DataFromBytes(const ReadView input) const -> OTData = 0;
-    virtual auto DataFromHex(const ReadView input) const -> OTData = 0;
+        -> ByteArray = 0;
+    virtual auto DataFromBytes(const ReadView input) const -> ByteArray = 0;
+    virtual auto DataFromHex(const ReadView input) const -> ByteArray = 0;
     virtual auto Envelope() const noexcept -> OTEnvelope = 0;
     virtual auto Envelope(const opentxs::Armored& ciphertext) const
         noexcept(false) -> OTEnvelope = 0;

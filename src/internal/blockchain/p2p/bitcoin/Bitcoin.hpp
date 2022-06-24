@@ -20,7 +20,6 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -48,6 +47,9 @@ namespace zeromq
 class Frame;
 }  // namespace zeromq
 }  // namespace network
+
+class ByteArray;
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -202,9 +204,9 @@ enum class Service : std::uint8_t {
 };
 
 struct AddressVersion {
-    static auto cjdns_prefix() -> OTData;
-    static auto ipv4_prefix() -> OTData;
-    static auto onion_prefix() -> OTData;
+    static auto cjdns_prefix() -> ByteArray;
+    static auto ipv4_prefix() -> ByteArray;
+    static auto onion_prefix() -> ByteArray;
 
     BitVectorField services_;
     AddressByteField address_;
@@ -226,7 +228,7 @@ struct AddressVersion {
 using CommandMap = UnallocatedMap<Command, UnallocatedCString>;
 using CommandReverseMap = UnallocatedMap<UnallocatedCString, Command>;
 
-auto BitcoinString(const UnallocatedCString& in) noexcept -> OTData;
+auto BitcoinString(const UnallocatedCString& in) noexcept -> ByteArray;
 auto GetCommand(const CommandField& bytes) noexcept -> Command;
 auto GetServiceBytes(const UnallocatedSet<bitcoin::Service>& services) noexcept
     -> BitVector8;

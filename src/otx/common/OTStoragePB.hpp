@@ -77,8 +77,8 @@ public:
         -> bool override;
     auto WriteToOStream(std::ostream& outStream) -> bool override;
     auto GetData() -> const std::uint8_t* override;
-    auto GetSize() -> size_t override;
-    void SetData(const std::uint8_t* pData, size_t theSize) override;
+    auto GetSize() -> std::size_t override;
+    void SetData(const std::uint8_t* pData, std::size_t theSize) override;
     auto GetBuffer() -> UnallocatedCString& { return m_buffer; }
 };
 

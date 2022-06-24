@@ -18,7 +18,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -39,6 +39,9 @@ namespace proto
 {
 class GCS;
 }  // namespace proto
+
+class ByteArray;
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -101,7 +104,7 @@ public:
     {
         return {};
     }
-    virtual auto Test(const Vector<OTData>& targets) const noexcept -> bool
+    virtual auto Test(const Vector<ByteArray>& targets) const noexcept -> bool
     {
         return {};
     }
@@ -148,7 +151,7 @@ public:
     auto Serialize(AllocateOutput out) const noexcept -> bool final;
     auto Test(const Data& target) const noexcept -> bool final;
     auto Test(const ReadView target) const noexcept -> bool final;
-    auto Test(const Vector<OTData>& targets) const noexcept -> bool final;
+    auto Test(const Vector<ByteArray>& targets) const noexcept -> bool final;
     auto Test(const Vector<Space>& targets) const noexcept -> bool final;
     auto Test(const gcs::Hashes& targets) const noexcept -> bool final;
 
@@ -190,7 +193,7 @@ private:
     mutable std::optional<gcs::Elements> elements_;
 
     static auto transform(
-        const Vector<OTData>& in,
+        const Vector<ByteArray>& in,
         allocator_type alloc) noexcept -> Targets;
     static auto transform(
         const Vector<Space>& in,
@@ -198,7 +201,7 @@ private:
 
     auto decompress() const noexcept -> const gcs::Elements&;
     auto hashed_set_construct(
-        const Vector<OTData>& elements,
+        const Vector<ByteArray>& elements,
         allocator_type alloc) const noexcept -> gcs::Elements;
     auto hashed_set_construct(
         const Vector<Space>& elements,

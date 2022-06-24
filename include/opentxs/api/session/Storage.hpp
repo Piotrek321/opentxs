@@ -14,7 +14,7 @@
 #include <memory>
 
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -122,7 +122,7 @@ public:
         const identifier::Nym& nym,
         const Data& txid) const noexcept -> UnallocatedVector<OTIdentifier> = 0;
     virtual auto BlockchainTransactionList(const identifier::Nym& nym)
-        const noexcept -> UnallocatedVector<OTData> = 0;
+        const noexcept -> UnallocatedVector<ByteArray> = 0;
     virtual auto CheckTokenSpent(
         const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,

@@ -14,6 +14,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -39,6 +40,8 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -216,14 +219,14 @@ auto MessageProcessor::Imp::extract_proto(
 }
 
 auto MessageProcessor::Imp::get_connection(
-    const network::zeromq::Message& incoming) noexcept -> OTData
+    const network::zeromq::Message& incoming) noexcept -> ByteArray
 {
-    auto output = Data::Factory();
+    auto output = ByteArray{};
     const auto header = incoming.Header();
 
     if (0 < header.size()) {
         const auto& frame = header.at(0);
-        output = Data::Factory(frame.data(), frame.size());
+        output.Assign(frame.Bytes());
     }
 
     return output;
@@ -408,7 +411,7 @@ auto MessageProcessor::Imp::process_frontend(zmq::Message&& message) noexcept
             }
         }
     } catch (const std::exception& e) {
-        LogConsole()(e.what())(" from ")(id->asHex()).Flush();
+        LogConsole()(e.what())(" from ").asHex(id).Flush();
     }
 }
 
@@ -535,7 +538,7 @@ auto MessageProcessor::Imp::process_notification(
     const auto& data = query_connection(nymID);
     const auto& [connection, oldFormat] = data;
 
-    if (connection->empty()) {
+    if (connection.empty()) {
         LogDebug()(OT_PRETTY_CLASS())("No notification channel available for ")(
             nymID)(".")
             .Flush();
@@ -588,12 +591,13 @@ auto MessageProcessor::Imp::process_notification(
 
     if (sent) {
         LogVerbose()(OT_PRETTY_CLASS())("Push notification for ")(
-            nymID)(" delivered via ")(connection->asHex())
+            nymID)(" delivered via ")
+            .asHex(connection)
             .Flush();
     } else {
-        LogError()(OT_PRETTY_CLASS())(
-            "Failed to deliver push notifcation "
-            "for ")(nymID)(" via ")(connection->asHex())(".")
+        LogError()(OT_PRETTY_CLASS())("Failed to deliver push notifcation "
+                                      "for ")(nymID)(" via ")
+            .asHex(connection)
             .Flush();
     }
 }

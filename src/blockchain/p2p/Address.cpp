@@ -113,7 +113,7 @@ Address::Address(
     , last_connected_(lastConnected)
     , services_(services)
 {
-    const auto size = bytes_->size();
+    const auto size = bytes_.size();
 
     switch (network_) {
         case Network::ipv4: {
@@ -196,14 +196,14 @@ auto Address::Display() const noexcept -> UnallocatedCString
     switch (network_) {
         case Network::ipv4: {
             ip::address_v4::bytes_type bytes{};
-            std::memcpy(bytes.data(), bytes_->data(), bytes.size());
+            std::memcpy(bytes.data(), bytes_.data(), bytes.size());
             auto address = ip::make_address_v4(bytes);
             output = address.to_string();
         } break;
         case Network::ipv6:
         case Network::cjdns: {
             ip::address_v6::bytes_type bytes{};
-            std::memcpy(bytes.data(), bytes_->data(), bytes.size());
+            std::memcpy(bytes.data(), bytes_.data(), bytes.size());
             auto address = ip::make_address_v6(bytes);
             output = UnallocatedCString("[") + address.to_string() + "]";
         } break;
@@ -211,14 +211,14 @@ auto Address::Display() const noexcept -> UnallocatedCString
         case Network::onion3: {
             output =
                 UnallocatedCString(
-                    static_cast<const char*>(bytes_->data()), bytes_->size()) +
+                    static_cast<const char*>(bytes_.data()), bytes_.size()) +
                 ".onion";
         } break;
         case Network::eep: {
             output = api_.Crypto().Encode().DataEncode(bytes_) + ".i2p";
         } break;
         case Network::zmq: {
-            output = bytes_->str();
+            output = bytes_.str();
         } break;
         default: {
             OT_FAIL;
@@ -272,7 +272,7 @@ auto Address::Serialize(SerializedType& output) const noexcept -> bool
         version_,
         protocol_,
         network_,
-        bytes_->Bytes(),
+        bytes_.Bytes(),
         port_,
         chain_,
         last_connected_,

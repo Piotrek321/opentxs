@@ -19,6 +19,7 @@
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
@@ -64,11 +65,11 @@ auto Bip32::Imp::ckd_normal(
 }
 
 auto Bip32::Imp::decode(const UnallocatedCString& serialized) const noexcept
-    -> OTData
+    -> ByteArray
 {
     auto input = crypto_.Encode().IdentifierDecode(serialized);
 
-    return Data::Factory(input.c_str(), input.size());
+    return ByteArray{input.c_str(), input.size()};
 }
 
 auto Bip32::Imp::derive_private(
@@ -200,7 +201,7 @@ auto Bip32::Imp::DeserializePrivate(
     Secret& key) const -> bool
 {
     const auto input = decode(serialized);
-    const auto size = input->size();
+    const auto size = input.size();
 
     if (78 != size) {
         LogError()(OT_PRETTY_CLASS())("Invalid input size (")(size)(")")
@@ -211,13 +212,13 @@ auto Bip32::Imp::DeserializePrivate(
 
     bool output = extract(input, network, depth, parent, index, chainCode);
 
-    if (std::byte(0) != input->at(45)) {
+    if (std::byte(0) != input.at(45)) {
         LogError()(OT_PRETTY_CLASS())("Invalid padding bit").Flush();
 
         return {};
     }
 
-    key.Assign(&input->at(46), 32);
+    key.Assign(&input.at(46), 32);
 
     return output;
 }
@@ -232,7 +233,7 @@ auto Bip32::Imp::DeserializePublic(
     Data& key) const -> bool
 {
     const auto input = decode(serialized);
-    const auto size = input->size();
+    const auto size = input.size();
 
     if (78 != size) {
         LogError()(OT_PRETTY_CLASS())("Invalid input size (")(size)(")")
@@ -242,7 +243,7 @@ auto Bip32::Imp::DeserializePublic(
     }
 
     bool output = extract(input, network, depth, parent, index, chainCode);
-    output &= input->Extract(33, key, 45);
+    output &= input.Extract(33, key, 45);
 
     return output;
 }
@@ -268,8 +269,7 @@ auto Bip32::Imp::extract(
 auto Bip32::Imp::Init(const api::Factory& factory) noexcept -> void
 {
     auto& blank = const_cast<std::optional<Key>&>(blank_);
-    blank.emplace(
-        factory.Secret(0), factory.Secret(0), Data::Factory(), Path{}, 0);
+    blank.emplace(factory.Secret(0), factory.Secret(0), ByteArray{}, Path{}, 0);
 }
 
 auto Bip32::Imp::IsHard(const Bip32Index index) noexcept -> bool
@@ -324,14 +324,14 @@ auto Bip32::Imp::SerializePrivate(
         return {};
     }
 
-    auto input = Data::Factory();  // TODO should be secret
-    input->DecodeHex("0x00");
+    auto input = ByteArray{};  // TODO should be secret
+    input.DecodeHex("0x00");
 
-    OT_ASSERT(1 == input->size());
+    OT_ASSERT(1 == input.size());
 
-    input->Concatenate(key.Bytes());
+    input.Concatenate(key.Bytes());
 
-    OT_ASSERT(33 == input->size());
+    OT_ASSERT(33 == input.size());
 
     return SerializePublic(network, depth, parent, index, chainCode, input);
 }
@@ -361,14 +361,14 @@ auto Bip32::Imp::SerializePublic(
         return {};
     }
 
-    auto output = Data::Factory(network);
-    output.get() += depth;
-    output.get() += parent;
-    output.get() += index;
+    auto output = ByteArray{network};
+    output += depth;
+    output += parent;
+    output += index;
     output += chainCode;
     output += key;
 
-    OT_ASSERT_MSG(78 == output->size(), std::to_string(output->size()).c_str());
+    OT_ASSERT_MSG(78 == output.size(), std::to_string(output.size()).c_str());
 
     return crypto_.Encode().IdentifierEncode(output);
 }

@@ -13,7 +13,7 @@
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/network/blockchain/Types.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
@@ -119,7 +119,7 @@ struct ZMQConnectionManager : virtual public ConnectionManager {
         : api_(api)
         , log_(log)
         , id_(id)
-        , endpoint_(address.Bytes()->str(), address.Port())
+        , endpoint_(address.Bytes().str(), address.Port())
         , zmq_(endpoint_.first + ':' + std::to_string(endpoint_.second))
         , header_bytes_(headerSize)
         , init_promise_()

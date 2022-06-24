@@ -51,7 +51,7 @@ namespace ottest
 struct RLPVector {
     ot::CString name_{};
     ot::blockchain::ethereum::rlp::Node node_{};
-    ot::OTData encoded_{ot::Data::Factory()};
+    ot::ByteArray encoded_{};
 };
 
 auto GetRLPVectors(const ot::api::Session& api) noexcept

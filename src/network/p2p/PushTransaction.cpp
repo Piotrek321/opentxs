@@ -21,7 +21,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
@@ -84,7 +84,7 @@ class PushTransaction::Imp final : public Base::Imp
 {
 public:
     const opentxs::blockchain::Type chain_;
-    const OTData txid_;
+    const ByteArray txid_;
     const Space payload_;
     PushTransaction* parent_;
 
@@ -119,7 +119,7 @@ public:
         static_assert(sizeof(Buffer) == sizeof(chain_));
 
         out.AddFrame(Buffer{static_cast<std::uint32_t>(chain_)});
-        opentxs::copy(txid_->Bytes(), out.AppendBytes());
+        opentxs::copy(txid_.Bytes(), out.AppendBytes());
         out.AddFrame(payload_);
 
         return true;
@@ -128,13 +128,13 @@ public:
     Imp() noexcept
         : Base::Imp()
         , chain_(opentxs::blockchain::Type::Unknown)
-        , txid_(opentxs::Data::Factory())
+        , txid_(opentxs::ByteArray{})
         , payload_()
         , parent_(nullptr)
     {
     }
     Imp(const opentxs::blockchain::Type chain,
-        OTData&& id,
+        ByteArray&& id,
         Space&& payload) noexcept
         : Base::Imp(MessageType::pushtx)
         , chain_(chain)
@@ -146,7 +146,7 @@ public:
     Imp(const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::Txid& id,
         Space&& payload) noexcept
-        : Imp(chain, OTData{id}, std::move(payload))
+        : Imp(chain, ByteArray{id}, std::move(payload))
     {
     }
     Imp(const api::Session& api,

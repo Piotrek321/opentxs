@@ -101,7 +101,7 @@ Tx::Tx(
 auto Tx::payload(AllocateOutput out) const noexcept -> bool
 {
     try {
-        if (false == copy(payload_->Bytes(), out)) {
+        if (false == copy(payload_.Bytes(), out)) {
             throw std::runtime_error{"failed to serialize payload"};
         }
 
@@ -117,6 +117,6 @@ auto Tx::Transaction() const noexcept
     -> std::unique_ptr<const blockchain::bitcoin::block::Transaction>
 {
     return api_.Factory().BitcoinTransaction(
-        header_->Network(), payload_->Bytes(), false);
+        header_->Network(), payload_.Bytes(), false);
 }
 }  // namespace opentxs::blockchain::p2p::bitcoin::message

@@ -13,6 +13,7 @@
 #include <shared_mutex>
 #include <stdexcept>
 #include <type_traits>
+#include <utility>
 
 #include "blockchain/database/wallet/SubchainCache.hpp"
 #include "blockchain/database/wallet/SubchainID.hpp"
@@ -28,11 +29,14 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Types.hpp"
 #include "util/LMDB.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Thread.hpp"
@@ -274,10 +278,10 @@ private:
     {
 
         auto preimage = api_.Factory().Data();
-        preimage->Assign(subchain);
-        preimage->Concatenate(&index, sizeof(index));
+        preimage.Assign(subchain);
+        preimage.Concatenate(&index, sizeof(index));
         auto output = api_.Factory().Identifier();
-        output->CalculateDigest(preimage->Bytes());
+        output->CalculateDigest(preimage.Bytes());
 
         return output;
     }
@@ -288,12 +292,12 @@ private:
         const VersionNumber version) const noexcept -> pSubchainIndex
     {
         auto preimage = api_.Factory().Data();
-        preimage->Assign(subaccount);
-        preimage->Concatenate(&subchain, sizeof(subchain));
-        preimage->Concatenate(&type, sizeof(type));
-        preimage->Concatenate(&version, sizeof(version));
+        preimage.Assign(subaccount);
+        preimage.Concatenate(&subchain, sizeof(subchain));
+        preimage.Concatenate(&type, sizeof(type));
+        preimage.Concatenate(&version, sizeof(version));
         auto output = api_.Factory().Identifier();
-        output->CalculateDigest(preimage->Bytes());
+        output->CalculateDigest(preimage.Bytes());
 
         return output;
     }

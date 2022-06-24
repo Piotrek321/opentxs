@@ -33,8 +33,8 @@ TEST_F(Test_NumericHash, number_low_1)
 {
     // Little endian
     const auto raw = []() {
-        auto out = ot::Data::Factory();
-        out->DecodeHex("0x01");
+        auto out = ot::ByteArray{};
+        out.DecodeHex("0x01");
         return out;
     }();
     const ot::UnallocatedCString decimal{"1"};
@@ -52,9 +52,9 @@ TEST_F(Test_NumericHash, number_low_32)
 {
     // Little endian
     const auto raw = []() {
-        auto out = ot::Data::Factory();
-        out->DecodeHex("0x01000000000000000000000000000000000000000000000000000"
-                       "00000000000");
+        auto out = ot::ByteArray{};
+        out.DecodeHex("0x01000000000000000000000000000000000000000000000000000"
+                      "00000000000");
         return out;
     }();
     const ot::UnallocatedCString decimal{"1"};
@@ -72,9 +72,9 @@ TEST_F(Test_NumericHash, number_high)
 {
     // Little endian
     const auto raw = []() {
-        auto out = ot::Data::Factory();
-        out->DecodeHex("0xf1fffffffffffffffffffffffffffffffffffffffffffffffffff"
-                       "fffffffffff");
+        auto out = ot::ByteArray{};
+        out.DecodeHex("0xf1fffffffffffffffffffffffffffffffffffffffffffffffffff"
+                      "fffffffffff");
         return out;
     }();
     const ot::UnallocatedCString decimal{

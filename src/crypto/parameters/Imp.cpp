@@ -25,7 +25,6 @@
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/ContactData.pb.h"
 #include "serialization/protobuf/VerificationSet.pb.h"
@@ -126,27 +125,27 @@ auto Parameters::Imp::GetVerificationSet(
     return false;
 }
 
-auto Parameters::Imp::Hash() const noexcept -> OTData
+auto Parameters::Imp::Hash() const noexcept -> ByteArray
 {
     if (false == hashed_.has_value()) {
-        auto& out = hashed_.emplace(Data::Factory());
-        out->Concatenate(&nymType_, sizeof(nymType_));
-        out->Concatenate(&credentialType_, sizeof(credentialType_));
-        out->Concatenate(&sourceType_, sizeof(sourceType_));
-        out->Concatenate(&sourceProofType_, sizeof(sourceProofType_));
-        out->Concatenate(&payment_code_version_, sizeof(payment_code_version_));
-        out->Concatenate(&seed_style_, sizeof(seed_style_));
-        out->Concatenate(&seed_language_, sizeof(seed_language_));
-        out->Concatenate(&seed_strength_, sizeof(seed_strength_));
-        out->Concatenate(entropy_->data(), entropy_->size());  // TODO hash this
-        out->Concatenate(seed_.data(), seed_.size());
-        out->Concatenate(&nym_, sizeof(nym_));
-        out->Concatenate(&credset_, sizeof(credset_));
-        out->Concatenate(&cred_index_, sizeof(cred_index_));
-        out->Concatenate(&default_, sizeof(default_));
-        out->Concatenate(&use_auto_index_, sizeof(use_auto_index_));
-        out->Concatenate(&nBits_, sizeof(nBits_));
-        out->Concatenate(params_.data(), params_.size());
+        auto& out = hashed_.emplace(ByteArray{});
+        out.Concatenate(&nymType_, sizeof(nymType_));
+        out.Concatenate(&credentialType_, sizeof(credentialType_));
+        out.Concatenate(&sourceType_, sizeof(sourceType_));
+        out.Concatenate(&sourceProofType_, sizeof(sourceProofType_));
+        out.Concatenate(&payment_code_version_, sizeof(payment_code_version_));
+        out.Concatenate(&seed_style_, sizeof(seed_style_));
+        out.Concatenate(&seed_language_, sizeof(seed_language_));
+        out.Concatenate(&seed_strength_, sizeof(seed_strength_));
+        out.Concatenate(entropy_->data(), entropy_->size());  // TODO hash this
+        out.Concatenate(seed_.data(), seed_.size());
+        out.Concatenate(&nym_, sizeof(nym_));
+        out.Concatenate(&credset_, sizeof(credset_));
+        out.Concatenate(&cred_index_, sizeof(cred_index_));
+        out.Concatenate(&default_, sizeof(default_));
+        out.Concatenate(&use_auto_index_, sizeof(use_auto_index_));
+        out.Concatenate(&nBits_, sizeof(nBits_));
+        out.Concatenate(params_.data(), params_.size());
         const auto keypair = [this] {
             auto out = Space{};
             auto proto = proto::AsymmetricKey{};
@@ -155,7 +154,7 @@ auto Parameters::Imp::Hash() const noexcept -> OTData
 
             return out;
         }();
-        out->Concatenate(keypair.data(), keypair.size());
+        out.Concatenate(keypair.data(), keypair.size());
 
         if (contact_data_) {
             const auto data = [this] {
@@ -164,7 +163,7 @@ auto Parameters::Imp::Hash() const noexcept -> OTData
 
                 return out;
             }();
-            out->Concatenate(data.data(), data.size());
+            out.Concatenate(data.data(), data.size());
         }
 
         if (verification_set_) {
@@ -174,7 +173,7 @@ auto Parameters::Imp::Hash() const noexcept -> OTData
 
                 return out;
             }();
-            out->Concatenate(data.data(), data.size());
+            out.Concatenate(data.data(), data.size());
         }
     }
 

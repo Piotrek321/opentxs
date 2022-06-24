@@ -25,7 +25,7 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -112,6 +112,7 @@ class Config;
 class Root;
 }  // namespace storage
 
+class ByteArray;
 class Data;
 class String;
 // }  // namespace v1
@@ -177,7 +178,7 @@ public:
     auto BlockchainThreadMap(const identifier::Nym& nym, const Data& txid)
         const noexcept -> UnallocatedVector<OTIdentifier> final;
     auto BlockchainTransactionList(const identifier::Nym& nym) const noexcept
-        -> UnallocatedVector<OTData> final;
+        -> UnallocatedVector<ByteArray> final;
     auto CheckTokenSpent(
         const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,

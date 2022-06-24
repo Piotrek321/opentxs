@@ -139,7 +139,7 @@ auto PaymentCode::AddPrivateKeys(
 
     const auto& candidate = *pCandidate;
 
-    if (0 != pubkey_->Bytes().compare(candidate.PublicKey())) {
+    if (0 != pubkey_.Bytes().compare(candidate.PublicKey())) {
         LogError()(OT_PRETTY_CLASS())(
             "Derived public key does not match this payment code")
             .Flush();
@@ -229,7 +229,7 @@ auto PaymentCode::binary_preimage() const noexcept
     return paymentcode::BinaryPreimage{
         version_,
         hasBitmessage_,
-        pubkey_->Bytes(),
+        pubkey_.Bytes(),
         chain_code_->Bytes(),
         bitmessage_version_,
         bitmessage_stream_};
@@ -238,7 +238,7 @@ auto PaymentCode::binary_preimage() const noexcept
 auto PaymentCode::binary_preimage_v3() const noexcept
     -> paymentcode::BinaryPreimage_3
 {
-    return paymentcode::BinaryPreimage_3{version_, pubkey_->Bytes()};
+    return paymentcode::BinaryPreimage_3{version_, pubkey_.Bytes()};
 }
 
 auto PaymentCode::Blind(
@@ -370,7 +370,7 @@ auto PaymentCode::calculate_id(
 
     auto preimage = api.Factory().Data();
     const auto target{pubkey_size_ + chain_code_size_};
-    auto raw = preimage->WriteInto()(target);
+    auto raw = preimage.WriteInto()(target);
 
     OT_ASSERT(raw.valid(target));
 
@@ -381,7 +381,7 @@ auto PaymentCode::calculate_id(
     std::memcpy(
         it, code.data(), std::min(code.size(), std::size_t{chain_code_size_}));
 
-    output->CalculateDigest(preimage->Bytes());
+    output->CalculateDigest(preimage.Bytes());
 
     return output;
 }
@@ -880,7 +880,7 @@ auto PaymentCode::Serialize(AllocateOutput destination) const noexcept -> bool
 
 auto PaymentCode::Serialize(Serialized& output) const noexcept -> bool
 {
-    const auto key = pubkey_->Bytes();
+    const auto key = pubkey_.Bytes();
     const auto code = chain_code_->Bytes();
     output.set_version(version_);
     output.set_key(key.data(), key.size());
@@ -1187,7 +1187,7 @@ auto PaymentCode::Valid() const noexcept -> bool
 {
     if (0 == version_) { return false; }
 
-    if (pubkey_size_ != pubkey_->size()) { return false; }
+    if (pubkey_size_ != pubkey_.size()) { return false; }
 
     if (chain_code_size_ != chain_code_->size()) { return false; }
 

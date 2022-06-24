@@ -16,7 +16,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
@@ -92,7 +92,7 @@ public:
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const blockchain::Type chain,
-        const OTData txid,
+        const ByteArray txid,
         const opentxs::Amount amount,
         const UnallocatedCString memo,
         const UnallocatedCString text) noexcept;
@@ -107,7 +107,7 @@ public:
 
 private:
     const blockchain::Type chain_;
-    const OTData txid_;
+    const ByteArray txid_;
     opentxs::Amount amount_;
     UnallocatedCString memo_;
     std::atomic_int confirmations_;

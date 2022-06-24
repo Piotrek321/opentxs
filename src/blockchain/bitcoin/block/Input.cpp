@@ -41,7 +41,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -589,7 +589,7 @@ auto Input::decode_coinbase() const noexcept -> UnallocatedCString
     auto out = std::stringstream{};
     const auto hex = [&] {
         const auto data = api_.Factory().DataFromBytes(reader(coinbase_));
-        out << "      hex: " << data->asHex();
+        out << "      hex: " << data.asHex();
 
         return out.str();
     };
@@ -843,7 +843,7 @@ auto Input::Print() const noexcept -> UnallocatedCString
         const auto bytes = api_.Factory().DataFromBytes(reader(witness));
         out << "    witness " << std::to_string(++count);
         out << " of " << std::to_string(total) << '\n';
-        out << "      " << bytes->asHex() << '\n';
+        out << "      " << bytes.asHex() << '\n';
     }
 
     if (Script::Position::Coinbase == script_->Role()) {

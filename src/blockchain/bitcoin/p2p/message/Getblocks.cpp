@@ -18,6 +18,7 @@
 #include "blockchain/bitcoin/p2p/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -66,7 +67,7 @@ auto BitcoinP2PGetblocks(
         return nullptr;
     }
 
-    UnallocatedVector<OTData> header_hashes;
+    UnallocatedVector<ByteArray> header_hashes;
 
     std::size_t hashCount{0};
     const bool decodedSize = network::blockchain::bitcoin::DecodeSize(
@@ -91,7 +92,7 @@ auto BitcoinP2PGetblocks(
             }
 
             header_hashes.push_back(
-                Data::Factory(it, sizeof(bitcoin::BlockHeaderHashField)));
+                ByteArray{it, sizeof(bitcoin::BlockHeaderHashField)});
             it += sizeof(bitcoin::BlockHeaderHashField);
         }
     }
@@ -106,7 +107,7 @@ auto BitcoinP2PGetblocks(
         return nullptr;
     }
 
-    auto stop_hash = Data::Factory(it, sizeof(bitcoin::BlockHeaderHashField));
+    auto stop_hash = ByteArray{it, sizeof(bitcoin::BlockHeaderHashField)};
     std::advance(it, sizeof(bitcoin::BlockHeaderHashField));
 
     try {
@@ -129,7 +130,7 @@ auto BitcoinP2PGetblocks(
     const api::Session& api,
     const blockchain::Type network,
     const std::uint32_t version,
-    const UnallocatedVector<OTData>& header_hashes,
+    const UnallocatedVector<ByteArray>& header_hashes,
     const Data& stop_hash) -> blockchain::p2p::bitcoin::message::Getblocks*
 {
     namespace bitcoin = blockchain::p2p::bitcoin;
@@ -146,12 +147,12 @@ Getblocks::Getblocks(
     const api::Session& api,
     const blockchain::Type network,
     const bitcoin::ProtocolVersionUnsigned version,
-    const UnallocatedVector<OTData>& header_hashes,
+    const UnallocatedVector<ByteArray>& header_hashes,
     const Data& stop_hash) noexcept
     : Message(api, network, bitcoin::Command::getblocks)
     , version_(version)
     , header_hashes_(header_hashes)
-    , stop_hash_(Data::Factory(stop_hash))
+    , stop_hash_(stop_hash)
 {
     init_hash();
 }
@@ -162,12 +163,12 @@ Getblocks::Getblocks(
     const api::Session& api,
     std::unique_ptr<Header> header,
     const bitcoin::ProtocolVersionUnsigned version,
-    const UnallocatedVector<OTData>& header_hashes,
+    const UnallocatedVector<ByteArray>& header_hashes,
     const Data& stop_hash) noexcept(false)
     : Message(api, std::move(header))
     , version_(version)
     , header_hashes_(header_hashes)
-    , stop_hash_(Data::Factory(stop_hash))
+    , stop_hash_(stop_hash)
 {
     verify_checksum();
 }

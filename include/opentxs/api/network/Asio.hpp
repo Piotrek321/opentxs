@@ -15,7 +15,7 @@
 #include <future>
 #include <string_view>
 
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -47,6 +47,8 @@ namespace zeromq
 class Context;
 }  // namespace zeromq
 }  // namespace network
+
+class ByteArray;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -87,8 +89,8 @@ public:
     auto Accept(const Endpoint& endpoint, AcceptCallback cb) const noexcept
         -> bool;
     auto Close(const Endpoint& endpoint) const noexcept -> bool;
-    auto GetPublicAddress4() const noexcept -> std::shared_future<OTData>;
-    auto GetPublicAddress6() const noexcept -> std::shared_future<OTData>;
+    auto GetPublicAddress4() const noexcept -> std::shared_future<ByteArray>;
+    auto GetPublicAddress6() const noexcept -> std::shared_future<ByteArray>;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> internal::Asio&;
 
     /**  Construct a socket for outgoing tcp and udp connections

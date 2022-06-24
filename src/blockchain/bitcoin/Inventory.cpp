@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
@@ -70,14 +71,14 @@ Inventory::BitcoinFormat::BitcoinFormat(
 
 auto Inventory::decode_hash(
     const void* payload,
-    const std::size_t size) noexcept(false) -> OTData
+    const std::size_t size) noexcept(false) -> ByteArray
 {
     if (EncodedSize != size) { throw std::runtime_error("Invalid payload"); }
 
     const auto* it{static_cast<const std::byte*>(payload)};
     it += sizeof(BitcoinFormat::type_);
 
-    return Data::Factory(it, sizeof(BitcoinFormat::hash_));
+    return ByteArray{it, sizeof(BitcoinFormat::hash_)};
 }
 
 auto Inventory::decode_type(

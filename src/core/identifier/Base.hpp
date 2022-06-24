@@ -15,7 +15,6 @@
 #include "Proto.hpp"
 #include "core/Data.hpp"
 #include "internal/util/P0330.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -44,6 +43,7 @@ class HDPath;
 class Identifier;
 }  // namespace proto
 
+class ByteArray;
 class Contract;
 class String;
 // }  // namespace v1
@@ -171,7 +171,7 @@ private:
     static auto is_supported(const identifier::Type type) noexcept -> bool;
     static auto path_to_data(
         const identity::wot::claim::ClaimType type,
-        const proto::HDPath& path) -> OTData;
+        const proto::HDPath& path) -> ByteArray;
     static auto required_payload(const identifier::Algorithm type) noexcept
         -> std::size_t
     {

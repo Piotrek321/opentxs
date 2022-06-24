@@ -11,6 +11,12 @@
 #include <memory>
 
 #include "Proto.hpp"
+#if OT_BLOCKCHAIN
+#include "interface/ui/accountactivity/BlockchainBalanceItem.hpp"
+#endif  // OT_BLOCKCHAIN
+#include "interface/ui/accountactivity/ChequeBalanceItem.hpp"
+#include "interface/ui/accountactivity/TransferBalanceItem.hpp"
+#include "interface/ui/base/Widget.hpp"
 #include "internal/api/session/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
@@ -20,7 +26,7 @@
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #endif  // OT_BLOCKCHAIN
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -30,12 +36,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
-#if OT_BLOCKCHAIN
-#include "interface/ui/accountactivity/BlockchainBalanceItem.hpp"
-#endif  // OT_BLOCKCHAIN
-#include "interface/ui/accountactivity/ChequeBalanceItem.hpp"
-#include "interface/ui/accountactivity/TransferBalanceItem.hpp"
-#include "interface/ui/base/Widget.hpp"
 
 namespace opentxs::factory
 {
@@ -69,7 +69,7 @@ auto BalanceItem(
             nymID,
             accountID,
             ui::implementation::extract_custom<blockchain::Type>(custom, 3),
-            ui::implementation::extract_custom<OTData>(custom, 5),
+            ui::implementation::extract_custom<ByteArray>(custom, 5),
             tx.NetBalanceChange(nymID),
             tx.Memo(),
             ui::implementation::extract_custom<UnallocatedCString>(custom, 4));

@@ -19,9 +19,9 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::p2p::bitcoin::message
 {
@@ -157,7 +157,7 @@ auto VerifyChecksum(
     const Header& header,
     const network::zeromq::Frame& payload) noexcept -> bool
 {
-    auto checksum = Data::Factory();
+    auto checksum = ByteArray{};
 
     switch (params::Chains().at(header.Network()).p2p_protocol_) {
         case p2p::Protocol::bitcoin: {
@@ -168,7 +168,7 @@ auto VerifyChecksum(
                     api,
                     header.Network(),
                     payload.Bytes(),
-                    checksum->WriteInto());
+                    checksum.WriteInto());
             }
         } break;
         case p2p::Protocol::opentxs:

@@ -169,7 +169,7 @@ void OTScript::SetScript(const char* new_string)
     if (nullptr != new_string) { m_str_script = new_string; }
 }
 
-void OTScript::SetScript(const char* new_string, size_t sizeLength)
+void OTScript::SetScript(const char* new_string, std::size_t sizeLength)
 {
     if (nullptr != new_string) { m_str_script.assign(new_string, sizeLength); }
 }

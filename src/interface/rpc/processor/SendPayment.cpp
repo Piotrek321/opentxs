@@ -23,7 +23,6 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -116,9 +115,9 @@ auto RPC::send_payment_blockchain(
         }();
         const auto [code, txid] = future.get();
 
-        if (txid->empty()) { return reply(ResponseCode::transaction_failed); }
+        if (txid.empty()) { return reply(ResponseCode::transaction_failed); }
 
-        tasks.emplace_back(0, txid->asHex());
+        tasks.emplace_back(0, txid.asHex());
 
         return reply(ResponseCode::txid);
     } catch (...) {

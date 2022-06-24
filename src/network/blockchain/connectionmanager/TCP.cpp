@@ -19,7 +19,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -27,7 +27,6 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
@@ -47,7 +46,7 @@ struct TCPConnectionManager : virtual public ConnectionManager {
     std::promise<void> connection_id_promise_;
     std::shared_future<void> connection_id_future_;
     network::asio::Socket socket_;
-    OTData header_;
+    ByteArray header_;
     bool running_;
 
     auto address() const noexcept -> UnallocatedCString final
@@ -128,7 +127,7 @@ struct TCPConnectionManager : virtual public ConnectionManager {
         const auto size = get_body_size_(header);
 
         if (0 < size) {
-            header_->Assign(header.Bytes());
+            header_.Assign(header.Bytes());
             receive(static_cast<OTZMQWorkType>(PeerJob::body), size);
 
             return std::nullopt;
@@ -227,7 +226,7 @@ struct TCPConnectionManager : virtual public ConnectionManager {
         , socket_(api_.Network().Asio().MakeSocket(endpoint_))
         , header_([&] {
             auto out = api_.Factory().Data();
-            out->SetSize(headerSize);
+            out.SetSize(headerSize);
 
             return out;
         }())
@@ -247,11 +246,11 @@ protected:
         switch (address.Type()) {
             case opentxs::blockchain::p2p::Network::ipv6: {
 
-                return {Type::ipv6, address.Bytes()->Bytes(), address.Port()};
+                return {Type::ipv6, address.Bytes().Bytes(), address.Port()};
             }
             case opentxs::blockchain::p2p::Network::ipv4: {
 
-                return {Type::ipv4, address.Bytes()->Bytes(), address.Port()};
+                return {Type::ipv4, address.Bytes().Bytes(), address.Port()};
             }
             default: {
 
@@ -280,7 +279,7 @@ protected:
         , socket_(std::move(socket))
         , header_([&] {
             auto out = api_.Factory().Data();
-            out->SetSize(headerSize);
+            out.SetSize(headerSize);
 
             return out;
         }())

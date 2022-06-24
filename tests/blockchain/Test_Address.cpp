@@ -166,7 +166,7 @@ TEST_F(Test_Address, segwit)
         const auto [bytes, style, chains, supported] =
             api_.Crypto().Blockchain().DecodeAddress(address);
 
-        EXPECT_EQ(bytes->size(), 0);
+        EXPECT_EQ(bytes.size(), 0);
         EXPECT_EQ(style, Style::Unknown);
         EXPECT_EQ(chains.size(), 0);
         EXPECT_FALSE(supported);

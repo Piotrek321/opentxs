@@ -9,7 +9,6 @@
 
 #include <cstdint>
 
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -28,6 +27,9 @@ class Encode;
 }  // namespace internal
 }  // namespace crypto
 }  // namespace api
+
+class ByteArray;
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -64,7 +66,7 @@ public:
     virtual auto Z85Encode(const Data& input) const -> UnallocatedCString = 0;
     virtual auto Z85Encode(const UnallocatedCString& input) const
         -> UnallocatedCString = 0;
-    virtual auto Z85Decode(const Data& input) const -> OTData = 0;
+    virtual auto Z85Decode(const Data& input) const -> ByteArray = 0;
     virtual auto Z85Decode(const UnallocatedCString& input) const
         -> UnallocatedCString = 0;
 

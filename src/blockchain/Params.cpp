@@ -21,7 +21,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
@@ -29,7 +29,6 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -421,8 +420,8 @@ namespace opentxs::blockchain::block
 {
 auto BlankHash() noexcept -> pHash
 {
-    auto out = Data::Factory();
-    out->DecodeHex(
+    auto out = ByteArray{};
+    out.DecodeHex(
         "0x0000000000000000000000000000000000000000000000000000000000000000");
 
     return out;

@@ -200,7 +200,7 @@ auto some_moron_wrote_the_bytes_backwards(const ot::UnallocatedCString& in)
 auto parse_hex(
     const ot::api::Session& api,
     const ot::UnallocatedCString& hex,
-    const bool reverse) noexcept -> ot::OTData
+    const bool reverse) noexcept -> ot::ByteArray
 {
     return api.Factory().DataFromHex(
         reverse ? some_moron_wrote_the_bytes_backwards(hex) : hex);
@@ -210,39 +210,39 @@ auto parse_hex(
 namespace ottest
 {
 auto Bip158Vector::Block(const ot::api::Session& api) const noexcept
-    -> ot::OTData
+    -> ot::ByteArray
 {
     return parse_hex(api, block_);
 }
 
 auto Bip158Vector::BlockHash(const ot::api::Session& api) const noexcept
-    -> ot::OTData
+    -> ot::ByteArray
 {
     return parse_hex(api, block_hash_, true);
 }
 
 auto Bip158Vector::Filter(const ot::api::Session& api) const noexcept
-    -> ot::OTData
+    -> ot::ByteArray
 {
     return parse_hex(api, filter_);
 }
 
 auto Bip158Vector::FilterHeader(const ot::api::Session& api) const noexcept
-    -> ot::OTData
+    -> ot::ByteArray
 {
     return parse_hex(api, filter_header_, true);
 }
 
 auto Bip158Vector::PreviousFilterHeader(
-    const ot::api::Session& api) const noexcept -> ot::OTData
+    const ot::api::Session& api) const noexcept -> ot::ByteArray
 {
     return parse_hex(api, previous_filter_header_, true);
 }
 
 auto Bip158Vector::PreviousOutputs(const ot::api::Session& api) const noexcept
-    -> ot::UnallocatedVector<ot::OTData>
+    -> ot::UnallocatedVector<ot::ByteArray>
 {
-    auto output = ot::UnallocatedVector<ot::OTData>{};
+    auto output = ot::UnallocatedVector<ot::ByteArray>{};
 
     for (const auto& hex : previous_outputs_) {
         output.emplace_back(parse_hex(api, hex));

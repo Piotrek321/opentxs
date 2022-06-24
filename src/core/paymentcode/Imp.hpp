@@ -15,7 +15,7 @@
 #include "core/paymentcode/Preimage.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -63,6 +63,7 @@ class PaymentCode;
 class Signature;
 }  // namespace proto
 
+class Data;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -184,7 +185,7 @@ private:
     const api::Session& api_;
     const VersionType version_;
     const bool hasBitmessage_;
-    const OTData pubkey_;
+    const ByteArray pubkey_;
     const OTSecret chain_code_;
     const std::uint8_t bitmessage_version_;
     const std::uint8_t bitmessage_stream_;

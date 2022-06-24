@@ -60,7 +60,6 @@ class Nym;
 }  // namespace identity
 
 class Data;
-class OTPassword;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs

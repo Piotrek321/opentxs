@@ -35,7 +35,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -92,6 +92,8 @@ namespace proto
 class HDPath;
 }  // namespace proto
 
+class ByteArray;
+class Data;
 class Identifier;
 class PasswordPrompt;
 class PaymentCode;
@@ -176,7 +178,7 @@ struct Element : virtual public crypto::Element {
         Used,
     };
 
-    virtual auto Elements() const noexcept -> UnallocatedSet<OTData> = 0;
+    virtual auto Elements() const noexcept -> UnallocatedSet<ByteArray> = 0;
     virtual auto ID() const noexcept -> const Identifier& = 0;
     virtual auto IncomingTransactions() const noexcept
         -> UnallocatedSet<UnallocatedCString> = 0;

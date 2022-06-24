@@ -67,7 +67,7 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -78,7 +78,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Types.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
@@ -1010,7 +1009,7 @@ auto Peer::process_protocol_getdata(
         switch (inv.type_) {
             case Inv::MsgWitnessTx:
             case Inv::MsgTx: {
-                const auto txid = Txid{inv.hash_->Bytes()};
+                const auto txid = Txid{inv.hash_.Bytes()};
                 auto tx = mempool_.Query(txid.Bytes());
 
                 if (tx) {
@@ -1029,7 +1028,7 @@ auto Peer::process_protocol_getdata(
             case Inv::MsgWitnessBlock:
             case Inv::MsgBlock: {
                 auto future = block_oracle_.LoadBitcoin(
-                    opentxs::blockchain::block::Hash{inv.hash_->Bytes()});
+                    opentxs::blockchain::block::Hash{inv.hash_.Bytes()});
 
                 if (IsReady(future)) {
                     const auto pBlock = future.get();
@@ -1039,7 +1038,7 @@ auto Peer::process_protocol_getdata(
                     const auto& block = *pBlock;
                     transmit_protocol_block([&] {
                         auto output = api_.Factory().Data();
-                        block.Serialize(output->WriteInto());
+                        block.Serialize(output.WriteInto());
 
                         return output;
                     }());
@@ -1195,7 +1194,7 @@ auto Peer::process_protocol_inv(
     auto txToDownload = UnallocatedVector<Inv>{};
 
     for (const auto& inv : message) {
-        const auto& hash = inv.hash_.get();
+        const auto& hash = inv.hash_;
         log_(OT_PRETTY_CLASS())(name_)(": received ")(inv.DisplayType())(
             " hash ")
             .asHex(hash)
@@ -1237,7 +1236,7 @@ auto Peer::process_protocol_inv(
                 txReceived.begin(),
                 txReceived.end(),
                 std::back_inserter(out),
-                [&](const auto& in) { return in.hash_->Bytes(); });
+                [&](const auto& in) { return in.hash_.Bytes(); });
 
             return out;
         }();

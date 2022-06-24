@@ -46,7 +46,7 @@ Header::Header(
     const blockchain::Type network,
     const bitcoin::Command command,
     const std::size_t payload,
-    const OTData checksum) noexcept
+    const ByteArray checksum) noexcept
     : chain_(network)
     , command_(command)
     , payload_size_(payload)
@@ -58,7 +58,7 @@ Header::Header(
     const api::Session& api,
     const blockchain::Type network,
     const bitcoin::Command command) noexcept
-    : Header(api, network, command, 0, Data::Factory())
+    : Header(api, network, command, 0, ByteArray{})
 {
 }
 
@@ -83,7 +83,7 @@ Header::BitcoinFormat::BitcoinFormat(
     const blockchain::Type network,
     const bitcoin::Command command,
     const std::size_t payload,
-    const OTData checksum) noexcept(false)
+    const ByteArray checksum) noexcept(false)
     : magic_(params::Chains().at(network).p2p_magic_bits_)
     , command_(SerializeCommand(command))
     , length_(static_cast<std::uint32_t>(payload))
@@ -93,11 +93,11 @@ Header::BitcoinFormat::BitcoinFormat(
 
     OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= payload);
 
-    if (sizeof(checksum_) != checksum->size()) {
+    if (sizeof(checksum_) != checksum.size()) {
         throw std::invalid_argument("Incorrect checksum size");
     }
 
-    std::memcpy(checksum_.data(), checksum->data(), checksum->size());
+    std::memcpy(checksum_.data(), checksum.data(), checksum.size());
 }
 
 Header::BitcoinFormat::BitcoinFormat(const Data& in) noexcept(false)
@@ -110,9 +110,9 @@ Header::BitcoinFormat::BitcoinFormat(const zmq::Frame& in) noexcept(false)
 {
 }
 
-auto Header::BitcoinFormat::Checksum() const noexcept -> OTData
+auto Header::BitcoinFormat::Checksum() const noexcept -> ByteArray
 {
-    return Data::Factory(checksum_.data(), checksum_.size());
+    return ByteArray{checksum_.data(), checksum_.size()};
 }
 
 auto Header::BitcoinFormat::Command() const noexcept -> bitcoin::Command
@@ -173,8 +173,9 @@ auto Header::Serialize(const AllocateOutput out) const noexcept -> bool
     }
 }
 
-auto Header::SetChecksum(const std::size_t payload, OTData&& checksum) noexcept
-    -> void
+auto Header::SetChecksum(
+    const std::size_t payload,
+    ByteArray&& checksum) noexcept -> void
 {
     payload_size_ = payload;
     checksum_ = std::move(checksum);

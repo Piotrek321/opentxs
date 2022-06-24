@@ -12,6 +12,16 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/util/Time.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+class ByteArray;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
+
 namespace opentxs::blockchain::bitcoin::block
 {
 class OPENTXS_EXPORT Header final : public blockchain::block::Header
@@ -21,7 +31,7 @@ public:
 
     auto as_Bitcoin() const noexcept -> const Header& final;
     auto MerkleRoot() const noexcept -> const blockchain::block::Hash&;
-    auto Encode() const noexcept -> OTData;
+    auto Encode() const noexcept -> ByteArray;
     auto Nonce() const noexcept -> std::uint32_t;
     auto nBits() const noexcept -> std::uint32_t;
     auto Timestamp() const noexcept -> Time;

@@ -40,12 +40,12 @@ public:
     const ot::crypto::HashType ripemd160_{ot::crypto::HashType::Ripemd160};
     const ot::UnallocatedCString plaintext_string_1_{"Test string"};
     const ot::UnallocatedCString plaintext_string_2_{"Another string"};
-    const ot::OTData plaintext_1{ot::Data::Factory(
+    const ot::ByteArray plaintext_1{
         plaintext_string_1_.data(),
-        plaintext_string_1_.size())};
-    const ot::OTData plaintext_2{ot::Data::Factory(
+        plaintext_string_1_.size()};
+    const ot::ByteArray plaintext_2{
         plaintext_string_2_.data(),
-        plaintext_string_2_.size())};
+        plaintext_string_2_.size()};
     ot::OTAsymmetricKey ed_;
     ot::OTAsymmetricKey ed_hd_;
     ot::OTAsymmetricKey ed_2_;
@@ -241,17 +241,14 @@ public:
         if ((0 == pubkey.size()) || (0 == seckey.size())) { return false; }
 
         const auto haveSig = lib.Sign(
-            plaintext_1->Bytes(),
-            key.PrivateKey(reason),
-            hash,
-            ot::writer(sig));
+            plaintext_1.Bytes(), key.PrivateKey(reason), hash, ot::writer(sig));
 
         EXPECT_TRUE(haveSig);
 
         if (false == haveSig) { return false; }
 
         const auto verified = lib.Verify(
-            plaintext_2->Bytes(), key.PublicKey(), ot::reader(sig), hash);
+            plaintext_2.Bytes(), key.PublicKey(), ot::reader(sig), hash);
 
         EXPECT_FALSE(verified);
 

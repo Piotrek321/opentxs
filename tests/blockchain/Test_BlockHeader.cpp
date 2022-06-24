@@ -33,39 +33,39 @@ TEST_F(Test_BlockHeader, init_opentxs) {}
 TEST_F(Test_BlockHeader, btc_genesis_block_hash_oracle)
 {
     const auto expectedHash = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(btc_genesis_hash_);
     const auto& genesisHash =
         bc::HeaderOracle::GenesisBlockHash(b::Type::Bitcoin);
 
-    EXPECT_EQ(expectedHash.get(), genesisHash);
+    EXPECT_EQ(expectedHash, genesisHash);
 }
 
 TEST_F(Test_BlockHeader, ltc_genesis_block_hash_oracle)
 {
     const auto expectedHash = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(ltc_genesis_hash_);
     const auto& genesisHash =
         bc::HeaderOracle::GenesisBlockHash(b::Type::Litecoin);
 
-    EXPECT_EQ(expectedHash.get(), genesisHash);
+    EXPECT_EQ(expectedHash, genesisHash);
 }
 
 TEST_F(Test_BlockHeader, btc_genesis_block_header)
 {
     const auto blankHash = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(blank_hash_);
     const auto expectedHash = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(btc_genesis_hash_);
     const ot::UnallocatedCString numericHash{btc_genesis_hash_numeric_};
@@ -79,7 +79,7 @@ TEST_F(Test_BlockHeader, btc_genesis_block_header)
     EXPECT_EQ(
         header.Internal().EffectiveState(),
         bb::internal::Header::Status::Normal);
-    EXPECT_EQ(expectedHash.get(), header.Hash());
+    EXPECT_EQ(expectedHash, header.Hash());
     EXPECT_EQ(header.Height(), 0);
     EXPECT_EQ(
         header.Internal().InheritedState(),
@@ -90,7 +90,7 @@ TEST_F(Test_BlockHeader, btc_genesis_block_header)
         header.Internal().LocalState(),
         bb::internal::Header::Status::Checkpoint);
     EXPECT_EQ(numericHash, header.NumericHash()->asHex());
-    EXPECT_EQ(header.ParentHash(), blankHash.get());
+    EXPECT_EQ(header.ParentHash(), blankHash);
 
     const auto [height, hash] = header.Position();
 
@@ -101,13 +101,13 @@ TEST_F(Test_BlockHeader, btc_genesis_block_header)
 TEST_F(Test_BlockHeader, ltc_genesis_block_header)
 {
     const auto blankHash = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(blank_hash_);
     const auto expectedHash = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(ltc_genesis_hash_);
     const ot::UnallocatedCString numericHash{ltc_genesis_hash_numeric_};
@@ -121,7 +121,7 @@ TEST_F(Test_BlockHeader, ltc_genesis_block_header)
     EXPECT_EQ(
         header.Internal().EffectiveState(),
         bb::internal::Header::Status::Normal);
-    EXPECT_EQ(expectedHash.get(), header.Hash());
+    EXPECT_EQ(expectedHash, header.Hash());
     EXPECT_EQ(header.Height(), 0);
     EXPECT_EQ(
         header.Internal().InheritedState(),
@@ -132,7 +132,7 @@ TEST_F(Test_BlockHeader, ltc_genesis_block_header)
         header.Internal().LocalState(),
         bb::internal::Header::Status::Checkpoint);
     EXPECT_EQ(numericHash, header.NumericHash()->asHex());
-    EXPECT_EQ(header.ParentHash(), blankHash.get());
+    EXPECT_EQ(header.ParentHash(), blankHash);
 
     const auto [height, hash] = header.Position();
 
@@ -143,8 +143,8 @@ TEST_F(Test_BlockHeader, ltc_genesis_block_header)
 TEST_F(Test_BlockHeader, serialize_deserialize)
 {
     const auto expectedHash = [](const auto& hex) {
-        auto out = ot::Data::Factory();
-        out->DecodeHex(hex);
+        auto out = ot::ByteArray{};
+        out.DecodeHex(hex);
         return out;
     }(btc_genesis_hash_);
     std::unique_ptr<const bb::Header> pHeader{
@@ -159,7 +159,7 @@ TEST_F(Test_BlockHeader, serialize_deserialize)
     auto restored = api_.Factory().BlockHeader(ot::reader(bytes));
 
     ASSERT_TRUE(restored);
-    EXPECT_EQ(expectedHash.get(), restored->Hash());
+    EXPECT_EQ(expectedHash, restored->Hash());
 
     EXPECT_EQ(restored->Difficulty(), header.Difficulty());
     EXPECT_EQ(

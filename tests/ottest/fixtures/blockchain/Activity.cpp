@@ -149,7 +149,7 @@ auto Test_BlockchainActivity::get_test_transaction(
 {
     const auto raw = api_.Factory().DataFromHex(monkey_patch(first, second));
     auto output = api_.Factory().BitcoinTransaction(
-        ot::blockchain::Type::Bitcoin, raw->Bytes(), false, time);
+        ot::blockchain::Type::Bitcoin, raw.Bytes(), false, time);
 
     if (output) {
         auto& tx = dynamic_cast<
@@ -172,7 +172,7 @@ auto Test_BlockchainActivity::monkey_patch(
     const Element& second) const noexcept -> ot::UnallocatedCString
 {
     return monkey_patch(
-        first.PubkeyHash()->asHex(), second.PubkeyHash()->asHex());
+        first.PubkeyHash().asHex(), second.PubkeyHash().asHex());
 }
 
 auto Test_BlockchainActivity::monkey_patch(

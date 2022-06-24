@@ -726,7 +726,7 @@ TEST_F(Regtest_fixture_sync, query_nym)
     const auto& id = alex_.nym_id_.get();
     const auto expected = [&] {
         auto out = client_1_.Factory().Data();
-        alex_.nym_->Serialize(out->WriteInto());
+        alex_.nym_->Serialize(out.WriteInto());
 
         return out;
     }();
@@ -756,7 +756,7 @@ TEST_F(Regtest_fixture_sync, query_nym)
         EXPECT_EQ(reply.ID(), id);
         EXPECT_EQ(reply.ContractType(), ot::contract::Type::nym);
         ASSERT_TRUE(opentxs::valid(reply.Payload()));
-        EXPECT_EQ(expected->Bytes(), reply.Payload());
+        EXPECT_EQ(expected.Bytes(), reply.Payload());
     }
 }
 
@@ -767,7 +767,7 @@ TEST_F(Regtest_fixture_sync, query_notary)
     const auto id = notary_.value()->ID();
     const auto expected = [&] {
         auto out = client_1_.Factory().Data();
-        notary_.value()->Serialize(out->WriteInto());
+        notary_.value()->Serialize(out.WriteInto());
 
         return out;
     }();
@@ -797,7 +797,7 @@ TEST_F(Regtest_fixture_sync, query_notary)
         EXPECT_EQ(reply.ID(), id);
         EXPECT_EQ(reply.ContractType(), ot::contract::Type::notary);
         ASSERT_TRUE(opentxs::valid(reply.Payload()));
-        EXPECT_EQ(expected->Bytes(), reply.Payload());
+        EXPECT_EQ(expected.Bytes(), reply.Payload());
     }
 }
 
@@ -808,7 +808,7 @@ TEST_F(Regtest_fixture_sync, query_unit)
     const auto id = unit_.value()->ID();
     const auto expected = [&] {
         auto out = client_1_.Factory().Data();
-        unit_.value()->Serialize(out->WriteInto());
+        unit_.value()->Serialize(out.WriteInto());
 
         return out;
     }();
@@ -869,7 +869,7 @@ TEST_F(Regtest_fixture_sync, query_unit)
         EXPECT_EQ(reply.ID(), id);
         EXPECT_EQ(reply.ContractType(), ot::contract::Type::unit);
         ASSERT_TRUE(opentxs::valid(reply.Payload()));
-        EXPECT_EQ(expected->Bytes(), reply.Payload());
+        EXPECT_EQ(expected.Bytes(), reply.Payload());
     }
 }
 
@@ -889,7 +889,7 @@ TEST_F(Regtest_fixture_sync, pushtx)
         "f62fc70f07aeee635711000000"};
     const auto data = client_1_.Factory().DataFromHex(hex);
     const auto tx = client_1_.Factory().BitcoinTransaction(
-        test_chain_, data->Bytes(), false);
+        test_chain_, data.Bytes(), false);
 
     ASSERT_TRUE(tx);
 
@@ -900,7 +900,7 @@ TEST_F(Regtest_fixture_sync, pushtx)
     EXPECT_NE(original.Version(), 0);
     EXPECT_EQ(original.Chain(), test_chain_);
     EXPECT_EQ(original.ID(), tx->ID());
-    EXPECT_EQ(original.Payload(), data->Bytes());
+    EXPECT_EQ(original.Payload(), data.Bytes());
 
     {
         const auto serialized = [&] {
@@ -972,7 +972,7 @@ TEST_F(Regtest_fixture_sync, pushtx_chain_not_active)
     const auto data = client_1_.Factory().DataFromHex(hex);
     const constexpr auto chain = ot::blockchain::Type::Bitcoin;
     const auto tx =
-        client_1_.Factory().BitcoinTransaction(chain, data->Bytes(), false);
+        client_1_.Factory().BitcoinTransaction(chain, data.Bytes(), false);
 
     ASSERT_TRUE(tx);
 
@@ -983,7 +983,7 @@ TEST_F(Regtest_fixture_sync, pushtx_chain_not_active)
     EXPECT_NE(original.Version(), 0);
     EXPECT_EQ(original.Chain(), chain);
     EXPECT_EQ(original.ID(), tx->ID());
-    EXPECT_EQ(original.Payload(), data->Bytes());
+    EXPECT_EQ(original.Payload(), data.Bytes());
 
     sync_req_.expected_ += 1;
 

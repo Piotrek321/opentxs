@@ -79,7 +79,6 @@ class VerificationSet;
 
 class Data;
 class Factory;
-class OTPassword;
 class PasswordPrompt;
 class Secret;
 class Signature;

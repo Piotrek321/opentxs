@@ -18,7 +18,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Parameters.hpp"
@@ -379,7 +379,7 @@ auto Asymmetric::InstantiateSecp256k1Key(
     const auto& ecdsa =
         api_.Crypto().Internal().EllipticProvider(Type::Secp256k1);
 
-    if (false == ecdsa.ScalarMultiplyBase(priv.Bytes(), pub->WriteInto())) {
+    if (false == ecdsa.ScalarMultiplyBase(priv.Bytes(), pub.WriteInto())) {
         LogError()(OT_PRETTY_CLASS())("Failed to calculate public key").Flush();
 
         return {};

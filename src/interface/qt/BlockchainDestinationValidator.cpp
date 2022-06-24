@@ -22,7 +22,6 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -65,7 +64,7 @@ struct BlockchainDestinationValidator final : public Super {
             api_.Crypto().Blockchain().DecodeAddress(candidate);
         const auto& [data, style, chains, supported] = decoded;
 
-        if (0 == data->size()) {
+        if (0 == data.size()) {
             text << "unknown";
             reset(text.str());
 

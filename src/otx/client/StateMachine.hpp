@@ -60,7 +60,6 @@ class Server;
 }  // namespace otx
 
 class Flag;
-class OTPassword;
 class Secret;
 // }  // namespace v1
 }  // namespace opentxs

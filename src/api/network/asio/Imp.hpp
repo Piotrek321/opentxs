@@ -35,7 +35,7 @@
 #include "internal/util/Timer.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/network/Asio.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
@@ -98,6 +98,8 @@ class Context;
 class Message;
 }  // namespace zeromq
 }  // namespace network
+
+class ByteArray;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -128,8 +130,8 @@ struct Asio::Imp final : public api::network::internal::Asio,
         const bool https,
         const ReadView notify) const noexcept
         -> std::future<boost::json::value> final;
-    auto GetPublicAddress4() const noexcept -> std::shared_future<OTData>;
-    auto GetPublicAddress6() const noexcept -> std::shared_future<OTData>;
+    auto GetPublicAddress4() const noexcept -> std::shared_future<ByteArray>;
+    auto GetPublicAddress6() const noexcept -> std::shared_future<ByteArray>;
     auto GetTimer() noexcept -> Timer final;
     auto Init() noexcept -> void;
     auto IOContext() noexcept -> boost::asio::io_context& final;
@@ -192,15 +194,15 @@ private:
     mutable UnallocatedMap<ThreadPool, asio::Context> thread_pools_;
     mutable asio::Acceptors acceptors_;
     mutable NotificationMap notify_;
-    std::promise<OTData> ipv4_promise_;
-    std::promise<OTData> ipv6_promise_;
-    std::shared_future<OTData> ipv4_future_;
-    std::shared_future<OTData> ipv6_future_;
+    std::promise<ByteArray> ipv4_promise_;
+    std::promise<ByteArray> ipv6_promise_;
+    std::shared_future<ByteArray> ipv4_future_;
+    std::shared_future<ByteArray> ipv6_future_;
 
     auto process_address_query(
         const ResponseType type,
-        std::shared_ptr<std::promise<OTData>> promise,
-        std::future<Response> future) const -> void;
+        std::shared_ptr<std::promise<ByteArray>> promise,
+        std::future<Response> future) const noexcept -> void;
     auto process_json(
         const ReadView notify,
         std::shared_ptr<std::promise<boost::json::value>> promise,
@@ -222,10 +224,10 @@ private:
     auto data_callback(zmq::Message&& in) -> void;
     auto retrieve_address_async(
         const struct Site& site,
-        std::shared_ptr<std::promise<OTData>> promise) -> void;
+        std::shared_ptr<std::promise<ByteArray>> promise) -> void;
     auto retrieve_address_async_ssl(
         const struct Site& site,
-        std::shared_ptr<std::promise<OTData>> promise) -> void;
+        std::shared_ptr<std::promise<ByteArray>> promise) -> void;
 
     auto state_machine() noexcept -> bool;
     static auto adjust_thread_pool_thread_name(

@@ -19,7 +19,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -41,6 +41,8 @@ namespace zeromq
 class Frame;
 }  // namespace zeromq
 }  // namespace network
+
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -59,7 +61,7 @@ public:
         PayloadSizeField length_;
         ChecksumField checksum_;
 
-        auto Checksum() const noexcept -> OTData;
+        auto Checksum() const noexcept -> ByteArray;
         auto Command() const noexcept -> bitcoin::Command;
         auto CheckNetwork(const blockchain::Type& chain) const noexcept -> bool;
         auto PayloadSize() const noexcept -> std::size_t;
@@ -70,7 +72,7 @@ public:
             const blockchain::Type network,
             const bitcoin::Command command,
             const std::size_t payload,
-            const OTData checksum) noexcept(false);
+            const ByteArray checksum) noexcept(false);
 
     private:
         BitcoinFormat(const void* data, const std::size_t size) noexcept(false);
@@ -84,7 +86,7 @@ public:
     auto PayloadSize() const noexcept -> std::size_t { return payload_size_; }
     auto Checksum() const noexcept -> const opentxs::Data& { return checksum_; }
 
-    auto SetChecksum(const std::size_t payload, OTData&& checksum) noexcept
+    auto SetChecksum(const std::size_t payload, ByteArray&& checksum) noexcept
         -> void;
 
     Header(
@@ -96,7 +98,7 @@ public:
         const blockchain::Type network,
         const bitcoin::Command command,
         const std::size_t payload,
-        const OTData checksum) noexcept;
+        const ByteArray checksum) noexcept;
     Header() = delete;
     Header(const Header&) = delete;
     Header(Header&&) = delete;
@@ -111,6 +113,6 @@ private:
     blockchain::Type chain_;
     bitcoin::Command command_;
     std::size_t payload_size_;
-    OTData checksum_;
+    ByteArray checksum_;
 };
 }  // namespace opentxs::blockchain::p2p::bitcoin

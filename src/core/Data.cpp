@@ -25,10 +25,6 @@ extern "C" {
 #include "internal/util/P0330.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/message/Frame.hpp"
-#include "opentxs/util/Pimpl.hpp"
-
-template class opentxs::Pimpl<opentxs::Data>;
 
 namespace opentxs
 {
@@ -46,71 +42,6 @@ auto check_subset(
     if ((pos + target) > size) { return false; }
 
     return true;
-}
-
-auto operator==(const OTData& lhs, const Data& rhs) noexcept -> bool
-{
-    return lhs.get() == rhs;
-}
-
-auto operator!=(const OTData& lhs, const Data& rhs) noexcept -> bool
-{
-    return lhs.get() != rhs;
-}
-
-auto operator<(const OTData& lhs, const Data& rhs) noexcept -> bool
-{
-    return lhs.get() < rhs;
-}
-
-auto operator>(const OTData& lhs, const Data& rhs) noexcept -> bool
-{
-    return lhs.get() > rhs;
-}
-
-auto operator<=(const OTData& lhs, const Data& rhs) noexcept -> bool
-{
-    return lhs.get() <= rhs;
-}
-
-auto operator>=(const OTData& lhs, const Data& rhs) noexcept -> bool
-{
-    return lhs.get() >= rhs;
-}
-
-auto operator+=(OTData& lhs, const OTData& rhs) -> OTData&
-{
-    lhs.get() += rhs.get();
-
-    return lhs;
-}
-
-auto operator+=(OTData& lhs, const std::uint8_t rhs) -> OTData&
-{
-    lhs.get() += rhs;
-
-    return lhs;
-}
-
-auto operator+=(OTData& lhs, const std::uint16_t rhs) -> OTData&
-{
-    lhs.get() += rhs;
-
-    return lhs;
-}
-
-auto operator+=(OTData& lhs, const std::uint32_t rhs) -> OTData&
-{
-    lhs.get() += rhs;
-
-    return lhs;
-}
-
-auto operator+=(OTData& lhs, const std::uint64_t rhs) -> OTData&
-{
-    lhs.get() += rhs;
-
-    return lhs;
 }
 
 auto to_hex(const std::byte* in, std::size_t size) noexcept
@@ -143,64 +74,6 @@ auto to_hex(
     }
 
     return CString{alloc}.append(out.str());
-}
-
-auto Data::Factory() -> OTData { return OTData(new implementation::Data()); }
-
-auto Data::Factory(const Data& rhs) -> OTData
-{
-    return OTData(new implementation::Data(rhs.data(), rhs.size()));
-}
-
-auto Data::Factory(const void* data, std::size_t size) -> OTData
-{
-    return OTData(new implementation::Data(data, size));
-}
-
-auto Data::Factory(const opentxs::Armored& source) -> OTData
-{
-    return OTData(new implementation::Data(source));
-}
-
-auto Data::Factory(const UnallocatedVector<unsigned char>& source) -> OTData
-{
-    return OTData(new implementation::Data(source));
-}
-
-auto Data::Factory(const UnallocatedVector<std::byte>& source) -> OTData
-{
-    return OTData(new implementation::Data(source));
-}
-
-auto Data::Factory(const network::zeromq::Frame& message) -> OTData
-{
-    return OTData(new implementation::Data(message.data(), message.size()));
-}
-
-auto Data::Factory(const std::uint8_t in) -> OTData
-{
-    return OTData(new implementation::Data(&in, sizeof(in)));
-}
-
-auto Data::Factory(const std::uint16_t in) -> OTData
-{
-    const auto input = boost::endian::big_uint16_buf_t(in);
-
-    return OTData(new implementation::Data(&input, sizeof(input)));
-}
-
-auto Data::Factory(const std::uint32_t in) -> OTData
-{
-    const auto input = boost::endian::big_uint32_buf_t(in);
-
-    return OTData(new implementation::Data(&input, sizeof(input)));
-}
-
-auto Data::Factory(const std::uint64_t in) -> OTData
-{
-    const auto input = boost::endian::big_uint64_buf_t(in);
-
-    return OTData(new implementation::Data(&input, sizeof(input)));
 }
 
 namespace implementation
@@ -353,7 +226,7 @@ auto Data::check_sub(const std::size_t pos, const std::size_t target) const
     return check_subset(data_.size(), target, pos);
 }
 
-void Data::concatenate(const Vector& data)
+auto Data::concatenate(const Vector& data) -> void
 {
     for (const auto& byte : data) {
         data_.emplace_back(reinterpret_cast<const std::uint8_t&>(byte));
@@ -451,7 +324,7 @@ auto Data::Extract(std::uint64_t& output, const std::size_t pos) const -> bool
     return true;
 }
 
-void Data::Initialize() { data_.clear(); }
+auto Data::Initialize() -> void { data_.clear(); }
 
 auto Data::IsNull() const -> bool
 {

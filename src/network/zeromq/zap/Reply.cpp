@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "network/zeromq/zap/Reply.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <memory>
 #include <sstream>
 #include <string_view>
@@ -23,7 +24,6 @@
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs::factory
@@ -214,11 +214,16 @@ auto Reply::Debug() const noexcept -> UnallocatedCString
     auto output = std::stringstream{};
     output << "Version: " << Version() << "\n";
     output << "Request ID: 0x"
-           << Data::Factory(request.data(), request.size())->asHex() << "\n";
+           << to_hex(
+                  reinterpret_cast<const std::byte*>(request.data()),
+                  request.size())
+           << "\n";
     output << "Status Code: " << code << "\n";
     output << "Status Text: " << Status() << "\n";
     output << "User ID: " << UserID() << "\n";
-    output << "Metadata: 0x" << Data::Factory(meta.data(), meta.size())->asHex()
+    output << "Metadata: 0x"
+           << to_hex(
+                  reinterpret_cast<const std::byte*>(meta.data()), meta.size())
            << "\n";
 
     return output.str();

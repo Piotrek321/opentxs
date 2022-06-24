@@ -11,7 +11,7 @@
 #include <memory>
 #include <tuple>
 
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -41,6 +41,8 @@ namespace proto
 class HDPath;
 }  // namespace proto
 
+class ByteArray;
+class Data;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -58,7 +60,8 @@ public:
     struct Imp;
 
     using Path = UnallocatedVector<Bip32Index>;
-    using Key = std::tuple<OTSecret, OTSecret, OTData, Path, Bip32Fingerprint>;
+    using Key =
+        std::tuple<OTSecret, OTSecret, ByteArray, Path, Bip32Fingerprint>;
 
     auto DeriveKey(
         const EcdsaCurve& curve,

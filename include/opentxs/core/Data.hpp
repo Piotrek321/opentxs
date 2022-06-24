@@ -15,7 +15,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -32,45 +31,17 @@ class Frame;
 
 class Armored;
 class Data;
-
-using OTData = Pimpl<Data>;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace std
-{
-template <>
-struct OPENTXS_EXPORT hash<opentxs::OTData> {
-    auto operator()(const opentxs::Data& data) const noexcept -> std::size_t;
-};
-
-template <>
-struct OPENTXS_EXPORT less<opentxs::OTData> {
-    auto operator()(const opentxs::OTData& lhs, const opentxs::OTData& rhs)
-        const -> bool;
-};
-}  // namespace std
-
 namespace opentxs
 {
-OPENTXS_EXPORT auto operator==(const OTData& lhs, const Data& rhs) noexcept
-    -> bool;
-OPENTXS_EXPORT auto operator!=(const OTData& lhs, const Data& rhs) noexcept
-    -> bool;
-OPENTXS_EXPORT auto operator<(const OTData& lhs, const Data& rhs) noexcept
-    -> bool;
-OPENTXS_EXPORT auto operator>(const OTData& lhs, const Data& rhs) noexcept
-    -> bool;
-OPENTXS_EXPORT auto operator<=(const OTData& lhs, const Data& rhs) noexcept
-    -> bool;
-OPENTXS_EXPORT auto operator>=(const OTData& lhs, const Data& rhs) noexcept
-    -> bool;
-OPENTXS_EXPORT auto operator+=(OTData& lhs, const OTData& rhs) -> OTData&;
-OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint8_t rhs) -> OTData&;
-OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint16_t rhs) -> OTData&;
-OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint32_t rhs) -> OTData&;
-OPENTXS_EXPORT auto operator+=(OTData& lhs, const std::uint64_t rhs) -> OTData&;
+struct OPENTXS_EXPORT HexType {
+};
+
+static constexpr auto IsHex = HexType{};
+
 OPENTXS_EXPORT auto to_hex(const std::byte* in, std::size_t size) noexcept
     -> UnallocatedCString;
 OPENTXS_EXPORT auto to_hex(
@@ -87,23 +58,6 @@ public:
     using iterator = opentxs::iterator::Bidirectional<Data, std::byte>;
     using const_iterator =
         opentxs::iterator::Bidirectional<const Data, const std::byte>;
-
-    static auto Factory() -> Pimpl<opentxs::Data>;
-    static auto Factory(const Data& rhs) -> Pimpl<opentxs::Data>;
-    static auto Factory(const void* data, std::size_t size)
-        -> Pimpl<opentxs::Data>;
-    static auto Factory(const Armored& source) -> OTData;
-    static auto Factory(const UnallocatedVector<unsigned char>& source)
-        -> OTData;
-    static auto Factory(const UnallocatedVector<std::byte>& source) -> OTData;
-    static auto Factory(const network::zeromq::Frame& message) -> OTData;
-    static auto Factory(const std::uint8_t in) -> OTData;
-    /// Bytes are stored in big endian order
-    static auto Factory(const std::uint16_t in) -> OTData;
-    /// Bytes are stored in big endian order
-    static auto Factory(const std::uint32_t in) -> OTData;
-    /// Bytes are stored in big endian order
-    static auto Factory(const std::uint64_t in) -> OTData;
 
     virtual auto asHex() const -> UnallocatedCString = 0;
     virtual auto asHex(alloc::Resource* alloc) const -> CString = 0;
@@ -187,8 +141,6 @@ protected:
     Data() = default;
 
 private:
-    friend OTData;
-
 #ifdef _WIN32
 public:
 #endif

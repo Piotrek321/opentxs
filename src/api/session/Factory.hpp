@@ -43,7 +43,7 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
@@ -200,13 +200,13 @@ class UnitDefinition;
 class Basket;
 class Cheque;
 class Contract;
+class Data;
 class Message;
 class NumList;
 class OTCron;
 class OTCronItem;
 class OTMarket;
 class OTOffer;
-class OTPassword;
 class OTPayment;
 class OTPaymentPlan;
 class OTScriptable;
@@ -468,18 +468,19 @@ public:
         const Nym_p& nym,
         const proto::UnitDefinition serialized) const noexcept(false)
         -> OTCurrencyContract final;
-    auto Data() const -> OTData final;
-    auto Data(const opentxs::Armored& input) const -> OTData final;
-    auto Data(const ProtobufType& input) const -> OTData final;
+    auto Data() const -> ByteArray final;
+    auto Data(const opentxs::Armored& input) const -> ByteArray final;
+    auto Data(const ProtobufType& input) const -> ByteArray final;
     auto Data(const opentxs::network::zeromq::Frame& input) const
-        -> OTData final;
-    auto Data(const std::uint8_t input) const -> OTData final;
-    auto Data(const std::uint32_t input) const -> OTData final;
+        -> ByteArray final;
+    auto Data(const std::uint8_t input) const -> ByteArray final;
+    auto Data(const std::uint32_t input) const -> ByteArray final;
     auto Data(const UnallocatedVector<unsigned char>& input) const
-        -> OTData final;
-    auto Data(const UnallocatedVector<std::byte>& input) const -> OTData final;
-    auto DataFromBytes(ReadView input) const -> OTData final;
-    auto DataFromHex(ReadView input) const -> OTData final;
+        -> ByteArray final;
+    auto Data(const UnallocatedVector<std::byte>& input) const
+        -> ByteArray final;
+    auto DataFromBytes(ReadView input) const -> ByteArray final;
+    auto DataFromHex(ReadView input) const -> ByteArray final;
     auto Envelope() const noexcept -> OTEnvelope final;
     auto Envelope(const opentxs::Armored& ciphertext) const noexcept(false)
         -> OTEnvelope final;

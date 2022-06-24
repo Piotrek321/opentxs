@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <memory>
 
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -44,6 +43,7 @@ class AsymmetricKey;
 class Signature;
 }  // namespace proto
 
+class ByteArray;
 class OTSignatureMetadata;
 class PasswordPrompt;
 class Secret;
@@ -68,7 +68,7 @@ public:
     virtual auto asPublic() const noexcept -> std::unique_ptr<Asymmetric> = 0;
     virtual auto CalculateHash(
         const crypto::HashType hashType,
-        const PasswordPrompt& reason) const noexcept -> OTData = 0;
+        const PasswordPrompt& reason) const noexcept -> ByteArray = 0;
     virtual auto CalculateID(Identifier& theOutput) const noexcept -> bool = 0;
     virtual auto CalculateTag(
         const identity::Authority& nym,

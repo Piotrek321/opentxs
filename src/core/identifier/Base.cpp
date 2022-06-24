@@ -35,7 +35,7 @@
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/identifier/Algorithm.hpp"
@@ -598,7 +598,7 @@ Identifier::Identifier(
     const proto::HDPath& path) noexcept
     : Identifier()
 {
-    CalculateDigest(path_to_data(type, path)->Bytes(), algorithm_);
+    CalculateDigest(path_to_data(type, path).Bytes(), algorithm_);
 }
 
 auto Identifier::Assign(const void* data, const std::size_t size) noexcept
@@ -812,13 +812,23 @@ auto Identifier::is_supported(const identifier::Type type) noexcept -> bool
 
 auto Identifier::path_to_data(
     const identity::wot::claim::ClaimType type,
-    const proto::HDPath& path) -> OTData
+    const proto::HDPath& path) -> ByteArray
 {
-    auto output = Data::Factory(static_cast<const void*>(&type), sizeof(type));
-    output += Data::Factory(path.root().c_str(), path.root().size());
+    auto output = [&]() -> ByteArray {
+        const auto buf = boost::endian::little_uint32_buf_t{
+            static_cast<std::uint32_t>(type)};
+        static_assert(sizeof(type) == sizeof(buf));
+
+        return {
+            reinterpret_cast<const std::byte*>(std::addressof(buf)),
+            sizeof(buf)};
+    }();
+    output.Concatenate(path.root());
 
     for (const auto& child : path.child()) {
-        output += Data::Factory(&child, sizeof(child));
+        const auto buf = boost::endian::little_uint32_buf_t{child};
+        static_assert(sizeof(child) == sizeof(buf));
+        output.Concatenate(std::addressof(buf), sizeof(buf));
     }
 
     return output;
@@ -941,18 +951,18 @@ auto Identifier::to_string() const noexcept -> UnallocatedCString
     }
 
     const auto preimage = [&] {
-        auto out = Data::Factory();
+        auto out = ByteArray{};
         const auto payload = size();
 
         if (0 == payload) { return out; }
 
         const auto type = boost::endian::little_uint16_buf_t{
             static_cast<std::uint16_t>(type_)};
-        out->resize(sizeof(algorithm_) + sizeof(type) + payload);
+        out.resize(sizeof(algorithm_) + sizeof(type) + payload);
 
-        OT_ASSERT(out->size() == required_payload(algorithm_));
+        OT_ASSERT(out.size() == required_payload(algorithm_));
 
-        auto* i = static_cast<std::byte*>(out->data());
+        auto* i = static_cast<std::byte*>(out.data());
         std::memcpy(i, &algorithm_, sizeof(algorithm_));
         std::advance(i, sizeof(algorithm_));
         std::memcpy(i, static_cast<const void*>(&type), sizeof(type));
@@ -964,7 +974,7 @@ auto Identifier::to_string() const noexcept -> UnallocatedCString
     }();
     auto ss = std::stringstream{};
 
-    if (0 < preimage->size()) {
+    if (0 < preimage.size()) {
         ss << prefix_;
         ss << Context().Crypto().Encode().IdentifierEncode(preimage);
     }

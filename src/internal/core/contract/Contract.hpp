@@ -16,7 +16,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -86,6 +86,7 @@ struct StoreSecret;
 
 class Account;
 class AccountVisitor;
+class Data;
 class PasswordPrompt;
 class String;
 // }  // namespace v1
@@ -103,7 +104,10 @@ struct Signable : virtual public opentxs::contract::Signable {
     {
         return terms_;
     }
-    auto Serialize() const noexcept -> OTData final { return OTData{id_}; }
+    auto Serialize() const noexcept -> ByteArray final
+    {
+        return ByteArray{id_};
+    }
     auto Validate() const noexcept -> bool final { return {}; }
     auto Version() const noexcept -> VersionNumber final { return 0; }
 

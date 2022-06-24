@@ -24,7 +24,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Block.hpp"
@@ -38,7 +37,7 @@
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -46,7 +45,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
 #include "util/Container.hpp"
@@ -154,7 +152,7 @@ auto DeterministicStateData::handle_confirmed_matches(
 
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
-        const auto& pTransaction = block.at(txid->Bytes());
+        const auto& pTransaction = block.at(txid.Bytes());
 
         OT_ASSERT(pTransaction);
 
@@ -171,7 +169,7 @@ auto DeterministicStateData::handle_confirmed_matches(
     for (const auto& [tx, outpoint, element] : utxo) {
         auto& pTx = transactions[tx].second;
 
-        if (!pTx) { pTx = block.at(tx->Bytes())->clone(); }
+        if (!pTx) { pTx = block.at(tx.Bytes())->clone(); }
     }
 
     const auto buildTransactionMap = Clock::now();
@@ -283,8 +281,9 @@ auto DeterministicStateData::process(
                 if (key.PublicKey() == script.Pubkey().value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": P2PK match found for ")(print(node_.Chain()))(
-                        " transaction ")(txid->asHex())(" output ")(i)(" via ")(
-                        api_.Factory().DataFromBytes(key.PublicKey())->asHex())
+                        " transaction ")
+                        .asHex(txid)(" output ")(i)(" via ")
+                        .asHex(key.PublicKey())
                         .Flush();
                     outputs.emplace_back(i);
                     const auto confirmed = api_.Crypto().Blockchain().Confirm(
@@ -300,11 +299,12 @@ auto DeterministicStateData::process(
 
                 OT_ASSERT(script.PubkeyHash().has_value());
 
-                if (hash->Bytes() == script.PubkeyHash().value()) {
+                if (hash.Bytes() == script.PubkeyHash().value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": P2PKH match found for ")(
-                        print(node_.Chain()))(" transaction ")(txid->asHex())(
-                        " output ")(i)(" via ")(hash->asHex())
+                        print(node_.Chain()))(" transaction ")
+                        .asHex(txid)(" output ")(i)(" via ")
+                        .asHex(hash)
                         .Flush();
                     outputs.emplace_back(i);
                     const auto confirmed = api_.Crypto().Blockchain().Confirm(
@@ -320,11 +320,12 @@ auto DeterministicStateData::process(
 
                 OT_ASSERT(script.PubkeyHash().has_value());
 
-                if (hash->Bytes() == script.PubkeyHash().value()) {
+                if (hash.Bytes() == script.PubkeyHash().value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": P2WPKH match found for ")(
-                        print(node_.Chain()))(" transaction ")(txid->asHex())(
-                        " output ")(i)(" via ")(hash->asHex())
+                        print(node_.Chain()))(" transaction ")
+                        .asHex(txid)(" output ")(i)(" via ")
+                        .asHex(hash)
                         .Flush();
                     outputs.emplace_back(i);
                     const auto confirmed = api_.Crypto().Blockchain().Confirm(
@@ -357,9 +358,9 @@ auto DeterministicStateData::process(
                 if (key.PublicKey() == script.MultisigPubkey(0).value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(index)(": ")(
                         m.value())(" of ")(n.value())(" P2MS match found for ")(
-                        print(node_.Chain()))(" transaction ")(txid->asHex())(
-                        " output ")(i)(" via ")(
-                        api_.Factory().DataFromBytes(key.PublicKey())->asHex())
+                        print(node_.Chain()))(" transaction ")
+                        .asHex(txid)(" output ")(i)(" via ")
+                        .asHex(key.PublicKey())
                         .Flush();
                     outputs.emplace_back(i);
                     const auto confirmed = api_.Crypto().Blockchain().Confirm(

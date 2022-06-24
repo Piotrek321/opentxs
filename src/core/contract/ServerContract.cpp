@@ -29,7 +29,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Types.hpp"
@@ -157,7 +156,7 @@ Server::Server(
     const UnallocatedCString& terms,
     const UnallocatedCString& name,
     UnallocatedList<contract::Server::Endpoint>&& endpoints,
-    OTData&& key,
+    ByteArray&& key,
     OTNotaryID&& id,
     Signatures&& signatures)
     : Signable(
@@ -325,7 +324,7 @@ auto Server::IDVersion(const Lock& lock) const -> proto::ServerContract
     }
 
     contract.set_terms(conditions_);
-    contract.set_transportkey(transport_key_->data(), transport_key_->size());
+    contract.set_transportkey(transport_key_.data(), transport_key_.size());
 
     return contract;
 }
@@ -347,7 +346,7 @@ auto Server::SigVersion(const Lock& lock) const -> proto::ServerContract
     return contract;
 }
 
-auto Server::Serialize() const noexcept -> OTData
+auto Server::Serialize() const noexcept -> ByteArray
 {
     auto lock = Lock{lock_};
 
@@ -403,10 +402,7 @@ auto Server::Statistics(String& strContents) const -> bool
     return true;
 }
 
-auto Server::TransportKey() const -> const Data&
-{
-    return transport_key_.get();
-}
+auto Server::TransportKey() const -> const Data& { return transport_key_; }
 
 auto Server::TransportKey(Data& pubkey, const PasswordPrompt& reason) const
     -> OTSecret

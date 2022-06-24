@@ -40,7 +40,7 @@ std::unique_ptr<ot::OTNymID> alex_p_{nullptr};
 std::unique_ptr<ot::OTNymID> bob_p_{nullptr};
 std::unique_ptr<ot::OTNymID> chris_p_{nullptr};
 std::unique_ptr<ot::OTNymID> daniel_p_{nullptr};
-std::unique_ptr<ot::OTData> address_1_p_{nullptr};
+std::unique_ptr<ot::ByteArray> address_1_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> empty_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> contact_alex_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> contact_bob_p_{nullptr};
@@ -223,8 +223,8 @@ public:
                     .Nym({fingerprint_a_, 1}, individual_, *reason_p_, "Daniel")
                     ->ID());
 
-            address_1_p_ = std::make_unique<ot::OTData>(
-                ot::OTData{api.Factory().DataFromHex(
+            address_1_p_ = std::make_unique<ot::ByteArray>(
+                ot::ByteArray{api.Factory().DataFromHex(
                     "0xf54a5851e9372b87810a8e60cdd2e7cfd80b6e31")});
             empty_p_ = std::make_unique<ot::OTIdentifier>(
                 ot::OTIdentifier{api.Factory().Identifier()});
@@ -451,7 +451,7 @@ public:
         , bob_(bob_p_->get())
         , chris_(chris_p_->get())
         , daniel_(daniel_p_->get())
-        , address_1_(address_1_p_->get())
+        , address_1_(*address_1_p_)
         , empty_id_(empty_p_->get())
         , contact_alex_(contact_alex_p_->get())
         , contact_bob_(contact_bob_p_->get())
@@ -702,7 +702,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
     const auto& test = Bip32TestCases().at(0);
     const ot::UnallocatedCString empty{};
     auto bytes = api_.Factory().DataFromHex(test.seed_);
-    auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
+    auto seed = api_.Factory().SecretFromBytes(bytes.Bytes());
     const auto fingerprint = api_.Crypto().Seed().ImportRaw(seed, reason_);
 
     ASSERT_FALSE(fingerprint.empty());
@@ -741,7 +741,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
     const auto& test = Bip32TestCases().at(2);
     const ot::UnallocatedCString empty{};
     auto bytes = api_.Factory().DataFromHex(test.seed_);
-    auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
+    auto seed = api_.Factory().SecretFromBytes(bytes.Bytes());
     const auto fingerprint = api_.Crypto().Seed().ImportRaw(seed, reason_);
 
     ASSERT_FALSE(fingerprint.empty());

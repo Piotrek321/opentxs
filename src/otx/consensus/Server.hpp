@@ -28,7 +28,6 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Types.hpp"

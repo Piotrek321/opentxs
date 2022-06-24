@@ -59,6 +59,7 @@ class UnitDefinition;
 
 class Amount;
 class Basket;
+class ByteArray;
 class Cheque;
 class Contract;
 class Identifier;
@@ -158,7 +159,7 @@ public:
         -> OTCurrencyContract = 0;
     using session::Factory::Data;
     virtual auto Data(const google::protobuf::MessageLite& input) const
-        -> OTData = 0;
+        -> ByteArray = 0;
     using session::Factory::Identifier;
     virtual auto Identifier(const google::protobuf::MessageLite& proto) const
         -> OTIdentifier = 0;

@@ -15,7 +15,6 @@
 
 #include "opentxs/blockchain/bitcoin/bloom/BloomFilter.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

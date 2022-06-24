@@ -26,7 +26,6 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -57,6 +56,8 @@ namespace block
 class Header;
 }  // namespace block
 }  // namespace blockchain
+
+class ByteArray;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -118,7 +119,7 @@ public:
     {
         return std::make_unique<Header>(*this);
     }
-    auto Encode() const noexcept -> OTData final;
+    auto Encode() const noexcept -> ByteArray final;
     auto MerkleRoot() const noexcept -> const blockchain::block::Hash& final
     {
         return merkle_root_;

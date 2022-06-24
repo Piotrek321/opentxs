@@ -14,7 +14,7 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -38,6 +38,8 @@ class Header;
 }  // namespace bitcoin
 }  // namespace p2p
 }  // namespace blockchain
+
+class Data;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -47,10 +49,7 @@ namespace opentxs::blockchain::p2p::bitcoin::message
 class Getblocktxn final : public implementation::Message
 {
 public:
-    auto getBlockHash() const noexcept -> OTData
-    {
-        return Data::Factory(block_hash_);
-    }
+    auto getBlockHash() const noexcept -> ByteArray { return block_hash_; }
     auto getIndices() const noexcept -> const UnallocatedVector<std::size_t>&
     {
         return txn_indices_;
@@ -74,7 +73,7 @@ public:
     ~Getblocktxn() final = default;
 
 private:
-    const OTData block_hash_;
+    const ByteArray block_hash_;
     const UnallocatedVector<std::size_t> txn_indices_;
 
     using implementation::Message::payload;

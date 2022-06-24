@@ -23,7 +23,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -1023,7 +1023,7 @@ auto OTPacker::Unpack(PackedBuffer& inBuf, UnallocatedCString& outObj) -> bool
         return list_##name##s.size();                                          \
     }                                                                          \
                                                                                \
-    auto scope Get##name(size_t nIndex)->name*                                 \
+    auto scope Get##name(std::size_t nIndex)->name*                            \
     {                                                                          \
         if (nIndex < list_##name##s.size()) {                                  \
             PointerTo##name theP = list_##name##s.at(nIndex);                  \
@@ -1032,7 +1032,7 @@ auto OTPacker::Unpack(PackedBuffer& inBuf, UnallocatedCString& outObj) -> bool
         return nullptr;                                                        \
     }                                                                          \
                                                                                \
-    auto scope Remove##name(size_t nIndex##name)->bool                         \
+    auto scope Remove##name(std::size_t nIndex##name)->bool                    \
     {                                                                          \
         if (nIndex##name < list_##name##s.size()) {                            \
             list_##name##s.erase(list_##name##s.begin() + nIndex##name);       \
@@ -1130,7 +1130,7 @@ AddressBook::~AddressBook()
  inline const ::UnallocatedCString& bitcoin_id() const;
  inline void set_bitcoin_id(const ::UnallocatedCString& value);
  inline void set_bitcoin_id(const char* value);
- inline void set_bitcoin_id(const char* value, size_t size);
+ inline void set_bitcoin_id(const char* value, std::size_t size);
  inline ::UnallocatedCString* mutable_bitcoin_id();
  inline ::UnallocatedCString* release_bitcoin_id();
 
@@ -1141,7 +1141,7 @@ AddressBook::~AddressBook()
  inline const ::UnallocatedCString& bitcoin_name() const;
  inline void set_bitcoin_name(const ::UnallocatedCString& value);
  inline void set_bitcoin_name(const char* value);
- inline void set_bitcoin_name(const char* value, size_t size);
+ inline void set_bitcoin_name(const char* value, std::size_t size);
  inline ::UnallocatedCString* mutable_bitcoin_name();
  inline ::UnallocatedCString* release_bitcoin_name();
 
@@ -1152,7 +1152,7 @@ AddressBook::~AddressBook()
  inline const ::UnallocatedCString& gui_label() const;
  inline void set_gui_label(const ::UnallocatedCString& value);
  inline void set_gui_label(const char* value);
- inline void set_gui_label(const char* value, size_t size);
+ inline void set_gui_label(const char* value, std::size_t size);
  inline ::UnallocatedCString* mutable_gui_label();
  inline ::UnallocatedCString* release_gui_label();
  */
@@ -1497,9 +1497,9 @@ auto BufferPB::GetData() -> const std::uint8_t*
     return reinterpret_cast<const std::uint8_t*>(m_buffer.c_str());
 }
 
-auto BufferPB::GetSize() -> size_t { return m_buffer.size(); }
+auto BufferPB::GetSize() -> std::size_t { return m_buffer.size(); }
 
-void BufferPB::SetData(const std::uint8_t* pData, size_t theSize)
+void BufferPB::SetData(const std::uint8_t* pData, std::size_t theSize)
 {
     m_buffer.assign(reinterpret_cast<const char*>(pData), theSize);
 }
@@ -2473,10 +2473,11 @@ auto Storage::EncodeObject(const api::Session& api, Storable& theContents)
 
     // OTPackedBuffer:
     //        virtual const    std::uint8_t *    GetData()=0;
-    //        virtual            size_t            GetSize()=0;
+    //        virtual            std::size_t            GetSize()=0;
     //
-    const auto nNewSize = static_cast<std::uint32_t>(pBuffer->GetSize());
-    const void* pNewData = static_cast<const void*>(pBuffer->GetData());
+    const auto nNewSize = pBuffer->GetSize();
+    const auto* pNewData =
+        reinterpret_cast<const std::byte*>(pBuffer->GetData());
 
     if ((nNewSize < 1) || (nullptr == pNewData)) {
         delete pBuffer;
@@ -2486,7 +2487,7 @@ auto Storage::EncodeObject(const api::Session& api, Storable& theContents)
         return strReturnValue;
     }
 
-    const auto theData = Data::Factory(pNewData, nNewSize);
+    const auto theData = ByteArray{pNewData, nNewSize};
     const auto theArmor = api.Factory().Armored(theData);
 
     strReturnValue.assign(theArmor->Get(), theArmor->GetLength());
@@ -2527,13 +2528,12 @@ auto Storage::DecodeObject(
     auto theArmor = Armored::Factory();
     theArmor->Set(
         strInput.c_str(), static_cast<std::uint32_t>(strInput.size()));
-    const auto thePayload = Data::Factory(theArmor);
+    const auto thePayload = ByteArray{theArmor};
 
     // Put thePayload's contents into pBuffer here.
     //
     pBuffer->SetData(
-        static_cast<const std::uint8_t*>(thePayload->data()),
-        thePayload->size());
+        static_cast<const std::uint8_t*>(thePayload.data()), thePayload.size());
 
     // Now let's unpack it and return the Storable object.
 

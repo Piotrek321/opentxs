@@ -27,6 +27,7 @@
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -316,15 +317,15 @@ auto OTAgreement::HasTransactionNum(const std::int64_t& lInput) const -> bool
 {
     if (lInput == GetTransactionNum()) { return true; }
 
-    const size_t nSizeClosing = m_dequeClosingNumbers.size();
+    const std::size_t nSizeClosing = m_dequeClosingNumbers.size();
 
-    for (size_t nIndex = 0; nIndex < nSizeClosing; ++nIndex) {
+    for (auto nIndex = 0_uz; nIndex < nSizeClosing; ++nIndex) {
         if (lInput == m_dequeClosingNumbers.at(nIndex)) { return true; }
     }
 
-    const size_t nSizeRecipient = m_dequeRecipientClosingNumbers.size();
+    const std::size_t nSizeRecipient = m_dequeRecipientClosingNumbers.size();
 
-    for (size_t nIndex = 0; nIndex < nSizeRecipient; ++nIndex) {
+    for (auto nIndex = 0_uz; nIndex < nSizeRecipient; ++nIndex) {
         if (lInput == m_dequeRecipientClosingNumbers.at(nIndex)) {
             return true;
         }
@@ -338,16 +339,16 @@ void OTAgreement::GetAllTransactionNumbers(NumList& numlistOutput) const
 
     if (GetTransactionNum() > 0) { numlistOutput.Add(GetTransactionNum()); }
 
-    const size_t nSizeClosing = m_dequeClosingNumbers.size();
+    const std::size_t nSizeClosing = m_dequeClosingNumbers.size();
 
-    for (size_t nIndex = 0; nIndex < nSizeClosing; ++nIndex) {
+    for (auto nIndex = 0_uz; nIndex < nSizeClosing; ++nIndex) {
         const std::int64_t lTemp = m_dequeClosingNumbers.at(nIndex);
         if (lTemp > 0) { numlistOutput.Add(lTemp); }
     }
 
-    const size_t nSizeRecipient = m_dequeRecipientClosingNumbers.size();
+    const std::size_t nSizeRecipient = m_dequeRecipientClosingNumbers.size();
 
-    for (size_t nIndex = 0; nIndex < nSizeRecipient; ++nIndex) {
+    for (auto nIndex = 0_uz; nIndex < nSizeRecipient; ++nIndex) {
         const std::int64_t lTemp = m_dequeRecipientClosingNumbers.at(nIndex);
         if (lTemp > 0) { numlistOutput.Add(lTemp); }
     }

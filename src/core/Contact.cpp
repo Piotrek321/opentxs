@@ -34,6 +34,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
@@ -134,10 +135,10 @@ struct Contact::Imp {
     static auto generate_id(const api::Session& api) -> OTIdentifier
     {
         const auto& encode = api.Crypto().Encode();
-        auto random = Data::Factory();
+        auto random = ByteArray{};
         encode.Nonce(ID_BYTES, random);
 
-        return api.Factory().Identifier(random->Bytes());
+        return api.Factory().Identifier(random.Bytes());
     }
 
     static auto translate(
@@ -145,16 +146,18 @@ struct Contact::Imp {
         const UnitType chain,
         const UnallocatedCString& value,
         const UnallocatedCString& subtype) noexcept(false) -> std::
-        tuple<OTData, blockchain::crypto::AddressStyle, blockchain::Type>
+        tuple<ByteArray, blockchain::crypto::AddressStyle, blockchain::Type>
     {
-        auto output = std::
-            tuple<OTData, blockchain::crypto::AddressStyle, blockchain::Type>{
-                api.Factory().DataFromHex(value),
-                translate_style(subtype),
-                UnitToBlockchain(chain)};
+        auto output = std::tuple<
+            ByteArray,
+            blockchain::crypto::AddressStyle,
+            blockchain::Type>{
+            api.Factory().DataFromHex(value),
+            translate_style(subtype),
+            UnitToBlockchain(chain)};
         auto& [outBytes, outStyle, outChain] = output;
         const auto bad =
-            outBytes->empty() ||
+            outBytes.empty() ||
             (blockchain::crypto::AddressStyle::Unknown == outStyle) ||
             (blockchain::Type::Unknown == outChain);
 
@@ -537,7 +540,7 @@ auto Contact::AddBlockchainAddress(
     const auto& api = imp_->api_;
     auto [bytes, style, chains, supported] =
         api.Crypto().Blockchain().DecodeAddress(address);
-    const auto bad = bytes->empty() ||
+    const auto bad = bytes.empty() ||
                      (blockchain::crypto::AddressStyle::Unknown == style) ||
                      chains.empty();
 
@@ -761,10 +764,10 @@ auto Contact::BestSocialMediaProfile(
 }
 
 auto Contact::BlockchainAddresses() const -> UnallocatedVector<
-    std::tuple<OTData, blockchain::crypto::AddressStyle, blockchain::Type>>
+    std::tuple<ByteArray, blockchain::crypto::AddressStyle, blockchain::Type>>
 {
     auto output = UnallocatedVector<std::tuple<
-        OTData,
+        ByteArray,
         blockchain::crypto::AddressStyle,
         blockchain::Type>>{};
     auto lock = Lock{imp_->lock_};

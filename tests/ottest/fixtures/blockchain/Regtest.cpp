@@ -1004,10 +1004,10 @@ auto Regtest_fixture_base::TestUTXOs(
                 continue;
             }
 
-            out &= (data.value() == exKey->Bytes());
+            out &= (data.value() == exKey.Bytes());
             out &= (script.Type() == exPattern);
 
-            EXPECT_EQ(data.value(), exKey->Bytes());
+            EXPECT_EQ(data.value(), exKey.Bytes());
             EXPECT_EQ(script.Type(), exPattern);
         } catch (...) {
             EXPECT_EQ(outpoint.str(), "this will never be true");
@@ -1166,7 +1166,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
 
         OT_ASSERT(output);
 
-        const auto& txid = transactions_ptxid_.emplace_back(output->ID()).get();
+        const auto& txid = transactions_ptxid_.emplace_back(output->ID());
 
         for (auto i = Index{0}; i < Index{count}; ++i) {
             auto& [bytes, amount, pattern] = meta.at(i);
@@ -1373,7 +1373,7 @@ Regtest_payment_code::Regtest_payment_code()
 
         OT_ASSERT(output);
 
-        const auto& txid = transactions_ptxid_.emplace_back(output->ID()).get();
+        const auto& txid = transactions_ptxid_.emplace_back(output->ID());
         auto& [bytes, amount, pattern] = meta.at(0);
         expected_.emplace(
             std::piecewise_construct,
@@ -1565,10 +1565,10 @@ struct ScanListener::Imp {
     using Map = ot::UnallocatedMap<ot::OTNymID, ChainMap>;
 
     const ot::api::Session& api_;
-    Map map_;
     const ot::OTZMQListenCallback cb_;
     const ot::OTZMQSubscribeSocket socket_;
     mutable std::mutex lock_;
+    Map map_;
 
     auto cb(ot::network::zeromq::Message&& in) noexcept -> void
     {
@@ -1617,7 +1617,6 @@ struct ScanListener::Imp {
 
     Imp(const ot::api::Session& api) noexcept
         : api_(api)
-        , map_()
         , cb_(Callback::Factory([&](auto&& msg) { cb(std::move(msg)); }))
         , socket_([&] {
             auto out = api_.Network().ZeroMQ().SubscribeSocket(cb_);
@@ -1629,6 +1628,7 @@ struct ScanListener::Imp {
             return out;
         }())
         , lock_()
+        , map_()
     {
     }
 };

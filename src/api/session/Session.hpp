@@ -88,7 +88,6 @@ class Ciphertext;
 }  // namespace proto
 
 class Flag;
-class OTPassword;
 class Options;
 class PasswordPrompt;
 // }  // namespace v1

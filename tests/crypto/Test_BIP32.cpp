@@ -52,7 +52,7 @@ TEST_F(Test_BIP32, cases)
     for (const auto& item : Bip32TestCases()) {
         const auto seedID = [&] {
             const auto bytes = api_.Factory().DataFromHex(item.seed_);
-            const auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
+            const auto seed = api_.Factory().SecretFromBytes(bytes.Bytes());
 
             return api_.Crypto().Seed().ImportRaw(seed, reason_);
         }();
@@ -83,7 +83,7 @@ TEST_F(Test_BIP32, stress)
     const auto& child = item.children_.at(3u);
     const auto seedID = [&] {
         const auto bytes = api_.Factory().DataFromHex(item.seed_);
-        const auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
+        const auto seed = api_.Factory().SecretFromBytes(bytes.Bytes());
 
         return api_.Crypto().Seed().ImportRaw(seed, reason_);
     }();

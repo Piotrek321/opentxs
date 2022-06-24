@@ -11,7 +11,6 @@
 
 #include "internal/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -31,7 +30,8 @@ class Encode;
 class Crypto;
 }  // namespace api
 
-class OTPassword;
+class ByteArray;
+class Data;
 class Secret;
 // }  // namespace v1
 }  // namespace opentxs
@@ -62,7 +62,7 @@ public:
     auto Z85Encode(const Data& input) const -> UnallocatedCString final;
     auto Z85Encode(const UnallocatedCString& input) const
         -> UnallocatedCString final;
-    auto Z85Decode(const Data& input) const -> OTData final;
+    auto Z85Decode(const Data& input) const -> ByteArray final;
     auto Z85Decode(const UnallocatedCString& input) const
         -> UnallocatedCString final;
 

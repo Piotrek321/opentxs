@@ -392,7 +392,7 @@ TEST_F(Regtest_stress, generate_transactions)
     const auto stop = previous + blocks_;
     auto future1 =
         listener_bob_.get_future(bob_account_, Subchain::External, stop);
-    auto transactions = ot::UnallocatedVector<ot::OTData>{
+    auto transactions = ot::UnallocatedVector<ot::ByteArray>{
         tx_per_block_, client_1_.Factory().Data()};
     using Future = ot::blockchain::node::Manager::PendingOutgoing;
     auto futures = std::array<Future, tx_per_block_>{};
@@ -431,9 +431,9 @@ TEST_F(Regtest_stress, generate_transactions)
                 try {
                     auto [code, txid] = future.get();
 
-                    OT_ASSERT(false == txid->empty());
+                    OT_ASSERT(false == txid.empty());
 
-                    transactions.at(++f)->Assign(txid.get());
+                    transactions.at(++f).Assign(txid);
                 } catch (...) {
 
                     OT_FAIL;

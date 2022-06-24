@@ -24,7 +24,6 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/OTX.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

@@ -27,7 +27,6 @@ class Crypto;
 class Session;
 }  // namespace api
 
-class OTPassword;
 class Secret;
 // }  // namespace v1
 }  // namespace opentxs

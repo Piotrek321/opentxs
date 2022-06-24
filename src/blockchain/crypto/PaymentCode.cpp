@@ -34,7 +34,7 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Container.hpp"
@@ -108,10 +108,10 @@ auto PaymentCode::GetID(
 {
     auto out = api.Factory().Identifier();
     auto preimage = api.Factory().Data();
-    preimage->Assign(&chain, sizeof(chain));
-    preimage->Concatenate(local.ID().Bytes());
-    preimage->Concatenate(remote.ID().Bytes());
-    out->CalculateDigest(preimage->Bytes());
+    preimage.Assign(&chain, sizeof(chain));
+    preimage.Concatenate(local.ID().Bytes());
+    preimage.Concatenate(remote.ID().Bytes());
+    out->CalculateDigest(preimage.Bytes());
 
     return out;
 }
@@ -383,7 +383,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
 
         for (const auto& txid : incoming_notifications_) {
             dir.add_notification(
-                static_cast<const char*>(txid->data()), txid->size());
+                static_cast<const char*>(txid.data()), txid.size());
         }
 
         for (const auto& [index, address] : data_.external_.map_) {
@@ -397,7 +397,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
 
         for (const auto& txid : outgoing_notifications_) {
             dir.add_notification(
-                static_cast<const char*>(txid->data()), txid->size());
+                static_cast<const char*>(txid.data()), txid.size());
         }
 
         for (const auto& [index, address] : data_.internal_.map_) {

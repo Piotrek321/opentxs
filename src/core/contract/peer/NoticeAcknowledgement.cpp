@@ -19,6 +19,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/NoticeAcknowledgement.pb.h"
 #include "serialization/protobuf/PeerReply.pb.h"

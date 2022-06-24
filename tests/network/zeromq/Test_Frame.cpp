@@ -6,12 +6,15 @@
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 #include <zmq.h>
+#include <string_view>
 
 namespace ot = opentxs;
 namespace zmq = opentxs::network::zeromq;
 
 namespace ottest
 {
+using namespace std::literals;
+
 class Frame : public ::testing::Test
 {
 protected:
@@ -28,11 +31,11 @@ TEST_F(Frame, Factory1)
 
 TEST_F(Frame, Factory2)
 {
-    const auto data = ot::Data::Factory("0", 1);
-    auto& frame = message_.AddFrame(data->data(), data->size());
+    const auto data = ot::ByteArray{"0"sv};
+    auto& frame = message_.AddFrame(data.data(), data.size());
 
     EXPECT_NE(nullptr, frame.operator zmq_msg_t*());
-    EXPECT_EQ(data->Bytes(), frame.Bytes());
+    EXPECT_EQ(data.Bytes(), frame.Bytes());
 }
 
 TEST_F(Frame, operator_string)

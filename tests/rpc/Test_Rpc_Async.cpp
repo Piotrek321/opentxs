@@ -42,10 +42,9 @@
 #define ISSUER_ACCOUNT_LABEL "issuer account"
 #define USER_ACCOUNT_LABEL "user account"
 
-using namespace opentxs;
-
-namespace
+namespace ottest
 {
+namespace ot = opentxs;
 
 class Test_Rpc_Async : public ::testing::Test
 {
@@ -1122,4 +1121,4 @@ TEST_F(Test_Rpc_Async, Add_Server_Session_Bad_Argument)
 
     cleanup();
 }
-}  // namespace
+}  // namespace ottest

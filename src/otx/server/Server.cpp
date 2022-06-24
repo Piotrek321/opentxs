@@ -38,6 +38,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ProtocolVersion.hpp"

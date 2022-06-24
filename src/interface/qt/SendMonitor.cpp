@@ -14,11 +14,11 @@
 #include <mutex>
 #include <thread>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/ByteArray.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"

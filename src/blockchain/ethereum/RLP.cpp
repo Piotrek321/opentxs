@@ -23,10 +23,8 @@
 #include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::ethereum::rlp
 {
@@ -82,12 +80,12 @@ struct Node::Calculator {
     }
     auto operator()(const String& in) const -> std::size_t
     {
-        if (const auto bytes = in->size(); 0 == bytes) {
+        if (const auto bytes = in.size(); 0 == bytes) {
 
             return 1;
         } else if (1 == bytes) {
 
-            return calculate_encoded_size(in->at(0));
+            return calculate_encoded_size(in.at(0));
         } else if (Const::long_ > bytes) {
 
             return 1 + bytes;
@@ -495,8 +493,8 @@ struct Node::Encoder {
             });
         const auto prefix =
             make_prefix(Const::short_list_, Const::long_list_, payload);
-        const auto pBytes = prefix->size();
-        std::memcpy(out_, prefix->data(), pBytes);
+        const auto pBytes = prefix.size();
+        std::memcpy(out_, prefix.data(), pBytes);
         std::advance(out_, pBytes);
         written_ += pBytes;
         log_(OT_PRETTY_CLASS())("wrote ")(pBytes)(" prefix bytes to output")
@@ -512,15 +510,15 @@ struct Node::Encoder {
     }
     auto operator()(const String& in) -> bool
     {
-        const auto bytes = in->size();
+        const auto bytes = in.size();
 
         if (can_direct_encode(in)) {
             direct_encode(in);
         } else {
             const auto prefix =
                 make_prefix(Const::null_, Const::short_string_, bytes);
-            const auto pBytes = prefix->size();
-            std::memcpy(out_, prefix->data(), pBytes);
+            const auto pBytes = prefix.size();
+            std::memcpy(out_, prefix.data(), pBytes);
             std::advance(out_, pBytes);
             written_ += pBytes;
             log_(OT_PRETTY_CLASS())("wrote ")(pBytes)(" prefix bytes to output")
@@ -530,7 +528,7 @@ struct Node::Encoder {
                 .Flush();
 
             if (0u < bytes) {
-                std::memcpy(out_, in->data(), bytes);
+                std::memcpy(out_, in.data(), bytes);
                 std::advance(out_, bytes);
                 written_ += bytes;
                 log_(OT_PRETTY_CLASS())("wrote ")(
@@ -573,7 +571,7 @@ private:
 
     static auto is_null(const String& in) noexcept -> bool
     {
-        if (const auto size = in->size(); size == 0u) {
+        if (const auto size = in.size(); size == 0u) {
 
             return true;
         } else {
@@ -583,7 +581,7 @@ private:
     }
     static auto can_direct_encode(const String& in) noexcept -> bool
     {
-        if (const auto size = in->size(); 0u == size) {
+        if (const auto size = in.size(); 0u == size) {
 
             return true;
         } else if (1u < size) {
@@ -591,7 +589,7 @@ private:
             return false;
         } else {
 
-            return Const::to_int(in->at(0)) <=
+            return Const::to_int(in.at(0)) <=
                    Const::to_int(Const::direct_encode_);
         }
     }
@@ -601,9 +599,9 @@ private:
         if (is_null(in)) {
             encode_null();
         } else {
-            const auto& payload = in->at(0);
+            const auto& payload = in.at(0);
             const auto bytes = sizeof(payload);
-            std::memcpy(out_, in->data(), bytes);
+            std::memcpy(out_, in.data(), bytes);
             std::advance(out_, bytes);
             written_ += bytes;
             log_(OT_PRETTY_CLASS())("wrote ")(bytes)(" payload bytes to output")
@@ -637,13 +635,13 @@ private:
         }();
         const auto payload = api_.Factory().DataFromHex(hex);
 
-        OT_ASSERT(9 > payload->size());
+        OT_ASSERT(9 > payload.size());
 
-        const auto size = static_cast<std::uint8_t>(payload->size());
+        const auto size = static_cast<std::uint8_t>(payload.size());
         const auto prefix = std::byte(Const::to_int(longVal) + size);
         auto out = api_.Factory().Data();
-        out->Concatenate(&prefix, sizeof(prefix));
-        out->Concatenate(payload->Bytes());
+        out.Concatenate(&prefix, sizeof(prefix));
+        out.Concatenate(payload.Bytes());
 
         return out;
     }
@@ -654,7 +652,7 @@ private:
             const auto size = static_cast<std::uint8_t>(bytes);
             const auto prefix = std::byte(Const::to_int(shortVal) + size);
             auto out = api_.Factory().Data();
-            out->Concatenate(&prefix, sizeof(prefix));
+            out.Concatenate(&prefix, sizeof(prefix));
 
             return out;
         } else {

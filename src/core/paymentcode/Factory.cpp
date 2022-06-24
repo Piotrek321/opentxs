@@ -25,12 +25,11 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
+#include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentCode.pb.h"
 
 namespace opentxs::factory
@@ -82,9 +81,9 @@ auto PaymentCode(
                         api.Crypto().Hash().Digest(
                             opentxs::crypto::HashType::Sha256D,
                             key,
-                            code->WriteInto());
+                            code.WriteInto());
                         out = opentxs::paymentcode::Base58Preimage{
-                            payload.version_, false, key, code->Bytes(), 0, 0};
+                            payload.version_, false, key, code.Bytes(), 0, 0};
                     }
                 }
             } break;
