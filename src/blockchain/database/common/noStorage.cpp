@@ -54,7 +54,8 @@ auto Sync::Reorg(const Chain chain, const Height height) const noexcept -> bool
     return {};
 }
 
-auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
+auto Sync::Store(const Chain chain, const network::p2p::SyncData& items)
+    const noexcept -> bool
 {
     return {};
 }

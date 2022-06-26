@@ -19,7 +19,7 @@ auto check_options(
     auto output{true};
     output &= test.BlockchainBindIpv4() == expect.blockchain_bind_ipv4_;
     output &= test.BlockchainBindIpv6() == expect.blockchain_bind_ipv6_;
-    output &= test.BlockchainStorageLevel() == expect.blockchain_storage_level_;
+    output &= test.BlockchainProfile() == expect.blockchain_profile_;
     output &=
         test.BlockchainWalletEnabled() == expect.blockchain_wallet_enabled_;
     output &= test.DisabledBlockchains() == expect.blockchain_disabled_chains_;
@@ -47,7 +47,7 @@ auto check_options(
 
     EXPECT_EQ(test.BlockchainBindIpv4(), expect.blockchain_bind_ipv4_);
     EXPECT_EQ(test.BlockchainBindIpv6(), expect.blockchain_bind_ipv6_);
-    EXPECT_EQ(test.BlockchainStorageLevel(), expect.blockchain_storage_level_);
+    EXPECT_EQ(test.BlockchainProfile(), expect.blockchain_profile_);
     EXPECT_EQ(
         test.BlockchainWalletEnabled(), expect.blockchain_wallet_enabled_);
     EXPECT_EQ(test.DisabledBlockchains(), expect.blockchain_disabled_chains_);

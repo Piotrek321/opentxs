@@ -432,12 +432,12 @@ Regtest_fixture_base::Regtest_fixture_base(
     , client_count_(clientCount)
     , miner_(ot_.StartClientSession(
           ot::Options{minerArgs}
-              .SetBlockchainStorageLevel(2)
+              .SetBlockchainProfile(ot::BlockchainProfile::server)
               .SetBlockchainWalletEnabled(false),
           0))
     , sync_server_(ot_.StartClientSession(
           ot::Options{}
-              .SetBlockchainStorageLevel(2)
+              .SetBlockchainProfile(ot::BlockchainProfile::server)
               .SetBlockchainWalletEnabled(false)
               .SetBlockchainSyncEnabled(true),
           1))
@@ -1248,9 +1248,7 @@ Regtest_fixture_normal::Regtest_fixture_normal(
 }
 
 Regtest_fixture_normal::Regtest_fixture_normal(const int clientCount)
-    : Regtest_fixture_normal(
-          clientCount,
-          ot::Options{}.SetBlockchainStorageLevel(1))
+    : Regtest_fixture_normal(clientCount, ot::Options{})
 {
 }
 
@@ -1302,11 +1300,7 @@ auto Regtest_fixture_sync::Shutdown() noexcept -> void
 }
 
 Regtest_fixture_tcp::Regtest_fixture_tcp()
-    : Regtest_fixture_base(
-          false,
-          1,
-          ot::Options{},
-          ot::Options{}.SetBlockchainStorageLevel(1))
+    : Regtest_fixture_base(false, 1, ot::Options{}, ot::Options{})
     , tcp_listen_address_(miner_.Factory().BlockchainAddress(
           b::p2p::Protocol::bitcoin,
           b::p2p::Network::ipv4,

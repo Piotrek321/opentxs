@@ -117,8 +117,8 @@ Raw::Raw(const Context& context, const socket::Type type) noexcept
 auto Raw::Bind(const char* endpoint) noexcept -> bool
 {
     if (0 != ::zmq_bind(Native(), endpoint)) {
-        std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
-                  << std::endl;
+        std::cerr << (OT_PRETTY_CLASS()) << "Failed to bind to (" << endpoint
+                  << "): " << ::zmq_strerror(zmq_errno()) << std::endl;
 
         return false;
     } else {
@@ -150,8 +150,8 @@ auto Raw::Close() noexcept -> void
 auto Raw::Connect(const char* endpoint) noexcept -> bool
 {
     if (0 != ::zmq_connect(Native(), endpoint)) {
-        std::cerr << (OT_PRETTY_CLASS()) << ::zmq_strerror(zmq_errno())
-                  << std::endl;
+        std::cerr << (OT_PRETTY_CLASS()) << "Failed to connect to (" << endpoint
+                  << "): " << ::zmq_strerror(zmq_errno()) << std::endl;
 
         return false;
     } else {

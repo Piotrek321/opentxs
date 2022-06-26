@@ -8,6 +8,8 @@
 #include <string_view>
 
 #include "opentxs/network/p2p/State.hpp"
+#include "opentxs/network/p2p/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 
@@ -66,8 +68,8 @@ public:
         -> const opentxs::blockchain::database::common::Database& = 0;
     virtual auto FilterUpdate() const noexcept
         -> const opentxs::network::zeromq::socket::Publish& = 0;
-    using SyncData = UnallocatedVector<opentxs::network::p2p::State>;
-    virtual auto Hello() const noexcept -> SyncData = 0;
+    virtual auto Hello(alloc::Default alloc) const noexcept
+        -> opentxs::network::p2p::StateData = 0;
     virtual auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
         -> bool = 0;
     virtual auto Mempool() const noexcept
@@ -88,12 +90,12 @@ public:
     virtual auto SyncEndpoint() const noexcept -> std::string_view = 0;
     virtual auto UpdatePeer(
         const opentxs::blockchain::Type chain,
-        const UnallocatedCString& address) const noexcept -> void = 0;
+        const std::string_view address) const noexcept -> void = 0;
 
     virtual auto Init(
         const api::crypto::Blockchain& crypto,
         const api::Legacy& legacy,
-        const UnallocatedCString& dataFolder,
+        const std::string_view dataFolder,
         const Options& args) noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 

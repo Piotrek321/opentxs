@@ -7,6 +7,7 @@
 
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -32,7 +33,6 @@ class Sync
 {
 public:
     using Height = block::Height;
-    using Items = UnallocatedVector<network::p2p::Block>;
     using Message = network::p2p::Data;
 
     virtual auto SyncTip() const noexcept -> block::Position = 0;
@@ -44,7 +44,7 @@ public:
         -> bool = 0;
     virtual auto StoreSync(
         const block::Position& tip,
-        const Items& items) noexcept -> bool = 0;
+        const network::p2p::SyncData& items) noexcept -> bool = 0;
 
     virtual ~Sync() = default;
 };

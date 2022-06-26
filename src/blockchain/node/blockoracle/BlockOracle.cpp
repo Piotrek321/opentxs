@@ -15,7 +15,7 @@
 
 #include "blockchain/node/blockoracle/BlockBatch.hpp"
 #include "blockchain/node/blockoracle/BlockDownloader.hpp"
-#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -26,6 +26,7 @@
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/BlockchainProfile.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -37,6 +38,7 @@ namespace opentxs::factory
 auto BlockOracle(
     const api::Session& api,
     const blockchain::node::internal::Manager& node,
+    const blockchain::node::internal::Config& config,
     const blockchain::node::HeaderOracle& header,
     blockchain::database::Block& db,
     const blockchain::Type chain,
@@ -54,6 +56,7 @@ auto BlockOracle(
         alloc::PMR<ReturnType>{zmq.Alloc(batchID)},
         api,
         node,
+        config,
         header,
         db,
         chain,
@@ -94,6 +97,7 @@ namespace opentxs::blockchain::node::internal
 BlockOracle::Imp::Imp(
     const api::Session& api,
     const internal::Manager& node,
+    const internal::Config& config,
     const node::HeaderOracle& header,
     database::Block& db,
     const blockchain::Type chain,
@@ -133,14 +137,24 @@ BlockOracle::Imp::Imp(
     , submit_endpoint_(std::move(submitEndpoint))
     , validator_(get_validator(chain, header))
     , block_downloader_([&]() -> std::unique_ptr<blockoracle::BlockDownloader> {
-        using Policy = database::BlockStorage;
+        switch (config.profile_) {
+            case BlockchainProfile::mobile:
+            case BlockchainProfile::desktop:
+            case BlockchainProfile::desktop_native: {
 
-        if (Policy::All != db.BlockPolicy()) { return nullptr; }
+                return {};
+            }
+            case BlockchainProfile::server: {
 
-        return std::make_unique<blockoracle::BlockDownloader>(
-            api_, db, header, node_, chain, parent);
+                return std::make_unique<blockoracle::BlockDownloader>(
+                    api_, db, header, node_, chain, parent);
+            }
+            default: {
+                OT_FAIL;
+            }
+        }
     }())
-    , cache_(api, node, db, chain, alloc)
+    , cache_(api, node, config, db, chain, alloc)
 {
     OT_ASSERT(validator_);
 }
@@ -148,6 +162,7 @@ BlockOracle::Imp::Imp(
 BlockOracle::Imp::Imp(
     const api::Session& api,
     const internal::Manager& node,
+    const internal::Config& config,
     const node::HeaderOracle& header,
     database::Block& db,
     const blockchain::Type chain,
@@ -156,6 +171,7 @@ BlockOracle::Imp::Imp(
     allocator_type alloc) noexcept
     : Imp(api,
           node,
+          config,
           header,
           db,
           chain,

@@ -8,7 +8,6 @@
 #include <memory>
 #include <string_view>
 
-#include "internal/blockchain/database/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -80,8 +79,8 @@ auto BlockchainNetworkBitcoin(
     const api::Session& api,
     const blockchain::Type type,
     const blockchain::node::internal::Config& config,
-    const UnallocatedCString& seednode,
-    const UnallocatedCString& syncEndpoint) noexcept
+    std::string_view seednode,
+    std::string_view syncEndpoint) noexcept
     -> std::unique_ptr<blockchain::node::internal::Manager>;
 auto BlockchainPeerManager(
     const api::Session& api,
@@ -93,9 +92,8 @@ auto BlockchainPeerManager(
     const blockchain::node::internal::BlockOracle& block,
     blockchain::database::Peer& database,
     const blockchain::Type type,
-    const blockchain::database::BlockStorage policy,
-    const UnallocatedCString& seednode,
-    const UnallocatedCString& shutdown) noexcept
+    std::string_view seednode,
+    std::string_view shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::PeerManager>;
 auto BlockchainWallet(
     const api::Session& api,
@@ -108,6 +106,7 @@ auto BlockchainWallet(
 auto BlockOracle(
     const api::Session& api,
     const blockchain::node::internal::Manager& node,
+    const blockchain::node::internal::Config& config,
     const blockchain::node::HeaderOracle& header,
     blockchain::database::Block& db,
     const blockchain::Type chain,

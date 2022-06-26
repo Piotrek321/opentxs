@@ -135,10 +135,9 @@ auto BlockchainSyncMessage(
                             success.Bytes());
                     }
                     default: {
-                        throw std::runtime_error{
-                            UnallocatedCString{
-                                "unknown or invalid response type: "} +
-                            opentxs::print(request)};
+                        throw std::runtime_error{UnallocatedCString{
+                            "unknown or invalid response type: "}
+                                                     .append(print(request))};
                     }
                 }
             }
@@ -200,7 +199,8 @@ auto BlockchainSyncMessage(
         }
 
         auto chains = [&] {
-            auto out = UnallocatedVector<network::p2p::State>{};
+            // TODO allocator
+            auto out = network::p2p::StateData{};
 
             for (const auto& state : hello.state()) {
                 out.emplace_back(network::p2p::State{
@@ -223,7 +223,8 @@ auto BlockchainSyncMessage(
                 }
 
                 const auto& cfheaderFrame = b.at(2);
-                auto data = UnallocatedVector<network::p2p::Block>{};
+                // TODO allocator
+                auto data = network::p2p::SyncData{};
                 using Chain = opentxs::blockchain::Type;
                 auto chain = std::optional<Chain>{std::nullopt};
                 using FilterType = opentxs::blockchain::cfilter::Type;

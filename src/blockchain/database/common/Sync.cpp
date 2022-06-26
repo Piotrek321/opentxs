@@ -122,7 +122,8 @@ struct Sync::Imp final : private util::MappedFileStorage {
         return reorg(chain, height);
     }
 
-    auto Store(const Chain chain, const Items& items) const noexcept -> bool
+    auto Store(const Chain chain, const network::p2p::SyncData& items)
+        const noexcept -> bool
     {
         if (items.empty()) { return true; }
 
@@ -358,7 +359,7 @@ private:
 
         OT_ASSERT(gcs.IsValid());
 
-        auto items = Items{};
+        auto items = network::p2p::SyncData{};
         const auto header =
             api_.Factory().DataFromHex(data.genesis_header_hex_);
 
@@ -390,6 +391,7 @@ private:
         for (auto key = Height{height + 1}; key <= tip; ++key) {
             if (!lmdb_.Delete(table, static_cast<std::size_t>(key), txn)) {
                 LogError()(OT_PRETTY_CLASS())("Delete error").Flush();
+
                 return false;
             }
         }
@@ -398,15 +400,18 @@ private:
 
         if (!lmdb_.Store(tip_table_, key, tsv(height), txn).first) {
             LogError()(OT_PRETTY_CLASS())("Failed to update tip").Flush();
+
             return false;
         }
 
         if (!txn.Finalize(true)) {
             LogError()(OT_PRETTY_CLASS())("Finalize error").Flush();
+
             return false;
         }
 
         tip = height;
+
         return true;
     }
 };
@@ -432,7 +437,8 @@ auto Sync::Reorg(const Chain chain, const Height height) const noexcept -> bool
     return imp_->Reorg(chain, height);
 }
 
-auto Sync::Store(const Chain chain, const Items& items) const noexcept -> bool
+auto Sync::Store(const Chain chain, const network::p2p::SyncData& items)
+    const noexcept -> bool
 {
     return imp_->Store(chain, items);
 }

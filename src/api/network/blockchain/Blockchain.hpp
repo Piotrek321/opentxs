@@ -16,6 +16,9 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/network/p2p/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/BlockchainProfile.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -81,8 +84,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     using Endpoints = network::Blockchain::Endpoints;
 
     virtual auto AddSyncServer(
-        [[maybe_unused]] const UnallocatedCString& endpoint) const noexcept
-        -> bool
+        [[maybe_unused]] const std::string_view endpoint) const noexcept -> bool
     {
         return {};
     }
@@ -104,8 +106,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
         OT_FAIL;
     }
     virtual auto DeleteSyncServer(
-        [[maybe_unused]] const UnallocatedCString& endpoint) const noexcept
-        -> bool
+        [[maybe_unused]] const std::string_view endpoint) const noexcept -> bool
     {
         return {};
     }
@@ -116,12 +117,11 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     }
     virtual auto Enable(
         [[maybe_unused]] const Chain type,
-        [[maybe_unused]] const UnallocatedCString& seednode) const noexcept
-        -> bool
+        [[maybe_unused]] const std::string_view seednode) const noexcept -> bool
     {
         return {};
     }
-    virtual auto EnabledChains() const noexcept -> UnallocatedSet<Chain>
+    virtual auto EnabledChains(alloc::Default) const noexcept -> Set<Chain>
     {
         return {};
     }
@@ -135,8 +135,15 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     {
         throw std::out_of_range("no blockchain support");
     }
-    virtual auto GetSyncServers() const noexcept -> Endpoints { return {}; }
-    auto Hello() const noexcept -> SyncData override { return {}; }
+    virtual auto GetSyncServers(alloc::Default) const noexcept -> Endpoints
+    {
+        return {};
+    }
+    auto Hello(alloc::Default) const noexcept
+        -> opentxs::network::p2p::StateData override
+    {
+        return {};
+    }
     auto IsEnabled([[maybe_unused]] const Chain chain) const noexcept
         -> bool override
     {
@@ -150,6 +157,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     {
         OT_FAIL;
     }
+    virtual auto Profile() const noexcept -> BlockchainProfile { return {}; }
     auto PublishStartup(const opentxs::blockchain::Type, OTZMQWorkType)
         const noexcept -> bool override
     {
@@ -169,17 +177,16 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     auto RestoreNetworks() const noexcept -> void override {}
     virtual auto Start(
         [[maybe_unused]] const Chain type,
-        [[maybe_unused]] const UnallocatedCString& seednode) const noexcept
-        -> bool
+        [[maybe_unused]] const std::string_view seednode) const noexcept -> bool
     {
         return {};
     }
     virtual auto StartSyncServer(
-        [[maybe_unused]] const UnallocatedCString& syncEndpoint,
-        [[maybe_unused]] const UnallocatedCString& publicSyncEndpoint,
-        [[maybe_unused]] const UnallocatedCString& updateEndpoint,
-        [[maybe_unused]] const UnallocatedCString& publicUpdateEndpoint) const
-        -> bool
+        [[maybe_unused]] const std::string_view syncEndpoint,
+        [[maybe_unused]] const std::string_view publicSyncEndpoint,
+        [[maybe_unused]] const std::string_view updateEndpoint,
+        [[maybe_unused]] const std::string_view publicUpdateEndpoint)
+        const -> bool
     {
         return {};
     }
@@ -193,15 +200,14 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     }
     auto UpdatePeer(
         [[maybe_unused]] const opentxs::blockchain::Type,
-        [[maybe_unused]] const UnallocatedCString&) const noexcept
-        -> void override
+        [[maybe_unused]] const std::string_view) const noexcept -> void override
     {
     }
 
     auto Init(
         [[maybe_unused]] const api::crypto::Blockchain& crypto,
         [[maybe_unused]] const api::Legacy& legacy,
-        [[maybe_unused]] const UnallocatedCString& dataFolder,
+        [[maybe_unused]] const std::string_view dataFolder,
         [[maybe_unused]] const Options& args) noexcept -> void override
     {
     }

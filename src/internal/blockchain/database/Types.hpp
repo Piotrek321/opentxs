@@ -86,10 +86,4 @@ enum class Key : std::size_t {
     SyncPosition = 5,
     WalletPosition = 6,
 };
-
-enum class BlockStorage : std::uint8_t {
-    None = 0,
-    Cache = 1,
-    All = 2,
-};
 }  // namespace opentxs::blockchain::database

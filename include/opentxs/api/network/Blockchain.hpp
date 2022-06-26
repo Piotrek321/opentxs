@@ -3,12 +3,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/util/BlockchainProfile.hpp"
+
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <string_view>
+
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -49,29 +55,29 @@ public:
     struct Imp;
 
     using Chain = opentxs::blockchain::Type;
-    using Endpoints = UnallocatedVector<UnallocatedCString>;
+    using Endpoints = Vector<CString>;
 
-    auto AddSyncServer(const UnallocatedCString& endpoint) const noexcept
-        -> bool;
+    auto AddSyncServer(const std::string_view endpoint) const noexcept -> bool;
     auto ConnectedSyncServers() const noexcept -> Endpoints;
-    auto DeleteSyncServer(const UnallocatedCString& endpoint) const noexcept
+    auto DeleteSyncServer(const std::string_view endpoint) const noexcept
         -> bool;
     auto Disable(const Chain type) const noexcept -> bool;
-    auto Enable(const Chain type, const UnallocatedCString& seednode = "")
+    auto Enable(const Chain type, const std::string_view seednode = "")
         const noexcept -> bool;
-    auto EnabledChains() const noexcept -> UnallocatedSet<Chain>;
+    auto EnabledChains(alloc::Default alloc = {}) const noexcept -> Set<Chain>;
     /// throws std::out_of_range if chain has not been started
     auto GetChain(const Chain type) const noexcept(false)
         -> const opentxs::blockchain::node::Manager&;
-    auto GetSyncServers() const noexcept -> Endpoints;
+    auto GetSyncServers(alloc::Default alloc = {}) const noexcept -> Endpoints;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> internal::Blockchain&;
-    auto Start(const Chain type, const UnallocatedCString& seednode = "")
+    auto Profile() const noexcept -> BlockchainProfile;
+    auto Start(const Chain type, const std::string_view seednode = "")
         const noexcept -> bool;
     auto StartSyncServer(
-        const UnallocatedCString& syncEndpoint,
-        const UnallocatedCString& publicSyncEndpoint,
-        const UnallocatedCString& updateEndpoint,
-        const UnallocatedCString& publicUpdateEndpoint) const noexcept -> bool;
+        const std::string_view syncEndpoint,
+        const std::string_view publicSyncEndpoint,
+        const std::string_view updateEndpoint,
+        const std::string_view publicUpdateEndpoint) const noexcept -> bool;
     auto Stop(const Chain type) const noexcept -> bool;
 
     OPENTXS_NO_EXPORT Blockchain(Imp* imp) noexcept;

@@ -5,15 +5,14 @@
 
 #pragma once
 
+#include "opentxs/util/BlockchainProfile.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::node::internal
 {
 struct Config {
-    bool download_cfilters_{false};
-    bool generate_cfilters_{false};
+    BlockchainProfile profile_{BlockchainProfile::desktop};
     bool provide_sync_server_{false};
-    bool use_sync_server_{false};
     bool disable_wallet_{false};
 
     auto print() const noexcept -> UnallocatedCString;

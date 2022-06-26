@@ -10,6 +10,7 @@
 #include <iosfwd>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "Proto.hpp"
@@ -25,7 +26,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/network/p2p/Block.hpp"
+#include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -97,7 +98,7 @@ public:
     static const int storage_enabled_;
 
     enum class Key : std::size_t {
-        BlockStoragePolicy = 0,
+        deleted = 0,
         NextBlockAddress = 1,
         SiphashKey = 2,
         NextSyncAddress = 3,
@@ -111,12 +112,10 @@ public:
     using Chain = opentxs::blockchain::Type;
     using EnabledChain = std::pair<Chain, UnallocatedCString>;
     using Height = opentxs::blockchain::block::Height;
-    using SyncItems = UnallocatedVector<opentxs::network::p2p::Block>;
-    using Endpoints = UnallocatedVector<UnallocatedCString>;
+    using Endpoints = Vector<CString>;
 
     auto AddOrUpdate(Address_p address) const noexcept -> bool;
-    auto AddSyncServer(const UnallocatedCString& endpoint) const noexcept
-        -> bool;
+    auto AddSyncServer(std::string_view endpoint) const noexcept -> bool;
     auto AllocateStorageFolder(const UnallocatedCString& dir) const noexcept
         -> UnallocatedCString;
     auto AssociateTransaction(
@@ -125,20 +124,18 @@ public:
     auto BlockHeaderExists(const BlockHash& hash) const noexcept -> bool;
     auto BlockExists(const BlockHash& block) const noexcept -> bool;
     auto BlockLoad(const BlockHash& block) const noexcept -> BlockReader;
-    auto BlockPolicy() const noexcept -> BlockStorage;
     auto BlockStore(const BlockHash& block, const std::size_t bytes)
         const noexcept -> BlockWriter;
-    auto DeleteSyncServer(const UnallocatedCString& endpoint) const noexcept
-        -> bool;
+    auto DeleteSyncServer(std::string_view endpoint) const noexcept -> bool;
     auto Disable(const Chain type) const noexcept -> bool;
-    auto Enable(const Chain type, const UnallocatedCString& seednode)
-        const noexcept -> bool;
+    auto Enable(const Chain type, std::string_view seednode) const noexcept
+        -> bool;
     auto Find(
         const Chain chain,
         const Protocol protocol,
         const UnallocatedSet<Type> onNetworks,
         const UnallocatedSet<Service> withServices) const noexcept -> Address_p;
-    auto GetSyncServers() const noexcept -> Endpoints;
+    auto GetSyncServers(alloc::Default alloc) const noexcept -> Endpoints;
     auto HashKey() const noexcept -> ReadView;
     auto HaveFilter(const cfilter::Type type, const ReadView blockHash)
         const noexcept -> bool;
@@ -189,8 +186,9 @@ public:
         const cfilter::Type type,
         const Vector<CFHeaderParams>& headers,
         const Vector<CFilterParams>& filters) const noexcept -> bool;
-    auto StoreSync(const Chain chain, const SyncItems& items) const noexcept
-        -> bool;
+    auto StoreSync(
+        const Chain chain,
+        const opentxs::network::p2p::SyncData& items) const noexcept -> bool;
     auto StoreTransaction(const bitcoin::block::Transaction& tx) const noexcept
         -> bool;
     auto StoreTransaction(
@@ -206,7 +204,7 @@ public:
         const api::Session& api,
         const api::crypto::Blockchain& blockchain,
         const api::Legacy& legacy,
-        const UnallocatedCString& dataFolder,
+        const std::string_view dataFolder,
         const Options& args) noexcept(false);
     Database() = delete;
     Database(const Database&) = delete;

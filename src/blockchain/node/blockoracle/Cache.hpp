@@ -56,6 +56,7 @@ namespace node
 namespace internal
 {
 class Manager;
+struct Config;
 }  // namespace internal
 }  // namespace node
 }  // namespace blockchain
@@ -106,6 +107,7 @@ public:
     Cache(
         const api::Session& api_,
         const internal::Manager& node,
+        const internal::Config& config,
         database::Block& db,
         const blockchain::Type chain,
         allocator_type alloc) noexcept;
@@ -128,6 +130,7 @@ private:
     const internal::Manager& node_;
     database::Block& db_;
     const blockchain::Type chain_;
+    const bool save_blocks_;
     opentxs::network::zeromq::socket::Raw block_available_;
     opentxs::network::zeromq::socket::Raw cache_size_publisher_;
     Pending pending_;

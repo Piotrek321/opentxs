@@ -47,8 +47,8 @@ Configuration::Configuration(
 {
 }
 
-auto Configuration::AddSyncServer(
-    const UnallocatedCString& endpoint) const noexcept -> bool
+auto Configuration::AddSyncServer(std::string_view endpoint) const noexcept
+    -> bool
 {
     if (endpoint.empty()) { return false; }
 
@@ -66,7 +66,7 @@ auto Configuration::AddSyncServer(
         socket_->Send([&] {
             auto work =
                 network::zeromq::tagged_message(WorkType::SyncServerUpdated);
-            work.AddFrame(endpoint);
+            work.AddFrame(endpoint.data(), endpoint.size());
             work.AddFrame(value);
 
             return work;
@@ -78,8 +78,8 @@ auto Configuration::AddSyncServer(
     return MDB_KEYEXIST == code;
 }
 
-auto Configuration::DeleteSyncServer(
-    const UnallocatedCString& endpoint) const noexcept -> bool
+auto Configuration::DeleteSyncServer(std::string_view endpoint) const noexcept
+    -> bool
 {
     if (endpoint.empty()) { return false; }
 
@@ -94,7 +94,7 @@ auto Configuration::DeleteSyncServer(
         socket_->Send([&] {
             auto work =
                 network::zeromq::tagged_message(WorkType::SyncServerUpdated);
-            work.AddFrame(endpoint);
+            work.AddFrame(endpoint.data(), endpoint.size());
             work.AddFrame(deleted);
 
             return work;
@@ -106,9 +106,10 @@ auto Configuration::DeleteSyncServer(
     return true;
 }
 
-auto Configuration::GetSyncServers() const noexcept -> Endpoints
+auto Configuration::GetSyncServers(alloc::Default alloc) const noexcept
+    -> Endpoints
 {
-    auto output = Endpoints{};
+    auto output = Endpoints{alloc};
     lmdb_.Load(
         config_table_,
         tsv(Database::Key::SyncServerEndpoint),

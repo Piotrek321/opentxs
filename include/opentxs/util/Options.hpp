@@ -14,6 +14,7 @@
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/util/Container.hpp"
+#include "opentxs/util/Types.hpp"
 
 class QObject;
 
@@ -22,15 +23,9 @@ namespace opentxs
 class OPENTXS_EXPORT Options final
 {
 public:
-    enum class ConnectionMode {
-        off = -1,
-        automatic = 0,
-        on = 1,
-    };
-
     auto BlockchainBindIpv4() const noexcept -> const Set<CString>&;
     auto BlockchainBindIpv6() const noexcept -> const Set<CString>&;
-    auto BlockchainStorageLevel() const noexcept -> int;
+    auto BlockchainProfile() const noexcept -> opentxs::BlockchainProfile;
     auto BlockchainWalletEnabled() const noexcept -> bool;
     auto DefaultMintKeyBytes() const noexcept -> std::size_t;
     auto DisabledBlockchains() const noexcept -> const Set<blockchain::Type>&;
@@ -70,7 +65,8 @@ public:
         std::string_view key,
         std::string_view value) noexcept -> Options&;
     auto ParseCommandLine(int argc, char** argv) noexcept -> Options&;
-    auto SetBlockchainStorageLevel(int value) noexcept -> Options&;
+    auto SetBlockchainProfile(opentxs::BlockchainProfile value) noexcept
+        -> Options&;
     auto SetBlockchainSyncEnabled(bool enabled) noexcept -> Options&;
     auto SetBlockchainWalletEnabled(bool enabled) noexcept -> Options&;
     auto SetDefaultMintKeyBytes(std::size_t bytes) noexcept -> Options&;
@@ -108,7 +104,7 @@ private:
 };
 
 auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options;
-constexpr auto value(Options::ConnectionMode val) noexcept -> int
+constexpr auto value(ConnectionMode val) noexcept -> int
 {
     return static_cast<int>(val);
 }

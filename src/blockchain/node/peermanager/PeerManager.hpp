@@ -15,11 +15,11 @@
 #include <iosfwd>
 #include <memory>
 #include <mutex>
+#include <string_view>
 #include <utility>
 
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
-#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/node/PeerManager.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -180,10 +180,9 @@ public:
             const node::internal::BlockOracle& block,
             database::Peer& database,
             const node::internal::PeerManager& parent,
-            const database::BlockStorage policy,
-            const UnallocatedCString& shutdown,
+            const std::string_view shutdown,
             const Type chain,
-            const UnallocatedCString& seednode,
+            const std::string_view seednode,
             const std::size_t peerTarget) noexcept;
 
         ~Peers();
@@ -205,8 +204,7 @@ public:
         database::Peer& database_;
         const node::internal::PeerManager& parent_;
         const network::zeromq::socket::Publish& connected_peers_;
-        const database::BlockStorage policy_;
-        const UnallocatedCString& shutdown_endpoint_;
+        const UnallocatedCString shutdown_endpoint_;
         const bool invalid_peer_;
         const ByteArray localhost_peer_;
         const ByteArray default_peer_;
@@ -226,7 +224,7 @@ public:
             const node::internal::Config& config) noexcept
             -> UnallocatedSet<blockchain::p2p::Service>;
         static auto set_default_peer(
-            const UnallocatedCString& node,
+            const std::string_view node,
             const Data& localhost,
             bool& invalidPeer) noexcept -> ByteArray;
 
@@ -315,9 +313,8 @@ public:
         const node::internal::BlockOracle& block,
         database::Peer& database,
         const Type chain,
-        const database::BlockStorage policy,
-        const UnallocatedCString& seednode,
-        const UnallocatedCString& shutdown) noexcept;
+        std::string_view seednode,
+        std::string_view shutdown) noexcept;
     PeerManager() = delete;
     PeerManager(const PeerManager&) = delete;
     PeerManager(PeerManager&&) = delete;
@@ -381,7 +378,7 @@ private:
 
     static auto peer_target(
         const Type chain,
-        const database::BlockStorage policy) noexcept -> std::size_t;
+        const node::internal::Config& config) noexcept -> std::size_t;
 
     auto shutdown(std::promise<void>& promise) noexcept -> void;
 };

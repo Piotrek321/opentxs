@@ -6,6 +6,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 
 #include "blockchain/node/manager/Manager.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -63,8 +64,8 @@ public:
         const api::Session& api,
         const Type type,
         const internal::Config& config,
-        const UnallocatedCString& seednode,
-        const UnallocatedCString& syncEndpoint);
+        std::string_view seednode,
+        std::string_view syncEndpoint);
     Bitcoin() = delete;
     Bitcoin(const Bitcoin&) = delete;
     Bitcoin(Bitcoin&&) = delete;

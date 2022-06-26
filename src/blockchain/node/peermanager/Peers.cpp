@@ -13,6 +13,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <iterator>
 #include <memory>
 #include <random>
 #include <stdexcept>
@@ -43,6 +44,8 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/util/BlockchainProfile.hpp"
+#include "opentxs/util/ConnectionMode.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
@@ -61,10 +64,9 @@ PeerManager::Peers::Peers(
     const internal::BlockOracle& block,
     database::Peer& database,
     const internal::PeerManager& parent,
-    const database::BlockStorage policy,
-    const UnallocatedCString& shutdown,
+    const std::string_view shutdown,
     const Type chain,
-    const UnallocatedCString& seednode,
+    const std::string_view seednode,
     const std::size_t peerTarget) noexcept
     : chain_(chain)
     , api_(api)
@@ -77,7 +79,6 @@ PeerManager::Peers::Peers(
     , database_(database)
     , parent_(parent)
     , connected_peers_(api_.Network().Blockchain().Internal().PeerUpdate())
-    , policy_(policy)
     , shutdown_endpoint_(shutdown)
     , invalid_peer_(false)
     , localhost_peer_(api_.Factory().DataFromHex("0x7f000001"))
@@ -196,7 +197,7 @@ auto PeerManager::Peers::AddListener(
         case blockchain::p2p::Network::ipv4: {
             auto& manager = incoming_tcp_;
 
-            if (!manager) {
+            if (false == bool(manager)) {
                 manager = IncomingConnectionManager::TCP(api_, *this);
             }
 
@@ -487,20 +488,29 @@ auto PeerManager::Peers::get_preferred_services(
     const internal::Config& config) noexcept
     -> UnallocatedSet<blockchain::p2p::Service>
 {
-    if (config.download_cfilters_) {
+    auto out = UnallocatedSet<blockchain::p2p::Service>{};
 
-        return {blockchain::p2p::Service::CompactFilters};
-    } else {
-
-        return {};
+    switch (config.profile_) {
+        case BlockchainProfile::desktop_native: {
+            out.emplace(blockchain::p2p::Service::CompactFilters);
+        } break;
+        case BlockchainProfile::mobile:
+        case BlockchainProfile::desktop:
+        case BlockchainProfile::server: {
+        } break;
+        default: {
+            OT_FAIL;
+        }
     }
+
+    return out;
 }
 
 auto PeerManager::Peers::get_types() const noexcept
     -> UnallocatedSet<blockchain::p2p::Network>
 {
     using Type = blockchain::p2p::Network;
-    using Mode = Options::ConnectionMode;
+    using Mode = ConnectionMode;
     auto output = UnallocatedSet<blockchain::p2p::Network>{};
 
     switch (api_.GetOptions().Ipv4ConnectionMode()) {
@@ -577,7 +587,6 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
                 filter_,
                 nonce_,
                 database_,
-                policy_,
                 id,
                 std::move(endpoint),
                 shutdown_endpoint_);
@@ -607,7 +616,7 @@ auto PeerManager::Peers::previous_failure_timeout(
 }
 
 auto PeerManager::Peers::set_default_peer(
-    const UnallocatedCString& node,
+    const std::string_view node,
     const Data& localhost,
     bool& invalidPeer) noexcept -> ByteArray
 {

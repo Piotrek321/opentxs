@@ -31,7 +31,6 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/database/Factory.hpp"
-#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
@@ -214,17 +213,27 @@ Base::Base(
     const api::Session& api,
     const Type type,
     const node::internal::Config& config,
-    const UnallocatedCString& seednode,
-    const UnallocatedCString& syncEndpoint) noexcept
+    std::string_view seednode,
+    std::string_view syncEndpoint) noexcept
     : Worker(api, 0s)
     , chain_(type)
+    , config_(config)
     , filter_type_([&] {
-        if (config.generate_cfilters_ || config.use_sync_server_) {
+        switch (config_.profile_) {
+            case BlockchainProfile::mobile:
+            case BlockchainProfile::desktop: {
 
-            return cfilter::Type::ES;
+                return cfilter::Type::ES;
+            }
+            case BlockchainProfile::desktop_native:
+            case BlockchainProfile::server: {
+
+                return blockchain::internal::DefaultFilter(chain_);
+            }
+            default: {
+                OT_FAIL;
+            }
         }
-
-        return blockchain::internal::DefaultFilter(chain_);
     }())
     , shutdown_sender_(
           api.Network().ZeroMQ(),
@@ -235,7 +244,6 @@ Base::Base(
           api_.Network().Blockchain().Internal().Database(),
           chain_,
           filter_type_))
-    , config_(config)
     , mempool_(
           api_.Crypto().Blockchain(),
           *database_p_,
@@ -245,6 +253,7 @@ Base::Base(
     , block_(factory::BlockOracle(
           api,
           *this,
+          config_,
           *header_p_,
           *database_p_,
           chain_,
@@ -269,7 +278,6 @@ Base::Base(
           block_,
           *database_p_,
           chain_,
-          database_p_->BlockPolicy(),
           seednode,
           shutdown_sender_.endpoint_))
     , wallet_p_([&]() -> std::unique_ptr<blockchain::node::internal::Wallet> {
@@ -277,6 +285,7 @@ Base::Base(
 
             return std::make_unique<NullWallet>(api);
         } else {
+
             return factory::BlockchainWallet(
                 api,
                 *this,
@@ -311,13 +320,21 @@ Base::Base(
         }
     }())
     , p2p_requestor_([&] {
-        if (config_.use_sync_server_) {
+        switch (config_.profile_) {
+            case BlockchainProfile::mobile:
+            case BlockchainProfile::desktop: {
 
-            return std::make_unique<p2p::Requestor>(
-                api_, chain_, requestor_endpoint_);
-        } else {
+                return std::make_unique<p2p::Requestor>(
+                    api_, chain_, requestor_endpoint_);
+            }
+            case BlockchainProfile::desktop_native:
+            case BlockchainProfile::server: {
 
-            return std::unique_ptr<p2p::Requestor>{};
+                return std::unique_ptr<p2p::Requestor>{};
+            }
+            default: {
+                OT_FAIL;
+            }
         }
     }())
     , sync_cb_(zmq::ListenCallback::Factory(
@@ -1064,6 +1081,11 @@ auto Base::process_sync_data(network::zeromq::Message&& in) noexcept -> void
     notify_sync_client();
 }
 
+auto Base::Profile() const noexcept -> BlockchainProfile
+{
+    return config_.profile_;
+}
+
 auto Base::Reorg() const noexcept -> const network::zeromq::socket::Publish&
 {
     return api_.Network().Blockchain().Internal().Reorg();
@@ -1206,12 +1228,19 @@ auto Base::state_machine() noexcept -> bool
                 LogConsole()(print(chain_))(
                     " block header chain synchronized in ")(interval)
                     .Flush();
-                using Policy = database::BlockStorage;
 
-                if (Policy::All == database_.BlockPolicy()) {
-                    state_transition_blocks();
-                } else {
-                    state_transition_filters();
+                switch (config_.profile_) {
+                    case BlockchainProfile::mobile:
+                    case BlockchainProfile::desktop:
+                    case BlockchainProfile::desktop_native: {
+                        state_transition_filters();
+                    } break;
+                    case BlockchainProfile::server: {
+                        state_transition_blocks();
+                    } break;
+                    default: {
+                        OT_FAIL;
+                    }
                 }
             } else {
                 log(OT_PRETTY_CLASS())("updating ")(print(chain_))(
@@ -1297,6 +1326,23 @@ auto Base::state_machine_headers() noexcept -> void
         peer_.RequestHeaders();
         headers_requested_ = Clock::now();
     };
+    const auto useSyncServer = [&] {
+        switch (config_.profile_) {
+            case BlockchainProfile::mobile:
+            case BlockchainProfile::desktop: {
+
+                return true;
+            }
+            case BlockchainProfile::desktop_native:
+            case BlockchainProfile::server: {
+
+                return false;
+            }
+            default: {
+                OT_FAIL;
+            }
+        }
+    }();
 
     if (requestInterval < rateLimit) { return; }
 
@@ -1308,7 +1354,7 @@ auto Base::state_machine_headers() noexcept -> void
             "(instance ")(api_.Instance())(")")
             .Flush();
         requestHeaders();
-    } else if ((!is_synchronized_headers()) && (!config_.use_sync_server_)) {
+    } else if ((!is_synchronized_headers()) && (false == useSyncServer)) {
         requestHeaders();
     } else if (receiveInterval >= limit) {
         requestHeaders();

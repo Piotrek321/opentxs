@@ -8,6 +8,9 @@
 #include "internal/blockchain/node/Config.hpp"  // IWYU pragma: associated
 
 #include <sstream>
+#include <string_view>
+
+#include "opentxs/util/Types.hpp"
 
 namespace opentxs::blockchain::node::internal
 {
@@ -19,13 +22,9 @@ auto Config::print() const noexcept -> UnallocatedCString
 
     auto output = std::stringstream{};
     output << "Blockchain client options\n";
-    output << "  * download cfilters: " << print_bool(download_cfilters_)
-           << '\n';
-    output << "  * generate cfilters: " << print_bool(generate_cfilters_)
-           << '\n';
+    output << "  * profile: " << opentxs::print(profile_) << '\n';
     output << "  * provide sync server: " << print_bool(provide_sync_server_)
            << '\n';
-    output << "  * use sync server: " << print_bool(use_sync_server_) << '\n';
     output << "  * disable wallet: " << print_bool(disable_wallet_) << '\n';
 
     return output.str();

@@ -33,7 +33,10 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/BlockchainProfile.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 
@@ -119,9 +122,8 @@ namespace opentxs::api::network
 {
 struct BlockchainImp final : public Blockchain::Imp {
     using Imp::AddSyncServer;
-    auto AddSyncServer(const UnallocatedCString& endpoint) const noexcept
+    auto AddSyncServer(const std::string_view endpoint) const noexcept
         -> bool final;
-    auto AddSyncServer(std::string_view endpoint) const noexcept -> bool;
     auto BlockAvailableEndpoint() const noexcept -> std::string_view final
     {
         return block_available_endpoint_;
@@ -136,21 +138,23 @@ struct BlockchainImp final : public Blockchain::Imp {
     {
         return *db_;
     }
-    auto DeleteSyncServer(const UnallocatedCString& endpoint) const noexcept
+    auto DeleteSyncServer(const std::string_view endpoint) const noexcept
         -> bool final;
     auto Disable(const Imp::Chain type) const noexcept -> bool final;
-    auto Enable(const Imp::Chain type, const UnallocatedCString& seednode)
+    auto Enable(const Imp::Chain type, const std::string_view seednode)
         const noexcept -> bool final;
-    auto EnabledChains() const noexcept -> UnallocatedSet<Imp::Chain> final;
+    auto EnabledChains(alloc::Default) const noexcept -> Set<Imp::Chain> final;
     auto FilterUpdate() const noexcept -> const zmq::socket::Publish& final
     {
         return new_filters_;
     }
-    auto Hello() const noexcept -> SyncData final;
+    auto Hello(alloc::Default) const noexcept
+        -> opentxs::network::p2p::StateData final;
     auto IsEnabled(const Chain chain) const noexcept -> bool final;
     auto GetChain(const Imp::Chain type) const noexcept(false)
         -> const opentxs::blockchain::node::Manager& final;
-    auto GetSyncServers() const noexcept -> Imp::Endpoints final;
+    auto GetSyncServers(alloc::Default alloc) const noexcept
+        -> Imp::Endpoints final;
     auto Mempool() const noexcept -> const zmq::socket::Publish& final
     {
         return mempool_;
@@ -159,6 +163,7 @@ struct BlockchainImp final : public Blockchain::Imp {
     {
         return connected_peer_updates_;
     }
+    auto Profile() const noexcept -> BlockchainProfile final;
     auto PublishStartup(
         const opentxs::blockchain::Type chain,
         OTZMQWorkType type) const noexcept -> bool final;
@@ -172,23 +177,24 @@ struct BlockchainImp final : public Blockchain::Imp {
         const opentxs::blockchain::block::Height target) const noexcept
         -> void final;
     auto RestoreNetworks() const noexcept -> void final;
-    auto Start(const Imp::Chain type, const UnallocatedCString& seednode)
+    auto Start(const Imp::Chain type, const std::string_view seednode)
         const noexcept -> bool final;
     auto StartSyncServer(
-        const UnallocatedCString& syncEndpoint,
-        const UnallocatedCString& publicSyncEndpoint,
-        const UnallocatedCString& updateEndpoint,
-        const UnallocatedCString& publicUpdateEndpoint) const -> bool final;
+        const std::string_view syncEndpoint,
+        const std::string_view publicSyncEndpoint,
+        const std::string_view updateEndpoint,
+        const std::string_view publicUpdateEndpoint) const
+        -> bool final;
     auto Stop(const Imp::Chain type) const noexcept -> bool final;
     auto SyncEndpoint() const noexcept -> std::string_view final;
     auto UpdatePeer(
         const opentxs::blockchain::Type chain,
-        const UnallocatedCString& address) const noexcept -> void final;
+        const std::string_view address) const noexcept -> void final;
 
     auto Init(
         const api::crypto::Blockchain& crypto,
         const api::Legacy& legacy,
-        const UnallocatedCString& dataFolder,
+        const std::string_view dataFolder,
         const Options& args) noexcept -> void final;
     auto Shutdown() noexcept -> void final;
 
@@ -245,13 +251,14 @@ private:
     auto enable(
         const Lock& lock,
         const Chain type,
-        const UnallocatedCString& seednode) const noexcept -> bool;
-    auto hello(const Lock&, const Chains& chains) const noexcept -> SyncData;
+        const std::string_view seednode) const noexcept -> bool;
+    auto hello(const Lock&, const Chains& chains, alloc::Default alloc)
+        const noexcept -> opentxs::network::p2p::StateData;
     auto publish_chain_state(Chain type, bool state) const -> void;
     auto start(
         const Lock& lock,
         const Chain type,
-        const UnallocatedCString& seednode,
+        const std::string_view seednode,
         const bool startWallet = true) const -> bool;
     auto stop(const Lock& lock, const Chain type) const noexcept -> bool;
 };

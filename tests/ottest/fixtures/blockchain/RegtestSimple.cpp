@@ -32,7 +32,7 @@ RegtestListener::RegtestListener(const ot::api::session::Client& client)
 }
 
 Regtest_fixture_simple::Regtest_fixture_simple()
-    : Regtest_fixture_normal(0, ot::Options{}.SetBlockchainStorageLevel(1))
+    : Regtest_fixture_normal(0, ot::Options{})
     , send_transactions_()
     , users_()
     , user_listeners_()

@@ -8,10 +8,12 @@
 #include "interface/ui/blockchainstatistics/BlockchainStatistics.hpp"  // IWYU pragma: associated
 
 #include <boost/system/error_code.hpp>  // IWYU pragma: keep
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cstddef>
 #include <future>
+#include <iterator>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -296,7 +298,14 @@ auto BlockchainStatistics::process_chain(
 {
     auto data = custom(chain);
     add_item(chain, UnallocatedCString{print(chain)}, data);
-    delete_inactive(blockchain_.EnabledChains());
+    // TODO List::delete_inactive should accept other container types
+    delete_inactive([&] {
+        auto out = UnallocatedSet<blockchain::Type>{};
+        const auto in = blockchain_.EnabledChains();
+        std::copy(in.begin(), in.end(), std::inserter(out, out.end()));
+
+        return out;
+    }());
 }
 
 auto BlockchainStatistics::process_cfilter(const Message& in) noexcept -> void

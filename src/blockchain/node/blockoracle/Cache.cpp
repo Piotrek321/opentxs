@@ -18,7 +18,7 @@
 
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/database/Block.hpp"
-#include "internal/blockchain/database/Types.hpp"
+#include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -38,6 +38,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/util/BlockchainProfile.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -52,6 +53,7 @@ const std::chrono::seconds Cache::download_timeout_{60};
 Cache::Cache(
     const api::Session& api,
     const internal::Manager& node,
+    const internal::Config& config,
     database::Block& db,
     const blockchain::Type chain,
     allocator_type alloc) noexcept
@@ -59,6 +61,23 @@ Cache::Cache(
     , node_(node)
     , db_(db)
     , chain_(chain)
+    , save_blocks_([&] {
+        switch (config.profile_) {
+            case BlockchainProfile::mobile: {
+
+                return false;
+            }
+            case BlockchainProfile::desktop:
+            case BlockchainProfile::desktop_native:
+            case BlockchainProfile::server: {
+
+                return true;
+            }
+            default: {
+                OT_FAIL;
+            }
+        }
+    }())
     , block_available_([&] {
         using Type = opentxs::network::zeromq::socket::Type;
         auto out = api.Network().ZeroMQ().Internal().RawSocket(Type::Push);
@@ -274,7 +293,7 @@ auto Cache::ReceiveBlock(
 
     const auto& block = *in;
 
-    if (database::BlockStorage::None != db_.BlockPolicy()) {
+    if (save_blocks_) {
         const auto saved = db_.BlockStore(block);
 
         OT_ASSERT(saved);

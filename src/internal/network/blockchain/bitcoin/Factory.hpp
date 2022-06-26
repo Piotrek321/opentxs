@@ -9,7 +9,6 @@
 #include <memory>
 #include <string_view>
 
-#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/network/blockchain/Peer.hpp"
 
@@ -70,7 +69,6 @@ auto BlockchainPeerBitcoin(
     const blockchain::node::FilterOracle& filter,
     const blockchain::p2p::bitcoin::Nonce& nonce,
     blockchain::database::Peer& database,
-    blockchain::database::BlockStorage policy,
     int peerID,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
     std::string_view fromParent)

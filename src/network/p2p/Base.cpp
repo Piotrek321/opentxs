@@ -85,13 +85,13 @@ namespace opentxs::network::p2p
 Base::Imp::Imp(
     VersionNumber version,
     MessageType type,
-    UnallocatedVector<State> state,
-    UnallocatedCString endpoint,
-    UnallocatedVector<Block> blocks) noexcept
+    StateData state,
+    std::string_view endpoint,
+    SyncData blocks) noexcept
     : version_(version)
     , type_(type)
     , state_(std::move(state))
-    , endpoint_(std::move(endpoint))
+    , endpoint_(endpoint)
     , blocks_(std::move(blocks))
 {
 }

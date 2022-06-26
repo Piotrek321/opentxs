@@ -9,6 +9,7 @@
 #pragma once
 
 #include <memory>
+#include <string_view>
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -84,10 +85,10 @@ namespace opentxs::factory
 auto BlockchainSyncAcknowledgement() noexcept -> network::p2p::Acknowledgement;
 auto BlockchainSyncAcknowledgement(
     network::p2p::StateData in,
-    UnallocatedCString endpoint) noexcept -> network::p2p::Acknowledgement;
+    std::string_view endpoint) noexcept -> network::p2p::Acknowledgement;
 auto BlockchainSyncAcknowledgement_p(
     network::p2p::StateData in,
-    UnallocatedCString endpoint) noexcept
+    std::string_view endpoint) noexcept
     -> std::unique_ptr<network::p2p::Acknowledgement>;
 auto BlockchainSyncData() noexcept -> network::p2p::Data;
 auto BlockchainSyncData(

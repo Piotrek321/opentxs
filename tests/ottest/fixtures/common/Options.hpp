@@ -28,14 +28,14 @@ struct OptionsData {
     ot::Set<ot::CString> blockchain_bind_ipv4_;
     ot::Set<ot::CString> blockchain_bind_ipv6_;
     ot::Set<opentxs::blockchain::Type> blockchain_disabled_chains_;
-    int blockchain_storage_level_;
+    ot::BlockchainProfile blockchain_profile_;
     bool blockchain_sync_server_enabled_;
     ot::Set<ot::CString> blockchain_sync_servers_;
     bool blockchain_wallet_enabled_;
     bool experimental_;
     ot::CString home_;
-    opentxs::Options::ConnectionMode ipv4_connection_mode_;
-    opentxs::Options::ConnectionMode ipv6_connection_mode_;
+    opentxs::ConnectionMode ipv4_connection_mode_;
+    opentxs::ConnectionMode ipv6_connection_mode_;
     ot::CString log_endpoint_;
     int log_level_;
     std::size_t mint_key_bytes_;

@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/p2p/Block.hpp"
+#include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -83,15 +84,14 @@ namespace opentxs::blockchain::database::implementation
 class Sync
 {
 public:
-    using Items = UnallocatedVector<network::p2p::Block>;
     using Message = network::p2p::Data;
 
     auto Load(const block::Height height, Message& output) const noexcept
         -> bool;
     auto Reorg(const block::Height height) const noexcept -> bool;
     auto SetTip(const block::Position& position) const noexcept -> bool;
-    auto Store(const block::Position& tip, const Items& items) const noexcept
-        -> bool;
+    auto Store(const block::Position& tip, const network::p2p::SyncData& items)
+        const noexcept -> bool;
     auto Tip() const noexcept -> block::Position;
 
     Sync(

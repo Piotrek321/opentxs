@@ -11,7 +11,6 @@
 #include <string_view>
 
 #include "blockchain/bitcoin/Inventory.hpp"
-#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/network/blockchain/Peer.hpp"
@@ -126,7 +125,6 @@ public:
         const opentxs::blockchain::p2p::bitcoin::Nonce& nonce,
         opentxs::blockchain::database::Peer& database,
         opentxs::blockchain::Type chain,
-        opentxs::blockchain::database::BlockStorage policy,
         int peerID,
         std::unique_ptr<opentxs::blockchain::p2p::internal::Address> address,
         opentxs::blockchain::p2p::bitcoin::ProtocolVersion protocol,
@@ -183,7 +181,6 @@ private:
     static constexpr auto max_inv_ = 50000_uz;
 
     const opentxs::blockchain::node::internal::Mempool& mempool_;
-    const opentxs::blockchain::database::BlockStorage policy_;
     const CString user_agent_;
     const bool peer_cfilter_;
     const opentxs::blockchain::p2p::bitcoin::Nonce nonce_;
@@ -199,7 +196,7 @@ private:
     static auto get_local_services(
         const opentxs::blockchain::p2p::bitcoin::ProtocolVersion version,
         const opentxs::blockchain::Type network,
-        const opentxs::blockchain::database::BlockStorage policy) noexcept
+        const opentxs::blockchain::node::internal::Config& config) noexcept
         -> UnallocatedSet<opentxs::blockchain::p2p::Service>;
 
     template <typename Incoming, typename... Args>

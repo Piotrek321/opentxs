@@ -12,6 +12,8 @@
 
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/BlockchainProfile.hpp"
+#include "opentxs/util/ConnectionMode.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
 
@@ -24,7 +26,7 @@ struct Options::Imp final {
     Set<blockchain::Type> blockchain_disabled_chains_;
     Set<CString> blockchain_ipv4_bind_;
     Set<CString> blockchain_ipv6_bind_;
-    std::optional<int> blockchain_storage_level_;
+    std::optional<opentxs::BlockchainProfile> blockchain_profile_;
     std::optional<bool> blockchain_sync_server_enabled_;
     Set<CString> blockchain_sync_servers_;
     std::optional<bool> blockchain_wallet_enabled_;

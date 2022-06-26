@@ -12,9 +12,7 @@
 
 #include "internal/network/p2p/Factory.hpp"
 #include "network/p2p/Base.hpp"
-#include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
-#include "opentxs/network/p2p/State.hpp"
 
 namespace opentxs::factory
 {

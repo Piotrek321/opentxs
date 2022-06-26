@@ -10,6 +10,7 @@
 #include "opentxs/network/p2p/Base.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <string_view>
 
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
@@ -53,9 +54,9 @@ public:
 
     const VersionNumber version_;
     const MessageType type_;
-    const UnallocatedVector<State> state_;
+    const StateData state_;
     const UnallocatedCString endpoint_;
-    const UnallocatedVector<Block> blocks_;
+    const SyncData blocks_;
 
     static auto translate(const LocalType in) noexcept -> RemoteType;
     static auto translate(const RemoteType in) noexcept -> LocalType;
@@ -78,9 +79,9 @@ public:
 
     Imp(VersionNumber version,
         MessageType type,
-        UnallocatedVector<State> state,
-        UnallocatedCString endpoint,
-        UnallocatedVector<Block> blocks) noexcept;
+        StateData state,
+        std::string_view endpoint,
+        SyncData blocks) noexcept;
     Imp(const MessageType type) noexcept;
     Imp() noexcept;
     Imp(const Imp&) = delete;

@@ -2685,7 +2685,7 @@ auto Test_HeaderOracle_base::init_network(
 {
     static const auto config = [] {
         auto output = ot::blockchain::node::internal::Config{};
-        output.download_cfilters_ = true;
+        output.profile_ = ot::BlockchainProfile::desktop_native;
 
         return output;
     }();

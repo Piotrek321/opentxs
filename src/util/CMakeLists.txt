@@ -33,6 +33,7 @@ target_sources(
     "Backoff.hpp"
     "Blank.hpp"
     "Bytes.cpp"
+    "Common.cpp"
     "Container.hpp"
     "Exclusive.tpp"
     "Flag.cpp"
@@ -75,7 +76,9 @@ target_include_directories(
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Allocated.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Allocator.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/BlockchainProfile.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Bytes.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/ConnectionMode.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Container.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Iterator.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Log.hpp"

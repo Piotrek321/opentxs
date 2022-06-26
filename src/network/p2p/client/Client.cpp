@@ -599,9 +599,9 @@ auto Client::Imp::process_external(Message&& msg) noexcept -> void
             } break;
             default: {
                 const auto error =
-                    CString{} +
-                    "Unsupported message type on external socket: " +
-                    opentxs::print(type).c_str();
+                    CString{}
+                        .append("Unsupported message type on external socket: ")
+                        .append(print(type));
 
                 throw std::runtime_error{error.c_str()};
             }
@@ -824,9 +824,10 @@ auto Client::Imp::process_response(Message&& msg) noexcept -> void
             case Type::publish_contract:
             case Type::contract_query:
             default: {
-                throw std::runtime_error{
-                    UnallocatedCString{"Unsupported response type "} +
-                    opentxs::print(type)};
+                const auto error =
+                    CString{"Unsupported response type "}.append(print(type));
+
+                throw std::runtime_error{error.c_str()};
             }
         }
     } catch (const std::exception& e) {

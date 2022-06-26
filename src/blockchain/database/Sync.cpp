@@ -84,8 +84,9 @@ auto Sync::SetTip(const block::Position& position) const noexcept -> bool
         .first;
 }
 
-auto Sync::Store(const block::Position& tip, const Items& items) const noexcept
-    -> bool
+auto Sync::Store(
+    const block::Position& tip,
+    const network::p2p::SyncData& items) const noexcept -> bool
 {
     if (!common_.StoreSync(chain_, items)) {
         LogError()(OT_PRETTY_CLASS())("Failed to store sync data").Flush();

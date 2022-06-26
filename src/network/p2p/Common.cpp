@@ -16,37 +16,10 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 
-namespace opentxs
-{
-using Type = network::p2p::MessageType;
-
-auto print(Type value) noexcept -> UnallocatedCString
-{
-    static const auto map =
-        robin_hood::unordered_flat_map<Type, UnallocatedCString>{
-            {Type::sync_request, "sync request"},
-            {Type::sync_ack, "sync acknowledgment"},
-            {Type::sync_reply, "sync reply"},
-            {Type::new_block_header, "sync push"},
-            {Type::query, "sync query"},
-            {Type::publish_contract, "publish contract"},
-            {Type::publish_ack, "publish acknowledgment"},
-            {Type::contract_query, "contract query"},
-            {Type::contract, "contract reply"},
-        };
-
-    try {
-
-        return map.at(value);
-    } catch (...) {
-
-        return "error";
-    }
-}
-}  // namespace opentxs
-
 namespace opentxs::network::p2p
 {
+using namespace std::literals;
+
 auto print(Job job) noexcept -> std::string_view
 {
     try {
@@ -77,6 +50,31 @@ auto print(Job job) noexcept -> std::string_view
             .Flush();
 
         OT_FAIL;
+    }
+}
+
+auto print(MessageType value) noexcept -> std::string_view
+{
+    using Type = MessageType;
+    static const auto map =
+        robin_hood::unordered_flat_map<Type, std::string_view>{
+            {Type::sync_request, "sync request"sv},
+            {Type::sync_ack, "sync acknowledgment"sv},
+            {Type::sync_reply, "sync reply"sv},
+            {Type::new_block_header, "sync push"sv},
+            {Type::query, "sync query"sv},
+            {Type::publish_contract, "publish contract"sv},
+            {Type::publish_ack, "publish acknowledgment"sv},
+            {Type::contract_query, "contract query"sv},
+            {Type::contract, "contract reply"sv},
+        };
+
+    try {
+
+        return map.at(value);
+    } catch (...) {
+
+        return "error"sv;
     }
 }
 }  // namespace opentxs::network::p2p

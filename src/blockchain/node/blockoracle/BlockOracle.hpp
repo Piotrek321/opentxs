@@ -82,6 +82,7 @@ namespace internal
 {
 class BlockBatch;
 class Manager;
+struct Config;
 }  // namespace internal
 
 class HeaderOracle;
@@ -141,6 +142,7 @@ public:
 
     Imp(const api::Session& api,
         const internal::Manager& node,
+        const internal::Config& config,
         const node::HeaderOracle& header,
         database::Block& db,
         const blockchain::Type chain,
@@ -181,6 +183,7 @@ private:
 
     Imp(const api::Session& api,
         const internal::Manager& node,
+        const internal::Config& config,
         const node::HeaderOracle& header,
         database::Block& db,
         const blockchain::Type chain,

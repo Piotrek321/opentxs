@@ -21,6 +21,8 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/BlockchainProfile.hpp"
+#include "opentxs/util/ConnectionMode.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -36,7 +38,7 @@ struct Options::Imp::Parser {
     static constexpr auto blockchain_disable_{"disable_blockchain"};
     static constexpr auto blockchain_ipv4_bind_{"blockchain_bind_ipv4"};
     static constexpr auto blockchain_ipv6_bind_{"blockchain_bind_ipv6"};
-    static constexpr auto blockchain_storage_{"blockchain_storage"};
+    static constexpr auto blockchain_profile_{"blockchain_profile"};
     static constexpr auto blockchain_sync_provide_{"provide_sync_server"};
     static constexpr auto blockchain_sync_connect_{"blockchain_sync_server"};
     static constexpr auto blockchain_wallet_enable_{"blockchain_wallet"};
@@ -82,11 +84,12 @@ struct Options::Imp::Parser {
                 "Local ipv6 addresses to bind for incoming blockchain "
                 "connections");
             out.add_options()(
-                blockchain_storage_,
+                blockchain_profile_,
                 po::value<int>(),
-                "Blockchain block persistence level.\n    0: do not save any "
-                "blocks\n    1: save blocks downloaded by the wallet\n    2: "
-                "download and save all blocks");
+                "Blockchain operational mode.\n    0: mobile mode\n    1: "
+                "desktop mode\n    2: desktop native mode (does not use DHT "
+                "for cfilters, not available on all chains)\n    3: server "
+                "mode (downloads complete blockchain)");
             out.add_options()(
                 blockchain_sync_provide_,
                 po::value<bool>()->implicit_value(true),
@@ -203,7 +206,7 @@ Options::Imp::Imp() noexcept
     : blockchain_disabled_chains_()
     , blockchain_ipv4_bind_()
     , blockchain_ipv6_bind_()
-    , blockchain_storage_level_(std::nullopt)
+    , blockchain_profile_(std::nullopt)
     , blockchain_sync_server_enabled_(std::nullopt)
     , blockchain_sync_servers_()
     , blockchain_wallet_enabled_(std::nullopt)
@@ -302,8 +305,25 @@ auto Options::Imp::import_value(
             blockchain_ipv4_bind_.emplace(value);
         } else if (0 == key.compare(Parser::blockchain_ipv6_bind_)) {
             blockchain_ipv6_bind_.emplace(value);
-        } else if (0 == key.compare(Parser::blockchain_storage_)) {
-            blockchain_storage_level_ = std::stoi(sValue);
+        } else if (0 == key.compare(Parser::blockchain_profile_)) {
+            using Type = opentxs::BlockchainProfile;
+
+            switch (std::stoi(sValue)) {
+                case 0: {
+                    blockchain_profile_ = Type::mobile;
+                } break;
+                case 1: {
+                    blockchain_profile_ = Type::desktop;
+                } break;
+                case 2: {
+                    blockchain_profile_ = Type::desktop_native;
+                } break;
+                case 3: {
+                    blockchain_profile_ = Type::server;
+                } break;
+                default: {
+                }
+            }
         } else if (0 == key.compare(Parser::blockchain_sync_provide_)) {
             blockchain_sync_server_enabled_ = to_bool(value);
 
@@ -416,9 +436,26 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
                 }
             } catch (...) {
             }
-        } else if (name == Parser::blockchain_storage_) {
+        } else if (name == Parser::blockchain_profile_) {
             try {
-                blockchain_storage_level_ = value.as<int>();
+                using Type = opentxs::BlockchainProfile;
+
+                switch (value.as<int>()) {
+                    case 0: {
+                        blockchain_profile_ = Type::mobile;
+                    } break;
+                    case 1: {
+                        blockchain_profile_ = Type::desktop;
+                    } break;
+                    case 2: {
+                        blockchain_profile_ = Type::desktop_native;
+                    } break;
+                    case 3: {
+                        blockchain_profile_ = Type::server;
+                    } break;
+                    default: {
+                    }
+                }
             } catch (...) {
             }
         } else if (name == Parser::blockchain_sync_provide_) {
@@ -603,8 +640,8 @@ auto operator+(const Options& lhs, const Options& rhs) noexcept -> Options
         r.blockchain_ipv6_bind_.end(),
         std::inserter(l.blockchain_ipv6_bind_, l.blockchain_ipv6_bind_.end()));
 
-    if (const auto& v = r.blockchain_storage_level_; v.has_value()) {
-        l.blockchain_storage_level_ = v.value();
+    if (const auto& v = r.blockchain_profile_; v.has_value()) {
+        l.blockchain_profile_ = v.value();
     }
 
     if (const auto& v = r.blockchain_sync_server_enabled_; v.has_value()) {
@@ -791,9 +828,10 @@ auto Options::BlockchainBindIpv6() const noexcept -> const Set<CString>&
     return imp_->blockchain_ipv6_bind_;
 }
 
-auto Options::BlockchainStorageLevel() const noexcept -> int
+auto Options::BlockchainProfile() const noexcept -> opentxs::BlockchainProfile
 {
-    return Imp::get(imp_->blockchain_storage_level_);
+    return Imp::get(
+        imp_->blockchain_profile_, opentxs::BlockchainProfile::desktop);
 }
 
 auto Options::BlockchainWalletEnabled() const noexcept -> bool
@@ -942,9 +980,10 @@ auto Options::RemoteLogEndpoint() const noexcept -> std::string_view
     return Imp::get(imp_->log_endpoint_);
 }
 
-auto Options::SetBlockchainStorageLevel(int value) noexcept -> Options&
+auto Options::SetBlockchainProfile(opentxs::BlockchainProfile value) noexcept
+    -> Options&
 {
-    imp_->blockchain_storage_level_ = value;
+    imp_->blockchain_profile_ = value;
 
     return *this;
 }

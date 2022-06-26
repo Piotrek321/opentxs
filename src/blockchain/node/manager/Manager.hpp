@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/util/BlockchainProfile.hpp"
+
 #pragma once
 
 #include <atomic>
@@ -11,6 +13,7 @@
 #include <iosfwd>
 #include <memory>
 #include <mutex>
+#include <string_view>
 #include <utility>
 
 #include "blockchain/node/Mempool.hpp"
@@ -51,6 +54,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
@@ -217,6 +221,7 @@ public:
         return mempool_;
     }
     auto PeerTarget() const noexcept -> std::size_t final;
+    auto Profile() const noexcept -> BlockchainProfile final;
     auto Reorg() const noexcept
         -> const network::zeromq::socket::Publish& final;
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;
@@ -272,10 +277,10 @@ protected:
     auto shut_down() noexcept -> void;
 
 private:
+    const node::internal::Config& config_;
     const cfilter::Type filter_type_;
     opentxs::internal::ShutdownSender shutdown_sender_;
     std::unique_ptr<blockchain::database::Database> database_p_;
-    const node::internal::Config& config_;
     node::Mempool mempool_;
     std::unique_ptr<node::HeaderOracle> header_p_;
 
@@ -302,8 +307,8 @@ protected:
         const api::Session& api,
         const Type type,
         const node::internal::Config& config,
-        const UnallocatedCString& seednode,
-        const UnallocatedCString& syncEndpoint) noexcept;
+        std::string_view seednode,
+        std::string_view syncEndpoint) noexcept;
 
 private:
     friend Worker<api::Session>;

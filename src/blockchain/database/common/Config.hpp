@@ -14,6 +14,7 @@
 #include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
+#include <string_view>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -21,6 +22,7 @@
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
@@ -60,13 +62,11 @@ namespace opentxs::blockchain::database::common
 class Configuration
 {
 public:
-    using Endpoints = UnallocatedVector<UnallocatedCString>;
+    using Endpoints = Vector<CString>;
 
-    auto AddSyncServer(const UnallocatedCString& endpoint) const noexcept
-        -> bool;
-    auto DeleteSyncServer(const UnallocatedCString& endpoint) const noexcept
-        -> bool;
-    auto GetSyncServers() const noexcept -> Endpoints;
+    auto AddSyncServer(std::string_view endpoint) const noexcept -> bool;
+    auto DeleteSyncServer(std::string_view endpoint) const noexcept -> bool;
+    auto GetSyncServers(alloc::Default alloc) const noexcept -> Endpoints;
 
     Configuration(const api::Session& api, storage::lmdb::LMDB& lmdb) noexcept;
 

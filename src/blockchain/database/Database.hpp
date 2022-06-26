@@ -52,6 +52,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -202,10 +203,6 @@ public:
         -> std::shared_ptr<const bitcoin::block::Block> final
     {
         return blocks_.LoadBitcoin(block);
-    }
-    auto BlockPolicy() const noexcept -> database::BlockStorage final
-    {
-        return common_.BlockPolicy();
     }
     auto BlockStore(const block::Block& block) noexcept -> bool final
     {
@@ -521,8 +518,9 @@ public:
     {
         return filters_.StoreHeaders(type, std::move(headers));
     }
-    auto StoreSync(const block::Position& tip, const Items& items) noexcept
-        -> bool final
+    auto StoreSync(
+        const block::Position& tip,
+        const network::p2p::SyncData& items) noexcept -> bool final
     {
         return sync_.Store(tip, items);
     }

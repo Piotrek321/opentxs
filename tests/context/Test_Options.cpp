@@ -14,8 +14,8 @@ constexpr auto bind_ipv6_1_{"::1"};
 constexpr auto bind_ipv6_2_{"::"};
 constexpr auto blockchain_1_{opentxs::blockchain::Type::Bitcoin};
 constexpr auto blockchain_2_{opentxs::blockchain::Type::Litecoin};
-constexpr auto blockchain_storage_level_1_{1};
-constexpr auto blockchain_storage_level_2_{3};
+constexpr auto blockchain_profile_1_{opentxs::BlockchainProfile::mobile};
+constexpr auto blockchain_profile_2_{opentxs::BlockchainProfile::server};
 constexpr auto blockchain_sync_enabled_1_{true};
 constexpr auto blockchain_sync_enabled_2_{false};
 constexpr auto blockchain_wallet_enabled_1_{false};
@@ -24,10 +24,10 @@ constexpr auto experimental_1_{true};
 constexpr auto experimental_2_{false};
 constexpr auto home_1_{"/home/user1/.opentxs"};
 constexpr auto home_2_{"/home/user2/.opentxs"};
-constexpr auto ipv4_connection_mode_1_{opentxs::Options::ConnectionMode::off};
-constexpr auto ipv4_connection_mode_2_{opentxs::Options::ConnectionMode::on};
-constexpr auto ipv6_connection_mode_1_{opentxs::Options::ConnectionMode::on};
-constexpr auto ipv6_connection_mode_2_{opentxs::Options::ConnectionMode::off};
+constexpr auto ipv4_connection_mode_1_{opentxs::ConnectionMode::off};
+constexpr auto ipv4_connection_mode_2_{opentxs::ConnectionMode::on};
+constexpr auto ipv6_connection_mode_1_{opentxs::ConnectionMode::on};
+constexpr auto ipv6_connection_mode_2_{opentxs::ConnectionMode::off};
 constexpr auto log_endpoint_1_{"inproc://send_logs_here_plz"};
 constexpr auto log_endpoint_2_{"inproc://actually_send_them_here"};
 constexpr auto log_level_1_{2};
@@ -71,14 +71,14 @@ TEST(Options, default_values)
         {},
         {},
         {},
-        0,
+        opentxs::BlockchainProfile::desktop,
         false,
         {},
         true,
         false,
         "",
-        opentxs::Options::ConnectionMode::automatic,
-        opentxs::Options::ConnectionMode::automatic,
+        opentxs::ConnectionMode::automatic,
+        opentxs::ConnectionMode::automatic,
         "",
         0,
         1536,
@@ -110,7 +110,7 @@ TEST(Options, setters)
             .AddNotaryPublicIPv6(notary_public_ipv6_1_)
             .AddNotaryPublicOnion(notary_public_opion_1_)
             .DisableBlockchain(blockchain_1_)
-            .SetBlockchainStorageLevel(blockchain_storage_level_1_)
+            .SetBlockchainProfile(blockchain_profile_1_)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
             .SetDefaultMintKeyBytes(mint_key_bytes_1_)
@@ -139,7 +139,7 @@ TEST(Options, setters)
             .AddNotaryPublicIPv6(notary_public_ipv6_2_)
             .AddNotaryPublicOnion(notary_public_opion_2_)
             .DisableBlockchain(blockchain_2_)
-            .SetBlockchainStorageLevel(blockchain_storage_level_2_)
+            .SetBlockchainProfile(blockchain_profile_2_)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
             .SetDefaultMintKeyBytes(mint_key_bytes_2_)
@@ -162,7 +162,7 @@ TEST(Options, setters)
         {bind_ipv4_1_},
         {bind_ipv6_1_},
         {blockchain_1_},
-        blockchain_storage_level_1_,
+        blockchain_profile_1_,
         blockchain_sync_enabled_1_,
         {sync_server_1_},
         blockchain_wallet_enabled_1_,
@@ -189,7 +189,7 @@ TEST(Options, setters)
         {bind_ipv4_1_, bind_ipv4_2_},
         {bind_ipv6_1_, bind_ipv6_2_},
         {blockchain_1_, blockchain_2_},
-        blockchain_storage_level_2_,
+        blockchain_profile_2_,
         blockchain_sync_enabled_2_,
         {sync_server_1_, sync_server_2_},
         blockchain_wallet_enabled_2_,
@@ -229,7 +229,7 @@ TEST(Options, merge)
             .AddNotaryPublicIPv4(notary_public_ipv4_1_)
             .AddNotaryPublicIPv6(notary_public_ipv6_1_)
             .AddNotaryPublicOnion(notary_public_opion_1_)
-            .SetBlockchainStorageLevel(blockchain_storage_level_1_)
+            .SetBlockchainProfile(blockchain_profile_1_)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_1_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_1_)
             .SetDefaultMintKeyBytes(mint_key_bytes_1_)
@@ -257,7 +257,7 @@ TEST(Options, merge)
             .AddNotaryPublicIPv6(notary_public_ipv6_2_)
             .AddNotaryPublicOnion(notary_public_opion_2_)
             .DisableBlockchain(blockchain_2_)
-            .SetBlockchainStorageLevel(blockchain_storage_level_2_)
+            .SetBlockchainProfile(blockchain_profile_2_)
             .SetBlockchainSyncEnabled(blockchain_sync_enabled_2_)
             .SetBlockchainWalletEnabled(blockchain_wallet_enabled_2_)
             .SetDefaultMintKeyBytes(mint_key_bytes_2_)
@@ -281,7 +281,7 @@ TEST(Options, merge)
         {bind_ipv4_1_},
         {bind_ipv6_1_},
         {},
-        blockchain_storage_level_1_,
+        blockchain_profile_1_,
         blockchain_sync_enabled_1_,
         {},
         blockchain_wallet_enabled_1_,
@@ -308,7 +308,7 @@ TEST(Options, merge)
         {bind_ipv4_1_, bind_ipv4_2_},
         {bind_ipv6_1_, bind_ipv6_2_},
         {blockchain_2_},
-        blockchain_storage_level_2_,
+        blockchain_profile_2_,
         blockchain_sync_enabled_2_,
         {sync_server_2_},
         blockchain_wallet_enabled_2_,
@@ -335,7 +335,7 @@ TEST(Options, merge)
         {bind_ipv4_2_},
         {bind_ipv6_2_},
         {blockchain_2_},
-        blockchain_storage_level_2_,
+        blockchain_profile_2_,
         blockchain_sync_enabled_2_,
         {sync_server_2_},
         blockchain_wallet_enabled_2_,

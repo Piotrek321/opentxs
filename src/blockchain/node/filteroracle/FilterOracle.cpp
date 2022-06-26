@@ -54,6 +54,7 @@
 #include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/BlockchainProfile.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -151,52 +152,81 @@ FilterOracle::FilterOracle(
         new_tip(lock, type, pos);
     })
     , filter_downloader_([&]() -> std::unique_ptr<FilterDownloader> {
-        if (config.download_cfilters_) {
-            return std::make_unique<FilterDownloader>(
-                api,
-                database_,
-                header_,
-                node_,
-                chain,
-                default_type_,
-                shutdown,
-                cb_);
-        } else {
-            return {};
+        switch (config.profile_) {
+            case BlockchainProfile::desktop_native: {
+
+                return std::make_unique<FilterDownloader>(
+                    api,
+                    database_,
+                    header_,
+                    node_,
+                    chain,
+                    default_type_,
+                    shutdown,
+                    cb_);
+            }
+            case BlockchainProfile::mobile:
+            case BlockchainProfile::desktop:
+            case BlockchainProfile::server: {
+
+                return {};
+            }
+            default: {
+                OT_FAIL;
+            }
         }
     }())
     , header_downloader_([&]() -> std::unique_ptr<HeaderDownloader> {
-        if (config.download_cfilters_) {
-            return std::make_unique<HeaderDownloader>(
-                api,
-                database_,
-                header_,
-                node_,
-                *filter_downloader_,
-                chain,
-                default_type_,
-                shutdown,
-                [&](const auto& position, const auto& header) {
-                    return compare_header_to_checkpoint(position, header);
-                });
-        } else {
-            return {};
+        switch (config.profile_) {
+            case BlockchainProfile::desktop_native: {
+
+                return std::make_unique<HeaderDownloader>(
+                    api,
+                    database_,
+                    header_,
+                    node_,
+                    *filter_downloader_,
+                    chain,
+                    default_type_,
+                    shutdown,
+                    [&](const auto& position, const auto& header) {
+                        return compare_header_to_checkpoint(position, header);
+                    });
+            }
+            case BlockchainProfile::mobile:
+            case BlockchainProfile::desktop:
+            case BlockchainProfile::server: {
+
+                return {};
+            }
+            default: {
+                OT_FAIL;
+            }
         }
     }())
     , block_indexer_([&]() -> std::unique_ptr<filteroracle::BlockIndexer> {
-        if (config.generate_cfilters_) {
-            return std::make_unique<filteroracle::BlockIndexer>(
-                api,
-                node_,
-                *this,
-                database_,
-                filteroracle::NotifyCallback{cb_},
-                chain,
-                default_type_,
-                shutdown);
-        } else {
+        switch (config.profile_) {
+            case BlockchainProfile::server: {
 
-            return {};
+                return std::make_unique<filteroracle::BlockIndexer>(
+                    api,
+                    node_,
+                    *this,
+                    database_,
+                    filteroracle::NotifyCallback{cb_},
+                    chain,
+                    default_type_,
+                    shutdown);
+            }
+            case BlockchainProfile::mobile:
+            case BlockchainProfile::desktop:
+            case BlockchainProfile::desktop_native: {
+
+                return {};
+            }
+            default: {
+                OT_FAIL;
+            }
         }
     }())
     , last_sync_progress_()

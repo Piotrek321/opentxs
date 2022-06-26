@@ -11,8 +11,26 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <string_view>
 
 #include "opentxs/util/Container.hpp"
+
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+namespace network
+{
+namespace p2p
+{
+class Block;
+class State;
+}  // namespace p2p
+}  // namespace network
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::network::p2p
 {
@@ -20,20 +38,13 @@ using TypeEnum = std::uint32_t;
 
 enum class MessageType : TypeEnum;
 
-class Block;
-class State;
+using StateData = Vector<p2p::State>;
+using SyncData = Vector<p2p::Block>;
 
-using StateData = UnallocatedVector<p2p::State>;
-using SyncData = UnallocatedVector<p2p::Block>;
-}  // namespace opentxs::network::p2p
+OPENTXS_EXPORT auto print(MessageType in) noexcept -> std::string_view;
 
-namespace opentxs
+constexpr auto value(MessageType type) noexcept
 {
-OPENTXS_EXPORT auto print(network::p2p::MessageType in) noexcept
-    -> UnallocatedCString;
-
-constexpr auto value(network::p2p::MessageType type) noexcept
-{
-    return static_cast<network::p2p::TypeEnum>(type);
+    return static_cast<TypeEnum>(type);
 }
-}  // namespace opentxs
+}  // namespace opentxs::network::p2p

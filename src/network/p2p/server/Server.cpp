@@ -206,8 +206,8 @@ auto Server::Imp::process_external(zeromq::Message&& incoming) noexcept -> void
             } break;
             default: {
                 throw std::runtime_error{
-                    UnallocatedCString{"Unsupported message type "} +
-                    opentxs::print(type)};
+                    UnallocatedCString{"Unsupported message type "}.append(
+                        print(type))};
             }
         }
     } catch (const std::exception& e) {
@@ -274,9 +274,10 @@ auto Server::Imp::process_sync(
         {
             const auto ack = [&] {
                 auto lock = Lock{map_lock_};
+                // TODO allocator
 
                 return factory::BlockchainSyncAcknowledgement(
-                    api_.Network().Blockchain().Internal().Hello(),
+                    api_.Network().Blockchain().Internal().Hello({}),
                     update_public_endpoint_);
             }();
             auto msg = zeromq::reply_to_message(incoming);

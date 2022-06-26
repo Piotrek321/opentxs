@@ -9,11 +9,11 @@
 
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 
 #include "internal/network/p2p/Factory.hpp"
 #include "network/p2p/Base.hpp"
-#include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/util/Container.hpp"
@@ -29,25 +29,23 @@ auto BlockchainSyncAcknowledgement() noexcept -> network::p2p::Acknowledgement
 
 auto BlockchainSyncAcknowledgement(
     network::p2p::StateData in,
-    UnallocatedCString endpoint) noexcept -> network::p2p::Acknowledgement
+    std::string_view endpoint) noexcept -> network::p2p::Acknowledgement
 {
     using ReturnType = network::p2p::Acknowledgement;
 
     return {
-        std::make_unique<ReturnType::Imp>(std::move(in), std::move(endpoint))
-            .release()};
+        std::make_unique<ReturnType::Imp>(std::move(in), endpoint).release()};
 }
 
 auto BlockchainSyncAcknowledgement_p(
     network::p2p::StateData in,
-    UnallocatedCString endpoint) noexcept
+    std::string_view endpoint) noexcept
     -> std::unique_ptr<network::p2p::Acknowledgement>
 {
     using ReturnType = network::p2p::Acknowledgement;
 
     return std::make_unique<ReturnType>(
-        std::make_unique<ReturnType::Imp>(std::move(in), std::move(endpoint))
-            .release());
+        std::make_unique<ReturnType::Imp>(std::move(in), endpoint).release());
 }
 }  // namespace opentxs::factory
 
@@ -74,12 +72,12 @@ public:
         , parent_(nullptr)
     {
     }
-    Imp(StateData state, UnallocatedCString endpoint) noexcept
+    Imp(StateData state, std::string_view endpoint) noexcept
         : Base::Imp(
               Base::Imp::default_version_,
               MessageType::sync_ack,
               std::move(state),
-              std::move(endpoint),
+              UnallocatedCString{endpoint},
               {})
         , parent_(nullptr)
     {

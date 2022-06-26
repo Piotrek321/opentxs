@@ -41,7 +41,6 @@ extern "C" {
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
@@ -63,7 +62,6 @@ struct Database::Imp {
     const OTString blocks_path_;
     storage::lmdb::LMDB lmdb_;
     Bulk bulk_;
-    const BlockStorage block_policy_;
     const SiphashKey siphash_key_;
     BlockHeader headers_;
     Peers peers_;
@@ -76,76 +74,6 @@ struct Database::Imp {
     static auto block_storage_enabled() noexcept -> bool
     {
         return 1 == storage_enabled_;
-    }
-    static auto block_storage_level(
-        const Options& args,
-        storage::lmdb::LMDB& lmdb) noexcept -> BlockStorage
-    {
-        if (false == block_storage_enabled()) { return BlockStorage::None; }
-
-        auto output = block_storage_level_default();
-        const auto arg = block_storage_level_arg(args);
-
-        if (arg.has_value()) { output = arg.value(); }
-
-        const auto db = block_storage_level_configured(lmdb);
-
-        if (db.has_value()) { output = std::max(output, db.value()); }
-
-        if ((false == db.has_value()) || (output != db.value())) {
-            lmdb.Store(
-                Table::Config, tsv(Key::BlockStoragePolicy), tsv(output));
-        }
-
-        return output;
-    }
-    static auto block_storage_level_arg(const Options& options) noexcept
-        -> std::optional<BlockStorage>
-    {
-        switch (options.BlockchainStorageLevel()) {
-            case 2: {
-                return BlockStorage::All;
-            }
-            case 1: {
-                return BlockStorage::Cache;
-            }
-            default: {
-                return BlockStorage::None;
-            }
-        }
-    }
-    static auto block_storage_level_configured(storage::lmdb::LMDB& db) noexcept
-        -> std::optional<BlockStorage>
-    {
-        if (false == db.Exists(Table::Config, tsv(Key::BlockStoragePolicy))) {
-            return std::nullopt;
-        }
-
-        auto output{BlockStorage::None};
-        auto cb = [&output](const auto in) {
-            if (sizeof(output) != in.size()) { return; }
-
-            std::memcpy(&output, in.data(), in.size());
-        };
-
-        if (false == db.Load(Table::Config, tsv(Key::BlockStoragePolicy), cb)) {
-            return std::nullopt;
-        }
-
-        return output;
-    }
-    static auto block_storage_level_default() noexcept -> BlockStorage
-    {
-        if (2 == default_storage_level_) {
-
-            return BlockStorage::All;
-        } else if (1 == default_storage_level_) {
-
-            return BlockStorage::Cache;
-        } else {
-
-            return BlockStorage::None;
-        }
     }
     static auto init_folder(
         const api::Legacy& legacy,
@@ -166,13 +94,13 @@ struct Database::Imp {
     }
     static auto init_storage_path(
         const api::Legacy& legacy,
-        const UnallocatedCString& dataFolder) noexcept(false) -> OTString
+        std::string_view dataFolder) noexcept(false) -> OTString
     {
         auto output = String::Factory();
 
         if (false == legacy.AppendFolder(
                          output,
-                         String::Factory(dataFolder),
+                         String::Factory(dataFolder.data(), dataFolder.size()),
                          String::Factory("blockchain"))) {
             throw std::runtime_error("Failed to calculate path");
         }
@@ -270,7 +198,7 @@ struct Database::Imp {
     Imp(const api::Session& api,
         const api::crypto::Blockchain& blockchain,
         const api::Legacy& legacy,
-        const UnallocatedCString& dataFolder,
+        const std::string_view dataFolder,
         const Options& args) noexcept(false)
         : api_(api)
         , legacy_(legacy)
@@ -322,7 +250,6 @@ struct Database::Imp {
                   return deleted.size();
               }())
         , bulk_(lmdb_, blocks_path_->Get())
-        , block_policy_(block_storage_level(args, lmdb_))
         , siphash_key_(siphash_key(lmdb_))
         , headers_(lmdb_, bulk_)
         , peers_(api_, lmdb_)
@@ -377,7 +304,7 @@ Database::Database(
     const api::Session& api,
     const api::crypto::Blockchain& blockchain,
     const api::Legacy& legacy,
-    const UnallocatedCString& dataFolder,
+    const std::string_view dataFolder,
     const Options& args) noexcept(false)
     : imp_p_(std::make_unique<Imp>(api, blockchain, legacy, dataFolder, args))
     , imp_(*imp_p_)
@@ -403,8 +330,7 @@ auto Database::AssociateTransaction(
     return imp_.wallet_.AssociateTransaction(txid, patterns);
 }
 
-auto Database::AddSyncServer(const UnallocatedCString& endpoint) const noexcept
-    -> bool
+auto Database::AddSyncServer(std::string_view endpoint) const noexcept -> bool
 {
     return imp_.config_.AddSyncServer(endpoint);
 }
@@ -424,19 +350,14 @@ auto Database::BlockLoad(const BlockHash& block) const noexcept -> BlockReader
     return imp_.blocks_.Load(block);
 }
 
-auto Database::BlockPolicy() const noexcept -> BlockStorage
-{
-    return imp_.block_policy_;
-}
-
 auto Database::BlockStore(const BlockHash& block, const std::size_t bytes)
     const noexcept -> BlockWriter
 {
     return imp_.blocks_.Store(block, bytes);
 }
 
-auto Database::DeleteSyncServer(
-    const UnallocatedCString& endpoint) const noexcept -> bool
+auto Database::DeleteSyncServer(std::string_view endpoint) const noexcept
+    -> bool
 {
     return imp_.config_.DeleteSyncServer(endpoint);
 }
@@ -449,7 +370,7 @@ auto Database::Disable(const Chain type) const noexcept -> bool
     return imp_.lmdb_.Store(Enabled, key, reader(value)).first;
 }
 
-auto Database::Enable(const Chain type, const UnallocatedCString& seednode)
+auto Database::Enable(const Chain type, std::string_view seednode)
     const noexcept -> bool
 {
     static_assert(sizeof(true_byte_) == 1);
@@ -476,9 +397,9 @@ auto Database::Find(
     return imp_.peers_.Find(chain, protocol, onNetworks, withServices);
 }
 
-auto Database::GetSyncServers() const noexcept -> Endpoints
+auto Database::GetSyncServers(alloc::Default alloc) const noexcept -> Endpoints
 {
-    return imp_.config_.GetSyncServers();
+    return imp_.config_.GetSyncServers(alloc);
 }
 
 auto Database::HashKey() const noexcept -> ReadView
@@ -648,7 +569,7 @@ auto Database::StoreFilters(
     return imp_.filters_.StoreFilters(type, headers, filters);
 }
 
-auto Database::StoreSync(const Chain chain, const SyncItems& items)
+auto Database::StoreSync(const Chain chain, const network::p2p::SyncData& items)
     const noexcept -> bool
 {
     return imp_.sync_.Store(chain, items);

@@ -7,13 +7,19 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <functional>
+#include <string_view>
 #include <tuple>
+#include <utility>
 
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
+enum class BlockchainProfile : std::uint8_t;
+enum class ConnectionMode : std::int8_t;
+
 /** A list of object IDs and their associated aliases
  *  * string: id of the stored object
  *  * string: alias of the stored object
@@ -21,4 +27,6 @@ namespace opentxs
 using ObjectList =
     UnallocatedList<std::pair<UnallocatedCString, UnallocatedCString>>;
 using SimpleCallback = std::function<void()>;
+
+auto print(BlockchainProfile) noexcept -> std::string_view;
 }  // namespace opentxs

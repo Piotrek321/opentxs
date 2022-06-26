@@ -31,7 +31,6 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/database/Peer.hpp"
-#include "internal/blockchain/database/Types.hpp"
 #include "internal/blockchain/node/BlockBatch.hpp"
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
@@ -74,6 +73,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/BlockchainProfile.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
@@ -95,7 +95,6 @@ auto BlockchainPeerBitcoin(
     const blockchain::node::FilterOracle& filter,
     const blockchain::p2p::bitcoin::Nonce& nonce,
     blockchain::database::Peer& database,
-    blockchain::database::BlockStorage policy,
     int peerID,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
     std::string_view fromParent)
@@ -136,7 +135,6 @@ auto BlockchainPeerBitcoin(
         nonce,
         database,
         chain,
-        policy,
         peerID,
         std::move(address),
         blockchain::params::Chains().at(chain).p2p_protocol_version_,
@@ -161,7 +159,6 @@ Peer::Peer(
     const opentxs::blockchain::p2p::bitcoin::Nonce& nonce,
     opentxs::blockchain::database::Peer& database,
     opentxs::blockchain::Type chain,
-    opentxs::blockchain::database::BlockStorage policy,
     int peerID,
     std::unique_ptr<opentxs::blockchain::p2p::internal::Address> address,
     opentxs::blockchain::p2p::bitcoin::ProtocolVersion protocol,
@@ -186,7 +183,6 @@ Peer::Peer(
           batch,
           alloc)
     , mempool_(mempool)
-    , policy_(policy)
     , user_agent_([&] {
         auto out = CString{get_allocator()};
         out.append("/opentxs:"sv);
@@ -195,7 +191,23 @@ Peer::Peer(
 
         return out;
     }())
-    , peer_cfilter_(config.download_cfilters_)
+    , peer_cfilter_([&] {
+        switch (config.profile_) {
+            case BlockchainProfile::desktop_native: {
+
+                return true;
+            }
+            case BlockchainProfile::mobile:
+            case BlockchainProfile::desktop:
+            case BlockchainProfile::server: {
+
+                return false;
+            }
+            default: {
+                OT_FAIL;
+            }
+        }
+    }())
     , nonce_(nonce)
     , inv_block_([&] {
         using Type = opentxs::blockchain::bitcoin::Inventory::Type;
@@ -217,7 +229,7 @@ Peer::Peer(
         }
     }())
     , protocol_((0 == protocol) ? default_protocol_version_ : protocol)
-    , local_services_(get_local_services(protocol_, chain_, policy_))
+    , local_services_(get_local_services(protocol_, chain_, config))
     , relay_(true)
     , handshake_()
     , verification_()
@@ -303,12 +315,11 @@ auto Peer::extract_body_size(const zeromq::Frame& header) const noexcept
 auto Peer::get_local_services(
     const opentxs::blockchain::p2p::bitcoin::ProtocolVersion version,
     const opentxs::blockchain::Type network,
-    const opentxs::blockchain::database::BlockStorage policy) noexcept
+    const opentxs::blockchain::node::internal::Config& config) noexcept
     -> UnallocatedSet<opentxs::blockchain::p2p::Service>
 {
     using Chain = opentxs::blockchain::Type;
     using Service = opentxs::blockchain::p2p::Service;
-    using Policy = opentxs::blockchain::database::BlockStorage;
     auto output = UnallocatedSet<opentxs::blockchain::p2p::Service>{};
 
     switch (network) {
@@ -338,16 +349,21 @@ auto Peer::get_local_services(
         }
     }
 
-    switch (policy) {
-        case Policy::All: {
-            output.emplace(Service::Network);
-            output.emplace(Service::CompactFilters);
+    switch (config.profile_) {
+        case BlockchainProfile::mobile: {
         } break;
-        case Policy::Cache: {
+        case BlockchainProfile::desktop:
+        case BlockchainProfile::desktop_native: {
             output.emplace(Service::Limited);
             output.emplace(Service::CompactFilters);
         } break;
+        case BlockchainProfile::server: {
+            output.emplace(Service::Network);
+            output.emplace(Service::CompactFilters);
+        } break;
         default: {
+
+            OT_FAIL;
         }
     }
 

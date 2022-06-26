@@ -22,7 +22,7 @@ using namespace opentxs::literals;
 class SyncServerDB : public ::testing::Test
 {
 protected:
-    using Endpoints = ot::UnallocatedVector<ot::UnallocatedCString>;
+    using Endpoints = ot::Vector<ot::CString>;
 
     static constexpr auto first_server_{"tcp://example.com:1"};
     static constexpr auto second_server_{"tcp://example.com:2"};
@@ -34,7 +34,7 @@ protected:
 
     static auto count(
         const Endpoints& endpoints,
-        const ot::UnallocatedCString& value) noexcept -> std::size_t
+        std::string_view value) noexcept -> std::size_t
     {
         return std::count(endpoints.begin(), endpoints.end(), value);
     }

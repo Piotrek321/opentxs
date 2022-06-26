@@ -11,6 +11,7 @@
 
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
+#include "opentxs/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -84,6 +85,7 @@ public:
         -> const internal::Manager& = 0;
     virtual auto Listen(const blockchain::p2p::Address& address) const noexcept
         -> bool = 0;
+    virtual auto Profile() const noexcept -> BlockchainProfile = 0;
     virtual auto SendToAddress(
         const identifier::Nym& sender,
         const UnallocatedCString& address,
