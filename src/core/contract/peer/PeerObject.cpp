@@ -186,8 +186,7 @@ auto PeerObject(
         auto input = api.Factory().Envelope(encrypted);
         auto contents = String::Factory();
 
-        if (false ==
-            input->Open(*recipientNym, contents->WriteInto(), reason)) {
+        if (!input->Open(*recipientNym, contents->WriteInto(), reason)) {
             LogError()("opentxs::factory::")(__func__)(
                 ": Unable to decrypt message")
                 .Flush();
@@ -267,7 +266,7 @@ Object::Object(
                 nym_, serialized.otrequest());
         } break;
         case (contract::peer::PeerObjectType::Response): {
-            if (false == bool(nym_)) {
+            if (!nym_) {
                 nym_ = api_.Wallet().Nym(
                     api_.Factory().NymID(serialized.otrequest().recipient()));
             }
@@ -384,7 +383,7 @@ auto Object::Serialize(proto::PeerObject& output) const noexcept -> bool
 
     auto publicNym = [&](Nym_p nym) -> proto::Nym {
         auto publicNym = proto::Nym{};
-        if (false == nym->Internal().Serialize(publicNym)) {
+        if (!nym->Internal().Serialize(publicNym)) {
             LogError()(OT_PRETTY_CLASS())("Failed to serialize nym.").Flush();
         }
         return publicNym;
@@ -419,8 +418,7 @@ auto Object::Serialize(proto::PeerObject& output) const noexcept -> bool
             output.set_version(version_);
 
             if (0 < request_->Version()) {
-                if (false ==
-                    request_->Serialize(*(output.mutable_otrequest()))) {
+                if (!request_->Serialize(*(output.mutable_otrequest()))) {
                     return false;
                 }
                 auto nym = api_.Wallet().Nym(request_->Initiator());
@@ -432,13 +430,12 @@ auto Object::Serialize(proto::PeerObject& output) const noexcept -> bool
             output.set_version(version_);
 
             if (0 < reply_->Version()) {
-                if (false == reply_->Serialize(*(output.mutable_otreply()))) {
+                if (!reply_->Serialize(*(output.mutable_otreply()))) {
                     return false;
                 }
             }
             if (0 < request_->Version()) {
-                if (false ==
-                    request_->Serialize(*(output.mutable_otrequest()))) {
+                if (!request_->Serialize(*(output.mutable_otrequest()))) {
                     return false;
                 }
             }
@@ -497,7 +494,7 @@ auto Object::Validate() const noexcept -> bool
     }
 
     auto output = proto::PeerObject{};
-    if (false == Serialize(output)) return false;
+    if (!Serialize(output)) return false;
 
     const bool validProto = proto::Validate(output, VERBOSE);
 

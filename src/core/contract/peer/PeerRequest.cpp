@@ -29,8 +29,6 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/PeerRequest.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs::factory
@@ -143,7 +141,7 @@ auto Request::asStoreSecret() const noexcept -> const request::StoreSecret&
 auto Request::contract(const Lock& lock) const -> SerializedType
 {
     auto contract = SigVersion(lock);
-    if (0 < signatures_.size()) {
+    if (!signatures_.empty()) {
         *(contract.mutable_signature()) = *(signatures_.front());
     }
 
@@ -162,15 +160,12 @@ auto Request::FinalizeContract(Request& contract, const PasswordPrompt& reason)
 
 auto Request::Finish(Request& contract, const PasswordPrompt& reason) -> bool
 {
-    if (FinalizeContract(contract, reason)) {
+    if (FinalizeContract(contract, reason)) return true;
 
-        return true;
-    } else {
-        LogError()(OT_PRETTY_STATIC(Request))("Failed to finalize contract.")
-            .Flush();
+    LogError()(OT_PRETTY_STATIC(Request))("Failed to finalize contract.")
+        .Flush();
 
-        return false;
-    }
+    return false;
 }
 
 auto Request::GetID(const Lock& lock) const -> OTIdentifier
@@ -268,7 +263,7 @@ auto Request::validate(const Lock& lock) const -> bool
         LogError()(OT_PRETTY_CLASS())("Invalid syntax.").Flush();
     }
 
-    if (1 > signatures_.size()) {
+    if (signatures_.empty()) {
         LogError()(OT_PRETTY_CLASS())("Missing signature.").Flush();
 
         return false;

@@ -8,7 +8,6 @@
 #include "core/contract/peer/StoreSecret.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <stdexcept>
 #include <utility>
 
 #include "Proto.hpp"
@@ -19,10 +18,8 @@
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
-#include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/StoreSecret.pb.h"
 
 namespace opentxs
 {
@@ -48,7 +45,7 @@ auto Factory::StoreSecret(
 
         auto& reply = *output;
 
-        if (false == ParentType::Finish(reply, reason)) { return {}; }
+        if (!ParentType::Finish(reply, reason)) { return {}; }
 
         return std::move(output);
     } catch (const std::exception& e) {
@@ -66,7 +63,7 @@ auto Factory::StoreSecret(
 {
     using ReturnType = contract::peer::request::implementation::StoreSecret;
 
-    if (false == proto::Validate(serialized, VERBOSE)) {
+    if (!proto::Validate(serialized, VERBOSE)) {
         LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
             .Flush();
@@ -82,7 +79,7 @@ auto Factory::StoreSecret(
         auto& contract = *output;
         Lock lock(contract.lock_);
 
-        if (false == contract.validate(lock)) {
+        if (!contract.validate(lock)) {
             LogError()("opentxs::Factory::")(__func__)(": Invalid request.")
                 .Flush();
 

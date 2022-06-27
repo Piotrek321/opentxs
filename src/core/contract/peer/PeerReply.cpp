@@ -33,8 +33,6 @@
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/PeerReply.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs::factory
@@ -140,7 +138,7 @@ auto Reply::contract(const Lock& lock) const -> SerializedType
 {
     auto contract = SigVersion(lock);
 
-    if (0 < signatures_.size()) {
+    if (!signatures_.empty()) {
         *(contract.mutable_signature()) = *(signatures_.front());
     }
 
@@ -159,15 +157,10 @@ auto Reply::FinalizeContract(Reply& contract, const PasswordPrompt& reason)
 
 auto Reply::Finish(Reply& contract, const PasswordPrompt& reason) -> bool
 {
-    if (FinalizeContract(contract, reason)) {
+    if (FinalizeContract(contract, reason)) return true;
 
-        return true;
-    } else {
-        LogError()(OT_PRETTY_STATIC(Reply))("Failed to finalize contract.")
-            .Flush();
-
-        return false;
-    }
+    LogError()(OT_PRETTY_STATIC(Reply))("Failed to finalize contract.").Flush();
+    return false;
 }
 
 auto Reply::GetID(const Lock& lock) const -> OTIdentifier
@@ -219,7 +212,7 @@ auto Reply::LoadRequest(
         notUsed,
         output);
 
-    if (false == loaded) {
+    if (!loaded) {
         loaded = api.Wallet().Internal().PeerRequest(
             nym->ID(),
             requestID,
@@ -297,7 +290,7 @@ auto Reply::validate(const Lock& lock) const -> bool
         return false;
     }
 
-    if (false == validNym) {
+    if (!validNym) {
         LogError()(OT_PRETTY_CLASS())("Invalid nym.").Flush();
 
         return false;
@@ -311,7 +304,7 @@ auto Reply::validate(const Lock& lock) const -> bool
         return false;
     }
 
-    if (1 > signatures_.size()) {
+    if (signatures_.empty()) {
         LogError()(OT_PRETTY_CLASS())("Missing signature.").Flush();
 
         return false;
@@ -326,7 +319,7 @@ auto Reply::validate(const Lock& lock) const -> bool
         LogError()(OT_PRETTY_CLASS())("Invalid signature.").Flush();
     }
 
-    return (validNym && validSyntax && validSig);
+    return validSig;
 }
 
 auto Reply::verify_signature(
