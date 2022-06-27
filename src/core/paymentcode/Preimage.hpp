@@ -17,7 +17,7 @@ struct XpubPreimage {
     std::array<std::byte, 33> key_;
     std::array<std::byte, 32> code_;
 
-    operator ReadView() const noexcept
+    explicit operator ReadView() const noexcept
     {
         return {reinterpret_cast<const char*>(this), sizeof(*this)};
     }
@@ -61,7 +61,7 @@ struct BinaryPreimage {
     std::uint8_t bm_stream_;
     std::array<std::byte, 11> blank_;
 
-    operator ReadView() const noexcept
+    explicit operator ReadView() const noexcept
     {
         return {reinterpret_cast<const char*>(this), sizeof(*this)};
     }
@@ -97,7 +97,7 @@ struct BinaryPreimage_3 {
     std::uint8_t version_;
     std::array<std::byte, 33> key_;
 
-    operator ReadView() const noexcept
+    explicit operator ReadView() const noexcept
     {
         return {reinterpret_cast<const char*>(this), sizeof(*this)};
     }
@@ -130,12 +130,12 @@ struct Base58Preimage {
     std::uint8_t prefix_;
     BinaryPreimage payload_;
 
-    operator ReadView() const noexcept
+    explicit operator ReadView() const noexcept
     {
         return {reinterpret_cast<const char*>(this), sizeof(*this)};
     }
 
-    Base58Preimage(BinaryPreimage&& data) noexcept
+    explicit Base58Preimage(BinaryPreimage&& data) noexcept
         : prefix_(std::to_integer<std::uint8_t>(expected_prefix_))
         , payload_(std::move(data))
     {
@@ -169,21 +169,18 @@ struct Base58Preimage_3 {
     std::uint8_t prefix_;
     BinaryPreimage_3 payload_;
 
-    operator ReadView() const noexcept
+    explicit operator ReadView() const noexcept
     {
         return {reinterpret_cast<const char*>(this), sizeof(*this)};
     }
 
-    Base58Preimage_3(BinaryPreimage_3&& data) noexcept
+    explicit Base58Preimage_3(BinaryPreimage_3&& data) noexcept
         : prefix_(std::to_integer<std::uint8_t>(expected_prefix_))
         , payload_(std::move(data))
     {
         static_assert(35 == sizeof(Base58Preimage_3));
     }
-    Base58Preimage_3(const VersionNumber version, const ReadView key) noexcept
-        : Base58Preimage_3(BinaryPreimage_3{version, key})
-    {
-    }
+
     Base58Preimage_3() noexcept
         : Base58Preimage_3(BinaryPreimage_3{})
     {

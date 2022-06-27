@@ -195,10 +195,12 @@ private:
         VersionType requested,
         VersionType actual) noexcept(false) -> VersionType;
 
-    auto apply_mask(const Mask& mask, paymentcode::BinaryPreimage& data)
-        const noexcept -> void;
-    auto apply_mask(const Mask& mask, paymentcode::BinaryPreimage_3& data)
-        const noexcept -> void;
+    static auto apply_mask(
+        const Mask& mask,
+        paymentcode::BinaryPreimage& data) noexcept -> void;
+    static auto apply_mask(
+        const Mask& mask,
+        paymentcode::BinaryPreimage_3& data) noexcept -> void;
     auto base58_preimage() const noexcept -> paymentcode::Base58Preimage;
     auto base58_preimage_v3() const noexcept -> paymentcode::Base58Preimage_3;
     auto binary_preimage() const noexcept -> paymentcode::BinaryPreimage;
@@ -264,6 +266,5 @@ private:
     PaymentCode() = delete;
     PaymentCode(PaymentCode&&) = delete;
     auto operator=(const PaymentCode&) -> PaymentCode&;
-    auto operator=(PaymentCode&&) -> PaymentCode&;
 };
 }  // namespace opentxs::implementation

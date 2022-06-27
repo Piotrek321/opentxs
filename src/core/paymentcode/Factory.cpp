@@ -25,12 +25,10 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentCode.pb.h"
 
 namespace opentxs::factory
@@ -39,61 +37,56 @@ auto PaymentCode(
     const api::Session& api,
     const UnallocatedCString& base58) noexcept -> opentxs::PaymentCode
 {
-    const auto serialized = [&] {
-        auto out = opentxs::paymentcode::Base58Preimage{};
-        const auto bytes = api.Crypto().Encode().IdentifierDecode(base58);
-        const auto* data = reinterpret_cast<const std::byte*>(bytes.data());
+    opentxs::paymentcode::Base58Preimage serialized{};
+    const auto bytes = api.Crypto().Encode().IdentifierDecode(base58);
+    const auto* data = reinterpret_cast<const std::byte*>(bytes.data());
 
-        switch (bytes.size()) {
-            case 81: {
-                static_assert(
-                    81 == sizeof(opentxs::paymentcode::Base58Preimage));
+    switch (bytes.size()) {
+        case 81: {
+            static_assert(81 == sizeof(opentxs::paymentcode::Base58Preimage));
 
-                if (*data ==
-                    opentxs::paymentcode::Base58Preimage::expected_prefix_) {
-                    const auto version =
-                        std::to_integer<std::uint8_t>(*std::next(data));
+            if (*data ==
+                opentxs::paymentcode::Base58Preimage::expected_prefix_) {
+                const auto version =
+                    std::to_integer<std::uint8_t>(*std::next(data));
 
-                    if ((0u < version) && (3u > version)) {
-                        std::memcpy(
-                            static_cast<void*>(&out), data, bytes.size());
-                    }
+                if ((0u < version) && (3u > version)) {
+                    std::memcpy(
+                        static_cast<void*>(&serialized), data, bytes.size());
                 }
-            } break;
-            case 35: {
-                static_assert(
-                    35 == sizeof(opentxs::paymentcode::Base58Preimage_3));
-
-                auto compact = opentxs::paymentcode::Base58Preimage_3{};
-
-                if (*data ==
-                    opentxs::paymentcode::Base58Preimage_3::expected_prefix_) {
-                    const auto version =
-                        std::to_integer<std::uint8_t>(*std::next(data));
-
-                    if (2u < version) {
-                        std::memcpy(
-                            static_cast<void*>(&compact), data, bytes.size());
-                        const auto& payload = compact.payload_;
-                        const auto key = ReadView{
-                            reinterpret_cast<const char*>(payload.key_.data()),
-                            payload.key_.size()};
-                        auto code = api.Factory().Data();
-                        api.Crypto().Hash().Digest(
-                            opentxs::crypto::HashType::Sha256D,
-                            key,
-                            code->WriteInto());
-                        out = opentxs::paymentcode::Base58Preimage{
-                            payload.version_, false, key, code->Bytes(), 0, 0};
-                    }
-                }
-            } break;
-            default: {
             }
-        }
+        } break;
+        case 35: {
+            static_assert(35 == sizeof(opentxs::paymentcode::Base58Preimage_3));
 
-        return out;
-    }();
+            auto compact = opentxs::paymentcode::Base58Preimage_3{};
+
+            if (*data ==
+                opentxs::paymentcode::Base58Preimage_3::expected_prefix_) {
+                const auto version =
+                    std::to_integer<std::uint8_t>(*std::next(data));
+
+                if (2u < version) {
+                    std::memcpy(
+                        static_cast<void*>(&compact), data, bytes.size());
+                    const auto& payload = compact.payload_;
+                    const auto key = ReadView{
+                        reinterpret_cast<const char*>(payload.key_.data()),
+                        payload.key_.size()};
+                    auto code = api.Factory().Data();
+                    api.Crypto().Hash().Digest(
+                        opentxs::crypto::HashType::Sha256D,
+                        key,
+                        code->WriteInto());
+                    serialized = opentxs::paymentcode::Base58Preimage{
+                        payload.version_, false, key, code->Bytes(), 0, 0};
+                }
+            }
+        } break;
+        default: {
+        }
+    }
+
     const auto& raw = serialized.payload_;
 
     return std::make_unique<opentxs::implementation::PaymentCode>(
@@ -136,11 +129,11 @@ auto PaymentCode(
     const std::uint8_t bitmessageStream,
     const opentxs::PasswordPrompt& reason) noexcept -> opentxs::PaymentCode
 {
-    auto fingerprint{seed};
+    const auto& fingerprint{seed};
     auto pKey =
         api.Crypto().Seed().GetPaymentCode(fingerprint, nym, version, reason);
 
-    if (false == bool(pKey)) {
+    if (!pKey) {
         pKey = std::make_unique<opentxs::crypto::key::blank::Secp256k1>();
     }
 

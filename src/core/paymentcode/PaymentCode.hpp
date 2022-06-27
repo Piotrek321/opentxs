@@ -155,7 +155,7 @@ private:
     Imp(const Imp& rhs) = delete;
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp&;
-    auto operator=(Imp&&) -> Imp&;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 }  // namespace opentxs
 

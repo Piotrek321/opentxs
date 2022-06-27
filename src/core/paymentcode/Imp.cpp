@@ -8,13 +8,10 @@
 #include "core/paymentcode/Imp.hpp"  // IWYU pragma: associated
 
 #include <boost/endian/buffers.hpp>
-#include <algorithm>
 #include <array>
 #include <cstring>
 #include <functional>
-#include <iterator>
 #include <stdexcept>
-#include <string_view>
 #include <utility>
 
 #include "Proto.hpp"
@@ -46,10 +43,8 @@
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"  // IWYU pragma: keep
-#include "opentxs/crypto/key/HD.hpp"             // IWYU pragma: keep
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
-#include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -57,8 +52,6 @@
 #include "serialization/protobuf/Credential.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/MasterCredentialParameters.pb.h"
-#include "serialization/protobuf/NymIDSource.pb.h"
 #include "serialization/protobuf/PaymentCode.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 
@@ -115,7 +108,7 @@ auto PaymentCode::operator==(const proto::PaymentCode& rhs) const noexcept
     -> bool
 {
     auto lhs = proto::PaymentCode{};
-    if (false == Serialize(lhs)) { return false; }
+    if (!Serialize(lhs)) { return false; }
     const auto LHData = api_.Factory().InternalSession().Data(lhs);
     const auto RHData = api_.Factory().InternalSession().Data(rhs);
 
@@ -130,7 +123,7 @@ auto PaymentCode::AddPrivateKeys(
     auto pCandidate =
         api_.Crypto().Seed().GetPaymentCode(seed, index, version_, reason);
 
-    if (false == bool(pCandidate)) {
+    if (!pCandidate) {
         LogError()(OT_PRETTY_CLASS())("Failed to derive private key").Flush();
 
         return false;
@@ -161,8 +154,9 @@ auto PaymentCode::AddPrivateKeys(
     return true;
 }
 
-auto PaymentCode::apply_mask(const Mask& mask, paymentcode::BinaryPreimage& pre)
-    const noexcept -> void
+auto PaymentCode::apply_mask(
+    const Mask& mask,
+    paymentcode::BinaryPreimage& pre) noexcept -> void
 {
     static_assert(80 == sizeof(pre));
 
@@ -178,7 +172,7 @@ auto PaymentCode::apply_mask(const Mask& mask, paymentcode::BinaryPreimage& pre)
 
 auto PaymentCode::apply_mask(
     const Mask& mask,
-    paymentcode::BinaryPreimage_3& pre) const noexcept -> void
+    paymentcode::BinaryPreimage_3& pre) noexcept -> void
 {
     static_assert(34 == sizeof(pre));
 
@@ -200,12 +194,14 @@ auto PaymentCode::asBase58() const noexcept -> UnallocatedCString
         case 1:
         case 2: {
             return api_.Crypto().Encode().IdentifierEncode(
-                api_.Factory().DataFromBytes(base58_preimage()));
+                api_.Factory().DataFromBytes(
+                    static_cast<ReadView>(base58_preimage())));
         }
         case 3:
         default: {
             return api_.Crypto().Encode().IdentifierEncode(
-                api_.Factory().DataFromBytes(base58_preimage_v3()));
+                api_.Factory().DataFromBytes(
+                    static_cast<ReadView>(base58_preimage_v3())));
         }
     }
 }
@@ -278,7 +274,7 @@ auto PaymentCode::Blind(
         const auto size = view.size();
         auto out = dest(size);
 
-        if (false == out.valid(size)) {
+        if (!out.valid(size)) {
             throw std::runtime_error{"Failed to allocate output space"};
         }
 
@@ -326,7 +322,7 @@ auto PaymentCode::BlindV3(
             const auto size = view.size();
             auto out = dest(size);
 
-            if (false == out.valid(size)) {
+            if (!out.valid(size)) {
                 throw std::runtime_error{"Failed to allocate output space"};
             }
 
@@ -338,7 +334,7 @@ auto PaymentCode::BlindV3(
             case 2: {
                 auto pre = binary_preimage();
                 apply_mask(mask, pre);
-                copy_preimage(pre);
+                copy_preimage(static_cast<ReadView>(pre));
             } break;
             case 3:
             default: {
@@ -399,7 +395,7 @@ auto PaymentCode::calculate_mask_v1(
         secret->Bytes(),
         preallocated(mask.size(), mask.data()));
 
-    if (false == hashed) { throw std::runtime_error{"Failed to derive mask"}; }
+    if (!hashed) { throw std::runtime_error{"Failed to derive mask"}; }
 
     return mask;
 }
@@ -418,7 +414,7 @@ auto PaymentCode::calculate_mask_v3(
         pubkey,
         preallocated(mask.size(), mask.data()));
 
-    if (false == hashed) { throw std::runtime_error{"Failed to derive mask"}; }
+    if (!hashed) { throw std::runtime_error{"Failed to derive mask"}; }
 
     return mask;
 }
@@ -447,48 +443,46 @@ auto PaymentCode::DecodeNotificationElements(
                 ") bytes"};
         }
 
-        if (false == match_locator(version, F)) {
+        if (!match_locator(version, F)) {
             throw std::runtime_error{"Invalid locator"};
         }
-
-        const auto blind = [&] {
-            if (2 < version) {
-                if (33 != G.size()) {
-                    throw std::runtime_error{
-                        UnallocatedCString{"Invalid G ("} +
-                        std::to_string(G.size()) + ") bytes"};
-                }
-
-                return G;
-            } else {
-                if (65 != F.size()) {
-                    throw std::runtime_error{
-                        UnallocatedCString{"Invalid F ("} +
-                        std::to_string(F.size()) + ") bytes"};
-                }
-                if (65 != G.size()) {
-                    throw std::runtime_error{
-                        UnallocatedCString{"Invalid G ("} +
-                        std::to_string(G.size()) + ") bytes"};
-                }
-
-                auto out = space(sizeof(paymentcode::BinaryPreimage));
-                auto* o = out.data();
-                {
-                    auto* f = F.data();
-                    std::advance(f, 33);
-                    std::memcpy(o, f, 32);
-                    std::advance(o, 32);
-                }
-                {
-                    auto* g = G.data();
-                    std::advance(g, 1);
-                    std::memcpy(o, g, 48);
-                }
-
-                return out;
+        Space blind{};
+        if (2 < version) {
+            if (33 != G.size()) {
+                throw std::runtime_error{
+                    UnallocatedCString{"Invalid G ("} +
+                    std::to_string(G.size()) + ") bytes"};
             }
-        }();
+
+            blind = G;
+        } else {
+            if (65 != F.size()) {
+                throw std::runtime_error{
+                    UnallocatedCString{"Invalid F ("} +
+                    std::to_string(F.size()) + ") bytes"};
+            }
+            if (65 != G.size()) {
+                throw std::runtime_error{
+                    UnallocatedCString{"Invalid G ("} +
+                    std::to_string(G.size()) + ") bytes"};
+            }
+
+            auto out = space(sizeof(paymentcode::BinaryPreimage));
+            auto* o = out.data();
+            {
+                auto* f = F.data();
+                std::advance(f, 33);
+                std::memcpy(o, f, 32);
+                std::advance(o, 32);
+            }
+            {
+                auto* g = G.data();
+                std::advance(g, 1);
+                std::memcpy(o, g, 48);
+            }
+
+            blind = out;
+        }
 
         const auto pKey = api_.Crypto().Asymmetric().InstantiateSecp256k1Key(
             reader(A), reason);
@@ -530,7 +524,7 @@ auto PaymentCode::derive_keys(
     if (const auto pKey = other.Key(); pKey) {
         const auto& key = *pKey;
 
-        OT_ASSERT(0 < key.Chaincode(reason).size());
+        OT_ASSERT(key.Chaincode(reason).empty());
 
         remotePublic = key.ChildKey(remote, reason);
 
@@ -572,27 +566,18 @@ auto PaymentCode::GenerateNotificationElements(
             throw std::runtime_error{"Recipient payment code version too low"};
         }
 
-        const auto blind = [&] {
-            auto out = Space{};
-            const auto rc = BlindV3(recipient, privateKey, writer(out), reason);
+        Space blind{};
+        auto rc = BlindV3(recipient, privateKey, writer(blind), reason);
 
-            if (false == rc) {
-                throw std::runtime_error{"Failed to blind payment code"};
-            }
-
-            return out;
-        }();
+        if (!rc) { throw std::runtime_error{"Failed to blind payment code"}; }
 
         auto output = UnallocatedVector<Space>{};
         constexpr auto size = sizeof(paymentcode::BinaryPreimage_3::key_);
         {
             auto& A = output.emplace_back(space(size));
-            const auto rc =
-                copy(privateKey.PublicKey(), preallocated(A.size(), A.data()));
+            rc = copy(privateKey.PublicKey(), preallocated(A.size(), A.data()));
 
-            if (false == rc) {
-                throw std::runtime_error{"Failed to copy public key"};
-            }
+            if (!rc) { throw std::runtime_error{"Failed to copy public key"}; }
         }
 
         switch (version_) {
@@ -632,7 +617,7 @@ auto PaymentCode::generate_elements_v1(
         const auto rc = recipient.Locator(preallocated(32, i), version_);
         std::advance(i, 32);
 
-        if (false == rc) { throw std::runtime_error{"Failed to copy locator"}; }
+        if (!rc) { throw std::runtime_error{"Failed to copy locator"}; }
         std::memcpy(i, b, 32);
         std::advance(b, 32);
     }
@@ -663,7 +648,7 @@ auto PaymentCode::generate_elements_v3(
         std::advance(i, 1);
         const auto rc = recipient.Locator(preallocated(size - 1, i), version_);
 
-        if (false == rc) { throw std::runtime_error{"Failed to copy locator"}; }
+        if (!rc) { throw std::runtime_error{"Failed to copy locator"}; }
     }
     {
         // G
@@ -727,30 +712,27 @@ auto PaymentCode::Locator(const AllocateOutput dest, const std::uint8_t version)
                 throw std::runtime_error(error);
             }
             case 2: {
-                const auto pre = [&] {
-                    auto out = std::array<std::byte, 33>{};
-                    out[0] = std::byte{0x02};
-                    const auto hashed = api_.Crypto().Hash().Digest(
-                        crypto::HashType::Sha256,
-                        binary_preimage(),
-                        preallocated(out.size() - 1, std::next(out.data(), 1)));
+                auto pre = std::array<std::byte, 33>{};
+                pre[0] = std::byte{0x02};
+                const auto hashed = api_.Crypto().Hash().Digest(
+                    crypto::HashType::Sha256,
+                    static_cast<ReadView>(binary_preimage()),
+                    preallocated(pre.size() - 1, std::next(pre.data(), 1)));
 
-                    if (false == hashed) {
-                        throw std::runtime_error(
-                            "Failed to calculate version 2 hash");
-                    }
+                if (!hashed) {
+                    throw std::runtime_error(
+                        "Failed to calculate version 2 hash");
+                }
 
-                    return out;
-                }();
                 constexpr auto size = pre.size();
 
-                if (false == bool(dest)) {
+                if (!dest) {
                     throw std::runtime_error("Invalid output allocator");
                 }
 
                 auto out = dest(size);
 
-                if (false == out.valid(size)) {
+                if (!out.valid(size)) {
                     throw std::runtime_error("Failed to allocate output space");
                 }
 
@@ -768,11 +750,9 @@ auto PaymentCode::Locator(const AllocateOutput dest, const std::uint8_t version)
                         sizeof(effective)},
                     writer(hash));
 
-                if (false == rc) {
-                    throw std::runtime_error("Failed to hash locator");
-                }
+                if (!rc) { throw std::runtime_error("Failed to hash locator"); }
 
-                if (false == copy(reader(hash), dest, 32)) {
+                if (!copy(reader(hash), dest, 32)) {
                     throw std::runtime_error("Failed to copy locator");
                 }
             }
@@ -793,16 +773,10 @@ auto PaymentCode::match_locator(
     if (sizeof(paymentcode::BinaryPreimage_3::key_) > element.size()) {
         throw std::runtime_error{"Invalid F"};
     }
-
-    const auto id = [&] {
-        auto out = Space{};
-
-        if (false == Locator(writer(out), version)) {
-            throw std::runtime_error{"Failed to calculate locator"};
-        }
-
-        return out;
-    }();
+    Space id{};
+    if (!Locator(writer(id), version)) {
+        throw std::runtime_error{"Failed to calculate locator"};
+    }
 
     OT_ASSERT(id.size() < element.size());
 
@@ -817,7 +791,7 @@ auto PaymentCode::Outgoing(
     const std::uint8_t version) const noexcept -> ECKey
 {
     try {
-        if (false == key_->HasPrivate()) {
+        if (!key_->HasPrivate()) {
             throw std::runtime_error{"Private key missing"};
         }
 
@@ -862,9 +836,7 @@ auto PaymentCode::postprocess(const Secret& in) const noexcept(false)
     auto rc = api_.Crypto().Hash().Digest(
         crypto::HashType::Sha256, in.Bytes(), output->WriteInto());
 
-    if (false == rc) {
-        throw std::runtime_error{"Failed to hash shared secret"};
-    }
+    if (!rc) { throw std::runtime_error{"Failed to hash shared secret"}; }
 
     return output;
 }
@@ -872,7 +844,7 @@ auto PaymentCode::postprocess(const Secret& in) const noexcept(false)
 auto PaymentCode::Serialize(AllocateOutput destination) const noexcept -> bool
 {
     auto serialized = proto::PaymentCode{};
-    if (false == Serialize(serialized)) { return false; }
+    if (!Serialize(serialized)) { return false; }
 
     return write(serialized, destination);
 }
@@ -902,9 +874,7 @@ auto PaymentCode::shared_secret_mask_v1(
         crypto::SecretStyle::X_only,
         output);
 
-    if (false == rc) {
-        throw std::runtime_error{"Failed to calculate shared secret"};
-    }
+    if (!rc) { throw std::runtime_error{"Failed to calculate shared secret"}; }
 
     return output;
 }
@@ -938,7 +908,7 @@ auto PaymentCode::shared_secret_payment_v3(
         ReadView{reinterpret_cast<const char*>(&bip44), sizeof(bip44)},
         hmac->WriteInto());
 
-    if (false == rc) {
+    if (!rc) {
         throw std::runtime_error{"Failed to calculate shared secret hmac"};
     }
 
@@ -952,8 +922,7 @@ auto PaymentCode::Sign(
 {
     auto serialized = proto::Credential{};
 
-    if (false ==
-        credential.Internal().Serialize(
+    if (!credential.Internal().Serialize(
             serialized, identity::AS_PUBLIC, identity::WITHOUT_SIGNATURES)) {
         return false;
     }
@@ -1005,17 +974,15 @@ auto PaymentCode::Unblind(
 
         const auto& local = *pLocal;
         const auto mask = calculate_mask_v1(local, remote, outpoint, reason);
-        auto pre = [&] {
-            auto out = paymentcode::BinaryPreimage{};
 
-            if ((nullptr == in.data()) || (in.size() != sizeof(out))) {
-                throw std::runtime_error{"Invalid blinded payment code"};
-            }
+        paymentcode::BinaryPreimage pre{};
 
-            std::memcpy(reinterpret_cast<void*>(&out), in.data(), in.size());
+        if ((nullptr == in.data()) || (in.size() != sizeof(pre))) {
+            throw std::runtime_error{"Invalid blinded payment code"};
+        }
 
-            return out;
-        }();
+        std::memcpy(reinterpret_cast<void*>(&pre), in.data(), in.size());
+
         apply_mask(mask, pre);
 
         return std::make_unique<PaymentCode>(
@@ -1091,19 +1058,15 @@ auto PaymentCode::unblind_v1(
     const crypto::EcdsaProvider& ecdsa,
     const PasswordPrompt& reason) const -> opentxs::PaymentCode
 {
-    const auto pre = [&] {
-        auto out = paymentcode::BinaryPreimage{};
+    paymentcode::BinaryPreimage pre{};
 
-        if ((nullptr == in.data()) || (in.size() != (sizeof(out)))) {
-            throw std::runtime_error{"Invalid blinded payment code (v1)"};
-        }
+    if ((nullptr == in.data()) || (in.size() != (sizeof(pre)))) {
+        throw std::runtime_error{"Invalid blinded payment code (v1)"};
+    }
 
-        auto i = reinterpret_cast<char*>(reinterpret_cast<void*>(&out));
-        std::memcpy(i, in.data(), in.size());
-        apply_mask(mask, out);
-
-        return out;
-    }();
+    auto i = reinterpret_cast<char*>(reinterpret_cast<void*>(&pre));
+    std::memcpy(i, in.data(), in.size());
+    apply_mask(mask, pre);
 
     return std::make_unique<PaymentCode>(
                api_,
@@ -1134,31 +1097,22 @@ auto PaymentCode::unblind_v3(
     const crypto::EcdsaProvider& ecdsa,
     const PasswordPrompt& reason) const -> opentxs::PaymentCode
 {
-    const auto pre = [&] {
-        auto out = paymentcode::BinaryPreimage_3{};
-        out.version_ = version;
+    paymentcode::BinaryPreimage_3 pre{};
+    pre.version_ = version;
 
-        if ((nullptr == in.data()) || ((in.size() + 1u) != sizeof(out))) {
-            throw std::runtime_error{"Invalid blinded payment code (v3)"};
-        }
+    if ((nullptr == in.data()) || ((in.size() + 1u) != sizeof(pre))) {
+        throw std::runtime_error{"Invalid blinded payment code (v3)"};
+    }
 
-        auto i = reinterpret_cast<char*>(reinterpret_cast<void*>(&out));
-        std::memcpy(std::next(i), in.data(), in.size());
-        apply_mask(mask, out);
+    auto i = reinterpret_cast<char*>(reinterpret_cast<void*>(&pre));
+    std::memcpy(std::next(i), in.data(), in.size());
+    apply_mask(mask, pre);
 
-        return out;
-    }();
-    const auto code = [&] {
-        auto out = api_.Factory().Secret(0);
-        const auto rc = api_.Crypto().Hash().Digest(
-            crypto::HashType::Sha256D, pre.Key(), out->WriteInto());
+    auto code = api_.Factory().Secret(0);
+    const auto rc = api_.Crypto().Hash().Digest(
+        crypto::HashType::Sha256D, pre.Key(), code->WriteInto());
 
-        if (false == rc) {
-            throw std::runtime_error{"Failed to calculate chain code"};
-        }
-
-        return out;
-    }();
+    if (!rc) { throw std::runtime_error{"Failed to calculate chain code"}; }
 
     return std::make_unique<PaymentCode>(
                api_,
@@ -1192,7 +1146,7 @@ auto PaymentCode::Valid() const noexcept -> bool
 
     auto serialized = proto::PaymentCode{};
 
-    if (false == Serialize(serialized)) { return false; }
+    if (!Serialize(serialized)) { return false; }
 
     return proto::Validate<proto::PaymentCode>(serialized, SILENT);
 }
@@ -1201,12 +1155,12 @@ auto PaymentCode::Verify(
     const proto::Credential& master,
     const proto::Signature& sourceSignature) const noexcept -> bool
 {
-    if (false == proto::Validate<proto::Credential>(
-                     master,
-                     VERBOSE,
-                     proto::KEYMODE_PUBLIC,
-                     proto::CREDROLE_MASTERKEY,
-                     false)) {
+    if (!proto::Validate<proto::Credential>(
+            master,
+            VERBOSE,
+            proto::KEYMODE_PUBLIC,
+            proto::CREDROLE_MASTERKEY,
+            false)) {
         LogError()(OT_PRETTY_CLASS())("Invalid master credential syntax.")
             .Flush();
 
@@ -1216,7 +1170,7 @@ auto PaymentCode::Verify(
     const bool sameSource =
         (*this == master.masterdata().source().paymentcode());
 
-    if (false == sameSource) {
+    if (!sameSource) {
         LogError()(OT_PRETTY_CLASS())(
             "Master credential was not derived from this source.")
             .Flush();
