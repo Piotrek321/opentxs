@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <stdexcept>
 #include <utility>
 
 #include "Proto.hpp"
@@ -23,8 +22,6 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BasketItem.pb.h"
-#include "serialization/protobuf/BasketParams.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
@@ -62,20 +59,19 @@ auto Factory::BasketContract(
 auto Factory::BasketContract(
     const api::Session& api,
     const Nym_p& nym,
-    const proto::UnitDefinition serialized) noexcept
+    const proto::UnitDefinition& serialized) noexcept
     -> std::shared_ptr<contract::unit::Basket>
 {
     using ReturnType = opentxs::contract::unit::implementation::Basket;
 
-    if (false == proto::Validate<ReturnType::SerializedType>(
-                     serialized, VERBOSE, true)) {
-
+    if (!proto::Validate<ReturnType::SerializedType>(
+            serialized, VERBOSE, true)) {
         return {};
     }
 
     auto output = std::make_shared<ReturnType>(api, nym, serialized);
 
-    if (false == bool(output)) { return {}; }
+    if (!bool(output)) { return {}; }
 
     auto& contract = *output;
     Lock lock(contract.lock_);
@@ -131,7 +127,7 @@ auto Basket::FinalizeTemplate(
             std::make_shared<proto::Signature>();
         if (contract->update_signature(lock, reason)) {
             lock.unlock();
-            if (false == contract->Serialize(serialized, true)) {
+            if (!contract->Serialize(serialized, true)) {
                 LogError()(OT_PRETTY_STATIC(Basket))(
                     "Failed to serialize unit definition.")
                     .Flush();
@@ -176,7 +172,7 @@ Basket::Basket(
 Basket::Basket(
     const api::Session& api,
     const Nym_p& nym,
-    const proto::UnitDefinition serialized)
+    const proto::UnitDefinition& serialized)
     : Unit(api, nym, serialized)
     , subcontracts_()
     , weight_(0)

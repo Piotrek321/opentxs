@@ -45,7 +45,7 @@ auto Factory::CurrencyContract(
         displayDefinition,
         redemptionIncrement);
 
-    if (false == bool(output)) { return {}; }
+    if (output) { return {}; }
 
     auto& contract = *output;
     Lock lock(contract.lock_);
@@ -65,20 +65,20 @@ auto Factory::CurrencyContract(
 auto Factory::CurrencyContract(
     const api::Session& api,
     const Nym_p& nym,
-    const proto::UnitDefinition serialized) noexcept
+    const proto::UnitDefinition& serialized) noexcept
     -> std::shared_ptr<contract::unit::Currency>
 {
     using ReturnType = contract::unit::implementation::Currency;
 
-    if (false == proto::Validate<ReturnType::SerializedType>(
-                     serialized, VERBOSE, true)) {
+    if (!proto::Validate<ReturnType::SerializedType>(
+            serialized, VERBOSE, true)) {
 
         return {};
     }
 
     auto output = std::make_shared<ReturnType>(api, nym, serialized);
 
-    if (false == bool(output)) { return {}; }
+    if (!output) { return {}; }
 
     auto& contract = *output;
     Lock lock(contract.lock_);
@@ -117,7 +117,7 @@ Currency::Currency(
 Currency::Currency(
     const api::Session& api,
     const Nym_p& nym,
-    const proto::UnitDefinition serialized)
+    const proto::UnitDefinition& serialized)
     : Unit(api, nym, serialized)
 {
     Lock lock(lock_);

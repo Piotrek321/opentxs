@@ -24,13 +24,9 @@ auto print(contract::ProtocolVersion in) noexcept -> const char*
             {contract::ProtocolVersion::Notify, "notify"},
         };
 
-    try {
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
 
-        return map.at(in);
-    } catch (...) {
-
-        return "invalid";
-    }
+    return "invalid";
 }
 
 auto print(contract::Type in) noexcept -> const char*
@@ -43,13 +39,9 @@ auto print(contract::Type in) noexcept -> const char*
             {contract::Type::unit, "unit"},
         };
 
-    try {
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
 
-        return map.at(in);
-    } catch (...) {
-
-        return "invalid";
-    }
+    return "invalid";
 }
 
 auto print(contract::UnitType in) noexcept -> const char*
@@ -62,12 +54,8 @@ auto print(contract::UnitType in) noexcept -> const char*
             {contract::UnitType::Basket, "basket"},
         };
 
-    try {
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
 
-        return map.at(in);
-    } catch (...) {
-
-        return "invalid";
-    }
+    return "invalid";
 }
 }  // namespace opentxs

@@ -429,7 +429,7 @@ public:
     static auto BasketContract(
         const api::Session& api,
         const Nym_p& nym,
-        const proto::UnitDefinition serialized) noexcept
+        const proto::UnitDefinition& serialized) noexcept
         -> std::shared_ptr<contract::unit::Basket>;
     static auto Bitcoin(const api::Crypto& crypto) -> crypto::Bitcoin*;
     static auto Bip39(const api::Crypto& api) noexcept
@@ -514,7 +514,7 @@ public:
     static auto CurrencyContract(
         const api::Session& api,
         const Nym_p& nym,
-        const proto::UnitDefinition serialized) noexcept
+        const proto::UnitDefinition& serialized) noexcept
         -> std::shared_ptr<contract::unit::Currency>;
     static auto Envelope(const api::Session& api) noexcept
         -> std::unique_ptr<crypto::Envelope>;

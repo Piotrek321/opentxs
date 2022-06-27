@@ -11,8 +11,6 @@
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "serialization/protobuf/ContractEnums.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Container.hpp"
@@ -152,20 +150,20 @@ namespace opentxs
 auto translate(const contract::ProtocolVersion in) noexcept
     -> proto::ProtocolVersion
 {
-    try {
-        return contract::protocolversion_map().at(in);
-    } catch (...) {
-        return proto::PROTOCOLVERSION_ERROR;
-    }
+    if (const auto iter = contract::protocolversion_map().find(in);
+        iter != contract::protocolversion_map().end())
+        return iter->second;
+
+    return proto::PROTOCOLVERSION_ERROR;
 }
 
 auto translate(const contract::UnitType in) noexcept -> proto::UnitType
 {
-    try {
-        return contract::unittype_map().at(in);
-    } catch (...) {
-        return proto::UNITTYPE_ERROR;
-    }
+    if (const auto iter = contract::unittype_map().find(in);
+        iter != contract::unittype_map().end())
+        return iter->second;
+
+    return proto::UNITTYPE_ERROR;
 }
 
 auto translate(const proto::ProtocolVersion in) noexcept
@@ -176,11 +174,9 @@ auto translate(const proto::ProtocolVersion in) noexcept
         proto::ProtocolVersion,
         contract::ProtocolVersionReverseMap>(contract::protocolversion_map());
 
-    try {
-        return map.at(in);
-    } catch (...) {
-        return contract::ProtocolVersion::Error;
-    }
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
+
+    return contract::ProtocolVersion::Error;
 }
 
 auto translate(const proto::UnitType in) noexcept -> contract::UnitType
@@ -190,10 +186,8 @@ auto translate(const proto::UnitType in) noexcept -> contract::UnitType
         proto::UnitType,
         contract::UnitTypeReverseMap>(contract::unittype_map());
 
-    try {
-        return map.at(in);
-    } catch (...) {
-        return contract::UnitType::Error;
-    }
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
+
+    return contract::UnitType::Error;
 }
 }  // namespace opentxs

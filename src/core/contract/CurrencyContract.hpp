@@ -65,7 +65,7 @@ public:
     Currency(
         const api::Session& api,
         const Nym_p& nym,
-        const proto::UnitDefinition serialized);
+        const proto::UnitDefinition& serialized);
 
     ~Currency() final = default;
 
