@@ -150,51 +150,51 @@ namespace opentxs
 auto translate(const contract::peer::ConnectionInfoType in) noexcept
     -> proto::ConnectionInfoType
 {
-    try {
-        return contract::peer::connectioninfotype_map().at(in);
-    } catch (...) {
-        return proto::CONNECTIONINFO_ERROR;
-    }
+    if (const auto iter = contract::peer::connectioninfotype_map().find(in);
+        iter != contract::peer::connectioninfotype_map().end())
+        return iter->second;
+
+    return proto::CONNECTIONINFO_ERROR;
 }
 
 auto translate(const contract::peer::internal::PairEventType in) noexcept
     -> proto::PairEventType
 {
-    try {
-        return contract::peer::paireventtype_map().at(in);
-    } catch (...) {
-        return proto::PAIREVENT_ERROR;
-    }
+    if (const auto iter = contract::peer::paireventtype_map().find(in);
+        iter != contract::peer::paireventtype_map().end())
+        return iter->second;
+
+    return proto::PAIREVENT_ERROR;
 }
 
 auto translate(const contract::peer::PeerObjectType in) noexcept
     -> proto::PeerObjectType
 {
-    try {
-        return contract::peer::peerobjecttype_map().at(in);
-    } catch (...) {
-        return proto::PEEROBJECT_ERROR;
-    }
+    if (const auto iter = contract::peer::peerobjecttype_map().find(in);
+        iter != contract::peer::peerobjecttype_map().end())
+        return iter->second;
+
+    return proto::PEEROBJECT_ERROR;
 }
 
 auto translate(const contract::peer::PeerRequestType in) noexcept
     -> proto::PeerRequestType
 {
-    try {
-        return contract::peer::peerrequesttype_map().at(in);
-    } catch (...) {
-        return proto::PEERREQUEST_ERROR;
-    }
+    if (const auto iter = contract::peer::peerrequesttype_map().find(in);
+        iter != contract::peer::peerrequesttype_map().end())
+        return iter->second;
+
+    return proto::PEERREQUEST_ERROR;
 }
 
 auto translate(const contract::peer::SecretType in) noexcept
     -> proto::SecretType
 {
-    try {
-        return contract::peer::secrettype_map().at(in);
-    } catch (...) {
-        return proto::SECRETTYPE_ERROR;
-    }
+    if (const auto iter = contract::peer::secrettype_map().find(in);
+        iter != contract::peer::secrettype_map().end())
+        return iter->second;
+
+    return proto::SECRETTYPE_ERROR;
 }
 
 auto translate(const proto::ConnectionInfoType in) noexcept
@@ -206,11 +206,9 @@ auto translate(const proto::ConnectionInfoType in) noexcept
         contract::peer::ConnectionInfoTypeReverseMap>(
         contract::peer::connectioninfotype_map());
 
-    try {
-        return map.at(in);
-    } catch (...) {
-        return contract::peer::ConnectionInfoType::Error;
-    }
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
+
+    return contract::peer::ConnectionInfoType::Error;
 }
 
 auto translate(const proto::PairEventType in) noexcept
@@ -222,11 +220,9 @@ auto translate(const proto::PairEventType in) noexcept
         contract::peer::PairEventTypeReverseMap>(
         contract::peer::paireventtype_map());
 
-    try {
-        return map.at(in);
-    } catch (...) {
-        return contract::peer::internal::PairEventType::Error;
-    }
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
+
+    return contract::peer::internal::PairEventType::Error;
 }
 
 auto translate(const proto::PeerObjectType in) noexcept
@@ -238,11 +234,9 @@ auto translate(const proto::PeerObjectType in) noexcept
         contract::peer::PeerObjectTypeReverseMap>(
         contract::peer::peerobjecttype_map());
 
-    try {
-        return map.at(in);
-    } catch (...) {
-        return contract::peer::PeerObjectType::Error;
-    }
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
+
+    return contract::peer::PeerObjectType::Error;
 }
 
 auto translate(const proto::PeerRequestType in) noexcept
@@ -254,11 +248,9 @@ auto translate(const proto::PeerRequestType in) noexcept
         contract::peer::PeerRequestTypeReverseMap>(
         contract::peer::peerrequesttype_map());
 
-    try {
-        return map.at(in);
-    } catch (...) {
-        return contract::peer::PeerRequestType::Error;
-    }
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
+
+    return contract::peer::PeerRequestType::Error;
 }
 
 auto translate(const proto::SecretType in) noexcept
@@ -269,10 +261,8 @@ auto translate(const proto::SecretType in) noexcept
         proto::SecretType,
         contract::peer::SecretTypeReverseMap>(contract::peer::secrettype_map());
 
-    try {
-        return map.at(in);
-    } catch (...) {
-        return contract::peer::SecretType::Error;
-    }
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
+
+    return contract::peer::SecretType::Error;
 }
 }  // namespace opentxs

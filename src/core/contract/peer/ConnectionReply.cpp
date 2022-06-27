@@ -8,7 +8,6 @@
 #include "core/contract/peer/ConnectionReply.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <stdexcept>
 #include <utility>
 
 #include "Proto.hpp"
@@ -21,7 +20,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/ConnectionInfoReply.pb.h"
 #include "serialization/protobuf/PeerReply.pb.h"
 #include "serialization/protobuf/PeerRequest.pb.h"
 
@@ -45,9 +43,7 @@ auto Factory::ConnectionReply(
     using ReturnType = contract::peer::reply::implementation::Connection;
     auto peerRequest = proto::PeerRequest{};
 
-    if (false == ParentType::LoadRequest(api, nym, request, peerRequest)) {
-        return {};
-    }
+    if (!ParentType::LoadRequest(api, nym, request, peerRequest)) { return {}; }
 
     try {
         auto output = std::make_shared<ReturnType>(
@@ -66,7 +62,7 @@ auto Factory::ConnectionReply(
 
         auto& reply = *output;
 
-        if (false == ParentType::Finish(reply, reason)) { return {}; }
+        if (!ParentType::Finish(reply, reason)) { return {}; }
 
         return std::move(output);
     } catch (const std::exception& e) {
@@ -84,7 +80,7 @@ auto Factory::ConnectionReply(
 {
     using ReturnType = contract::peer::reply::implementation::Connection;
 
-    if (false == proto::Validate(serialized, VERBOSE)) {
+    if (!proto::Validate(serialized, VERBOSE)) {
         LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized reply.")
             .Flush();
@@ -100,7 +96,7 @@ auto Factory::ConnectionReply(
         auto& contract = *output;
         Lock lock(contract.lock_);
 
-        if (false == contract.validate(lock)) {
+        if (!contract.validate(lock)) {
             LogError()("opentxs::Factory::")(__func__)(": Invalid reply.")
                 .Flush();
 
