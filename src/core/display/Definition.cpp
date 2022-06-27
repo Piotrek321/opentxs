@@ -18,7 +18,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
-#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::display
@@ -69,7 +68,7 @@ auto Definition::DisplayScales() const noexcept -> const Scales&
 }
 
 auto Definition::Format(
-    const Amount amount,
+    const Amount& amount,
     const Index index,
     const OptionalInt minDecimals,
     const OptionalInt maxDecimals) const noexcept(false) -> UnallocatedCString
@@ -239,10 +238,8 @@ auto GetDefinition(UnitType in) noexcept -> const Definition&
           }}},
     };
 
-    try {
-        return map.at(in);
-    } catch (...) {
-        return defaultDefinition;
-    }
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
+
+    return defaultDefinition;
 }
 }  // namespace opentxs::display

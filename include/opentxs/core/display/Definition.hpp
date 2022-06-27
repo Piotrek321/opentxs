@@ -40,7 +40,7 @@ public:
 
     auto DisplayScales() const noexcept -> const Scales&;
     auto Format(
-        const Amount amount,
+        const Amount& amount,
         const Index scale = 0,
         const OptionalInt minDecimals = std::nullopt,
         const OptionalInt maxDecimals = std::nullopt) const noexcept(false)
@@ -50,7 +50,7 @@ public:
         noexcept(false) -> Amount;
     auto ShortName() const noexcept -> std::string_view;
 
-    virtual auto swap(Definition& rhs) noexcept -> void;
+    auto swap(Definition& rhs) noexcept -> void;
 
     Definition(CString&& shortname, Scales&& scales) noexcept;
     Definition() noexcept;

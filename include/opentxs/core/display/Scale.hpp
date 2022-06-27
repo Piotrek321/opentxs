@@ -52,7 +52,7 @@ public:
     auto Ratios() const noexcept -> const Vector<Ratio>&;
     auto Suffix() const noexcept -> std::string_view;
 
-    virtual auto swap(Scale& rhs) noexcept -> void;
+    auto swap(Scale& rhs) noexcept -> void;
 
     OPENTXS_NO_EXPORT Scale(Imp* imp) noexcept;
     Scale() noexcept;

@@ -47,7 +47,7 @@ public:
     {
         auto output = std::stringstream{};
 
-        if (0 < prefix_.size()) { output << prefix_; }
+        if (!prefix_.empty()) { output << prefix_; }
 
         const auto decimalSymbol = locale_.decimal_point();
         const auto seperator = locale_.thousands_sep();
@@ -111,7 +111,7 @@ public:
             }
         }
 
-        if (0 < suffix_.size()) { output << ' ' << suffix_; }
+        if (!suffix_.empty()) { output << ' ' << suffix_; }
 
         return output.str();
     }
@@ -126,7 +126,7 @@ public:
         } catch (const std::exception& e) {
             LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
 
-            throw std::current_exception();
+            throw;
         }
     }
     auto MaximumDecimals() const noexcept -> std::uint8_t

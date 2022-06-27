@@ -31,10 +31,8 @@ class Identifier;
 
 namespace opentxs::factory
 {
-auto IdentifierGeneric() noexcept -> std::unique_ptr<opentxs::Identifier>;
 auto IdentifierGeneric(const proto::Identifier& in) noexcept
     -> std::unique_ptr<opentxs::Identifier>;
-auto IdentifierNym() noexcept -> std::unique_ptr<opentxs::identifier::Nym>;
 auto IdentifierNym(const proto::Identifier& in) noexcept
     -> std::unique_ptr<opentxs::identifier::Nym>;
 auto IdentifierNotary() noexcept

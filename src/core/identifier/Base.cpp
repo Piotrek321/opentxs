@@ -13,9 +13,7 @@
 #include <cstring>
 #include <iosfwd>
 #include <iostream>
-#include <iterator>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <utility>
 
@@ -33,7 +31,6 @@
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/blockchain/block/Hash.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
@@ -47,7 +44,6 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 #include "serialization/protobuf/Identifier.pb.h"
 
@@ -56,24 +52,10 @@ namespace opentxs::factory
 auto decode_identifier_proto(const proto::Identifier& in) noexcept
     -> std::unique_ptr<implementation::Identifier>;
 
-auto IdentifierGeneric() noexcept -> std::unique_ptr<opentxs::Identifier>
-{
-    using ReturnType = implementation::Identifier;
-
-    return std::make_unique<ReturnType>();
-}
-
 auto IdentifierGeneric(const proto::Identifier& in) noexcept
     -> std::unique_ptr<opentxs::Identifier>
 {
     return decode_identifier_proto(in);
-}
-
-auto IdentifierNym() noexcept -> std::unique_ptr<opentxs::identifier::Nym>
-{
-    using ReturnType = implementation::Identifier;
-
-    return std::make_unique<ReturnType>();
 }
 
 auto IdentifierNym(const proto::Identifier& in) noexcept
@@ -115,7 +97,7 @@ auto decode_identifier_proto(const proto::Identifier& in) noexcept
     using ReturnType = implementation::Identifier;
 
     try {
-        if (false == proto::Validate(in, VERBOSE)) {
+        if (!proto::Validate(in, VERBOSE)) {
             throw std::runtime_error{"invalid serialized identifier"};
         }
 
@@ -325,14 +307,9 @@ auto print(identifier::Algorithm in) noexcept -> const char*
             {identifier::Algorithm::blake2b160, "blake2b160"},
             {identifier::Algorithm::blake2b256, "blake2b256"},
         };
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
 
-    try {
-
-        return map.at(in);
-    } catch (...) {
-
-        return "unknown";
-    }
+    return "unknown";
 }
 
 auto print(identifier::Type in) noexcept -> const char*
@@ -345,14 +322,9 @@ auto print(identifier::Type in) noexcept -> const char*
             {identifier::Type::notary, "notary"},
             {identifier::Type::unitdefinition, "unit definition"},
         };
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
 
-    try {
-
-        return map.at(in);
-    } catch (...) {
-
-        return "unknown";
-    }
+    return "unknown";
 }
 
 auto translate(identifier::Type in) noexcept -> contract::Type
@@ -366,13 +338,9 @@ auto translate(identifier::Type in) noexcept -> contract::Type
             {identifier::Type::unitdefinition, contract::Type::unit},
         };
 
-    try {
+    if (const auto iter = map.find(in); iter != map.end()) return iter->second;
 
-        return map.at(in);
-    } catch (...) {
-
-        return contract::Type::invalid;
-    }
+    return contract::Type::invalid;
 }
 
 auto Identifier::Factory() -> OTIdentifier
@@ -533,7 +501,7 @@ auto Identifier::Validate(const UnallocatedCString& input) -> bool
 
     const auto id = Factory(input);
 
-    return (0 < id->size());
+    return id->empty();
 }
 }  // namespace opentxs
 
@@ -632,17 +600,9 @@ auto Identifier::clone() const -> Identifier*
 auto Identifier::Concatenate(const void* data, const std::size_t size) noexcept
     -> bool
 {
-    const auto max = [&]() -> std::size_t {
-        const auto target = hash_bytes(algorithm_);
+    const auto target = hash_bytes(algorithm_);
 
-        if (const auto used = this->size(); used >= target) {
-
-            return 0;
-        } else {
-
-            return target - used;
-        }
-    }();
+    const auto max = (this->size() >= target) ? 0 : target - this->size();
 
     if (size > max) {
         LogError()(OT_PRETTY_CLASS())("Too many bytes specified (")(
@@ -674,26 +634,25 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
         Decoded{{}, identifier::Algorithm::invalid, identifier::Type::invalid};
     auto& [data, algorithm, type] = output;
 
-    if (0u == in.size()) { return output; }
+    if (in.empty()) { return output; }
 
     try {
         if (minimum_encoded_bytes_ > in.size()) {
             throw std::runtime_error{"input too short"};
         }
 
-        const auto bytes = [&] {
-            constexpr auto prefix = std::size_t{2u};
-            auto* i = in.data();
+        constexpr auto prefix = std::size_t{2u};
+        auto* inData = in.data();
 
-            if (0u != std::memcmp(i, prefix_, prefix)) {
-                throw std::runtime_error{"invalid prefix"};
-            }
+        if (0u != std::memcmp(inData, prefix_, prefix)) {
+            throw std::runtime_error{"invalid prefix"};
+        }
 
-            std::advance(i, prefix);
+        std::advance(inData, prefix);
 
-            return Context().Crypto().Encode().IdentifierDecode(
-                UnallocatedCString{i, in.size() - prefix});
-        }();
+        const auto bytes = Context().Crypto().Encode().IdentifierDecode(
+            UnallocatedCString{inData, in.size() - prefix});
+
         const auto length = bytes.size();
 
         if (header_bytes_ > length) {
@@ -702,7 +661,7 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
 
         algorithm = static_cast<identifier::Algorithm>(bytes[0]);
 
-        if (false == is_supported(algorithm)) {
+        if (!is_supported(algorithm)) {
             algorithm = identifier::Algorithm::invalid;
 
             throw std::runtime_error{"unsupported algorithm"};
@@ -710,17 +669,15 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
 
         auto* i = reinterpret_cast<const std::uint8_t*>(bytes.data());
         std::advance(i, sizeof(algorithm_));
-        const auto serializedType = [&] {
-            auto out = boost::endian::little_uint16_buf_t{};
-            std::memcpy(static_cast<void*>(&out), i, sizeof(out));
-            std::advance(i, sizeof(out));
 
-            return out;
-        }();
+        boost::endian::little_uint16_buf_t serializedType{};
+        std::memcpy(
+            static_cast<void*>(&serializedType), i, sizeof(serializedType));
+        std::advance(i, sizeof(serializedType));
 
         type = static_cast<identifier::Type>(serializedType.value());
 
-        if (false == is_supported(type)) {
+        if (!is_supported(type)) {
             algorithm = identifier::Algorithm::invalid;
 
             throw std::runtime_error{"unsupported type"};
@@ -748,7 +705,7 @@ auto Identifier::GetString(String& id) const -> void
 {
     const auto value = to_string();
 
-    if (0 == value.size()) {
+    if (value.empty()) {
         id.Release();
     } else {
         id.Set(value.c_str());
@@ -764,14 +721,10 @@ auto Identifier::IDToHashType(const identifier::Algorithm type)
             {identifier::Algorithm::blake2b160, crypto::HashType::Blake2b160},
             {identifier::Algorithm::blake2b256, crypto::HashType::Blake2b256},
         };
+    if (const auto iter = map.find(type); iter != map.end())
+        return iter->second;
 
-    try {
-
-        return map.at(type);
-    } catch (...) {
-
-        return crypto::HashType::None;
-    }
+    return crypto::HashType::None;
 }
 
 auto Identifier::is_compatible(
@@ -833,13 +786,10 @@ auto Identifier::hash_bytes(const identifier::Algorithm type) noexcept
             {identifier::Algorithm::blake2b256, 32u},
         };
 
-    try {
+    if (const auto iter = map.find(type); iter != map.end())
+        return iter->second;
 
-        return map.at(type);
-    } catch (...) {
-
-        return 0u;
-    }
+    return 0u;
 }
 
 auto Identifier::Randomize(const std::size_t size) -> bool
@@ -939,28 +889,24 @@ auto Identifier::to_string() const noexcept -> UnallocatedCString
         return {};
     }
 
-    const auto preimage = [&] {
-        auto out = Data::Factory();
-        const auto payload = size();
+    auto preimage = Data::Factory();
+    const auto payload = size();
 
-        if (0 == payload) { return out; }
-
+    if (0 != payload) {
         const auto type = boost::endian::little_uint16_buf_t{
             static_cast<std::uint16_t>(type_)};
-        out->resize(sizeof(algorithm_) + sizeof(type) + payload);
+        preimage->resize(sizeof(algorithm_) + sizeof(type) + payload);
 
-        OT_ASSERT(out->size() == required_payload(algorithm_));
+        OT_ASSERT(preimage->size() == required_payload(algorithm_));
 
-        auto* i = static_cast<std::byte*>(out->data());
+        auto* i = static_cast<std::byte*>(preimage->data());
         std::memcpy(i, &algorithm_, sizeof(algorithm_));
         std::advance(i, sizeof(algorithm_));
         std::memcpy(i, static_cast<const void*>(&type), sizeof(type));
         std::advance(i, sizeof(type));
         std::memcpy(i, data(), payload);
         std::advance(i, payload);
-
-        return out;
-    }();
+    }
     auto ss = std::stringstream{};
 
     if (0 < preimage->size()) {

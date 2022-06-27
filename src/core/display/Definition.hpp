@@ -49,7 +49,7 @@ struct Definition::Imp {
     {
         auto lock = Lock{lock_};
 
-        if (false == cached_.has_value()) {
+        if (!cached_.has_value()) {
             auto map = Map{};
             auto index = Index{0};
 
