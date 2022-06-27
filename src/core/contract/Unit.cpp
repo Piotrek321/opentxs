@@ -7,12 +7,9 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "core/contract/Unit.hpp"  // IWYU pragma: associated
 
-#include <cmath>  // IWYU pragma: keep
 #include <cstdio>
 #include <memory>
-#include <sstream>  // IWYU pragma: keep
 #include <string_view>
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -38,20 +35,14 @@
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/display/Scale.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
-#include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
-#include "serialization/protobuf/CurrencyParams.pb.h"
-#include "serialization/protobuf/DisplayScale.pb.h"
 #include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/ScaleRatio.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
@@ -66,7 +57,7 @@ auto Factory::UnitDefinition(const api::Session& api) noexcept
 auto Factory::UnitDefinition(
     const api::Session& api,
     const Nym_p& nym,
-    const proto::UnitDefinition serialized) noexcept
+    const proto::UnitDefinition& serialized) noexcept
     -> std::shared_ptr<contract::Unit>
 {
     switch (translate(serialized.type())) {
@@ -98,8 +89,6 @@ const VersionNumber Unit::MaxVersion{2};
 
 namespace opentxs::contract::implementation
 {
-const UnallocatedMap<VersionNumber, VersionNumber>
-    Unit::unit_of_account_version_map_{{2, 6}};
 const Unit::Locale Unit::locale_{};
 
 Unit::Unit(
@@ -122,7 +111,7 @@ Unit::Unit(
 Unit::Unit(
     const api::Session& api,
     const Nym_p& nym,
-    const SerializedType serialized)
+    const SerializedType& serialized)
     : Signable(
           api,
           nym,
@@ -134,8 +123,8 @@ Unit::Unit(
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
               : Signatures{})
-    , unit_of_account_(get_unitofaccount(serialized))
-    , display_definition_(get_displayscales(serialized))
+    , unit_of_account_(get_unit_of_account(serialized))
+    , display_definition_(get_display_scales(serialized))
     , redemption_increment_(factory::Amount(serialized.redemption_increment()))
     , short_name_(serialized.name())
 {
@@ -229,9 +218,8 @@ auto Unit::AddAccountRecord(
         // --------------------------------          // every account should map
         // to the SAME instrument definition id.)
 
-        if (false ==
-            strInstrumentDefinitionID->Compare(str2.c_str()))  // should
-                                                               // never
+        if (!strInstrumentDefinitionID->Compare(str2.c_str()))  // should
+                                                                // never
         // happen.
         {
             LogError()(OT_PRETTY_CLASS())(
@@ -283,7 +271,7 @@ auto Unit::contract(const Lock& lock) const -> SerializedType
 {
     auto contract = SigVersion(lock);
 
-    if (1 <= signatures_.size()) {
+    if (!signatures_.empty()) {
         *(contract.mutable_signature()) = *(signatures_.front());
     }
 
@@ -417,7 +405,7 @@ auto Unit::EraseAccountRecord(
     return true;
 }
 
-auto Unit::get_displayscales(const SerializedType& serialized) const
+auto Unit::get_display_scales(const SerializedType& serialized)
     -> std::optional<display::Definition>
 {
     if (serialized.has_params()) {
@@ -425,29 +413,26 @@ auto Unit::get_displayscales(const SerializedType& serialized) const
         auto scales = display::Definition::Scales{};
 
         for (auto& scale : params.scales()) {
+            Vector<display::Scale::Ratio> ratios = {};
+
+            for (auto& ratio : scale.ratios()) {
+                ratios.emplace_back(std::pair{ratio.base(), ratio.power()});
+            }
+
             scales.emplace_back(std::pair(
                 scale.name(),
                 display::Scale{
                     scale.prefix(),
                     scale.suffix(),
-                    [&] {
-                        auto out = Vector<display::Scale::Ratio>{};
-
-                        for (auto& ratio : scale.ratios()) {
-                            out.emplace_back(
-                                std::pair{ratio.base(), ratio.power()});
-                        }
-
-                        return out;
-                    }(),
+                    std::move(ratios),
                     scale.default_minimum_decimals(),
                     scale.default_maximum_decimals()}));
         }
 
-        if (0 < scales.size()) {
-            return std::optional<display::Definition>(display::Definition(
+        if (!scales.empty()) {
+            return {display::Definition(
                 display::Definition::Name(params.short_name()),
-                std::move(scales)));
+                std::move(scales))};
         }
     }
     return {};
@@ -464,7 +449,7 @@ auto Unit::GetID(const api::Session& api, const SerializedType& contract)
     return api.Factory().InternalSession().UnitID(contract);
 }
 
-auto Unit::get_unitofaccount(const SerializedType& serialized) const
+auto Unit::get_unit_of_account(const SerializedType& serialized)
     -> opentxs::UnitType
 {
     if (serialized.has_params()) {
@@ -536,7 +521,7 @@ auto Unit::Serialize() const noexcept -> OTData
 auto Unit::Serialize(AllocateOutput destination, bool includeNym) const -> bool
 {
     auto serialized = proto::UnitDefinition{};
-    if (false == Serialize(serialized, includeNym)) {
+    if (!Serialize(serialized, includeNym)) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize unit definition.")
             .Flush();
         return false;
@@ -555,7 +540,7 @@ auto Unit::Serialize(SerializedType& serialized, bool includeNym) const -> bool
 
     if (includeNym && nym_) {
         auto publicNym = proto::Nym{};
-        if (false == nym_->Internal().Serialize(publicNym)) { return false; }
+        if (!nym_->Internal().Serialize(publicNym)) { return false; }
         *(serialized.mutable_issuer_nym()) = publicNym;
     }
 
@@ -609,7 +594,7 @@ auto Unit::validate(const Lock& lock) const -> bool
 
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE, true);
 
-    if (1 > signatures_.size()) {
+    if (signatures_.empty()) {
         LogError()(OT_PRETTY_CLASS())("Missing signature.").Flush();
 
         return false;
@@ -694,7 +679,7 @@ auto Unit::VisitAccountRecords(
                 const auto accountID = Identifier::Factory(str_acct_id);
                 auto account = wallet.Internal().Account(accountID);
 
-                if (false == bool(account)) {
+                if (!account) {
                     LogError()(OT_PRETTY_CLASS())("Unable to load account ")(
                         str_acct_id)(".")
                         .Flush();
@@ -702,7 +687,7 @@ auto Unit::VisitAccountRecords(
                     continue;
                 }
 
-                if (false == visitor.Trigger(account.get(), reason)) {
+                if (!visitor.Trigger(account.get(), reason)) {
                     LogError()(OT_PRETTY_CLASS())(
                         "Error: Trigger failed for account ")(str_acct_id)
                         .Flush();

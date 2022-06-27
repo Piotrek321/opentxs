@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <iterator>
 #include <memory>
 #include <stdexcept>
 #include <tuple>
@@ -37,8 +36,6 @@
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/ListenAddress.pb.h"
 #include "serialization/protobuf/Nym.pb.h"
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
@@ -63,9 +60,8 @@ auto Factory::ServerContract(
 {
     using ReturnType = contract::implementation::Server;
 
-    if (false == bool(nym)) { return {}; }
-    if (false ==
-        nym->HasCapability(identity::NymCapability::AUTHENTICATE_CONNECTION)) {
+    if (!nym) { return {}; }
+    if (!nym->HasCapability(identity::NymCapability::AUTHENTICATE_CONNECTION)) {
         return {};
     }
 
@@ -101,7 +97,7 @@ auto Factory::ServerContract(
         auto& contract = *output;
         Lock lock(contract.lock_);
 
-        if (false == contract.update_signature(lock, reason)) {
+        if (!contract.update_signature(lock, reason)) {
             throw std::runtime_error{"Failed to sign contract"};
         }
 
@@ -125,7 +121,7 @@ auto Factory::ServerContract(
 {
     using ReturnType = contract::implementation::Server;
 
-    if (false == proto::Validate<proto::ServerContract>(serialized, VERBOSE)) {
+    if (!proto::Validate<proto::ServerContract>(serialized, VERBOSE)) {
         return nullptr;
     }
 
@@ -213,7 +209,7 @@ auto Server::EffectiveName() const -> UnallocatedCString
     // wallet. This can be fixed correctly by implementing in-place updates of
     // Nym credentials
     const auto nym = api_.Wallet().Nym(nym_->ID());
-    const auto output = nym->Name();
+    auto output = nym->Name();
 
     if (output.empty()) { return name_; }
 
@@ -250,7 +246,7 @@ auto Server::ConnectInfo(
     AddressType& actual,
     const AddressType& preferred) const -> bool
 {
-    if (0 < listen_params_.size()) {
+    if (!listen_params_.empty()) {
         for (auto& endpoint : listen_params_) {
             const auto& type = std::get<0>(endpoint);
             const auto& url = std::get<2>(endpoint);
@@ -283,7 +279,7 @@ auto Server::ConnectInfo(
 auto Server::contract(const Lock& lock) const -> proto::ServerContract
 {
     auto contract = SigVersion(lock);
-    if (0 < signatures_.size()) {
+    if (!signatures_.empty()) {
         *(contract.mutable_signature()) = *(signatures_.front());
     }
 
@@ -356,7 +352,7 @@ auto Server::Serialize(AllocateOutput destination, bool includeNym) const
     -> bool
 {
     auto serialized = proto::ServerContract{};
-    if (false == Serialize(serialized, includeNym)) {
+    if (!Serialize(serialized, includeNym)) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize server.").Flush();
         return false;
     }
@@ -375,7 +371,7 @@ auto Server::Serialize(proto::ServerContract& serialized, bool includeNym) const
 
     if (includeNym && nym_) {
         auto publicNym = proto::Nym{};
-        if (false == nym_->Internal().Serialize(publicNym)) { return false; }
+        if (!nym_->Internal().Serialize(publicNym)) { return false; }
         *(serialized.mutable_publicnym()) = publicNym;
     }
 
@@ -455,7 +451,7 @@ auto Server::validate(const Lock& lock) const -> bool
         return false;
     }
 
-    if (1 > signatures_.size()) {
+    if (signatures_.empty()) {
         LogError()(OT_PRETTY_CLASS())("Missing signature.").Flush();
 
         return false;

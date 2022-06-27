@@ -15,7 +15,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::contract::implementation
 {
@@ -193,7 +192,7 @@ auto Signable::verify_write_lock(const Lock& lock) const -> bool
         return false;
     }
 
-    if (false == lock.owns_lock()) {
+    if (!lock.owns_lock()) {
         LogError()(OT_PRETTY_CLASS())("Lock not owned.").Flush();
 
         return false;

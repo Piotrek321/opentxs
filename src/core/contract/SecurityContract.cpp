@@ -17,7 +17,6 @@
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "serialization/protobuf/ContractEnums.pb.h"
-#include "serialization/protobuf/EquityParams.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
@@ -46,7 +45,7 @@ auto Factory::SecurityContract(
         displayDefinition,
         redemptionIncrement);
 
-    if (false == bool(output)) { return {}; }
+    if (!output) { return {}; }
 
     auto& contract = *output;
     Lock lock(contract.lock_);
@@ -66,20 +65,20 @@ auto Factory::SecurityContract(
 auto Factory::SecurityContract(
     const api::Session& api,
     const Nym_p& nym,
-    const proto::UnitDefinition serialized) noexcept
+    const proto::UnitDefinition& serialized) noexcept
     -> std::shared_ptr<contract::unit::Security>
 {
     using ReturnType = contract::unit::implementation::Security;
 
-    if (false == proto::Validate<ReturnType::SerializedType>(
-                     serialized, VERBOSE, true)) {
+    if (!proto::Validate<ReturnType::SerializedType>(
+            serialized, VERBOSE, true)) {
 
         return {};
     }
 
     auto output = std::make_shared<ReturnType>(api, nym, serialized);
 
-    if (false == bool(output)) { return {}; }
+    if (!output) { return {}; }
 
     auto& contract = *output;
     Lock lock(contract.lock_);
@@ -118,7 +117,7 @@ Security::Security(
 Security::Security(
     const api::Session& api,
     const Nym_p& nym,
-    const proto::UnitDefinition serialized)
+    const proto::UnitDefinition& serialized)
     : Unit(api, nym, serialized)
 {
     Lock lock(lock_);

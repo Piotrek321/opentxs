@@ -57,9 +57,6 @@ class Unit : virtual public contract::Unit,
              public opentxs::contract::implementation::Signable
 {
 public:
-    static const UnallocatedMap<VersionNumber, VersionNumber>
-        unit_of_account_version_map_;
-
     static auto GetID(const api::Session& api, const SerializedType& contract)
         -> OTIdentifier;
 
@@ -119,7 +116,7 @@ protected:
     Unit(
         const api::Session& api,
         const Nym_p& nym,
-        const SerializedType serialized);
+        const SerializedType& serialized);
     Unit(const Unit&);
 
 private:
@@ -136,9 +133,9 @@ private:
 
     auto contract(const Lock& lock) const -> SerializedType;
     auto GetID(const Lock& lock) const -> OTIdentifier override;
-    auto get_displayscales(const SerializedType&) const
+    static auto get_display_scales(const SerializedType&)
         -> std::optional<display::Definition>;
-    auto get_unitofaccount(const SerializedType&) const -> opentxs::UnitType;
+    static auto get_unit_of_account(const SerializedType&) -> opentxs::UnitType;
     auto verify_signature(const Lock& lock, const proto::Signature& signature)
         const -> bool override;
 

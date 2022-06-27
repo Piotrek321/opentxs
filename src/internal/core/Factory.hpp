@@ -650,7 +650,7 @@ public:
     static auto SecurityContract(
         const api::Session& api,
         const Nym_p& nym,
-        const proto::UnitDefinition serialized) noexcept
+        const proto::UnitDefinition& serialized) noexcept
         -> std::shared_ptr<contract::unit::Security>;
     static auto ServerContract(const api::Session& api) noexcept
         -> std::unique_ptr<contract::Server>;
@@ -688,7 +688,7 @@ public:
     static auto UnitDefinition(
         const api::Session& api,
         const Nym_p& nym,
-        const proto::UnitDefinition serialized) noexcept
+        const proto::UnitDefinition& serialized) noexcept
         -> std::shared_ptr<contract::Unit>;
     static auto VerificationCredential(
         const api::Session& api,
