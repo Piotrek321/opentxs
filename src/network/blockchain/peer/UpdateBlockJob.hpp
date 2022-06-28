@@ -21,13 +21,10 @@ public:
         -> JobUpdate;
     auto operator()(opentxs::blockchain::node::CfilterJob& job) noexcept
         -> JobUpdate;
-    auto operator()(opentxs::blockchain::node::BlockJob& job) noexcept
-        -> JobUpdate;
 
-    UpdateBlockJob(Imp& parent, ReadView data) noexcept;
+    UpdateBlockJob(ReadView data) noexcept;
 
 private:
-    Imp& parent_;
     const ReadView data_;
 };
 }  // namespace opentxs::network::blockchain::internal

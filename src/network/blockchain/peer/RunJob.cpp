@@ -38,10 +38,4 @@ auto Peer::Imp::RunJob::operator()(
 {
     parent_.transmit_request_cfilters(job);
 }
-
-auto Peer::Imp::RunJob::operator()(
-    opentxs::blockchain::node::BlockJob& job) noexcept -> void
-{
-    parent_.transmit_request_blocks(job);
-}
 }  // namespace opentxs::network::blockchain::internal

@@ -17,7 +17,10 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
-#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/blockchain/Common.hpp"
+#include "ottest/fixtures/blockchain/ScanListener.hpp"
+#include "ottest/fixtures/blockchain/regtest/Base.hpp"
+#include "ottest/fixtures/blockchain/regtest/Normal.hpp"
 #include "ottest/fixtures/common/Counter.hpp"
 
 namespace ottest
@@ -288,8 +291,11 @@ TEST_F(Regtest_stress, mine_initial_balance)
 
 TEST_F(Regtest_stress, alice_after_receive_wallet)
 {
-    const auto& network =
-        client_1_.Network().Blockchain().GetChain(test_chain_);
+    const auto handle = client_1_.Network().Blockchain().GetChain(test_chain_);
+
+    ASSERT_TRUE(handle);
+
+    const auto& network = handle.get();
     const auto& wallet = network.Wallet();
     const auto& nym = alice_.ID();
     const auto& account = alice_account_.ID();
@@ -387,7 +393,11 @@ TEST_F(Regtest_stress, alice_after_receive_wallet)
 TEST_F(Regtest_stress, generate_transactions)
 {
     namespace c = std::chrono;
-    const auto& alice = client_1_.Network().Blockchain().GetChain(test_chain_);
+    const auto handle = client_1_.Network().Blockchain().GetChain(test_chain_);
+
+    ASSERT_TRUE(handle);
+
+    const auto& alice = handle.get();
     const auto previous{1u};
     const auto stop = previous + blocks_;
     auto future1 =

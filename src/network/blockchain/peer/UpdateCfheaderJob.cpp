@@ -52,10 +52,4 @@ auto Peer::Imp::UpdateCfheaderJob::operator()(
 {
     return {false, false};
 }
-
-auto Peer::Imp::UpdateCfheaderJob::operator()(
-    opentxs::blockchain::node::BlockJob& job) noexcept -> JobUpdate
-{
-    return {false, false};
-}
 }  // namespace opentxs::network::blockchain::internal

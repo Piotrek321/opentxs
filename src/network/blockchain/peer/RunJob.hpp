@@ -20,7 +20,6 @@ public:
         -> void;
     auto operator()(opentxs::blockchain::node::CfilterJob& job) noexcept
         -> void;
-    auto operator()(opentxs::blockchain::node::BlockJob& job) noexcept -> void;
 
     RunJob(Imp& parent) noexcept;
 

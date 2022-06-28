@@ -210,7 +210,6 @@ private:
     auto not_implemented(
         std::unique_ptr<HeaderType> header,
         zeromq::Frame&&) noexcept(false) -> void;
-    auto process_broadcastblock(Message&& msg) noexcept -> void final;
     auto process_broadcasttx(Message&& msg) noexcept -> void final;
     auto process_getblock(Message&& msg) noexcept -> void final;
     auto process_protocol(Message&& message) noexcept -> void final;
@@ -383,8 +382,6 @@ private:
     auto transmit_protocol_verack() noexcept -> void;
     auto transmit_protocol_version() noexcept -> void;
     auto transmit_request_block_headers() noexcept -> void final;
-    auto transmit_request_blocks(
-        opentxs::blockchain::node::BlockJob& job) noexcept -> void final;
     auto transmit_request_blocks(
         opentxs::blockchain::node::internal::BlockBatch& job) noexcept
         -> void final;

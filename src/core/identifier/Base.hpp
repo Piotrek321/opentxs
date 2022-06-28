@@ -101,7 +101,7 @@ public:
     }
     auto GetString(String& theStr) const -> void final;
     auto str() const -> UnallocatedCString final;
-    auto str(alloc::Resource* alloc) const -> CString final;
+    auto str(alloc::Default alloc) const -> CString final;
     auto Type() const noexcept -> identifier::Type final { return type_; }
 
     using Data::Assign;

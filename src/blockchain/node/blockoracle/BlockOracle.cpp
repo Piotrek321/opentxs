@@ -14,9 +14,9 @@
 #include <utility>
 
 #include "blockchain/node/blockoracle/BlockBatch.hpp"
-#include "blockchain/node/blockoracle/BlockDownloader.hpp"
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/node/Manager.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -136,27 +136,29 @@ BlockOracle::Imp::Imp(
     , db_(db)
     , submit_endpoint_(std::move(submitEndpoint))
     , validator_(get_validator(chain, header))
-    , block_downloader_([&]() -> std::unique_ptr<blockoracle::BlockDownloader> {
-        switch (config.profile_) {
-            case BlockchainProfile::mobile:
-            case BlockchainProfile::desktop:
-            case BlockchainProfile::desktop_native: {
-
-                return {};
-            }
-            case BlockchainProfile::server: {
-
-                return std::make_unique<blockoracle::BlockDownloader>(
-                    api_, db, header, node_, chain, parent);
-            }
-            default: {
-                OT_FAIL;
-            }
-        }
-    }())
+    , block_fetcher_(std::nullopt)
     , cache_(api, node, config, db, chain, alloc)
 {
     OT_ASSERT(validator_);
+
+    switch (config.profile_) {
+        case BlockchainProfile::mobile:
+        case BlockchainProfile::desktop:
+        case BlockchainProfile::desktop_native: {
+        } break;
+        case BlockchainProfile::server: {
+            block_fetcher_ = blockoracle::BlockFetcher{
+                api_,
+                node_.Endpoints(),
+                header,
+                db,
+                chain,
+                config.PeerTarget(chain)};
+        } break;
+        default: {
+            OT_FAIL;
+        }
+    }
 }
 
 BlockOracle::Imp::Imp(
@@ -184,7 +186,7 @@ BlockOracle::Imp::Imp(
 
 auto BlockOracle::Imp::do_shutdown() noexcept -> void
 {
-    if (block_downloader_) { block_downloader_->Shutdown(); }
+    if (block_fetcher_.has_value()) { block_fetcher_->Shutdown(); }
 
     cache_.lock()->Shutdown();
 }
@@ -212,23 +214,18 @@ auto BlockOracle::Imp::GetBlockBatch(boost::shared_ptr<Imp> me) const noexcept
     return imp;
 }
 
-auto BlockOracle::Imp::GetBlockJob() const noexcept -> BlockJob
+auto BlockOracle::Imp::GetBlockJob() const noexcept -> BlockBatch
 {
-    if (block_downloader_) {
+    if (block_fetcher_.has_value()) {
 
-        return block_downloader_->NextBatch();
+        return block_fetcher_->GetJob({});  // TODO allocator
     } else {
 
         return {};
     }
 }
 
-auto BlockOracle::Imp::Heartbeat() const noexcept -> void
-{
-    trigger();
-
-    if (block_downloader_) { block_downloader_->Heartbeat(); }
-}
+auto BlockOracle::Imp::Heartbeat() const noexcept -> void { trigger(); }
 
 auto BlockOracle::Imp::LoadBitcoin(const block::Hash& block) const noexcept
     -> BitcoinBlockResult
@@ -272,7 +269,7 @@ auto BlockOracle::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
             do_work();
         } break;
         case Work::start_downloader: {
-            if (block_downloader_) { block_downloader_->Start(); }
+            if (block_fetcher_.has_value()) { block_fetcher_->Start(); }
         } break;
         case Work::init: {
             do_init();
@@ -335,7 +332,7 @@ auto BlockOracle::GetBlockBatch() const noexcept -> BlockBatch
     return imp_->GetBlockBatch(imp_);
 }
 
-auto BlockOracle::GetBlockJob() const noexcept -> BlockJob
+auto BlockOracle::GetBlockJob() const noexcept -> BlockBatch
 {
     return imp_->GetBlockJob();
 }

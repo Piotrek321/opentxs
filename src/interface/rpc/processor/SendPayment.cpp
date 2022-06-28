@@ -14,6 +14,7 @@
 
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
@@ -103,7 +104,8 @@ auto RPC::send_payment_blockchain(
             const auto amount = in.Amount();
             const auto& address = in.DestinationAccount();
             const auto& memo = in.Memo();
-            const auto& network = api.Network().Blockchain().GetChain(chain);
+            const auto handle = api.Network().Blockchain().GetChain(chain);
+            const auto& network = handle.get();
             const auto recipient = api.Factory().PaymentCode(address);
 
             if (0 < recipient.Version()) {

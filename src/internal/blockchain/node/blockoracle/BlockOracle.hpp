@@ -42,7 +42,7 @@ public:
     auto DownloadQueue() const noexcept -> std::size_t final;
     auto Endpoint() const noexcept -> std::string_view;
     auto GetBlockBatch() const noexcept -> BlockBatch;
-    auto GetBlockJob() const noexcept -> BlockJob;
+    auto GetBlockJob() const noexcept -> BlockBatch;
     auto Heartbeat() const noexcept -> void;
     auto Internal() const noexcept -> const internal::BlockOracle& final
     {

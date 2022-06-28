@@ -138,18 +138,18 @@ auto Wallet::GetBalance(const crypto::Key& key) const noexcept -> Balance
     return db_.GetBalance(key);
 }
 
-auto Wallet::GetOutputs(alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+auto Wallet::GetOutputs(alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
     return GetOutputs(TxoState::All, alloc);
 }
 
-auto Wallet::GetOutputs(TxoState type, alloc::Resource* alloc) const noexcept
+auto Wallet::GetOutputs(TxoState type, alloc::Default alloc) const noexcept
     -> Vector<UTXO>
 {
     return db_.GetOutputs(type, alloc);
 }
 
-auto Wallet::GetOutputs(const identifier::Nym& owner, alloc::Resource* alloc)
+auto Wallet::GetOutputs(const identifier::Nym& owner, alloc::Default alloc)
     const noexcept -> Vector<UTXO>
 {
     return GetOutputs(owner, TxoState::All, alloc);
@@ -158,7 +158,7 @@ auto Wallet::GetOutputs(const identifier::Nym& owner, alloc::Resource* alloc)
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
     TxoState type,
-    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+    alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
     return db_.GetOutputs(owner, type, alloc);
 }
@@ -166,7 +166,7 @@ auto Wallet::GetOutputs(
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
     const Identifier& subaccount,
-    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+    alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
     return GetOutputs(owner, subaccount, TxoState::All, alloc);
 }
@@ -175,7 +175,7 @@ auto Wallet::GetOutputs(
     const identifier::Nym& owner,
     const Identifier& node,
     TxoState type,
-    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+    alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
     return db_.GetOutputs(owner, node, type, alloc);
 }
@@ -183,7 +183,7 @@ auto Wallet::GetOutputs(
 auto Wallet::GetOutputs(
     const crypto::Key& key,
     TxoState type,
-    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+    alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
     return db_.GetOutputs(key, type, alloc);
 }

@@ -6,14 +6,14 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <thread>
+#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/util/Log.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
-#include "ottest/fixtures/blockchain/Regtest.hpp"
-#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
+#include "ottest/fixtures/blockchain/regtest/Simple.hpp"
 
 namespace ottest
 {
@@ -78,7 +78,7 @@ TEST_F(Regtest_fixture_simple, send_to_client)
         SendCoins(*receiver, *sender, target_height, coin_to_send);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
-            *sender, send_transactions_, transactions_ptxid_);
+            *sender, send_transactions_, transactions_/*transactions_ptxid_*/);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
         send_transactions_.clear();
 

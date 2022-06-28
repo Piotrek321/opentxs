@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "internal/api/network/Asio.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/asio/Socket.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/util/Container.hpp"
@@ -49,7 +50,24 @@ auto Socket::Imp::Close() noexcept -> void
 
 auto Socket::Imp::Connect(const ReadView id) noexcept -> bool
 {
-    return asio_.Connect(id, *this);
+    return asio_.Connect(id, shared_from_this());
+}
+
+auto Socket::Imp::Destroy(void* imp) noexcept -> void
+{
+    OT_ASSERT(nullptr != imp);
+
+    auto p = std::unique_ptr<Pointer>{static_cast<Pointer*>(imp)};
+
+    OT_ASSERT(p);
+
+    p->reset();
+    p.reset();
+}
+
+auto Socket::Imp::Get(void* imp) noexcept -> Imp&
+{
+    return **static_cast<Pointer*>(imp);
 }
 
 auto Socket::Imp::Receive(
@@ -57,19 +75,21 @@ auto Socket::Imp::Receive(
     const OTZMQWorkType type,
     const std::size_t bytes) noexcept -> bool
 {
-    return asio_.Receive(id, type, bytes, *this);
+    return asio_.Receive(id, type, bytes, shared_from_this());
 }
 
 auto Socket::Imp::Transmit(const ReadView notify, const ReadView data) noexcept
--> bool {
-    return asio_.Transmit(notify, data, *this);
+    -> bool
+{
+    return asio_.Transmit(notify, data, shared_from_this());
 }
 
 Socket::Imp::~Imp() { Close(); }
 
-Socket::Socket(Imp* imp) noexcept
-    : imp_(imp)
+Socket::Socket(std::function<void*()>&& builder) noexcept
+    : imp_(std::invoke(builder))
 {
+    OT_ASSERT(nullptr != imp_);
 }
 
 Socket::Socket(Socket&& rhs) noexcept
@@ -78,11 +98,11 @@ Socket::Socket(Socket&& rhs) noexcept
     std::swap(imp_, rhs.imp_);
 }
 
-auto Socket::Close() noexcept -> void { imp_->Close(); }
+auto Socket::Close() noexcept -> void { Imp::Get(imp_).Close(); }
 
 auto Socket::Connect(const ReadView id) noexcept -> bool
 {
-    return imp_->Connect(id);
+    return Imp::Get(imp_).Connect(id);
 }
 
 auto Socket::Receive(
@@ -90,14 +110,17 @@ auto Socket::Receive(
     const OTZMQWorkType type,
     const std::size_t bytes) noexcept -> bool
 {
-    return imp_->Receive(id, type, bytes);
+    return Imp::Get(imp_).Receive(id, type, bytes);
 }
 
     auto Socket::Transmit(const ReadView notify, const ReadView data) noexcept
     -> bool
-    {
-        return imp_->Transmit(notify, data);
-    }
+{
+    return Imp::Get(imp_).Transmit(notify, data);
+}
 
-Socket::~Socket() { std::unique_ptr<Imp>{imp_}.reset(); }
+Socket::~Socket()
+{
+    if (nullptr != imp_) { Imp::Destroy(imp_); }
+}
 }  // namespace opentxs::network::asio

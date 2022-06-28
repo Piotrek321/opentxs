@@ -8,7 +8,8 @@
 #include <chrono>
 
 #include "internal/util/P0330.hpp"
-#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/blockchain/Common.hpp"
+#include "ottest/fixtures/blockchain/regtest/Single.hpp"
 
 namespace ottest
 {
@@ -27,7 +28,11 @@ TEST_F(Regtest_fixture_single, client_disconnection_timeout)
 
     const auto start = ot::Clock::now();
     const auto limit = 90s;
-    const auto& chain = miner_.Network().Blockchain().GetChain(test_chain_);
+    const auto handle = miner_.Network().Blockchain().GetChain(test_chain_);
+
+    ASSERT_TRUE(handle);
+
+    const auto& chain = handle.get();
     auto count = 1_uz;
 
     while ((ot::Clock::now() - start) < limit) {

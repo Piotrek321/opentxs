@@ -108,15 +108,12 @@ enum class PeerManagerJobs : OTZMQWorkType {
     Getheaders = OT_ZMQ_INTERNAL_SIGNAL + 0,
     Getblock = OT_ZMQ_INTERNAL_SIGNAL + 1,
     BroadcastTransaction = OT_ZMQ_INTERNAL_SIGNAL + 2,
-    BroadcastBlock = OT_ZMQ_INTERNAL_SIGNAL + 3,
     JobAvailableCfheaders = OT_ZMQ_INTERNAL_SIGNAL + 4,
     JobAvailableCfilters = OT_ZMQ_INTERNAL_SIGNAL + 5,
     JobAvailableBlock = OT_ZMQ_INTERNAL_SIGNAL + 6,
     Heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,
 };
 
-using BlockJob =
-    download::Batch<std::shared_ptr<const bitcoin::block::Block>, int>;
 using CfheaderJob =
     download::Batch<cfilter::Hash, cfilter::Header, cfilter::Type>;
 using CfilterJob = download::Batch<GCS, cfilter::Header, cfilter::Type>;

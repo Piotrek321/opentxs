@@ -52,9 +52,15 @@ auto Asio::Internal() const noexcept -> internal::Asio&
 auto Asio::MakeSocket(const opentxs::network::asio::Endpoint& endpoint)
     const noexcept -> opentxs::network::asio::Socket
 {
-    return {std::make_unique<opentxs::network::asio::Socket::Imp>(
-                endpoint, *const_cast<Asio*>(this)->imp_)
-                .release()};
+    using Imp = opentxs::network::asio::Socket::Imp;
+    using Shared = std::shared_ptr<Imp>;
+
+    return {[&]() -> void* {
+        return std::make_unique<Shared>(
+                   std::make_shared<Imp>(
+                       endpoint, *const_cast<Asio*>(this)->imp_))
+            .release();
+    }};
 }
 
 auto Asio::NotificationEndpoint() const noexcept -> const char*

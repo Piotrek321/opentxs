@@ -96,7 +96,7 @@ private:
         ItemVector items_;
         DataVector data_;
 
-        Items(alloc::Resource* alloc) noexcept
+        Items(alloc::Default alloc) noexcept
             : items_(alloc)
             , data_(alloc)
         {

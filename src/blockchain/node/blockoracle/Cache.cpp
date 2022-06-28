@@ -19,6 +19,7 @@
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/database/Block.hpp"
 #include "internal/blockchain/node/Config.hpp"
+#include "internal/blockchain/node/Job.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -78,6 +79,7 @@ Cache::Cache(
             }
         }
     }())
+    , peer_target_(config.PeerTarget(chain_))
     , block_available_([&] {
         using Type = opentxs::network::zeromq::socket::Type;
         auto out = api.Network().ZeroMQ().Internal().RawSocket(Type::Push);
@@ -106,7 +108,6 @@ Cache::Cache(
     , hash_index_(alloc)
     , hash_cache_(alloc)
     , mem_(cache_limit_, alloc)
-    , peer_target_(std::nullopt)
     , running_(true)
 {
 }
@@ -147,44 +148,29 @@ auto Cache::GetBatch(allocator_type alloc) noexcept
     static constexpr auto max = 50000_uz;
     static constexpr auto min = 10_uz;
     const auto available = queue_.size();
-    const auto peers = get_peer_target();
-    // NOTE The batch size should approximate the value appropriate for ideal
-    // load balancing across the number of peers which should be active, if the
-    // number of blocks which should be downloaded exceeds a minimum threshold.
-    // The value is capped at a maximum size to prevent exceeding protocol
-    // limits for inv requests.
-    static constexpr auto GetTarget =
-        [](auto available, auto peers, auto max, auto min) {
-            decltype(peers) min_peers{1u};
-            return std::min(
-                max,
-                std::min(
-                    available,
-                    std::max(min, available / std::max(peers, min_peers))));
-        };
-
-    static_assert(GetTarget(1, 0, 50000, 10) == 1);
-    static_assert(GetTarget(1, 4, 50000, 10) == 1);
-    static_assert(GetTarget(9, 0, 50000, 10) == 9);
-    static_assert(GetTarget(9, 4, 50000, 10) == 9);
-    static_assert(GetTarget(11, 4, 50000, 10) == 10);
-    static_assert(GetTarget(11, 0, 50000, 10) == 11);
-    static_assert(GetTarget(40, 4, 50000, 10) == 10);
-    static_assert(GetTarget(40, 0, 50000, 10) == 40);
-    static_assert(GetTarget(45, 4, 50000, 10) == 11);
-    static_assert(GetTarget(45, 2, 50000, 10) == 22);
-    static_assert(GetTarget(45, 0, 50000, 10) == 45);
-    static_assert(GetTarget(45, 2, 2, 10) == 2);
-    static_assert(GetTarget(45, 0, 2, 10) == 2);
-    static_assert(GetTarget(0, 2, 50000, 10) == 0);
-    static_assert(GetTarget(0, 0, 50000, 10) == 0);
-    static_assert(GetTarget(1000000, 4, 50000, 10) == 50000);
-    static_assert(GetTarget(1000000, 0, 50000, 10) == 50000);
-    const auto target = GetTarget(available, peers, max, min);
+    using download::batch_size;
+    static_assert(batch_size(1, 0, 50000, 10) == 1);
+    static_assert(batch_size(1, 4, 50000, 10) == 1);
+    static_assert(batch_size(9, 0, 50000, 10) == 9);
+    static_assert(batch_size(9, 4, 50000, 10) == 9);
+    static_assert(batch_size(11, 4, 50000, 10) == 10);
+    static_assert(batch_size(11, 0, 50000, 10) == 11);
+    static_assert(batch_size(40, 4, 50000, 10) == 10);
+    static_assert(batch_size(40, 0, 50000, 10) == 40);
+    static_assert(batch_size(45, 4, 50000, 10) == 11);
+    static_assert(batch_size(45, 2, 50000, 10) == 22);
+    static_assert(batch_size(45, 0, 50000, 10) == 45);
+    static_assert(batch_size(45, 2, 2, 10) == 2);
+    static_assert(batch_size(45, 0, 2, 10) == 2);
+    static_assert(batch_size(0, 2, 50000, 10) == 0);
+    static_assert(batch_size(0, 0, 50000, 10) == 0);
+    static_assert(batch_size(1000000, 4, 50000, 10) == 50000);
+    static_assert(batch_size(1000000, 0, 50000, 10) == 50000);
+    const auto target = batch_size(available, peer_target_, max, min);
     LogTrace()(OT_PRETTY_CLASS())("creating download batch for ")(
         target)(" block hashes out of ")(available)(" waiting in queue")
         .Flush();
-    auto out = std::make_pair(next_batch_id(), Vector<block::Hash>{alloc});
+    auto out = std::make_pair(download::next_job(), Vector<block::Hash>{alloc});
     const auto& batchID = out.first;
     auto& hashes = out.second;
     hashes.reserve(target);
@@ -201,20 +187,6 @@ auto Cache::GetBatch(allocator_type alloc) noexcept
     }
 
     return out;
-}
-
-auto Cache::get_peer_target() noexcept -> std::size_t
-{
-    if (!peer_target_.has_value()) { peer_target_ = node_.PeerTarget(); }
-
-    return peer_target_.value();
-}
-
-auto Cache::next_batch_id() noexcept -> BatchID
-{
-    static auto counter = std::atomic<BatchID>{0};
-
-    return ++counter;
 }
 
 auto Cache::ProcessBlockRequests(network::zeromq::Message&& in) noexcept -> void

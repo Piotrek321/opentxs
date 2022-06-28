@@ -4,8 +4,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.ko
 #pragma once
 
-#include "ottest/fixtures/blockchain/Regtest.hpp"  // IWYU pragma: associated
-
 #include <gtest/gtest.h>
 #include <chrono>
 #include <thread>
@@ -36,7 +34,7 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Container.hpp"
-#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
+#include "ottest/fixtures/blockchain/regtest/Simple.hpp"
 #include "ottest/fixtures/common/Counter.hpp"
 #include "ottest/fixtures/ui/AccountActivity.hpp"
 #include "ottest/fixtures/ui/AccountList.hpp"

@@ -80,8 +80,8 @@ public:
 
     Imp(const api::Session& api,
         const blockchain::Type chain,
-        allocator_type&& alloc,
-        CString endpoint) noexcept;
+        CString endpoint,
+        allocator_type alloc) noexcept;
 
     ~Imp() final;
 

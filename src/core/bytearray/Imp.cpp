@@ -50,7 +50,7 @@ auto ByteArray::Imp::asHex() const -> UnallocatedCString
         reinterpret_cast<const std::byte*>(data_.data()), data_.size());
 }
 
-auto ByteArray::Imp::asHex(alloc::Resource* alloc) const -> CString
+auto ByteArray::Imp::asHex(alloc::Default alloc) const -> CString
 {
     return to_hex(
         reinterpret_cast<const std::byte*>(data_.data()), data_.size(), alloc);
@@ -329,7 +329,7 @@ auto ByteArray::Imp::str() const -> UnallocatedCString
     return UnallocatedCString{Bytes()};
 }
 
-auto ByteArray::Imp::str(alloc::Resource* alloc) const -> CString
+auto ByteArray::Imp::str(alloc::Default alloc) const -> CString
 {
     return CString{Bytes(), alloc};
 }

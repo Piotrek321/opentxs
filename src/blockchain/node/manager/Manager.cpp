@@ -147,21 +147,21 @@ struct NullWallet final : public node::internal::Wallet {
     {
         return {};
     }
-    auto GetOutputs(alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
+    auto GetOutputs(alloc::Default alloc) const noexcept -> Vector<UTXO> final
     {
         return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(TxoState, alloc::Resource* alloc) const noexcept
+    auto GetOutputs(TxoState, alloc::Default alloc) const noexcept
         -> Vector<UTXO> final
     {
         return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(const identifier::Nym&, alloc::Resource* alloc)
-        const noexcept -> Vector<UTXO> final
+    auto GetOutputs(const identifier::Nym&, alloc::Default alloc) const noexcept
+        -> Vector<UTXO> final
     {
         return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(const identifier::Nym&, TxoState, alloc::Resource* alloc)
+    auto GetOutputs(const identifier::Nym&, TxoState, alloc::Default alloc)
         const noexcept -> Vector<UTXO> final
     {
         return Vector<UTXO>{alloc};
@@ -169,7 +169,7 @@ struct NullWallet final : public node::internal::Wallet {
     auto GetOutputs(
         const identifier::Nym&,
         const Identifier&,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
+        alloc::Default alloc) const noexcept -> Vector<UTXO> final
     {
         return Vector<UTXO>{alloc};
     }
@@ -177,11 +177,11 @@ struct NullWallet final : public node::internal::Wallet {
         const identifier::Nym&,
         const Identifier&,
         TxoState,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO> final
+        alloc::Default alloc) const noexcept -> Vector<UTXO> final
     {
         return Vector<UTXO>{alloc};
     }
-    auto GetOutputs(const crypto::Key&, TxoState, alloc::Resource* alloc)
+    auto GetOutputs(const crypto::Key&, TxoState, alloc::Default alloc)
         const noexcept -> Vector<UTXO> final
     {
         return Vector<UTXO>{alloc};
@@ -218,6 +218,7 @@ Base::Base(
     : Worker(api, 0s)
     , chain_(type)
     , config_(config)
+    , endpoints_(alloc::Default{})  // TODO allocator
     , filter_type_([&] {
         switch (config_.profile_) {
             case BlockchainProfile::mobile:
@@ -366,7 +367,7 @@ Base::Base(
     header_.Internal().Init();
     init_executor({UnallocatedCString{
         api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)}});
-    LogVerbose()(config_.print()).Flush();
+    LogVerbose()(config_.Print()).Flush();  // TODO allocator
 
     for (const auto& addr : api_.GetOptions().BlockchainBindIpv4()) {
         try {
@@ -496,7 +497,7 @@ auto Base::AddBlock(const std::shared_ptr<const bitcoin::block::Block> pBlock)
         return false;
     }
 
-    return peer_.BroadcastBlock(block);
+    return true;  // FIXME
 }
 
 auto Base::AddPeer(const blockchain::p2p::Address& address) const noexcept
@@ -678,11 +679,6 @@ auto Base::notify_sync_client() const noexcept -> void
     }
 }
 
-auto Base::PeerTarget() const noexcept -> std::size_t
-{
-    return peer_.PeerTarget();
-}
-
 auto Base::pipeline(zmq::Message&& in) -> void
 {
     if (!running_.load()) { return; }
@@ -754,6 +750,7 @@ auto Base::process_block(network::zeromq::Message&& in) noexcept -> void
         return;
     }
 
+    header_.Internal().SubmitBlock(body.at(1).Bytes());
     block_.SubmitBlock(body.at(1).Bytes());
 }
 

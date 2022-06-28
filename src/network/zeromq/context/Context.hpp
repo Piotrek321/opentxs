@@ -128,7 +128,7 @@ public:
         const EndpointArgs& dealer,
         const Vector<SocketData>& extra,
         const std::optional<BatchID>& preallocated,
-        alloc::Resource* pmr) const noexcept -> zeromq::Pipeline final;
+        alloc::Default pmr) const noexcept -> zeromq::Pipeline final;
     auto PreallocateBatch() const noexcept -> BatchID final;
     auto Proxy(
         socket::Socket& frontend,

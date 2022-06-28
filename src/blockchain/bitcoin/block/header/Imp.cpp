@@ -146,30 +146,31 @@ auto BitcoinBlockHeader(
     using ReturnType = blockchain::bitcoin::block::implementation::Header;
 
     try {
-        if (OT_BITCOIN_BLOCK_HEADER_SIZE != raw.size()) {
+        if (OT_BITCOIN_BLOCK_HEADER_SIZE > raw.size()) {
             const auto error =
-                CString{"Invalid serialized block size. Got: "}
+                CString{"Invalid serialized block header size. Got: "}
                     .append(std::to_string(raw.size()))
-                    .append(" expected ")
+                    .append(" expected at least ")
                     .append(std::to_string(OT_BITCOIN_BLOCK_HEADER_SIZE));
             throw std::runtime_error{error.c_str()};
         }
 
+        const auto header = ReadView{raw.data(), OT_BITCOIN_BLOCK_HEADER_SIZE};
         static_assert(
             OT_BITCOIN_BLOCK_HEADER_SIZE == sizeof(ReturnType::BitcoinFormat));
 
         auto serialized = ReturnType::BitcoinFormat{};
 
-        OT_ASSERT(sizeof(serialized) == raw.size());
+        OT_ASSERT(sizeof(serialized) <= header.size());
 
         auto* const result = std::memcpy(
-            static_cast<void*>(&serialized), raw.data(), raw.size());
+            static_cast<void*>(&serialized), header.data(), header.size());
 
         if (nullptr == result) {
             throw std::runtime_error{"failed to deserialize header"};
         }
 
-        auto hash = ReturnType::calculate_hash(api, chain, raw);
+        auto hash = ReturnType::calculate_hash(api, chain, header);
         const auto isGenesis =
             blockchain::node::HeaderOracle::GenesisBlockHash(chain) == hash;
         auto imp = std::make_unique<ReturnType>(
@@ -177,7 +178,7 @@ auto BitcoinBlockHeader(
             chain,
             ReturnType::subversion_default_,
             std::move(hash),
-            ReturnType::calculate_pow(api, chain, raw),
+            ReturnType::calculate_pow(api, chain, header),
             serialized.version_.value(),
             ReadView{serialized.previous_.data(), serialized.previous_.size()},
             ReadView{serialized.merkle_.data(), serialized.merkle_.size()},

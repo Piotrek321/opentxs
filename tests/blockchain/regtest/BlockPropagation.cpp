@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 
-#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/blockchain/regtest/Single.hpp"
 
 namespace ottest
 {

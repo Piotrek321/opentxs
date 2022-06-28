@@ -27,7 +27,7 @@ public:
     static constexpr auto payload_size_ = std::size_t{N};
 
     auto asHex() const -> UnallocatedCString override;
-    auto asHex(alloc::Resource* alloc) const -> CString override;
+    auto asHex(alloc::Default alloc) const -> CString override;
     auto at(const std::size_t position) const -> const std::byte& final;
     auto begin() const -> const_iterator final;
     auto Bytes() const noexcept -> ReadView final;
@@ -60,7 +60,7 @@ public:
     auto operator>=(const Data& rhs) const noexcept -> bool final;
     auto size() const -> std::size_t final { return N; }
     auto str() const -> UnallocatedCString override;
-    auto str(alloc::Resource* alloc) const -> CString override;
+    auto str(alloc::Default alloc) const -> CString override;
 
     [[nodiscard]] auto Assign(const Data& source) noexcept -> bool final;
     [[nodiscard]] auto Assign(const ReadView source) noexcept -> bool final;

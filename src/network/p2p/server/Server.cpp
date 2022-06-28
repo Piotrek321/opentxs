@@ -30,6 +30,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -247,8 +248,13 @@ auto Server::Imp::process_pushtx(
 
         if (!tx) { throw std::runtime_error{"Invalid transaction"}; }
 
-        const auto& node =
-            api_.Network().Blockchain().GetChain(chain).Internal();
+        const auto handle = api_.Network().Blockchain().GetChain(chain);
+
+        if (false == handle.IsValid()) {
+            throw std::runtime_error{"invalid chain"};
+        }
+
+        const auto& node = handle.get().Internal();
         success = node.BroadcastTransaction(*tx);
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();

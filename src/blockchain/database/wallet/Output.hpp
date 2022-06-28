@@ -115,21 +115,21 @@ public:
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
         const noexcept -> Balance;
     auto GetBalance(const crypto::Key& key) const noexcept -> Balance;
-    auto GetOutputs(node::TxoState type, alloc::Resource* alloc) const noexcept
+    auto GetOutputs(node::TxoState type, alloc::Default alloc) const noexcept
         -> Vector<UTXO>;
     auto GetOutputs(
         const identifier::Nym& owner,
         node::TxoState type,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO>;
+        alloc::Default alloc) const noexcept -> Vector<UTXO>;
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& node,
         node::TxoState type,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO>;
+        alloc::Default alloc) const noexcept -> Vector<UTXO>;
     auto GetOutputs(
         const crypto::Key& key,
         node::TxoState type,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO>;
+        alloc::Default alloc) const noexcept -> Vector<UTXO>;
     auto GetOutputTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<node::TxoTag>;
     auto GetPosition() const noexcept -> block::Position;
@@ -138,9 +138,8 @@ public:
         -> UnallocatedVector<block::pTxid>;
     auto GetUnconfirmedTransactions() const noexcept
         -> UnallocatedSet<block::pTxid>;
-    auto GetUnspentOutputs(alloc::Resource* alloc) const noexcept
-        -> Vector<UTXO>;
-    auto GetUnspentOutputs(const NodeID& balanceNode, alloc::Resource* alloc)
+    auto GetUnspentOutputs(alloc::Default alloc) const noexcept -> Vector<UTXO>;
+    auto GetUnspentOutputs(const NodeID& balanceNode, alloc::Default alloc)
         const noexcept -> Vector<UTXO>;
     auto GetWalletHeight() const noexcept -> block::Height;
     auto PublishBalance() const noexcept -> void;

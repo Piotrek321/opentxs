@@ -34,11 +34,9 @@ auto FeeSources(
     const api::Session& api,
     const blockchain::Type chain,
     const std::string_view endpoint,
-    alloc::Resource* mr) noexcept
+    alloc::Default mr) noexcept
     -> ForwardList<blockchain::node::wallet::FeeSource>
 {
-    if (nullptr == mr) { mr = alloc::System(); }
-
     using ReturnType = blockchain::node::wallet::FeeSource::Imp;
     auto alloc = ReturnType::allocator_type{mr};
     auto out = ForwardList<blockchain::node::wallet::FeeSource>{alloc};

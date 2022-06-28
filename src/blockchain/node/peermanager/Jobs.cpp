@@ -30,7 +30,6 @@ PeerManager::Jobs::Jobs(const api::Session& api) noexcept
     , heartbeat_(zmq_.PublishSocket())
     , getblock_(zmq_.PushSocket(zmq::socket::Direction::Bind))
     , broadcast_transaction_(zmq_.PushSocket(zmq::socket::Direction::Bind))
-    , broadcast_block_(zmq_.PublishSocket())
     , endpoint_map_([&] {
         auto map = EndpointMap{};
         listen(map, PeerManagerJobs::Getheaders, getheaders_);
@@ -41,7 +40,6 @@ PeerManager::Jobs::Jobs(const api::Session& api) noexcept
         listen(map, PeerManagerJobs::Getblock, getblock_);
         listen(
             map, PeerManagerJobs::BroadcastTransaction, broadcast_transaction_);
-        listen(map, PeerManagerJobs::BroadcastBlock, broadcast_block_);
 
         return map;
     }())
@@ -54,7 +52,6 @@ PeerManager::Jobs::Jobs(const api::Session& api) noexcept
           {PeerManagerJobs::Getblock, &getblock_.get()},
           {PeerManagerJobs::BroadcastTransaction,
            &broadcast_transaction_.get()},
-          {PeerManagerJobs::BroadcastBlock, &broadcast_block_.get()},
       })
 {
     // WARNING if any publish sockets are converted to push sockets or vice

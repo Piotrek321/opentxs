@@ -10,6 +10,7 @@
 #include <chrono>
 #include <memory>
 #include <optional>
+#include <string_view>
 
 #include "core/Worker.hpp"
 #include "internal/api/network/Blockchain.hpp"
@@ -21,17 +22,21 @@
 #include "internal/util/Mutex.hpp"
 #include "internal/util/P0330.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/BlockchainProfile.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -85,7 +90,6 @@ PeerManager::PeerManager(
     , node_(node)
     , database_(database)
     , chain_(chain)
-    , peer_target_(peer_target(chain_, config))
     , jobs_(api)
     , peers_(
           api,
@@ -99,8 +103,7 @@ PeerManager::PeerManager(
           *this,
           shutdown,
           chain,
-          seednode,
-          peer_target_)
+          seednode)
     , verified_lock_()
     , verified_peers_()
     , init_promise_()
@@ -139,24 +142,6 @@ auto PeerManager::AddPeer(
     }
 
     return false;
-}
-
-auto PeerManager::BroadcastBlock(const block::Block& block) const noexcept
-    -> bool
-{
-    if (!running_.load()) { return false; }
-
-    if (0 == peers_.Count()) {
-        LogError()(OT_PRETTY_CLASS())("no peers available").Flush();
-
-        return false;
-    }
-    auto work = jobs_.Work(PeerManagerJobs::BroadcastBlock);
-    work.AddFrame(block.ID());
-
-    jobs_.Dispatch(std::move(work));
-
-    return true;
 }
 
 auto PeerManager::BroadcastTransaction(
@@ -254,33 +239,6 @@ auto PeerManager::LookupIncomingSocket(const int id) const noexcept(false)
     -> opentxs::network::asio::Socket
 {
     return peers_.LookupIncomingSocket(id);
-}
-
-auto PeerManager::peer_target(
-    const Type chain,
-    const node::internal::Config& config) noexcept -> std::size_t
-{
-    if (Type::UnitTest == chain) { return 0_uz; }
-
-    switch (config.profile_) {
-        case BlockchainProfile::mobile: {
-
-            return 2_uz;
-        }
-        case BlockchainProfile::desktop:
-        case BlockchainProfile::desktop_native: {
-
-            return 4_uz;
-        }
-        case BlockchainProfile::server: {
-
-            return 6_uz;
-        }
-        default: {
-
-            OT_FAIL;
-        }
-    }
 }
 
 auto PeerManager::pipeline(zmq::Message&& message) -> void

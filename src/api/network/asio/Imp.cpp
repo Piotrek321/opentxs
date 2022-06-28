@@ -140,17 +140,19 @@ auto Asio::Imp::Close(
 
 auto Asio::Imp::Connect(
     const ReadView id,
-    internal::Asio::Socket& socket) noexcept -> bool
+    internal::Asio::Socket socket) noexcept -> bool
 {
+    if (false == socket.operator bool()) { return false; }
+
     auto lock = sLock{lock_};
 
     if (shutdown()) { return false; }
 
     if (0 == id.size()) { return false; }
 
-    const auto& endpoint = socket.endpoint_;
+    const auto& endpoint = socket->endpoint_;
     const auto& internal = endpoint.GetInternal().data_;
-    socket.socket_.async_connect(
+    socket->socket_.async_connect(
         internal,
         [this, connection{space(id)}, address{endpoint.str()}](const auto& e) {
             auto work = opentxs::network::zeromq::tagged_reply_to_connection(
@@ -384,39 +386,44 @@ auto Asio::Imp::Receive(
     const ReadView id,
     const OTZMQWorkType type,
     const std::size_t bytes,
-    internal::Asio::Socket& socket) noexcept -> bool
+    internal::Asio::Socket socket) noexcept -> bool
 {
+    if (false == socket.operator bool()) { return false; }
+
     auto lock = sLock{lock_};
 
     if (shutdown()) { return false; }
 
     if (0 == id.size()) { return false; }
 
+    const auto& endpoint = socket->endpoint_;
     auto bufData = buffers_.get(bytes);
+    auto connection = std::make_shared<Space>(space(id));
+    auto address = std::make_shared<UnallocatedCString>(endpoint.str());
     boost::asio::async_read(
-        socket.socket_,
-        bufData.second,
-        [this, id, type, bufData, address = socket.endpoint_.str()](
-            const auto& e, auto size) {
-            auto connection{space(id)};
+        socket->socket_, bufData.second, [=](const auto& e, auto size) {
+            [[maybe_unused]] const auto& lifetimeControl = socket;
+            data_socket_->Send([&] {
+                const auto& [index, buffer] = bufData;
+                auto work =
+                    opentxs::network::zeromq::tagged_reply_to_connection(
+                        reader(*connection),
+                        e ? value(WorkType::AsioDisconnect) : type);
 
-            const auto& [index, buffer] = bufData;
-            auto work = opentxs::network::zeromq::tagged_reply_to_connection(
-                reader(connection), e ? value(WorkType::AsioDisconnect) : type);
+                if (e) {
+                    LogVerbose()(OT_PRETTY_CLASS())("asio receive error: ")(
+                        e.message())
+                        .Flush();
+                    work.AddFrame(*address);
+                    work.AddFrame(e.message());
+                } else {
+                    work.AddFrame(buffer.data(), buffer.size());
+                }
 
-            if (e) {
-                LogVerbose()(OT_PRETTY_CLASS())("asio receive error: ")(
-                    e.message())
-                    .Flush();
-                work.AddFrame(address);
-                work.AddFrame(e.message());
-            } else {
-                work.AddFrame(buffer.data(), buffer.size());
-            }
+                OT_ASSERT(1 < work.Body().size());
 
-            OT_ASSERT(1 < work.Body().size());
-
-            data_socket_->Send(std::move(work));
+                return work;
+            }());
             buffers_.clear(bufData.first);
         });
 
@@ -709,8 +716,10 @@ auto Asio::Imp::state_machine() noexcept -> bool
 auto Asio::Imp::Transmit(
     const ReadView id,
     const ReadView bytes,
-    Socket& socket) noexcept -> bool
+    Socket socket) noexcept -> bool
 {
+    if (false == socket.operator bool()) { return false; }
+
     auto lock = sLock{lock_};
 
     if (shutdown()) { return false; }
@@ -718,18 +727,21 @@ auto Asio::Imp::Transmit(
     if (0 == id.size()) { return false; }
 
     auto buf = std::make_shared<Space>(space(bytes));
+    auto connection = std::make_shared<Space>(space(id));
 
     return Post(
         ThreadPool::Network,
-        [this, buf, connection{space(id)}, &socket] {
+        [=] {
             boost::asio::async_write(
-                socket.socket_,
+                socket->socket_,
                 boost::asio::buffer(buf->data(), buf->size()),
-                [this, connection](auto& e, std::size_t sent) {
+                [this, socket, connection, buf](auto& e, std::size_t sent) {
+                    [[maybe_unused]] const auto& lifetimeControl1 = buf;
+                    [[maybe_unused]] const auto& lifetimeControl2 = socket;
                     data_socket_->Send([&] {
                         auto work = opentxs::network::zeromq::
                             tagged_reply_to_connection(
-                                reader(connection),
+                                reader(*connection),
                                 value(WorkType::AsioSendResult));
                         work.AddFrame(sent);
                         static constexpr auto trueValue = std::byte{0x01};

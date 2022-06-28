@@ -9,9 +9,12 @@ target_sources(
     "${opentxs_SOURCE_DIR}/src/internal/api/network/Blockchain.hpp"
     "Blockchain.cpp"
     "Blockchain.hpp"
+    "BlockchainHandle.cpp"
+    "BlockchainHandle.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Blockchain.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/api/network/BlockchainHandle.hpp"
 )
 target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 

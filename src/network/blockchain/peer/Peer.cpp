@@ -17,9 +17,12 @@
 namespace opentxs::network::blockchain::internal
 {
 Peer::Peer(boost::shared_ptr<Imp>&& imp) noexcept
-    : imp_(std::move(imp)){OT_ASSERT(imp_)}
+    : imp_(std::move(imp))
+{
+    OT_ASSERT(imp_);
+}
 
-    Peer::Peer(Peer && rhs) noexcept
+Peer::Peer(Peer&& rhs) noexcept
     : Peer(std::move(rhs.imp_))
 {
 }

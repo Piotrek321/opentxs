@@ -185,7 +185,7 @@ auto ByteArray::operator=(ByteArray&& rhs) noexcept -> ByteArray&
 
 auto ByteArray::asHex() const -> UnallocatedCString { return imp_->asHex(); }
 
-auto ByteArray::asHex(alloc::Resource* alloc) const -> CString
+auto ByteArray::asHex(alloc::Default alloc) const -> CString
 {
     return imp_->asHex(alloc);
 }
@@ -386,7 +386,7 @@ auto ByteArray::size() const -> std::size_t { return imp_->size(); }
 
 auto ByteArray::str() const -> UnallocatedCString { return imp_->str(); }
 
-auto ByteArray::str(alloc::Resource* alloc) const -> CString
+auto ByteArray::str(alloc::Default alloc) const -> CString
 {
     return imp_->str(alloc);
 }

@@ -33,10 +33,10 @@
 #include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/node/BlockOracle.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/Types.hpp"
+#include "internal/blockchain/node/blockoracle/BlockOracle.hpp"
 #include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
@@ -760,7 +760,7 @@ auto SubchainStateData::do_startup() noexcept -> void
 
 auto SubchainStateData::get_account_targets(
     const Elements& elements,
-    alloc::Resource* alloc) const noexcept -> Targets
+    alloc::Default alloc) const noexcept -> Targets
 {
     auto out = Targets{alloc};
     get_targets(elements, out);

@@ -25,6 +25,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -108,7 +109,13 @@ auto BlockchainStatistics::custom(
     try {
         auto& data = get_cache(chain);
         auto& [header, filter, connected, active, blocks, balance] = data;
-        const auto& network = blockchain_.GetChain(chain);
+        const auto handle = blockchain_.GetChain(chain);
+
+        if (false == handle.IsValid()) {
+            throw std::runtime_error{"invalid chain"};
+        }
+
+        const auto& network = handle.get();
         connected = network.GetPeerCount();
         active = network.GetVerifiedPeerCount();
         out.emplace_back(new blockchain::block::Height{header});
@@ -140,7 +147,13 @@ auto BlockchainStatistics::get_cache(
         auto& [header, filter, connected, active, blocks, balance] = data;
 
         try {
-            const auto& network = blockchain_.GetChain(chain);
+            const auto handle = blockchain_.GetChain(chain);
+
+            if (false == handle.IsValid()) {
+                throw std::runtime_error{"invalid chain"};
+            }
+
+            const auto& network = handle.get();
             const auto& hOracle = network.HeaderOracle();
             const auto& fOracle = network.FilterOracle();
             const auto& bOracle = network.BlockOracle();
@@ -359,7 +372,14 @@ auto BlockchainStatistics::process_timer(const Message& in) noexcept -> void
         auto& [header, filter, connected, active, blocks, balance] = data;
 
         try {
-            balance = blockchain_.GetChain(chain).GetBalance().second;
+            const auto handle = blockchain_.GetChain(chain);
+
+            if (false == handle.IsValid()) {
+                throw std::runtime_error{"invalid chain"};
+            }
+
+            const auto& network = handle.get();
+            balance = network.GetBalance().second;
             process_chain(chain);
         } catch (...) {
         }

@@ -71,7 +71,7 @@ public:
         const NodeID& subaccount,
         const crypto::Subchain subchain,
         MDB_txn* tx) const noexcept -> pSubchainIndex;
-    auto GetPatterns(const SubchainIndex& subchain, alloc::Resource* alloc)
+    auto GetPatterns(const SubchainIndex& subchain, alloc::Default alloc)
         const noexcept -> Patterns;
     auto Reorg(
         const Lock& headerOracleLock,

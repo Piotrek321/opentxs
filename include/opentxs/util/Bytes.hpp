@@ -164,11 +164,10 @@ OPENTXS_EXPORT auto reader(const std::array<std::byte, N>& in) noexcept
     return {reinterpret_cast<const char*>(in.data()), N};
 }
 OPENTXS_EXPORT auto space(const std::size_t size) noexcept -> Space;
-OPENTXS_EXPORT auto space(
-    const std::size_t size,
-    alloc::Resource* alloc) noexcept -> Vector<std::byte>;
+OPENTXS_EXPORT auto space(const std::size_t size, alloc::Default alloc) noexcept
+    -> Vector<std::byte>;
 OPENTXS_EXPORT auto space(const ReadView bytes) noexcept -> Space;
-OPENTXS_EXPORT auto space(const ReadView bytes, alloc::Resource* alloc) noexcept
+OPENTXS_EXPORT auto space(const ReadView bytes, alloc::Default alloc) noexcept
     -> Vector<std::byte>;
 OPENTXS_EXPORT auto valid(const ReadView view) noexcept -> bool;
 OPENTXS_EXPORT auto writer(UnallocatedCString& in) noexcept -> AllocateOutput;

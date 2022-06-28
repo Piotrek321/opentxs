@@ -931,7 +931,7 @@ auto Identifier::SetString(const UnallocatedCString& encoded) -> void
 
 auto Identifier::str() const -> UnallocatedCString { return to_string(); }
 
-auto Identifier::str(alloc::Resource* alloc) const -> CString
+auto Identifier::str(alloc::Default alloc) const -> CString
 {
     // TODO c++20 avoid a copy by using an allocator in to_string
 

@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <thread>
+#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
 
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -104,7 +105,7 @@ TEST_F(Restart_fixture, send_multiple_transactions_remove_user_compare)
     EXPECT_EQ(GetBalance(user_alice_after_reboot), sender_balance);
 
     auto loaded_transactions = CollectTransactionsForFeeCalculations(
-        user_alice, send_transactions_, transactions_ptxid_);
+        user_alice, send_transactions_, /*transactions_ptxid_*/transactions_);
     auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
     EXPECT_EQ(

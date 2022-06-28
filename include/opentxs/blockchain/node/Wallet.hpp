@@ -65,37 +65,30 @@ public:
         const Identifier& subaccount) const noexcept -> Balance = 0;
     virtual auto GetBalance(const crypto::Key& key) const noexcept
         -> Balance = 0;
-    virtual auto GetOutputs(alloc::Resource* alloc = alloc::System())
+    virtual auto GetOutputs(alloc::Default alloc = {}) const noexcept
+        -> Vector<UTXO> = 0;
+    virtual auto GetOutputs(TxoState type, alloc::Default alloc = {})
         const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
-        TxoState type,
-        alloc::Resource* alloc = alloc::System()) const noexcept
-        -> Vector<UTXO> = 0;
-    virtual auto GetOutputs(
         const identifier::Nym& owner,
-        alloc::Resource* alloc = alloc::System()) const noexcept
-        -> Vector<UTXO> = 0;
+        alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
         TxoState type,
-        alloc::Resource* alloc = alloc::System()) const noexcept
-        -> Vector<UTXO> = 0;
+        alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& subaccount,
-        alloc::Resource* alloc = alloc::System()) const noexcept
-        -> Vector<UTXO> = 0;
+        alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& subaccount,
         TxoState type,
-        alloc::Resource* alloc = alloc::System()) const noexcept
-        -> Vector<UTXO> = 0;
+        alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
         const crypto::Key& key,
         TxoState type,
-        alloc::Resource* alloc = alloc::System()) const noexcept
-        -> Vector<UTXO> = 0;
+        alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<TxoTag> = 0;
     virtual auto Height() const noexcept -> block::Height = 0;

@@ -138,34 +138,34 @@ public:
     auto GetBalance(const identifier::Nym& owner, const Identifier& subaccount)
         const noexcept -> Balance final;
     auto GetBalance(const crypto::Key& key) const noexcept -> Balance final;
-    auto GetOutputs(alloc::Resource* alloc = alloc::System()) const noexcept
+    auto GetOutputs(alloc::Default alloc = alloc::System()) const noexcept
         -> Vector<UTXO> final;
-    auto GetOutputs(TxoState type, alloc::Resource* alloc = alloc::System())
+    auto GetOutputs(TxoState type, alloc::Default alloc = alloc::System())
         const noexcept -> Vector<UTXO> final;
     auto GetOutputs(
         const identifier::Nym& owner,
-        alloc::Resource* alloc = alloc::System()) const noexcept
+        alloc::Default alloc = alloc::System()) const noexcept
         -> Vector<UTXO> final;
     auto GetOutputs(
         const identifier::Nym& owner,
         TxoState type,
-        alloc::Resource* alloc = alloc::System()) const noexcept
+        alloc::Default alloc = alloc::System()) const noexcept
         -> Vector<UTXO> final;
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& subaccount,
-        alloc::Resource* alloc = alloc::System()) const noexcept
+        alloc::Default alloc = alloc::System()) const noexcept
         -> Vector<UTXO> final;
     auto GetOutputs(
         const identifier::Nym& owner,
         const Identifier& subaccount,
         TxoState type,
-        alloc::Resource* alloc = alloc::System()) const noexcept
+        alloc::Default alloc = alloc::System()) const noexcept
         -> Vector<UTXO> final;
     auto GetOutputs(
         const crypto::Key& key,
         TxoState type,
-        alloc::Resource* alloc = alloc::System()) const noexcept
+        alloc::Default alloc = alloc::System()) const noexcept
         -> Vector<UTXO> final;
     auto GetTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<TxoTag> final;

@@ -21,11 +21,12 @@
 #include "core/Worker.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/node/BlockOracle.hpp"
+#include "internal/blockchain/node/Endpoints.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/Mempool.hpp"
 #include "internal/blockchain/node/Types.hpp"
+#include "internal/blockchain/node/blockoracle/BlockOracle.hpp"
 #include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -171,6 +172,10 @@ public:
         const bitcoin::block::Transaction& tx,
         const bool pushtx) const noexcept -> bool final;
     auto Chain() const noexcept -> Type final { return chain_; }
+    auto Endpoints() const noexcept -> const node::Endpoints& final
+    {
+        return endpoints_;
+    }
     auto FeeRate() const noexcept -> Amount final;
     auto FilterOracleInternal() const noexcept
         -> const node::internal::FilterOracle& final
@@ -220,7 +225,6 @@ public:
     {
         return mempool_;
     }
-    auto PeerTarget() const noexcept -> std::size_t final;
     auto Profile() const noexcept -> BlockchainProfile final;
     auto Reorg() const noexcept
         -> const network::zeromq::socket::Publish& final;
@@ -256,6 +260,7 @@ public:
     {
         return filters_;
     }
+    auto Internal() noexcept -> internal::Manager& final { return *this; }
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
         return signal_shutdown();
@@ -278,6 +283,7 @@ protected:
 
 private:
     const node::internal::Config& config_;
+    const node::Endpoints endpoints_;
     const cfilter::Type filter_type_;
     opentxs::internal::ShutdownSender shutdown_sender_;
     std::unique_ptr<blockchain::database::Database> database_p_;

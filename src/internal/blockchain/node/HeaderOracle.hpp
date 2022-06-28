@@ -11,6 +11,7 @@
 
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -74,6 +75,7 @@ public:
         block::Hash& prior,
         Vector<block::Hash>& hashes,
         const network::p2p::Data& data) noexcept -> std::size_t = 0;
+    virtual auto SubmitBlock(const ReadView in) noexcept -> void = 0;
 
     ~HeaderOracle() override = default;
 };

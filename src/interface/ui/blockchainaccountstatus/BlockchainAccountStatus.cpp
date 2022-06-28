@@ -9,10 +9,10 @@
 
 #include <atomic>
 #include <chrono>
-#include <exception>
 #include <memory>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -23,6 +23,7 @@
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -459,8 +460,14 @@ auto BlockchainAccountStatus::subchain_display_name(
     const auto target = [&]() -> std::optional<Height> {
         try {
             const auto& api = Widget::api_;
-            const auto& chain =
+            const auto handle =
                 api.Network().Blockchain().GetChain(node.Parent().Chain());
+
+            if (false == handle.IsValid()) {
+                throw std::runtime_error{"invalid chain"};
+            }
+
+            const auto& chain = handle.get();
 
             return chain.HeaderOracle().BestChain().height_;
         } catch (...) {

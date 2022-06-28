@@ -52,10 +52,4 @@ auto Peer::Imp::UpdateCfilterJob::operator()(
 
     return {true, !rc};
 }
-
-auto Peer::Imp::UpdateCfilterJob::operator()(
-    opentxs::blockchain::node::BlockJob& job) noexcept -> JobUpdate
-{
-    return {false, false};
-}
 }  // namespace opentxs::network::blockchain::internal

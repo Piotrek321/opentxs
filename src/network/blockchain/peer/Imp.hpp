@@ -16,8 +16,8 @@
 #include <utility>
 #include <variant>
 
-#include "internal/blockchain/node/BlockBatch.hpp"
 #include "internal/blockchain/node/Types.hpp"
+#include "internal/blockchain/node/blockoracle/BlockBatch.hpp"
 #include "internal/network/blockchain/Peer.hpp"
 #include "internal/network/blockchain/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -29,6 +29,7 @@
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Allocated.hpp"
@@ -73,6 +74,7 @@ namespace internal
 class BlockBatch;
 class Manager;
 class PeerManager;
+struct Config;
 }  // namespace internal
 
 class BlockOracle;
@@ -146,6 +148,7 @@ protected:
     using Txid = FixedByteArray<32>;
 
     const api::Session& api_;
+    const opentxs::blockchain::node::internal::Config& config_;
     const opentxs::blockchain::node::internal::Manager& network_;
     const opentxs::blockchain::node::HeaderOracle& header_oracle_;
     const opentxs::blockchain::node::BlockOracle& block_oracle_;
@@ -168,6 +171,7 @@ protected:
     auto get_known_tx(alloc::Default alloc = {}) const noexcept -> Set<Txid>;
     auto state() const noexcept -> State { return state_; }
 
+    auto add_known_block(opentxs::blockchain::block::Hash) noexcept -> bool;
     auto add_known_tx(const Txid& txid) noexcept -> bool;
     auto add_known_tx(Txid&& txid) noexcept -> bool;
     auto cancel_timers() noexcept -> void;
@@ -198,8 +202,14 @@ protected:
         opentxs::blockchain::block::Position&& block,
         opentxs::blockchain::GCS&& filter) noexcept -> void;
     auto update_get_headers_job() noexcept -> void;
+    auto update_position(
+        opentxs::blockchain::block::Position& target,
+        opentxs::blockchain::block::Position pos) noexcept -> void;
+    auto update_remote_position(
+        opentxs::blockchain::block::Position pos) noexcept -> void;
 
     Imp(const api::Session& api,
+        const opentxs::blockchain::node::internal::Config& config,
         const opentxs::blockchain::node::internal::Manager& network,
         const opentxs::blockchain::node::internal::PeerManager& parent,
         const opentxs::blockchain::node::HeaderOracle& header,
@@ -243,8 +253,7 @@ private:
         GetHeadersJob,
         opentxs::blockchain::node::internal::BlockBatch,
         opentxs::blockchain::node::CfheaderJob,
-        opentxs::blockchain::node::CfilterJob,
-        opentxs::blockchain::node::BlockJob>;
+        opentxs::blockchain::node::CfilterJob>;
     using IsJob = bool;
     using IsFinished = bool;
     using JobUpdate = std::pair<IsJob, IsFinished>;
@@ -269,7 +278,11 @@ private:
     Timer peers_timer_;
     Timer job_timer_;
     KnownHashes known_transactions_;
+    KnownBlocks known_blocks_;
+    opentxs::blockchain::block::Position local_position_;
+    opentxs::blockchain::block::Position remote_position_;
     Job job_;
+    bool is_caught_up_;
     bool block_header_capability_;
     bool cfilter_capability_;
 
@@ -289,6 +302,7 @@ private:
     auto job_name() const noexcept -> std::string_view;
 
     auto check_jobs() noexcept -> void;
+    auto check_positions() noexcept -> void;
     auto connect() noexcept -> void;
     auto connect_dealer(std::string_view endpoint, Work work) noexcept -> void;
     auto do_disconnect() noexcept -> void;
@@ -300,9 +314,10 @@ private:
     auto pipeline_trusted(const Work work, Message&& msg) noexcept -> void;
     auto pipeline_untrusted(const Work work, Message&& msg) noexcept -> void;
     auto process_activitytimeout(Message&& msg) noexcept -> void;
+    auto process_block(Message&& msg) noexcept -> void;
     auto process_blockbatch(Message&& msg) noexcept -> void;
+    auto process_blockheader(Message&& msg) noexcept -> void;
     auto process_body(Message&& msg) noexcept -> void;
-    virtual auto process_broadcastblock(Message&& msg) noexcept -> void = 0;
     virtual auto process_broadcasttx(Message&& msg) noexcept -> void = 0;
     auto process_connect() noexcept -> void;
     auto process_connect(bool) noexcept -> void;
@@ -321,6 +336,7 @@ private:
     auto process_p2p(Message&& msg) noexcept -> void;
     virtual auto process_protocol(Message&& message) noexcept -> void = 0;
     auto process_registration(Message&& msg) noexcept -> void;
+    auto process_reorg(Message&& msg) noexcept -> void;
     auto process_sendresult(Message&& msg) noexcept -> void;
     auto process_statetimeout(Message&& msg) noexcept -> void;
     auto reset_activity_timer() noexcept -> void;
@@ -339,8 +355,6 @@ private:
     virtual auto transmit_request_blocks(
         opentxs::blockchain::node::internal::BlockBatch& job) noexcept
         -> void = 0;
-    virtual auto transmit_request_blocks(
-        opentxs::blockchain::node::BlockJob& job) noexcept -> void = 0;
     virtual auto transmit_request_cfheaders(
         opentxs::blockchain::node::CfheaderJob& job) noexcept -> void = 0;
     virtual auto transmit_request_cfilters(
@@ -352,6 +366,8 @@ private:
     auto update_address() noexcept -> void;
     template <typename Visitor>
     auto update_job(Visitor& visitor) noexcept -> bool;
+    auto update_local_position(
+        opentxs::blockchain::block::Position pos) noexcept -> void;
     auto work() noexcept -> bool override;
 };
 }  // namespace opentxs::network::blockchain::internal

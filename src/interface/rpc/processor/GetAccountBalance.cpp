@@ -8,6 +8,7 @@
 #include "interface/rpc/RPC.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -17,6 +18,7 @@
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -95,7 +97,13 @@ auto RPC::get_account_balance_blockchain(
         const auto& blockchain = api.Crypto().Blockchain();
         const auto [chain, owner] = blockchain.LookupAccount(accountID);
         api.Network().Blockchain().Start(chain);
-        const auto& client = api.Network().Blockchain().GetChain(chain);
+        const auto handle = api.Network().Blockchain().GetChain(chain);
+
+        if (false == handle.IsValid()) {
+            throw std::runtime_error{"invalid chain"};
+        }
+
+        const auto& client = handle.get();
         const auto [confirmed, unconfirmed] = client.GetBalance(owner);
         const auto& definition =
             display::GetDefinition(BlockchainToUnit(chain));

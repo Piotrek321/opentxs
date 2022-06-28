@@ -24,8 +24,8 @@
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/database/Peer.hpp"
-#include "internal/blockchain/node/BlockOracle.hpp"
 #include "internal/blockchain/node/Config.hpp"
+#include "internal/blockchain/node/blockoracle/BlockOracle.hpp"
 #include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/network/blockchain/Peer.hpp"
@@ -66,8 +66,7 @@ PeerManager::Peers::Peers(
     const internal::PeerManager& parent,
     const std::string_view shutdown,
     const Type chain,
-    const std::string_view seednode,
-    const std::size_t peerTarget) noexcept
+    const std::string_view seednode) noexcept
     : chain_(chain)
     , api_(api)
     , config_(config)
@@ -98,9 +97,9 @@ PeerManager::Peers::Peers(
     , minimum_peers_([&]() -> std::size_t {
         static const auto test = api.Factory().DataFromHex("0x7f000002");
 
-        if (default_peer_ == test) { return 1u; }
+        if (default_peer_ == test) { return 1_uz; }
 
-        return peerTarget;
+        return config_.PeerTarget(chain_);
     }())
     , peers_()
     , active_()

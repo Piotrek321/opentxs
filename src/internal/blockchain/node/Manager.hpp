@@ -42,6 +42,7 @@ class FilterOracle;
 class Mempool;
 }  // namespace internal
 
+struct Endpoints;
 class FilterOracle;
 }  // namespace node
 }  // namespace blockchain
@@ -71,6 +72,7 @@ public:
         const bitcoin::block::Transaction& tx,
         const bool pushtx = false) const noexcept -> bool = 0;
     virtual auto Chain() const noexcept -> Type = 0;
+    virtual auto Endpoints() const noexcept -> const node::Endpoints& = 0;
     // amount represents satoshis per 1000 bytes
     virtual auto FeeRate() const noexcept -> Amount = 0;
     auto FilterOracle() const noexcept -> const node::FilterOracle& final;
@@ -85,7 +87,6 @@ public:
     virtual auto JobReady(const PeerManagerJobs type) const noexcept
         -> void = 0;
     virtual auto Mempool() const noexcept -> const internal::Mempool& = 0;
-    virtual auto PeerTarget() const noexcept -> std::size_t = 0;
     virtual auto Reorg() const noexcept
         -> const network::zeromq::socket::Publish& = 0;
     virtual auto RequestBlock(const block::Hash& block) const noexcept

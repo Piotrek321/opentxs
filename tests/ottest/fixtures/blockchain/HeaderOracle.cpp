@@ -11,7 +11,6 @@
 #include "internal/blockchain/block/Header.hpp"
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
-#include "internal/blockchain/node/Manager.hpp"
 
 namespace ottest
 {
@@ -2681,7 +2680,7 @@ auto Test_HeaderOracle_base::get_test_block(const ot::UnallocatedCString& hash)
 
 auto Test_HeaderOracle_base::init_network(
     const ot::api::session::Client& api,
-    const b::Type type) noexcept -> std::unique_ptr<bc::Manager>
+    const b::Type type) noexcept -> std::shared_ptr<bc::Manager>
 {
     static const auto config = [] {
         auto output = ot::blockchain::node::internal::Config{};

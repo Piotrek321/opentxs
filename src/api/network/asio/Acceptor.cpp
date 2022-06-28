@@ -131,10 +131,14 @@ private:
         }
         auto endpoint = opentxs::network::asio::Endpoint{
             endpoint_.GetType(), reader(bytes), endpoint_.GetPort()};
-        cb_(opentxs::network::asio::Socket{
-            std::make_unique<opentxs::network::asio::Socket::Imp>(
-                asio_, std::move(endpoint), std::move(next_socket_))
-                .release()});
+        using Imp = opentxs::network::asio::Socket::Imp;
+        using Shared = std::shared_ptr<Imp>;
+        cb_({[&]() -> void* {
+            return std::make_unique<Shared>(
+                       std::make_shared<Imp>(
+                           asio_, std::move(endpoint), std::move(next_socket_)))
+                .release();
+        }});
         next_socket_ = ip::tcp::socket{ios_};
         start(lock);
     }

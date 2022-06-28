@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "api/network/blockchain/BlockchainHandle.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Params.hpp"
@@ -29,6 +30,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
@@ -288,11 +290,12 @@ auto BlockchainImp::EnabledChains(alloc::Default alloc) const noexcept
 }
 
 auto BlockchainImp::GetChain(const Chain type) const noexcept(false)
-    -> const opentxs::blockchain::node::Manager&
+    -> BlockchainHandle
 {
     auto lock = Lock{lock_};
 
-    return *networks_.at(type);
+    return std::make_unique<BlockchainHandle::Imp>(networks_.at(type))
+        .release();
 }
 
 auto BlockchainImp::GetSyncServers(alloc::Default alloc) const noexcept
@@ -478,7 +481,7 @@ auto BlockchainImp::RestoreNetworks() const noexcept -> void
         start(lock, chain, peer, false);
     }
 
-    for (auto& [chain, pNode] : networks_) { pNode->StartWallet(); }
+    for (auto& [chain, pNode] : networks_) { pNode->Internal().StartWallet(); }
 }
 
 auto BlockchainImp::Shutdown() noexcept -> void
@@ -487,7 +490,9 @@ auto BlockchainImp::Shutdown() noexcept -> void
         LogVerbose()("Shutting down ")(networks_.size())(" blockchain clients")
             .Flush();
 
-        for (auto& [chain, network] : networks_) { network->Shutdown().get(); }
+        for (auto& [chain, network] : networks_) {
+            network->Internal().Shutdown().get();
+        }
 
         networks_.clear();
     }
@@ -550,7 +555,7 @@ auto BlockchainImp::start(
             publish_chain_state(type, true);
             auto& node = *(iter->second);
 
-            if (startWallet) { node.StartWallet(); }
+            if (startWallet) { node.Internal().StartWallet(); }
 
             return node.Connect();
         }
@@ -602,7 +607,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
     OT_ASSERT(it->second);
 
     sync_server_.Disable(type);
-    it->second->Shutdown().get();
+    it->second->Internal().Shutdown().get();
     networks_.erase(it);
     LogVerbose()(OT_PRETTY_CLASS())("stopped chain ")(print(type)).Flush();
     publish_chain_state(type, false);

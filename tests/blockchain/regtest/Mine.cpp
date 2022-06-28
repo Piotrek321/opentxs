@@ -9,7 +9,8 @@
 #include <memory>
 
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
-#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/blockchain/Common.hpp"
+#include "ottest/fixtures/blockchain/regtest/Single.hpp"
 
 namespace ottest
 {
@@ -19,7 +20,11 @@ TEST_F(Regtest_fixture_single, start_chains) { EXPECT_TRUE(Start()); }
 
 TEST_F(Regtest_fixture_single, generate_block)
 {
-    const auto& network = miner_.Network().Blockchain().GetChain(test_chain_);
+    const auto handle = miner_.Network().Blockchain().GetChain(test_chain_);
+
+    ASSERT_TRUE(handle);
+
+    const auto& network = handle.get();
     const auto& headerOracle = network.HeaderOracle();
     auto previousHeader = [&] {
         const auto genesis = headerOracle.LoadHeader(

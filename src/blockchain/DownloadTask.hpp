@@ -11,6 +11,7 @@
 #include <future>
 #include <memory>
 
+#include "internal/blockchain/node/Job.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
@@ -206,13 +207,12 @@ template <
 class Batch
 {
 public:
-    using ID = std::int64_t;
     using TaskType = Task<DownloadType, FinishedType, ExtraData>;
     using Vector = UnallocatedVector<std::shared_ptr<TaskType>>;
     using Callback = std::function<void(const Batch&)>;
     using Position = typename TaskType::Position;
 
-    const ID id_;
+    const JobID id_;
     const Vector data_;
     const ExtraData extra_;
     mutable std::atomic<std::size_t> downloaded_;
@@ -259,19 +259,8 @@ public:
         : Batch(-1, {}, {}, {})
     {
     }
-    Batch(
-        const ID id,
-        Vector&& data,
-        Callback cb = {},
-        ExtraData&& extra = {}) noexcept
-        : id_(id)
-        , data_(std::move(data))
-        , extra_(std::move(extra))
-        , downloaded_(0)
-        , cb_(cb)
-        , index_(index(data_))
-        , started_(Clock::now())
-        , last_activity_(started_)
+    Batch(Vector&& data, Callback cb = {}, ExtraData&& extra = {}) noexcept
+        : Batch(next_job(), std::move(data), std::move(cb), std::move(extra))
     {
     }
     Batch(const Batch&) = delete;
@@ -292,7 +281,7 @@ public:
     auto operator=(Batch&& rhs) noexcept -> Batch&
     {
         if (&rhs != this) {
-            std::swap(const_cast<ID&>(id_), const_cast<ID&>(rhs.id_));
+            std::swap(const_cast<JobID&>(id_), const_cast<JobID&>(rhs.id_));
             std::swap(
                 const_cast<Vector&>(data_), const_cast<Vector&>(rhs.data_));
             std::swap(
@@ -333,6 +322,18 @@ private:
         }
 
         return output;
+    }
+
+    Batch(JobID id, Vector&& data, Callback cb, ExtraData&& extra) noexcept
+        : id_(id)
+        , data_(std::move(data))
+        , extra_(std::move(extra))
+        , downloaded_(0)
+        , cb_(cb)
+        , index_(index(data_))
+        , started_(Clock::now())
+        , last_activity_(started_)
+    {
     }
 };
 }  // namespace opentxs::blockchain::download

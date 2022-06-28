@@ -102,7 +102,6 @@ protected:
         if (0 == size) { return {}; }
 
         auto output = BatchType{
-            ++last_batch_,
             [&] {
                 auto output = typename BatchType::Vector{};
                 auto i = buffer_.begin();
@@ -136,7 +135,6 @@ protected:
             std::move(extra)};
 
         if (const auto allocated = output.data_.size(); 0 == allocated) {
-            --last_batch_;
 
             return {};
         } else {
@@ -265,7 +263,6 @@ protected:
         , dm_previous_(std::move(previous))
         , dm_done_(position)
         , dm_known_(position)
-        , last_batch_(-1)
         , buffer_()
         , next_(0)
         , enabled_(false)
@@ -288,7 +285,6 @@ private:
 
     using TaskPtr = std::shared_ptr<TaskType>;
     using Buffer = UnallocatedDeque<TaskPtr>;
-    using BatchID = typename BatchType::ID;
 
     const UnallocatedCString log_;
     const std::size_t max_queue_;
@@ -296,7 +292,6 @@ private:
     Finished dm_previous_;
     Position dm_done_;
     Position dm_known_;
-    BatchID last_batch_;
     Buffer buffer_;
     std::size_t next_;
     std::atomic_bool enabled_;

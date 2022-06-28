@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <functional>
 #include <future>
 #include <iosfwd>
 #include <memory>
@@ -36,7 +37,7 @@ namespace opentxs::network::asio
 class OPENTXS_EXPORT Socket
 {
 public:
-    struct Imp;
+    class Imp;
 
     auto Close() noexcept -> void;
     /**  Open an connection to a remote peer asynchronously
@@ -91,7 +92,7 @@ public:
      */
     auto Transmit(const ReadView notify, const ReadView data) noexcept -> bool;
 
-    OPENTXS_NO_EXPORT Socket(Imp* imp) noexcept;
+    OPENTXS_NO_EXPORT Socket(std::function<void*()>&& builder) noexcept;
     Socket() noexcept = delete;
     Socket(const Socket&) = delete;
     Socket(Socket&&) noexcept;
@@ -101,6 +102,6 @@ public:
     ~Socket();
 
 private:
-    Imp* imp_;
+    void* imp_;
 };
 }  // namespace opentxs::network::asio

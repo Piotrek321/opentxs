@@ -45,17 +45,16 @@ namespace opentxs::factory
 auto FeeOracle(
     const api::Session& api,
     const blockchain::Type chain,
-    alloc::Resource* alloc = nullptr) noexcept
-    -> blockchain::node::wallet::FeeOracle;
+    alloc::Default alloc = {}) noexcept -> blockchain::node::wallet::FeeOracle;
 auto FeeSources(
     const api::Session& api,
     const blockchain::Type chain,
     const std::string_view endpoint,
-    alloc::Resource* alloc = nullptr) noexcept
+    alloc::Default alloc = {}) noexcept
     -> ForwardList<blockchain::node::wallet::FeeSource>;
 auto BTCFeeSources(
     const api::Session& api,
     const std::string_view endpoint,
-    alloc::Resource* alloc = nullptr) noexcept
+    alloc::Default alloc = {}) noexcept
     -> ForwardList<blockchain::node::wallet::FeeSource>;
 }  // namespace opentxs::factory

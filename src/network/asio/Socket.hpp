@@ -10,6 +10,7 @@
 #include <boost/asio.hpp>
 #include <cstddef>
 #include <iosfwd>
+#include <memory>
 
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -47,13 +48,18 @@ namespace ip = asio::ip;
 
 namespace opentxs::network::asio
 {
-struct Socket::Imp {
+class Socket::Imp final : public std::enable_shared_from_this<Imp>
+{
+public:
     using Asio = api::network::internal::Asio;
     using tcp = ip::tcp;
 
     const Endpoint& endpoint_;
     api::network::internal::Asio& asio_;
     tcp::socket socket_;
+
+    static auto Destroy(void* imp) noexcept -> void;
+    static auto Get(void* imp) noexcept -> Imp&;
 
     auto Close() noexcept -> void;
     auto Connect(const ReadView id) noexcept -> bool;
@@ -72,5 +78,8 @@ struct Socket::Imp {
     auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp();
+
+private:
+    using Pointer = std::shared_ptr<Imp>;
 };
 }  // namespace opentxs::network::asio

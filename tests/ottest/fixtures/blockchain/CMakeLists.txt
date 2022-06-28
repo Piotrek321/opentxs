@@ -3,6 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+add_subdirectory(regtest)
+
 target_sources(
   ottest
   PRIVATE
@@ -10,14 +12,31 @@ target_sources(
     "Activity.hpp"
     "Basic.cpp"
     "Basic.hpp"
+    "BlockListener.cpp"
+    "BlockListener.hpp"
+    "BlockchainStartup.cpp"
+    "BlockchainStartup.hpp"
+    "Common.hpp"
     "Download.hpp"
     "HeaderOracle.cpp"
     "HeaderOracle.hpp"
-    "Regtest.cpp"
-    "Regtest.hpp"
-    "RegtestSimple.cpp"
-    "RegtestSimple.hpp"
+    "MinedBlocks.cpp"
+    "MinedBlocks.hpp"
+    "PeerListener.cpp"
+    "PeerListener.hpp"
     "Restart.cpp"
     "Restart.hpp"
+    "ScanListener.cpp"
+    "ScanListener.hpp"
     "StartStop.hpp"
+    "SyncRequestor.cpp"
+    "SyncRequestor.hpp"
+    "SyncSubscriber.cpp"
+    "SyncSubscriber.hpp"
+    "TXOState.cpp"
+    "TXOState.hpp"
+    "TXOs.cpp"
+    "TXOs.hpp"
+    "WalletListener.cpp"
+    "WalletListener.hpp"
 )

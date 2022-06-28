@@ -37,10 +37,4 @@ auto Peer::Imp::HasJob::operator()(
 {
     return true;
 }
-
-auto Peer::Imp::HasJob::operator()(
-    const opentxs::blockchain::node::BlockJob&) const noexcept -> bool
-{
-    return true;
-}
 }  // namespace opentxs::network::blockchain::internal

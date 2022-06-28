@@ -20,7 +20,5 @@ public:
         -> JobUpdate;
     auto operator()(opentxs::blockchain::node::CfilterJob& job) const noexcept
         -> JobUpdate;
-    auto operator()(opentxs::blockchain::node::BlockJob& job) const noexcept
-        -> JobUpdate;
 };
 }  // namespace opentxs::network::blockchain::internal

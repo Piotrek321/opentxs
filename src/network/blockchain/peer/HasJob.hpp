@@ -20,7 +20,5 @@ public:
         const opentxs::blockchain::node::CfheaderJob&) const noexcept -> bool;
     auto operator()(const opentxs::blockchain::node::CfilterJob&) const noexcept
         -> bool;
-    auto operator()(const opentxs::blockchain::node::BlockJob&) const noexcept
-        -> bool;
 };
 }  // namespace opentxs::network::blockchain::internal

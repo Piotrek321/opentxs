@@ -11,7 +11,10 @@
 #include <optional>
 
 #include "internal/util/LogMacros.hpp"
-#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/blockchain/Common.hpp"
+#include "ottest/fixtures/blockchain/ScanListener.hpp"
+#include "ottest/fixtures/blockchain/regtest/Base.hpp"
+#include "ottest/fixtures/blockchain/regtest/Normal.hpp"
 
 namespace ottest
 {
@@ -192,8 +195,11 @@ TEST_F(RPC_BC, blockchain_payment)
 
 TEST_F(RPC_BC, postconditions)
 {
-    const auto& network =
-        client_1_.Network().Blockchain().GetChain(test_chain_);
+    const auto handle = client_1_.Network().Blockchain().GetChain(test_chain_);
+
+    ASSERT_TRUE(handle);
+
+    const auto& network = handle.get();
     const auto [confirmed, unconfirmed] = network.GetBalance(alex_.ID());
 
     EXPECT_EQ(confirmed, 10000000000);

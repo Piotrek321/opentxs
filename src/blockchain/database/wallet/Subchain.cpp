@@ -55,7 +55,7 @@ struct SubchainData::Imp {
         return cache_.GetIndex(
             subaccount, subchain, default_filter_type_, current_version_, tx);
     }
-    auto GetPatterns(const SubchainIndex& id, alloc::Resource* alloc)
+    auto GetPatterns(const SubchainIndex& id, alloc::Default alloc)
         const noexcept -> Patterns
     {
         auto lock = sLock{lock_};
@@ -257,7 +257,7 @@ private:
         const LockType& lock,
         const db::SubchainID& key,
         const Container& patterns,
-        alloc::Resource* alloc) const noexcept(false) -> Patterns
+        alloc::Default alloc) const noexcept(false) -> Patterns
     {
         auto output = Patterns{alloc};
         const auto& subaccount = key.SubaccountID(api_);
@@ -332,7 +332,7 @@ auto SubchainData::GetSubchainID(
 
 auto SubchainData::GetPatterns(
     const SubchainIndex& subchain,
-    alloc::Resource* alloc) const noexcept -> Patterns
+    alloc::Default alloc) const noexcept -> Patterns
 {
     return imp_->GetPatterns(subchain, alloc);
 }

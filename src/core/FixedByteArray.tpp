@@ -64,7 +64,7 @@ auto FixedByteArray<N>::asHex() const -> UnallocatedCString
 }
 
 template <std::size_t N>
-auto FixedByteArray<N>::asHex(alloc::Resource* alloc) const -> CString
+auto FixedByteArray<N>::asHex(alloc::Default alloc) const -> CString
 {
     return to_hex(data_.data(), N, alloc);
 }
@@ -391,7 +391,7 @@ auto FixedByteArray<N>::str() const -> UnallocatedCString
 }
 
 template <std::size_t N>
-auto FixedByteArray<N>::str(alloc::Resource* alloc) const -> CString
+auto FixedByteArray<N>::str(alloc::Default alloc) const -> CString
 {
     return CString{Bytes(), alloc};
 }

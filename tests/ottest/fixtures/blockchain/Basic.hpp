@@ -13,6 +13,8 @@
 #include <iosfwd>
 #include <memory>
 
+#include "ottest/Basic.hpp"
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
@@ -33,8 +35,6 @@ class Message;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
-
-namespace ot = opentxs;
 
 namespace ottest
 {

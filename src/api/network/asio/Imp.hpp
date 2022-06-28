@@ -122,7 +122,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
         AcceptCallback cb) noexcept -> bool;
     auto Close(const opentxs::network::asio::Endpoint& endpoint) const noexcept
         -> bool;
-    auto Connect(const ReadView id, internal::Asio::Socket& socket) noexcept
+    auto Connect(const ReadView id, internal::Asio::Socket socket) noexcept
         -> bool final;
     auto FetchJson(
         const ReadView host,
@@ -143,14 +143,14 @@ struct Asio::Imp final : public api::network::internal::Asio,
         const ReadView id,
         const OTZMQWorkType type,
         const std::size_t bytes,
-        internal::Asio::Socket& socket) noexcept -> bool final;
+        internal::Asio::Socket socket) noexcept -> bool final;
     auto Resolve(std::string_view server, std::uint16_t port) const noexcept
         -> Resolved;
     auto Shutdown() noexcept -> void;
     auto Transmit(
         const ReadView id,
         const ReadView bytes,
-        Socket& socket) noexcept -> bool final;
+        Socket socket) noexcept -> bool final;
 
     Imp(const zmq::Context& zmq) noexcept;
     Imp() = delete;

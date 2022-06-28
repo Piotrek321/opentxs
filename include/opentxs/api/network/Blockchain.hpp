@@ -29,6 +29,8 @@ namespace internal
 {
 class Blockchain;
 }  // namespace internal
+
+class BlockchainHandle;
 }  // namespace network
 }  // namespace api
 
@@ -66,8 +68,7 @@ public:
         const noexcept -> bool;
     auto EnabledChains(alloc::Default alloc = {}) const noexcept -> Set<Chain>;
     /// throws std::out_of_range if chain has not been started
-    auto GetChain(const Chain type) const noexcept(false)
-        -> const opentxs::blockchain::node::Manager&;
+    auto GetChain(const Chain type) const noexcept(false) -> BlockchainHandle;
     auto GetSyncServers(alloc::Default alloc = {}) const noexcept -> Endpoints;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> internal::Blockchain&;
     auto Profile() const noexcept -> BlockchainProfile;

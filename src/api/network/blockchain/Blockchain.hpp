@@ -13,6 +13,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -131,7 +132,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     }
     /// throws std::out_of_range if chain has not been started
     virtual auto GetChain([[maybe_unused]] const Chain type) const
-        noexcept(false) -> const opentxs::blockchain::node::Manager&
+        noexcept(false) -> BlockchainHandle
     {
         throw std::out_of_range("no blockchain support");
     }

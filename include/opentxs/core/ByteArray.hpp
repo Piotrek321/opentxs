@@ -61,7 +61,7 @@ public:
     class Imp;
 
     auto asHex() const -> UnallocatedCString final;
-    auto asHex(alloc::Resource* alloc) const -> CString final;
+    auto asHex(alloc::Default alloc) const -> CString final;
     auto at(const std::size_t position) const -> const std::byte& final;
     auto begin() const -> const_iterator final;
     auto Bytes() const noexcept -> ReadView final;
@@ -95,7 +95,7 @@ public:
     auto operator>=(const Data& rhs) const noexcept -> bool final;
     auto size() const -> std::size_t final;
     auto str() const -> UnallocatedCString final;
-    auto str(alloc::Resource* alloc) const -> CString final;
+    auto str(alloc::Default alloc) const -> CString final;
 
     auto Assign(const Data& source) noexcept -> bool final;
     auto Assign(const ReadView source) noexcept -> bool final;

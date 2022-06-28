@@ -54,7 +54,7 @@ class Asio
 {
 public:
     using Endpoint = opentxs::network::asio::Endpoint::Imp;
-    using Socket = opentxs::network::asio::Socket::Imp;
+    using Socket = std::shared_ptr<opentxs::network::asio::Socket::Imp>;
     using Callback = std::function<void()>;
 
     virtual auto FetchJson(
@@ -64,8 +64,7 @@ public:
         const ReadView notify = {}) const noexcept
         -> std::future<boost::json::value> = 0;
 
-    virtual auto Connect(const ReadView id, Socket& socket) noexcept
-        -> bool = 0;
+    virtual auto Connect(const ReadView id, Socket socket) noexcept -> bool = 0;
     virtual auto GetTimer() noexcept -> Timer = 0;
     virtual auto IOContext() noexcept -> boost::asio::io_context& = 0;
     virtual auto Post(
@@ -76,11 +75,11 @@ public:
         const ReadView id,
         const OTZMQWorkType type,
         const std::size_t bytes,
-        Socket& socket) noexcept -> bool = 0;
+        Socket socket) noexcept -> bool = 0;
     virtual auto Transmit(
         const ReadView id,
         const ReadView bytes,
-        Socket& socket) noexcept -> bool = 0;
+        Socket socket) noexcept -> bool = 0;
 
     Asio(const Asio&) = delete;
     Asio(Asio&&) = delete;

@@ -20,6 +20,8 @@
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/Work.hpp"
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"  // IWYU pragma: keep
@@ -386,7 +388,7 @@ auto HeaderOracle::BestHash(
 auto HeaderOracle::BestHashes(
     const block::Height start,
     const std::size_t limit,
-    alloc::Resource* alloc) const noexcept -> Hashes
+    alloc::Default alloc) const noexcept -> Hashes
 {
     static const auto blank = block::Hash{};
 
@@ -399,7 +401,7 @@ auto HeaderOracle::BestHashes(
     const block::Height start,
     const block::Hash& stop,
     const std::size_t limit,
-    alloc::Resource* alloc) const noexcept -> Hashes
+    alloc::Default alloc) const noexcept -> Hashes
 {
     auto lock = Lock{lock_};
 
@@ -410,7 +412,7 @@ auto HeaderOracle::BestHashes(
     const Hashes& previous,
     const block::Hash& stop,
     const std::size_t limit,
-    alloc::Resource* alloc) const noexcept -> Hashes
+    alloc::Default alloc) const noexcept -> Hashes
 {
     auto lock = Lock{lock_};
     auto start = 0_uz;
@@ -432,7 +434,7 @@ auto HeaderOracle::best_hashes(
     const block::Height start,
     const block::Hash& stop,
     const std::size_t limit,
-    alloc::Resource* alloc) const noexcept -> Hashes
+    alloc::Default alloc) const noexcept -> Hashes
 {
     auto output = Hashes{alloc};
     const auto limitIsZero = (0 == limit);
@@ -463,7 +465,7 @@ auto HeaderOracle::best_hashes(
     return output;
 }
 
-auto HeaderOracle::blank_hash() noexcept -> const block::Hash&
+auto HeaderOracle::blank_hash() const noexcept -> const block::Hash&
 {
     static const auto blank = block::Hash{};
 
@@ -995,7 +997,7 @@ auto HeaderOracle::ProcessSyncData(
     }
 }
 
-auto HeaderOracle::RecentHashes(alloc::Resource* alloc) const noexcept -> Hashes
+auto HeaderOracle::RecentHashes(alloc::Default alloc) const noexcept -> Hashes
 {
     return database_.RecentHashes(alloc);
 }
@@ -1035,5 +1037,10 @@ auto HeaderOracle::Siblings() const noexcept -> UnallocatedSet<block::Hash>
     auto lock = Lock{lock_};
 
     return database_.SiblingHashes();
+}
+
+auto HeaderOracle::SubmitBlock(const ReadView in) noexcept -> void
+{
+    AddHeader(api_.Factory().BlockHeader(chain_, in));
 }
 }  // namespace opentxs::blockchain::node::implementation

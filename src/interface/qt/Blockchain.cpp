@@ -8,11 +8,13 @@
 #include "interface/ui/accountactivity/BlockchainAccountActivity.hpp"  // IWYU pragma: associated
 #include "interface/ui/accountlist/BlockchainAccountListItem.hpp"  // IWYU pragma: associated
 
+#include <stdexcept>
 #include <utility>
 
 #include "interface/qt/SendMonitor.hpp"
 #include "interface/ui/base/Widget.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
@@ -32,8 +34,14 @@ auto BlockchainAccountActivity::Send(
     SendMonitor::Callback cb) const noexcept -> int
 {
     try {
-        const auto& network =
+        const auto handle =
             Widget::api_.Network().Blockchain().GetChain(chain_);
+
+        if (false == handle.IsValid()) {
+            throw std::runtime_error{"invalid chain"};
+        }
+
+        const auto& network = handle.get();
         const auto recipient = Widget::api_.Factory().PaymentCode(address);
         const auto& definition =
             display::GetDefinition(BlockchainToUnit(chain_));

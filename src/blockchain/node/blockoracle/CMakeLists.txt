@@ -11,12 +11,14 @@ if(OT_BLOCKCHAIN_EXPORT)
   target_sources(
     opentxs-common
     PRIVATE
-      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/BlockBatch.hpp"
-      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/BlockOracle.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/blockoracle/BlockBatch.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/blockoracle/BlockFetcher.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/blockoracle/BlockOracle.hpp"
+      "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/blockoracle/Types.hpp"
       "BlockBatch.cpp"
       "BlockBatch.hpp"
-      "BlockDownloader.cpp"
-      "BlockDownloader.hpp"
+      "BlockFetcher.cpp"
+      "BlockFetcher.hpp"
       "BlockOracle.cpp"
       "BlockOracle.hpp"
       "Cache.cpp"

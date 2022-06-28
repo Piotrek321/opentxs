@@ -3,8 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+
 #pragma once
 
+#include <cstddef>
+
+#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/BlockchainProfile.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -15,6 +21,7 @@ struct Config {
     bool provide_sync_server_{false};
     bool disable_wallet_{false};
 
-    auto print() const noexcept -> UnallocatedCString;
+    auto PeerTarget(blockchain::Type) const noexcept -> std::size_t;
+    auto Print(alloc::Default alloc = {}) const noexcept -> CString;
 };
 }  // namespace opentxs::blockchain::node::internal

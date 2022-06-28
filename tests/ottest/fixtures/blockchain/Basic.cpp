@@ -38,7 +38,7 @@ struct Listener::Imp {
         : lock_()
         , data_()
         , counter_(-1)
-        , cb_(zmq::ListenCallback::Factory(
+        , cb_(ot::network::zeromq::ListenCallback::Factory(
               [this](auto&& in) { cb(std::move(in)); }))
         , socket_([&] {
             auto out = api.Network().ZeroMQ().SubscribeSocket(cb_);

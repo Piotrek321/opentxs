@@ -116,8 +116,7 @@ public:
         -> UnallocatedCString;
     auto PaymentCodes(const UnitType currency = UnitType::Btc) const
         -> UnallocatedVector<UnallocatedCString>;
-    auto PaymentCodes(alloc::Resource* alloc) const
-        -> Set<opentxs::PaymentCode>;
+    auto PaymentCodes(alloc::Default alloc) const -> Set<opentxs::PaymentCode>;
     auto PhoneNumbers(bool active = true) const -> UnallocatedCString;
     auto Print() const -> UnallocatedCString;
     OPENTXS_NO_EXPORT auto Serialize(proto::Contact& out) const -> bool;

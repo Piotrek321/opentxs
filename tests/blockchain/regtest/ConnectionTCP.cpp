@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/blockchain/regtest/TCP.hpp"
 
 namespace ottest
 {

@@ -11,6 +11,7 @@
 
 #include <boost/smart_ptr/make_shared.hpp>
 #include <chrono>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 
@@ -21,6 +22,7 @@
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -256,7 +258,13 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
     log.Flush();
 
     try {
-        const auto& network = api_.Network().Blockchain().GetChain(chain);
+        const auto handle = api_.Network().Blockchain().GetChain(chain);
+
+        if (false == handle.IsValid()) {
+            throw std::runtime_error{"invalid chain"};
+        }
+
+        const auto& network = handle.get();
 
         if (haveNym) {
             output = network.GetBalance(nym);

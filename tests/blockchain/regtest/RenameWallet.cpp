@@ -3,14 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.ko
 
-#include "ottest/fixtures/blockchain/Regtest.hpp"  // IWYU pragma: associated
+#include "ottest/fixtures/blockchain/regtest/Simple.hpp"
 
 #include <gtest/gtest.h>
 #include <thread>
 
 #include "internal/identity/Nym.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
-#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
+#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
+#include "ottest/fixtures/blockchain/regtest/Simple.hpp"
 #include "ottest/fixtures/ui/AccountTree.hpp"
 
 namespace ottest

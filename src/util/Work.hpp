@@ -45,6 +45,7 @@ constexpr auto OT_ZMQ_FILTER_ORACLE_HEADER_DOWNLOADER_READY = OTZMQWorkType{OT_Z
 constexpr auto OT_ZMQ_PEER_MANAGER_READY =                    OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 25};
 constexpr auto OT_ZMQ_BLOCKCHAIN_WALLET_READY =               OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 26};
 constexpr auto OT_ZMQ_FEE_ORACLE_READY =                      OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 27};
+constexpr auto OT_ZMQ_BLOCK_FETCH_JOB_AVAILABLE =             OTZMQWorkType{OT_ZMQ_HIGHEST_SIGNAL - 28};
 // clang-format on
 
 template <typename Enum>

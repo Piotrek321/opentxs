@@ -3,92 +3,38 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "ottest/fixtures/blockchain/Regtest.hpp"  // IWYU pragma: associated
-
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
+#include <memory>
 
-#include "ottest/data/crypto/PaymentCodeV3.hpp"
-#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
-#include "ottest/fixtures/common/User.hpp"
+#include "ottest/fixtures/blockchain/Common.hpp"
+#include "ottest/fixtures/blockchain/MinedBlocks.hpp"
+#include "ottest/fixtures/blockchain/regtest/SyncClient.hpp"
 
 namespace ottest
 {
+TEST_F(Regtest_fixture_sync_client, init_opentxs) {}
 
-TEST_F(Regtest_fixture_simple, start_stop_client)
+TEST_F(Regtest_fixture_sync_client, start_chains) { EXPECT_TRUE(Start()); }
+
+TEST_F(Regtest_fixture_sync_client, connect_peers) { EXPECT_TRUE(Connect()); }
+
+TEST_F(Regtest_fixture_sync_client, mine)
 {
-    EXPECT_TRUE(Start());
-    EXPECT_TRUE(Connect());
+    constexpr auto count{10};
 
-    const int numbers_of_test = 2;
-    const auto blocks_mine_for_alice = 2;
-    bool mine_only_in_first_test = true;
-    Height begin = 0;
-    auto expected_balance = 0;
+    EXPECT_TRUE(Mine(0, count));
 
-    for (int number_of_test = 0; number_of_test < numbers_of_test;
-         number_of_test++) {
-        ot::LogConsole()(
-            "Start test number: " + std::to_string(number_of_test + 1))
-            .Flush();
+    const auto handle = client_1_.Network().Blockchain().GetChain(test_chain_);
 
-        auto [user, success] = CreateClient(
-            opentxs::Options{},
-            number_of_test + 3,
-            core_wallet_.name_,
-            GetPaymentCodeVector3().alice_.words_,
-            address_);
-        EXPECT_TRUE(success);
+    ASSERT_TRUE(handle);
 
-        WaitForSynchro(user, target_height, expected_balance);
-        if (!mine_only_in_first_test || number_of_test == 0) {
-            target_height += static_cast<Height>(blocks_mine_for_alice);
+    const auto& chain = handle.get();
+    const auto best = chain.HeaderOracle().BestChain();
 
-            auto scan_listener = std::make_unique<ScanListener>(*user.api_);
-
-            auto scan_listener_external_f = scan_listener->get_future(
-                GetHDAccount(user), bca::Subchain::External, target_height);
-            auto scan_listener_internal_f = scan_listener->get_future(
-                GetHDAccount(user), bca::Subchain::Internal, target_height);
-
-            // mine coin for Alice
-            auto mined_header = MineBlocks(
-                user,
-                begin,
-                blocks_mine_for_alice,
-                transaction_in_block_,
-                amount_in_transaction_);
-
-            EXPECT_TRUE(scan_listener->wait(scan_listener_external_f));
-            EXPECT_TRUE(scan_listener->wait(scan_listener_internal_f));
-
-            begin += blocks_mine_for_alice;
-            auto count = static_cast<int>(MaturationInterval());
-            target_height += count;
-
-            scan_listener_external_f = scan_listener->get_future(
-                GetHDAccount(user), bca::Subchain::External, target_height);
-            scan_listener_internal_f = scan_listener->get_future(
-                GetHDAccount(user), bca::Subchain::Internal, target_height);
-
-            // mine MaturationInterval number block with
-            MineBlocks(begin, count);
-            begin += count;
-
-            EXPECT_TRUE(scan_listener->wait(scan_listener_external_f));
-            EXPECT_TRUE(scan_listener->wait(scan_listener_internal_f));
-
-            expected_balance += amount_in_transaction_ * blocks_mine_for_alice *
-                                transaction_in_block_;
-            WaitForSynchro(user, target_height, expected_balance);
-        }
-
-        EXPECT_EQ(GetBalance(user), expected_balance);
-
-        CloseClient(core_wallet_.name_);
-    }
-
-    Shutdown();
+    EXPECT_EQ(best.height_, 10);
+    EXPECT_EQ(best.hash_, mined_blocks_.get(9).get());
 }
 
+TEST_F(Regtest_fixture_sync_client, shutdown) { Shutdown(); }
 }  // namespace ottest

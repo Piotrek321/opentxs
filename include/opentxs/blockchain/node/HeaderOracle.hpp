@@ -109,17 +109,17 @@ public:
     virtual auto BestHashes(
         const block::Height start,
         const std::size_t limit = 0,
-        alloc::Resource* alloc = alloc::System()) const noexcept -> Hashes = 0;
+        alloc::Default alloc = {}) const noexcept -> Hashes = 0;
     virtual auto BestHashes(
         const block::Height start,
         const block::Hash& stop,
         const std::size_t limit = 0,
-        alloc::Resource* alloc = alloc::System()) const noexcept -> Hashes = 0;
+        alloc::Default alloc = {}) const noexcept -> Hashes = 0;
     virtual auto BestHashes(
         const Hashes& previous,
         const block::Hash& stop,
         const std::size_t limit,
-        alloc::Resource* alloc = alloc::System()) const noexcept -> Hashes = 0;
+        alloc::Default alloc = {}) const noexcept -> Hashes = 0;
     /** Determine how which ancestors of a orphaned tip must be rolled back
      *  due to a chain reorg
      *
@@ -157,8 +157,8 @@ public:
         -> bool = 0;
     virtual auto LoadHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::Header> = 0;
-    virtual auto RecentHashes(
-        alloc::Resource* alloc = alloc::System()) const noexcept -> Hashes = 0;
+    virtual auto RecentHashes(alloc::Default alloc = {}) const noexcept
+        -> Hashes = 0;
     virtual auto Siblings() const noexcept -> UnallocatedSet<block::Hash> = 0;
 
     virtual auto AddCheckpoint(

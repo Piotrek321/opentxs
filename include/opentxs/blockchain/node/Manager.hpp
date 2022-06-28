@@ -109,6 +109,8 @@ public:
 
     virtual auto Connect() noexcept -> bool = 0;
     virtual auto Disconnect() noexcept -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept
+        -> internal::Manager& = 0;
 
     Manager(const Manager&) = delete;
     Manager(Manager&&) = delete;

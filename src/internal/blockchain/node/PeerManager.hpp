@@ -59,8 +59,6 @@ public:
         const noexcept -> void = 0;
     virtual auto AddPeer(const blockchain::p2p::Address& address) const noexcept
         -> bool = 0;
-    virtual auto BroadcastBlock(const block::Block& block) const noexcept
-        -> bool = 0;
     virtual auto BroadcastTransaction(
         const bitcoin::block::Transaction& tx) const noexcept -> bool = 0;
     virtual auto Connect() noexcept -> bool = 0;
@@ -76,7 +74,6 @@ public:
         -> bool = 0;
     virtual auto LookupIncomingSocket(const int id) const noexcept(false)
         -> opentxs::network::asio::Socket = 0;
-    virtual auto PeerTarget() const noexcept -> std::size_t = 0;
     virtual auto RequestBlock(const block::Hash& block) const noexcept
         -> bool = 0;
     virtual auto RequestBlocks(

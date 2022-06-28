@@ -9,6 +9,7 @@
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "ottest/fixtures/blockchain/Restart.hpp"
+#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
 
 namespace ottest
 {

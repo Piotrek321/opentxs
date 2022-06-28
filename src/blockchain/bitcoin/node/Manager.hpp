@@ -43,9 +43,10 @@ namespace node
 {
 namespace internal
 {
-class Manager;
 struct Config;
 }  // namespace internal
+
+class Manager;
 }  // namespace node
 }  // namespace blockchain
 // }  // namespace v1

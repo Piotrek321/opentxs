@@ -28,6 +28,7 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -80,9 +81,10 @@ namespace node
 {
 namespace internal
 {
-class Manager;
 struct Config;
 }  // namespace internal
+
+class Manager;
 }  // namespace node
 }  // namespace blockchain
 
@@ -152,7 +154,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         -> opentxs::network::p2p::StateData final;
     auto IsEnabled(const Chain chain) const noexcept -> bool final;
     auto GetChain(const Imp::Chain type) const noexcept(false)
-        -> const opentxs::blockchain::node::Manager& final;
+        -> BlockchainHandle final;
     auto GetSyncServers(alloc::Default alloc) const noexcept
         -> Imp::Endpoints final;
     auto Mempool() const noexcept -> const zmq::socket::Publish& final
@@ -212,7 +214,7 @@ struct BlockchainImp final : public Blockchain::Imp {
 
 private:
     using Config = opentxs::blockchain::node::internal::Config;
-    using pNode = std::unique_ptr<opentxs::blockchain::node::internal::Manager>;
+    using pNode = std::shared_ptr<opentxs::blockchain::node::Manager>;
     using Chains = UnallocatedVector<Chain>;
 
     const api::Session& api_;

@@ -21,8 +21,6 @@ public:
         -> JobUpdate;
     auto operator()(opentxs::blockchain::node::CfilterJob& job) noexcept
         -> JobUpdate;
-    auto operator()(opentxs::blockchain::node::BlockJob& job) noexcept
-        -> JobUpdate;
 
     UpdateCfheaderJob(
         opentxs::blockchain::cfilter::Type type,

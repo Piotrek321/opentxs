@@ -35,6 +35,8 @@ class BlockBatch
 public:
     class Imp;
 
+    operator bool() const noexcept;
+
     auto Get() const noexcept -> const Vector<block::Hash>&;
     auto ID() const noexcept -> std::size_t;
     auto LastActivity() const noexcept -> std::chrono::seconds;

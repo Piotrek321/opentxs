@@ -32,7 +32,7 @@ public:
     using Vector = UnallocatedVector<std::uint8_t>;
 
     auto asHex() const -> UnallocatedCString final;
-    auto asHex(alloc::Resource* alloc) const -> CString final;
+    auto asHex(alloc::Default alloc) const -> CString final;
     auto at(const std::size_t position) const -> const std::byte& final
     {
         return reinterpret_cast<const std::byte&>(data_.at(position));
@@ -107,7 +107,7 @@ public:
     auto resize(const std::size_t size) -> bool final;
     auto SetSize(const std::size_t size) -> bool final;
     auto str() const -> UnallocatedCString override;
-    auto str(alloc::Resource* alloc) const -> CString override;
+    auto str(alloc::Default alloc) const -> CString override;
     auto WriteInto() noexcept -> AllocateOutput final;
     auto zeroMemory() -> void final;
 

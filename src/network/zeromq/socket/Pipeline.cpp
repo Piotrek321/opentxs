@@ -44,10 +44,8 @@ auto Pipeline(
     const Vector<network::zeromq::SocketData>& extra,
     const std::string_view threadName,
     const std::optional<network::zeromq::BatchID>& preallocated,
-    alloc::Resource* pmr) noexcept -> opentxs::network::zeromq::Pipeline
+    alloc::Default pmr) noexcept -> opentxs::network::zeromq::Pipeline
 {
-    OT_ASSERT(nullptr != pmr);
-
     auto alloc = alloc::PMR<network::zeromq::Pipeline::Imp>{pmr};
     auto* imp = alloc.allocate(1);
     alloc.construct(

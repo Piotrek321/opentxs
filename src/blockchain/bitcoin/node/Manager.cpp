@@ -23,11 +23,11 @@ auto BlockchainNetworkBitcoin(
     const blockchain::node::internal::Config& config,
     std::string_view seednode,
     std::string_view syncEndpoint) noexcept
-    -> std::unique_ptr<blockchain::node::internal::Manager>
+    -> std::shared_ptr<blockchain::node::Manager>
 {
     using ReturnType = blockchain::node::base::Bitcoin;
 
-    return std::make_unique<ReturnType>(
+    return std::make_shared<ReturnType>(
         api, type, config, seednode, syncEndpoint);
 }
 }  // namespace opentxs::factory

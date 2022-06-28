@@ -329,7 +329,7 @@ private:
     static auto choose_thread_count(std::size_t elements) noexcept
         -> std::size_t;
     auto clear_children() noexcept -> void;
-    auto get_account_targets(const Elements& elements, alloc::Resource* alloc)
+    auto get_account_targets(const Elements& elements, alloc::Default alloc)
         const noexcept -> Targets;
     virtual auto get_index(const boost::shared_ptr<const SubchainStateData>& me)
         const noexcept -> Index = 0;

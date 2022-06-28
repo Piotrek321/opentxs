@@ -108,7 +108,7 @@ public:
 
         return get_balance(*lock_shared(), owner, node, &key);
     }
-    auto GetOutputs(node::TxoState type, alloc::Resource* alloc) const noexcept
+    auto GetOutputs(node::TxoState type, alloc::Default alloc) const noexcept
         -> Vector<UTXO>
     {
         if (node::TxoState::Error == type) { return {}; }
@@ -125,7 +125,7 @@ public:
     auto GetOutputs(
         const identifier::Nym& owner,
         node::TxoState type,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+        alloc::Default alloc) const noexcept -> Vector<UTXO>
     {
         if (node::TxoState::Error == type) { return {}; }
         if (owner.empty()) { return {}; }
@@ -143,7 +143,7 @@ public:
         const identifier::Nym& owner,
         const Identifier& node,
         node::TxoState type,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+        alloc::Default alloc) const noexcept -> Vector<UTXO>
     {
         if (node::TxoState::Error == type) { return {}; }
         if (owner.empty() || node.empty()) { return {}; }
@@ -160,7 +160,7 @@ public:
     auto GetOutputs(
         const crypto::Key& key,
         node::TxoState type,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+        alloc::Default alloc) const noexcept -> Vector<UTXO>
     {
         if (node::TxoState::Error == type) { return {}; }
 
@@ -210,14 +210,13 @@ public:
 
         return out;
     }
-    auto GetUnspentOutputs(alloc::Resource* alloc) const noexcept
-        -> Vector<UTXO>
+    auto GetUnspentOutputs(alloc::Default alloc) const noexcept -> Vector<UTXO>
     {
         static const auto blank = api_.Factory().Identifier();
 
         return GetUnspentOutputs(blank, alloc);
     }
-    auto GetUnspentOutputs(const NodeID& id, alloc::Resource* alloc)
+    auto GetUnspentOutputs(const NodeID& id, alloc::Default alloc)
         const noexcept -> Vector<UTXO>
     {
         return get_unspent_outputs(*lock_shared(), id, alloc);
@@ -1148,7 +1147,7 @@ private:
         const AccountID* account,
         const NodeID* subchain,
         const crypto::Key* key,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+        alloc::Default alloc) const noexcept -> Vector<UTXO>
     {
         const auto matches =
             match(cache, states, owner, account, subchain, key);
@@ -1164,7 +1163,7 @@ private:
     [[nodiscard]] auto get_unspent_outputs(
         const OutputCache& cache,
         const NodeID& id,
-        alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+        alloc::Default alloc) const noexcept -> Vector<UTXO>
     {
         const auto* pSub = id.empty() ? nullptr : &id;
 
@@ -1967,7 +1966,7 @@ auto Output::GetBalance(const crypto::Key& key) const noexcept -> Balance
     return imp_->GetBalance(key);
 }
 
-auto Output::GetOutputs(node::TxoState type, alloc::Resource* alloc)
+auto Output::GetOutputs(node::TxoState type, alloc::Default alloc)
     const noexcept -> Vector<UTXO>
 {
     return imp_->GetOutputs(type, alloc);
@@ -1976,7 +1975,7 @@ auto Output::GetOutputs(node::TxoState type, alloc::Resource* alloc)
 auto Output::GetOutputs(
     const identifier::Nym& owner,
     node::TxoState type,
-    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+    alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
     return imp_->GetOutputs(owner, type, alloc);
 }
@@ -1985,7 +1984,7 @@ auto Output::GetOutputs(
     const identifier::Nym& owner,
     const NodeID& node,
     node::TxoState type,
-    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+    alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
     return imp_->GetOutputs(owner, node, type, alloc);
 }
@@ -1993,7 +1992,7 @@ auto Output::GetOutputs(
 auto Output::GetOutputs(
     const crypto::Key& key,
     node::TxoState type,
-    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+    alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
     return imp_->GetOutputs(key, type, alloc);
 }
@@ -2026,15 +2025,14 @@ auto Output::GetUnconfirmedTransactions() const noexcept
     return imp_->GetUnconfirmedTransactions();
 }
 
-auto Output::GetUnspentOutputs(alloc::Resource* alloc) const noexcept
+auto Output::GetUnspentOutputs(alloc::Default alloc) const noexcept
     -> Vector<UTXO>
 {
     return imp_->GetUnspentOutputs(alloc);
 }
 
-auto Output::GetUnspentOutputs(
-    const NodeID& balanceNode,
-    alloc::Resource* alloc) const noexcept -> Vector<UTXO>
+auto Output::GetUnspentOutputs(const NodeID& balanceNode, alloc::Default alloc)
+    const noexcept -> Vector<UTXO>
 {
     return imp_->GetUnspentOutputs(balanceNode, alloc);
 }

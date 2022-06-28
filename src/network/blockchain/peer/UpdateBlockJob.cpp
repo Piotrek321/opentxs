@@ -13,9 +13,8 @@
 
 namespace opentxs::network::blockchain::internal
 {
-Peer::Imp::UpdateBlockJob::UpdateBlockJob(Imp& parent, ReadView data) noexcept
-    : parent_(parent)
-    , data_(data)
+Peer::Imp::UpdateBlockJob::UpdateBlockJob(ReadView data) noexcept
+    : data_(data)
 {
 }
 
@@ -49,45 +48,5 @@ auto Peer::Imp::UpdateBlockJob::operator()(
     opentxs::blockchain::node::CfilterJob& job) noexcept -> JobUpdate
 {
     return {false, false};
-}
-
-auto Peer::Imp::UpdateBlockJob::operator()(
-    opentxs::blockchain::node::BlockJob& job) noexcept -> JobUpdate
-{
-    try {
-        if (false == valid(data_)) {
-            throw std::runtime_error("Invalid payload");
-        }
-
-        auto pBlock =
-            parent_.api_.Factory().BitcoinBlock(parent_.chain_, data_);
-
-        if (false == pBlock.operator bool()) {
-            throw std::runtime_error("Failed to instantiate block");
-        }
-
-        const auto& block = *pBlock;
-
-        if (false == parent_.block_oracle_.Validate(block)) {
-            throw std::runtime_error("Invalid block");
-        }
-
-        auto pHeader = parent_.header_oracle_.LoadHeader(block.Header().Hash());
-
-        if (false == pHeader.operator bool()) {
-            throw std::runtime_error("Failed to load block header");
-        }
-
-        const auto& header = *pHeader;
-        const auto rc = job.Download(header.Position(), std::move(pBlock));
-
-        if (rc && job.isDownloaded()) { return {true, true}; }
-
-        return {true, !rc};
-    } catch (const std::exception& e) {
-        parent_.log_(OT_PRETTY_CLASS())(parent_.name_)(": ")(e.what()).Flush();
-
-        return {true, true};
-    }
 }
 }  // namespace opentxs::network::blockchain::internal

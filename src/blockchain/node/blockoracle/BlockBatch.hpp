@@ -12,7 +12,8 @@
 #include <optional>
 #include <string_view>
 
-#include "internal/blockchain/node/BlockBatch.hpp"
+#include "internal/blockchain/node/Job.hpp"
+#include "internal/blockchain/node/blockoracle/BlockBatch.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
@@ -43,7 +44,7 @@ class BlockBatch::Imp final : public Allocated
 public:
     using DownloadCallback = std::function<void(const std::string_view)>;
 
-    const std::size_t id_;
+    const download::JobID id_;
     const Vector<block::Hash> hashes_;
     const Time start_;
     const std::shared_ptr<const ScopeGuard> finish_;
@@ -57,7 +58,7 @@ public:
 
     auto Submit(const std::string_view block) noexcept -> void;
 
-    Imp(std::size_t id,
+    Imp(download::JobID id,
         Vector<block::Hash>&& hashes,
         DownloadCallback download,
         std::shared_ptr<const ScopeGuard>&& finish,

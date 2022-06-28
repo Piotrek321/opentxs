@@ -74,7 +74,7 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
     EXPECT_EQ(balance_after_mine_ + coin_to_send_, receiver_balance_after_send);
 
     auto loaded_transactions = CollectTransactionsForFeeCalculations(
-        user_alice, send_transactions_, transactions_ptxid_);
+        user_alice, send_transactions_, /*transactions_ptxid_*/transactions_);
     auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
     WaitForSynchro(

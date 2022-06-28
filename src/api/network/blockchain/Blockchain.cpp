@@ -11,6 +11,7 @@
 
 #include "api/network/blockchain/Blockchain.hpp"
 #include "internal/api/network/Factory.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 
 namespace opentxs::factory
 {
@@ -64,7 +65,7 @@ auto Blockchain::EnabledChains(alloc::Default alloc) const noexcept
 }
 
 auto Blockchain::GetChain(const Chain type) const noexcept(false)
-    -> const opentxs::blockchain::node::Manager&
+    -> BlockchainHandle
 {
     return imp_->GetChain(type);
 }

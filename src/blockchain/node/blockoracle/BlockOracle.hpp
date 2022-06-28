@@ -17,18 +17,21 @@
 #include <iosfwd>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <shared_mutex>
 #include <string_view>
 #include <tuple>
 #include <utility>
 
+#include "blockchain/node/blockoracle/BlockFetcher.hpp"
 #include "blockchain/node/blockoracle/Cache.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/block/Validator.hpp"
 #include "internal/blockchain/database/Block.hpp"
-#include "internal/blockchain/node/BlockBatch.hpp"
-#include "internal/blockchain/node/BlockOracle.hpp"
 #include "internal/blockchain/node/Types.hpp"
+#include "internal/blockchain/node/blockoracle/BlockBatch.hpp"
+#include "internal/blockchain/node/blockoracle/BlockFetcher.hpp"
+#include "internal/blockchain/node/blockoracle/BlockOracle.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -120,7 +123,7 @@ public:
         return submit_endpoint_;
     }
     auto GetBlockBatch(boost::shared_ptr<Imp> me) const noexcept -> BlockBatch;
-    auto GetBlockJob() const noexcept -> BlockJob;
+    auto GetBlockJob() const noexcept -> BlockBatch;
     auto Heartbeat() const noexcept -> void;
     auto LoadBitcoin(const block::Hash& block) const noexcept
         -> BitcoinBlockResult;
@@ -173,7 +176,7 @@ private:
     const database::Block& db_;
     const CString submit_endpoint_;
     const std::unique_ptr<const block::Validator> validator_;
-    const std::unique_ptr<blockoracle::BlockDownloader> block_downloader_;
+    std::optional<blockoracle::BlockFetcher> block_fetcher_;
     mutable Cache cache_;
 
     static auto get_validator(

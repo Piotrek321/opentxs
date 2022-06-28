@@ -12,20 +12,28 @@
 
 #include <boost/system/error_code.hpp>
 #include <algorithm>
+#include <atomic>
 #include <chrono>
+#include <cstddef>
 #include <exception>
-#include <new>
+#include <memory>
+#include <numeric>  // IWYU pragma: keep
+#include <ratio>
 
 #include "blockchain/node/wallet/feeoracle/FeeOracle.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/node/wallet/FeeSource.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/display/Scale.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
@@ -35,20 +43,17 @@ namespace opentxs::factory
 auto FeeOracle(
     const api::Session& api,
     const blockchain::Type chain,
-    alloc::Resource* mr) noexcept -> blockchain::node::wallet::FeeOracle
+    alloc::Default pmr) noexcept -> blockchain::node::wallet::FeeOracle
 {
-    if (nullptr == mr) { mr = alloc::System(); }
-
     using ReturnType = blockchain::node::wallet::FeeOracle::Imp;
-    auto alloc = ReturnType::allocator_type{mr};
-    auto* resource = alloc.resource();
-    auto* out = resource->allocate(sizeof(ReturnType), alignof(ReturnType));
+    auto alloc = alloc::PMR<ReturnType>{pmr};
+    auto* out = alloc.allocate(1_uz);
 
-    return new (out) ReturnType{
-        api,
-        chain,
-        std::move(alloc),
-        network::zeromq::MakeArbitraryInproc(resource)};
+    OT_ASSERT(nullptr != out);
+
+    alloc.construct(out, api, chain, network::zeromq::MakeArbitraryInproc(pmr));
+
+    return out;
 }
 }  // namespace opentxs::factory
 
@@ -57,14 +62,14 @@ namespace opentxs::blockchain::node::wallet
 FeeOracle::Imp::Imp(
     const api::Session& api,
     const blockchain::Type chain,
-    allocator_type&& alloc,
-    CString endpoint) noexcept
+    CString endpoint,
+    allocator_type alloc) noexcept
     : Allocated(std::move(alloc))
     , Worker(api, {})
     , chain_(chain)
     , timer_(api.Network().Asio().Internal().GetTimer())
-    , sources_(factory::FeeSources(api, chain_, endpoint, alloc.resource()))
-    , data_(alloc.resource())
+    , sources_(factory::FeeSources(api, chain_, endpoint, alloc))
+    , data_(alloc)
     , output_(std::nullopt)
 {
     pipeline_.BindSubscriber(endpoint);

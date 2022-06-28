@@ -73,8 +73,7 @@ public:
         const EndpointArgs& dealer = {},
         const Vector<SocketData>& extra = {},
         const std::optional<BatchID>& preallocated = std::nullopt,
-        alloc::Resource* pmr = alloc::System()) const noexcept
-        -> zeromq::Pipeline = 0;
+        alloc::Default pmr = {}) const noexcept -> zeromq::Pipeline = 0;
     virtual auto RawSocket(socket::Type type) const noexcept -> socket::Raw = 0;
     virtual auto Start(
         BatchID id,

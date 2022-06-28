@@ -23,6 +23,7 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -98,17 +99,17 @@ public:
     auto BestHashes(
         const block::Height start,
         const std::size_t limit,
-        alloc::Resource* alloc) const noexcept -> Hashes final;
+        alloc::Default alloc) const noexcept -> Hashes final;
     auto BestHashes(
         const block::Height start,
         const block::Hash& stop,
         const std::size_t limit,
-        alloc::Resource* alloc) const noexcept -> Hashes final;
+        alloc::Default alloc) const noexcept -> Hashes final;
     auto BestHashes(
         const Hashes& previous,
         const block::Hash& stop,
         const std::size_t limit,
-        alloc::Resource* alloc) const noexcept -> Hashes final;
+        alloc::Default alloc) const noexcept -> Hashes final;
     auto CalculateReorg(const block::Position& tip) const noexcept(false)
         -> Positions final;
     auto CalculateReorg(const Lock& lock, const block::Position& tip) const
@@ -139,7 +140,7 @@ public:
         -> std::unique_ptr<bitcoin::block::Header> final;
     auto LoadHeader(const block::Hash& hash) const noexcept
         -> std::unique_ptr<block::Header> final;
-    auto RecentHashes(alloc::Resource* alloc) const noexcept -> Hashes final;
+    auto RecentHashes(alloc::Default alloc) const noexcept -> Hashes final;
     auto Siblings() const noexcept -> UnallocatedSet<block::Hash> final;
 
     auto AddCheckpoint(
@@ -156,6 +157,7 @@ public:
         block::Hash& prior,
         Vector<block::Hash>& hashes,
         const network::p2p::Data& data) noexcept -> std::size_t final;
+    auto SubmitBlock(const ReadView in) noexcept -> void final;
 
     HeaderOracle(
         const api::Session& api,
@@ -198,8 +200,8 @@ private:
         const block::Height start,
         const block::Hash& stop,
         const std::size_t limit,
-        alloc::Resource* alloc) const noexcept -> Hashes;
-    static auto blank_hash() noexcept -> const block::Hash&;
+        alloc::Default alloc) const noexcept -> Hashes;
+    auto blank_hash() const noexcept -> const block::Hash&;
     auto blank_position() const noexcept -> const block::Position&;
     auto calculate_reorg(const Lock& lock, const block::Position& tip) const
         noexcept(false) -> Positions;

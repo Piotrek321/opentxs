@@ -182,8 +182,7 @@ public:
             const node::internal::PeerManager& parent,
             const std::string_view shutdown,
             const Type chain,
-            const std::string_view seednode,
-            const std::size_t peerTarget) noexcept;
+            const std::string_view seednode) noexcept;
 
         ~Peers();
 
@@ -261,7 +260,6 @@ public:
         -> void final;
     auto AddPeer(const blockchain::p2p::Address& address) const noexcept
         -> bool final;
-    auto BroadcastBlock(const block::Block& block) const noexcept -> bool final;
     auto BroadcastTransaction(
         const bitcoin::block::Transaction& tx) const noexcept -> bool final;
     auto Connect() noexcept -> bool final;
@@ -285,10 +283,6 @@ public:
         -> bool final;
     auto LookupIncomingSocket(const int id) const noexcept(false)
         -> opentxs::network::asio::Socket final;
-    auto PeerTarget() const noexcept -> std::size_t final
-    {
-        return peer_target_;
-    }
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;
     auto RequestBlocks(const UnallocatedVector<ReadView>& hashes) const noexcept
         -> bool final;
@@ -355,7 +349,6 @@ private:
         OTZMQPublishSocket heartbeat_;
         OTZMQPushSocket getblock_;
         OTZMQPushSocket broadcast_transaction_;
-        OTZMQPublishSocket broadcast_block_;
         const EndpointMap endpoint_map_;
         const SocketMap socket_map_;
 
@@ -368,17 +361,12 @@ private:
     const node::internal::Manager& node_;
     database::Peer& database_;
     const Type chain_;
-    const std::size_t peer_target_;
     mutable Jobs jobs_;
     mutable Peers peers_;
     mutable std::mutex verified_lock_;
     mutable UnallocatedSet<int> verified_peers_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
-
-    static auto peer_target(
-        const Type chain,
-        const node::internal::Config& config) noexcept -> std::size_t;
 
     auto shutdown(std::promise<void>& promise) noexcept -> void;
 };

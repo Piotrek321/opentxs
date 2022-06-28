@@ -162,7 +162,7 @@ auto Context::Pipeline(
     const EndpointArgs& dealer,
     const Vector<SocketData>& extra,
     const std::optional<BatchID>& preallocated,
-    alloc::Resource* pmr) const noexcept -> zeromq::Pipeline
+    alloc::Default pmr) const noexcept -> zeromq::Pipeline
 {
     return opentxs::factory::Pipeline(
         *this,

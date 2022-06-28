@@ -106,7 +106,7 @@ public:
     {
         return load_header(hash);
     }
-    auto RecentHashes(alloc::Resource* alloc) const noexcept
+    auto RecentHashes(alloc::Default alloc) const noexcept
         -> Vector<block::Hash>;
     auto SiblingHashes() const noexcept -> database::Hashes;
     // Returns null pointer if the header does not exist
@@ -148,7 +148,7 @@ private:
         const block::Position& next,
         const bool setTip,
         MDB_txn* parent) const noexcept -> bool;
-    auto recent_hashes(const Lock& lock, alloc::Resource* alloc) const noexcept
+    auto recent_hashes(const Lock& lock, alloc::Default alloc) const noexcept
         -> Vector<block::Hash>;
 };
 }  // namespace opentxs::blockchain::database

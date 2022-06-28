@@ -16,6 +16,8 @@ namespace opentxs::network::blockchain
 // WARNING update print function if new values are added or removed
 enum class PeerJob : OTZMQWorkType {
     shutdown = value(WorkType::Shutdown),
+    blockheader = value(WorkType::BlockchainNewHeader),
+    reorg = value(WorkType::BlockchainReorg),
     blockbatch = value(WorkType::BlockchainBlockDownloadQueue),
     mempool = value(WorkType::BlockchainMempoolUpdated),
     registration = value(WorkType::AsioRegister),
@@ -27,8 +29,6 @@ enum class PeerJob : OTZMQWorkType {
     getblock = value(opentxs::blockchain::node::PeerManagerJobs::Getblock),
     broadcasttx =
         value(opentxs::blockchain::node::PeerManagerJobs::BroadcastTransaction),
-    broadcastblock =
-        value(opentxs::blockchain::node::PeerManagerJobs::BroadcastBlock),
     jobavailablecfheaders = value(
         opentxs::blockchain::node::PeerManagerJobs::JobAvailableCfheaders),
     jobavailablecfilters =
@@ -43,8 +43,9 @@ enum class PeerJob : OTZMQWorkType {
     needping = OT_ZMQ_INTERNAL_SIGNAL + 125,
     body = OT_ZMQ_INTERNAL_SIGNAL + 126,
     header = OT_ZMQ_INTERNAL_SIGNAL + 127,
-    init = OT_ZMQ_INIT_SIGNAL,
     heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,
+    block = OT_ZMQ_NEW_FULL_BLOCK_SIGNAL,
+    init = OT_ZMQ_INIT_SIGNAL,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
 };
 

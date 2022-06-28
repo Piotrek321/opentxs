@@ -25,6 +25,7 @@
 #include "opentxs/api/crypto/Util.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Dht.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZAP.hpp"

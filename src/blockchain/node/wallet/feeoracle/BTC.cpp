@@ -16,6 +16,7 @@
 #include "blockchain/node/wallet/feeoracle/FeeSource.hpp"
 #include "internal/blockchain/node/wallet/FeeSource.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Log.hpp"
@@ -362,36 +363,37 @@ private:
 
 namespace opentxs::factory
 {
-template <typename T>
-auto createSource(
-    const alloc::Default& alloc,
+template <typename Imp>
+auto createPmr(
+    const alloc::Default& pmr,
     const api::Session& api,
     const std::string_view endpoint)
 {
-    auto* out = alloc.resource()->allocate(sizeof(T), alignof(T));
-    return new (out) T{api, endpoint, alloc};
+    auto alloc = alloc::PMR<Imp>{pmr};
+        auto* out = alloc.allocate(1_uz);
+        alloc.construct(out, api, endpoint);
+        return out;
 }
 
 auto BTCFeeSources(
     const api::Session& api,
     const std::string_view endpoint,
-    alloc::Resource* mr) noexcept
+    alloc::Default pmr) noexcept
     -> ForwardList<blockchain::node::wallet::FeeSource>
 {
-    if (nullptr == mr) { mr = alloc::System(); }
     using namespace blockchain::node::wallet;
-    auto alloc = FeeSource::allocator_type{mr};
-    ForwardList<FeeSource> sources{alloc};
+    using ReturnType = blockchain::node::wallet::FeeSource;
+    auto sources = ForwardList<ReturnType>{pmr};
 
-    sources.emplace_front(createSource<Bitcoiner_live>(alloc, api, endpoint));
-    sources.emplace_front(createSource<BitGo>(alloc, api, endpoint));
-    sources.emplace_front(createSource<Bitpay>(alloc, api, endpoint));
-    sources.emplace_front(createSource<Blockchain_info>(alloc, api, endpoint));
-    sources.emplace_front(createSource<Blockchair>(alloc, api, endpoint));
-    sources.emplace_front(createSource<BlockCypher>(alloc, api, endpoint));
-    sources.emplace_front(createSource<Blockstream>(alloc, api, endpoint));
-    sources.emplace_front(createSource<BTC_com>(alloc, api, endpoint));
-    sources.emplace_front(createSource<Earn>(alloc, api, endpoint));
+    sources.emplace_front(createPmr<Bitcoiner_live>(pmr, api, endpoint));
+    sources.emplace_front(createPmr<BitGo>(pmr, api, endpoint));
+    sources.emplace_front(createPmr<Bitpay>(pmr, api, endpoint));
+    sources.emplace_front(createPmr<Blockchain_info>(pmr, api, endpoint));
+    sources.emplace_front(createPmr<Blockchair>(pmr, api, endpoint));
+    sources.emplace_front(createPmr<BlockCypher>(pmr, api, endpoint));
+    sources.emplace_front(createPmr<Blockstream>(pmr, api, endpoint));
+    sources.emplace_front(createPmr<BTC_com>(pmr, api, endpoint));
+    sources.emplace_front(createPmr<Earn>(pmr, api, endpoint));
 
     return sources;
 }

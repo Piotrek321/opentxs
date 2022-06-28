@@ -13,6 +13,7 @@
 #include <future>
 #include <limits>
 #include <memory>
+#include <stdexcept>
 #include <string_view>
 #include <type_traits>
 
@@ -30,6 +31,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -155,8 +157,14 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
     const auto transactions =
         [&]() -> UnallocatedVector<blockchain::block::pTxid> {
         try {
-            const auto& chain =
+            const auto handle =
                 Widget::api_.Network().Blockchain().GetChain(chain_);
+
+            if (false == handle.IsValid()) {
+                throw std::runtime_error{"invalid chain"};
+            }
+
+            const auto& chain = handle.get();
             height_ = chain.HeaderOracle().BestChain().height_;
 
             return chain.Internal().GetTransactions(primary_id_);
@@ -395,8 +403,14 @@ auto BlockchainAccountActivity::process_state(const Message& in) noexcept
     }
 
     try {
-        const auto& chain =
+        const auto handle =
             Widget::api_.Network().Blockchain().GetChain(chain_);
+
+        if (false == handle.IsValid()) {
+            throw std::runtime_error{"invalid chain"};
+        }
+
+        const auto& chain = handle.get();
         process_height(chain.HeaderOracle().BestChain().height_);
     } catch (...) {
     }
@@ -503,8 +517,14 @@ auto BlockchainAccountActivity::Send(
     const UnallocatedCString& memo) const noexcept -> bool
 {
     try {
-        const auto& network =
+        const auto handle =
             Widget::api_.Network().Blockchain().GetChain(chain_);
+
+        if (false == handle.IsValid()) {
+            throw std::runtime_error{"invalid chain"};
+        }
+
+        const auto& network = handle.get();
         const auto recipient = Widget::api_.Factory().PaymentCode(address);
 
         if (0 < recipient.Version()) {

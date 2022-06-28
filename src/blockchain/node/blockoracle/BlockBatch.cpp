@@ -11,6 +11,7 @@
 #include <memory>
 #include <utility>
 
+#include "internal/blockchain/node/Job.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Allocator.hpp"
@@ -18,7 +19,7 @@
 namespace opentxs::blockchain::node::internal
 {
 BlockBatch::Imp::Imp(
-    std::size_t id,
+    download::JobID id,
     Vector<block::Hash>&& hashes,
     DownloadCallback download,
     std::shared_ptr<const ScopeGuard>&& finish,
@@ -34,7 +35,7 @@ BlockBatch::Imp::Imp(
 }
 
 BlockBatch::Imp::Imp(allocator_type alloc) noexcept
-    : Imp(0, Vector<block::Hash>{alloc}, {}, nullptr, alloc)
+    : Imp(-1, Vector<block::Hash>{alloc}, {}, nullptr, alloc)
 {
 }
 
@@ -84,6 +85,17 @@ BlockBatch::BlockBatch(BlockBatch&& rhs) noexcept
     : BlockBatch()
 {
     swap(rhs);
+}
+
+BlockBatch::operator bool() const noexcept
+{
+    if (nullptr == imp_) {
+
+        return false;
+    } else {
+
+        return -1 != imp_->id_;
+    }
 }
 
 auto BlockBatch::operator=(BlockBatch&& rhs) noexcept -> BlockBatch&

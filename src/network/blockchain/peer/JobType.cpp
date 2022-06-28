@@ -25,7 +25,7 @@ auto Peer::Imp::JobType::operator()(
     const opentxs::blockchain::node::internal::BlockBatch&) const noexcept
     -> std::string_view
 {
-    return "block batch"sv;
+    return "block job"sv;
 }
 
 auto Peer::Imp::JobType::operator()(
@@ -40,12 +40,6 @@ auto Peer::Imp::JobType::operator()(
     -> std::string_view
 {
     return "cfilter job"sv;
-}
-
-auto Peer::Imp::JobType::operator()(const opentxs::blockchain::node::BlockJob&)
-    const noexcept -> std::string_view
-{
-    return "block job"sv;
 }
 
 auto Peer::Imp::JobType::get() noexcept -> const JobType&

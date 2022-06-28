@@ -62,7 +62,7 @@ auto to_hex(const std::byte* in, std::size_t size) noexcept
 auto to_hex(
     const std::byte* in,
     std::size_t size,
-    alloc::Resource* alloc) noexcept -> CString
+    alloc::Default alloc) noexcept -> CString
 {
     if (nullptr == in) { return CString{alloc}; }
 
@@ -197,7 +197,7 @@ auto Data::asHex() const -> UnallocatedCString
         reinterpret_cast<const std::byte*>(data_.data()), data_.size());
 }
 
-auto Data::asHex(alloc::Resource* alloc) const -> CString
+auto Data::asHex(alloc::Default alloc) const -> CString
 {
     return to_hex(
         reinterpret_cast<const std::byte*>(data_.data()), data_.size(), alloc);
@@ -381,7 +381,7 @@ auto Data::str() const -> UnallocatedCString
     return UnallocatedCString{Bytes()};
 }
 
-auto Data::str(alloc::Resource* alloc) const -> CString
+auto Data::str(alloc::Default alloc) const -> CString
 {
     return CString{Bytes(), alloc};
 }

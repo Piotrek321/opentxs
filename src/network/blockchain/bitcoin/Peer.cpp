@@ -31,12 +31,12 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/database/Peer.hpp"
-#include "internal/blockchain/node/BlockBatch.hpp"
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/Mempool.hpp"
 #include "internal/blockchain/node/Types.hpp"
+#include "internal/blockchain/node/blockoracle/BlockBatch.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
@@ -166,6 +166,7 @@ Peer::Peer(
     const zeromq::BatchID batch,
     allocator_type alloc) noexcept
     : Imp(api,
+          config,
           network,
           parent,
           header,
@@ -192,7 +193,7 @@ Peer::Peer(
         return out;
     }())
     , peer_cfilter_([&] {
-        switch (config.profile_) {
+        switch (config_.profile_) {
             case BlockchainProfile::desktop_native: {
 
                 return true;
@@ -382,17 +383,6 @@ auto Peer::not_implemented(
         .Flush();
 }
 
-auto Peer::process_broadcastblock(Message&& msg) noexcept -> void
-{
-    const auto body = msg.Body();
-
-    OT_ASSERT(1 < body.size());
-
-    using Hash = opentxs::blockchain::block::Hash;
-    using Inv = opentxs::blockchain::bitcoin::Inventory;
-    transmit_protocol_inv(Inv{inv_block_, Hash{body.at(1).Bytes()}});
-}
-
 auto Peer::process_broadcasttx(Message&& msg) noexcept -> void
 {
     const auto body = msg.Body();
@@ -553,18 +543,14 @@ auto Peer::process_protocol_block(
     std::unique_ptr<HeaderType> header,
     zeromq::Frame&& payload) noexcept(false) -> void
 {
-    if (update_block_job(payload.Bytes())) {
+    update_block_job(payload.Bytes());
+    using Task = opentxs::blockchain::node::ManagerJobs;
+    network_.Submit([&] {
+        auto work = MakeWork(Task::SubmitBlock);
+        work.AddFrame(payload);
 
-        return;
-    } else {
-        using Task = opentxs::blockchain::node::ManagerJobs;
-        network_.Submit([&] {
-            auto work = MakeWork(Task::SubmitBlock);
-            work.AddFrame(payload);
-
-            return work;
-        }());
-    }
+        return work;
+    }());
 }
 
 auto Peer::process_protocol_blocktxn(
@@ -1052,6 +1038,7 @@ auto Peer::process_protocol_getdata(
                     OT_ASSERT(pBlock);
 
                     const auto& block = *pBlock;
+                    add_known_block(block.ID());
                     transmit_protocol_block([&] {
                         auto output = api_.Factory().Data();
                         block.Serialize(output.WriteInto());
@@ -1114,6 +1101,8 @@ auto Peer::process_protocol_headers(
         std::move(header), protocol_, payload.data(), payload.size());
     auto& message = *pMessage;
 
+    if (0_uz == message.size()) { return; }
+
     switch (state()) {
         case State::verify: {
             process_protocol_headers_verify(message);
@@ -1144,7 +1133,7 @@ auto Peer::process_protocol_headers_verify(
         }
     }};
 
-    if (const auto count = message.size(); 1u != count) {
+    if (const auto count = message.size(); 1_uz != count) {
         log_(OT_PRETTY_CLASS())(name_)(": unexpected cfheader count: ")(count)
             .Flush();
 
@@ -1153,7 +1142,7 @@ auto Peer::process_protocol_headers_verify(
 
     const auto [height, checkpointHash, parentHash, filterHash] =
         header_oracle_.Internal().GetDefaultCheckpoint();
-    const auto& receivedBlockHash = message.at(0).Hash();
+    const auto& receivedBlockHash = message.at(0_uz).Hash();
 
     if (checkpointHash != receivedBlockHash) {
         log_(OT_PRETTY_CLASS())(name_)(": unexpected block header hash: ")
@@ -1175,6 +1164,10 @@ auto Peer::process_protocol_headers_run(
     opentxs::blockchain::p2p::bitcoin::message::internal::Headers&
         message) noexcept(false) -> void
 {
+    const auto size = message.size();
+
+    OT_ASSERT(0_uz < size);
+
     auto future = network_.Track([&] {
         using Task = opentxs::blockchain::node::ManagerJobs;
         auto work = MakeWork(Task::SubmitBlockHeader);
@@ -1186,10 +1179,17 @@ auto Peer::process_protocol_headers_run(
         return work;
     }());
     using Status = std::future_status;
-    constexpr auto limit = 10s;
+    constexpr auto limit = 20s;
 
     if (Status::ready == future.wait_for(limit)) {
-        // TODO
+        // TODO Headers class needs front() and back() functions
+        const auto& newest = message.at(size - 1_uz);
+        const auto pHeader = header_oracle_.LoadHeader(newest.Hash());
+
+        OT_ASSERT(pHeader);
+
+        const auto& header = *pHeader;
+        update_remote_position(header.Position());
     }
 
     update_get_headers_job();
@@ -1219,21 +1219,50 @@ auto Peer::process_protocol_inv(
         switch (inv.type_) {
             case Kind::MsgBlock:
             case Kind::MsgWitnessBlock: {
-                const auto block =
-                    opentxs::blockchain::block::Hash{hash.Bytes()};
-                const auto header = header_oracle_.LoadHeader(block);
+                auto block = opentxs::blockchain::block::Hash{hash.Bytes()};
 
-                if (header) {
-                    log_(OT_PRETTY_CLASS())(name_)(": header for block ")
-                        .asHex(block)(" already downloaded")
-                        .Flush();
-                } else {
-                    log_(OT_PRETTY_CLASS())(name_)(
-                        ": downloading header for block ")
-                        .asHex(block)
-                        .Flush();
-                    transmit_protocol_getheaders(block);
+                switch (config_.profile_) {
+                    case BlockchainProfile::mobile:
+                    case BlockchainProfile::desktop:
+                    case BlockchainProfile::desktop_native: {
+                        // TODO header oracle needs Exists() function
+                        const auto h = header_oracle_.LoadHeader(block);
+
+                        if (h) {
+                            log_(OT_PRETTY_CLASS())(name_)(
+                                ": header for block ")
+                                .asHex(block)(" already downloaded")
+                                .Flush();
+                        } else {
+                            log_(OT_PRETTY_CLASS())(name_)(
+                                ": downloading header for block ")
+                                .asHex(block)
+                                .Flush();
+                            transmit_protocol_getheaders(block);
+                        }
+                    } break;
+                    case BlockchainProfile::server: {
+                        // TODO block oracle needs Exists() function
+                        const auto b = block_oracle_.LoadBitcoin(block);
+
+                        if (IsReady(b)) {
+                            log_(OT_PRETTY_CLASS())(name_)(": block ")
+                                .asHex(block)(" already downloaded")
+                                .Flush();
+                        } else {
+                            log_(OT_PRETTY_CLASS())(name_)(
+                                ": downloading block ")
+                                .asHex(block)
+                                .Flush();
+                            transmit_protocol_getdata(Inv{inv.type_, block});
+                        }
+                    } break;
+                    default: {
+                        OT_FAIL;
+                    }
                 }
+
+                add_known_block(std::move(block));
             } break;
             case Kind::MsgTx:
             case Kind::MsgWitnessTx: {
@@ -1732,23 +1761,6 @@ auto Peer::transmit_request_blocks(
         auto out = UnallocatedVector<Inv>{};
 
         for (const auto& hash : job.Get()) {
-            log_(OT_PRETTY_CLASS())("requesting block ").asHex(hash).Flush();
-            out.emplace_back(inv_block_, hash);
-        }
-
-        return out;
-    }());
-}
-
-auto Peer::transmit_request_blocks(
-    opentxs::blockchain::node::BlockJob& job) noexcept -> void
-{
-    using Inv = opentxs::blockchain::bitcoin::Inventory;
-    transmit_protocol_getdata([&] {
-        auto out = UnallocatedVector<Inv>{};
-
-        for (const auto& task : job.data_) {
-            const auto& hash = task->position_.hash_;
             log_(OT_PRETTY_CLASS())("requesting block ").asHex(hash).Flush();
             out.emplace_back(inv_block_, hash);
         }

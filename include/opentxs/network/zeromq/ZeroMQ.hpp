@@ -16,7 +16,7 @@
 namespace opentxs::network::zeromq
 {
 OPENTXS_EXPORT auto MakeArbitraryInproc() noexcept -> UnallocatedCString;
-OPENTXS_EXPORT auto MakeArbitraryInproc(alloc::Resource* alloc) noexcept
+OPENTXS_EXPORT auto MakeArbitraryInproc(alloc::Default alloc) noexcept
     -> CString;
 auto MakeDeterministicInproc(
     const std::string_view path,

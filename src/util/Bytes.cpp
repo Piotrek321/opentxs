@@ -91,7 +91,7 @@ auto space(const std::size_t size) noexcept -> Space
 
     return output;
 }
-auto space(const std::size_t size, alloc::Resource* alloc) noexcept
+auto space(const std::size_t size, alloc::Default alloc) noexcept
     -> Vector<std::byte>
 {
     auto output = Vector<std::byte>{alloc};
@@ -107,7 +107,7 @@ auto space(const ReadView bytes) noexcept -> Space
 
     return {it, it + bytes.size()};
 }
-auto space(const ReadView bytes, alloc::Resource* alloc) noexcept
+auto space(const ReadView bytes, alloc::Default alloc) noexcept
     -> Vector<std::byte>
 {
     using Out = Vector<std::byte>;

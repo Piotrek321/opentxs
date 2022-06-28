@@ -48,14 +48,15 @@ namespace internal
 {
 class BlockOracle;
 class FilterOracle;
-class Mempool;
 class Manager;
+class Mempool;
 class PeerManager;
 class Wallet;
 struct Config;
 }  // namespace internal
 
 class HeaderOracle;
+class Manager;
 }  // namespace node
 }  // namespace blockchain
 // }  // namespace v1
@@ -81,7 +82,7 @@ auto BlockchainNetworkBitcoin(
     const blockchain::node::internal::Config& config,
     std::string_view seednode,
     std::string_view syncEndpoint) noexcept
-    -> std::unique_ptr<blockchain::node::internal::Manager>;
+    -> std::shared_ptr<blockchain::node::Manager>;
 auto BlockchainPeerManager(
     const api::Session& api,
     const blockchain::node::internal::Config& config,

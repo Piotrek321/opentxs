@@ -1,9 +1,9 @@
 // Copyright (c) 2010-2022 The Open-Transactions developers
-// // This Source Code Form is subject to the terms of the Mozilla Public
-// // License, v. 2.0. If a copy of the MPL was not distributed with this
-// // file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "ottest/fixtures/blockchain/RegtestSimple.hpp"  // IWYU pragma: associated
+#include "ottest/fixtures/blockchain/regtest/Simple.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
@@ -16,20 +16,25 @@
 #include <thread>
 #include <tuple>
 
-#include "internal/blockchain/Blockchain.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
-#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/blockchain/BlockListener.hpp"
+#include "ottest/fixtures/blockchain/Common.hpp"
+#include "ottest/fixtures/blockchain/WalletListener.hpp"
 #include "ottest/fixtures/common/User.hpp"
+#include "internal/blockchain/Blockchain.hpp"
 
 namespace ottest
 {
 using namespace opentxs::literals;
 
 RegtestListener::RegtestListener(const ot::api::session::Client& client)
-    : block_listener(std::make_unique<BlockListener>(client))
+    : block_listener(std::make_unique<BlockListener>(client, "client"))
     , wallet_listener(std::make_unique<WalletListener>(client))
 {
 }
+
+RegtestListener::~RegtestListener() = default;
 
 Regtest_fixture_simple::Regtest_fixture_simple()
     : Regtest_fixture_normal(0, ot::Options{})
@@ -102,7 +107,7 @@ auto Regtest_fixture_simple::TransactionGenerator(
 {
     using OutputBuilder = ot::api::session::Factory::OutputBuilder;
     using Index = ot::Bip32Index;
-    using Subchain = bca::Subchain;
+    using Subchain = ot::blockchain::crypto::Subchain;
 
     auto output = ot::UnallocatedVector<OutputBuilder>{};
     auto meta = ot::UnallocatedVector<OutpointMetadata>{};
@@ -133,7 +138,7 @@ auto Regtest_fixture_simple::TransactionGenerator(
         test_chain_, height, std::move(output), coinbase_fun_);
 
     const auto& txid =
-        transactions_ptxid_.emplace_back(output_transaction->ID());
+        /*transactions_ptxid_*/transactions_.emplace_back(output_transaction->ID());
 
     for (auto i = Index{0}; i < Index{count}; ++i) {
         auto& [bytes, amount_, pattern] = meta.at(i);
@@ -227,7 +232,13 @@ auto Regtest_fixture_simple::MineBlocks(
     const ot::UnallocatedVector<Transaction>& extra) noexcept
     -> std::unique_ptr<opentxs::blockchain::bitcoin::block::Header>
 {
-    const auto& network = miner_.Network().Blockchain().GetChain(test_chain_);
+    const auto handle = miner_.Network().Blockchain().GetChain(test_chain_);
+
+    EXPECT_TRUE(handle);
+
+    if (false == handle.IsValid()) { return {}; }
+
+    const auto& network = handle.get();
     const auto& headerOracle = network.HeaderOracle();
     auto previousHeader =
         headerOracle.LoadHeader(headerOracle.BestHash(ancestor))->as_Bitcoin();
@@ -265,13 +276,15 @@ auto Regtest_fixture_simple::CreateClient(
     int instance,
     const ot::UnallocatedCString& name,
     const ot::UnallocatedCString& words,
-    const b::p2p::Address& address) -> std::pair<const User&, bool>
+    const ot::blockchain::p2p::Address& address) -> std::pair<const User&, bool>
 {
     const auto& client = ot_.StartClientSession(client_args, instance);
-
     const auto start = client.Network().Blockchain().Start(test_chain_);
+    const auto handle = client.Network().Blockchain().GetChain(test_chain_);
 
-    const auto& network = client.Network().Blockchain().GetChain(test_chain_);
+    OT_ASSERT(handle);
+
+    const auto& network = handle.get();
     const auto added = network.AddPeer(address);
 
     auto seed = ImportBip39(client, words);
@@ -299,9 +312,7 @@ auto Regtest_fixture_simple::CreateClient(
 
     std::promise<void> promise;
     std::future<void> done = promise.get_future();
-    auto cb_connected = [&](zmq::Message&& msg, std::atomic_int& counter) {
-        promise.set_value();
-    };
+    auto cb_connected = [&](auto&& msg, auto& counter) { promise.set_value(); };
     std::atomic_int client_peers;
     ot::OTZMQListenCallback client_cb_(
         ot::network::zeromq::ListenCallback::Factory(
@@ -365,7 +376,7 @@ auto Regtest_fixture_simple::GetSyncPercentage(const User& user) const -> double
 }
 
 auto Regtest_fixture_simple::GetHDAccount(const User& user) const noexcept
-    -> const bca::HD&
+    -> const ot::blockchain::crypto::HD&
 {
     return user.api_->Crypto()
         .Blockchain()
@@ -454,7 +465,7 @@ auto Regtest_fixture_simple::GetTransactions(const User& user) const noexcept
 {
     const auto& network =
         user.api_->Network().Blockchain().GetChain(test_chain_);
-    const auto& wallet = network.Wallet();
+    const auto& wallet = network.get().Wallet();
 
     return wallet.GetTransactions();
 }
@@ -469,7 +480,7 @@ void Regtest_fixture_simple::MineTransaction(
     auto send_transaction =
         user.api_->Crypto().Blockchain().LoadTransactionBitcoin(
             transactions_to_confirm);
-    transactions_ptxid_.emplace_back(send_transaction->ID());
+    /*transactions_ptxid_*/transactions_.emplace_back(send_transaction->ID());
     transactions.emplace_back(std::move(send_transaction));
 
     Mine(current_height++, transactions.size(), default_, transactions);
@@ -496,11 +507,11 @@ void Regtest_fixture_simple::SendCoins(
     const auto& network_receiver =
         receiver.api_->Network().Blockchain().GetChain(test_chain_);
     auto output_size =
-        network_receiver.Wallet()
+        network_receiver.get().Wallet()
             .GetOutputs(
                 receiver.nym_->ID(), blockchain::node::TxoState::ConfirmedNew)
             .size();
-    auto future = network.SendToAddress(
+    auto future = network.get().SendToAddress(
         sender.nym_id_, address, coins_to_send, memo_outgoing);
     // We need to confirm send transaction, so it is available after restore
     MineTransaction(sender, future.get().second, current_height);
@@ -521,14 +532,14 @@ auto Regtest_fixture_simple::WaitForOutputs(
 
     for (auto& transaction : transactions) {
         while (now < end) {
-            auto wallet_transactions = network.Wallet().GetTransactions();
+            auto wallet_transactions = network.get().Wallet().GetTransactions();
 
             if (std::find(
                     wallet_transactions.begin(),
                     wallet_transactions.end(),
                     transaction->ID()) != wallet_transactions.end()) {
 
-                auto wallet_outputs = network.Wallet().GetOutputs(
+                auto wallet_outputs = network.get().Wallet().GetOutputs(
                     receiver.nym_->ID(),
                     blockchain::node::TxoState::ConfirmedNew);
 
@@ -626,7 +637,7 @@ void Regtest_fixture_simple::CollectOutputs(
 {
     const auto& network =
         user.api_->Network().Blockchain().GetChain(test_chain_);
-    const auto& wallet = network.Wallet();
+    const auto& wallet = network.get().Wallet();
 
     auto all_types = {
         TxoState::Immature,
@@ -686,7 +697,7 @@ auto Regtest_fixture_simple::GetHeight(const User& user) const noexcept
 {
     const auto& network =
         user.api_->Network().Blockchain().GetChain(test_chain_);
-    const auto& wallet = network.Wallet();
+    const auto& wallet = network.get().Wallet();
 
     return wallet.Height();
 }
@@ -723,10 +734,10 @@ void Regtest_fixture_simple::advance_blockchain(
     for (std::size_t i = 0; i < users.size(); ++i) {
         external_scan_listeners.push_back(
             std::make_unique<std::future<void>>(scan_listeners[i]->get_future(
-                GetHDAccount(users[i]), bca::Subchain::External, height)));
+                GetHDAccount(users[i]), ot::blockchain::crypto::Subchain::External, height)));
         internal_scan_listeners.push_back(
             std::make_unique<std::future<void>>(scan_listeners[i]->get_future(
-                GetHDAccount(users[i]), bca::Subchain::Internal, height)));
+                GetHDAccount(users[i]), ot::blockchain::crypto::Subchain::Internal, height)));
     }
 
     MineBlocks(target_height, static_cast<int>(MaturationInterval()));

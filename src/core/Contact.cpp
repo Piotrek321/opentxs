@@ -974,7 +974,7 @@ auto Contact::PaymentCodes(const UnitType currency) const
     return output;
 }
 
-auto Contact::PaymentCodes(alloc::Resource* alloc) const
+auto Contact::PaymentCodes(alloc::Default alloc) const
     -> Set<opentxs::PaymentCode>
 {
     auto out = Set<opentxs::PaymentCode>{alloc};

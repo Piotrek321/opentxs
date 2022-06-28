@@ -552,7 +552,7 @@ auto Headers::push_best(
     return output.first;
 }
 
-auto Headers::RecentHashes(alloc::Resource* alloc) const noexcept
+auto Headers::RecentHashes(alloc::Default alloc) const noexcept
     -> Vector<block::Hash>
 {
     Lock lock(lock_);
@@ -560,7 +560,7 @@ auto Headers::RecentHashes(alloc::Resource* alloc) const noexcept
     return recent_hashes(lock, alloc);
 }
 
-auto Headers::recent_hashes(const Lock& lock, alloc::Resource* alloc)
+auto Headers::recent_hashes(const Lock& lock, alloc::Default alloc)
     const noexcept -> Vector<block::Hash>
 {
     auto output = Vector<block::Hash>{alloc};

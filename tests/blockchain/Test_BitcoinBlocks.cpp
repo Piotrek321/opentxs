@@ -67,7 +67,13 @@ struct Test_BitcoinBlock : public ::testing::Test {
 
         if (false == started) { return false; }
 
-        const auto& network = api_.Network().Blockchain().GetChain(chain);
+        const auto handle = api_.Network().Blockchain().GetChain(chain);
+
+        EXPECT_TRUE(handle);
+
+        if (false == handle.IsValid()) { return false; }
+
+        const auto& network = handle.get();
         const auto& hOracle = network.HeaderOracle();
         const auto& fOracle = network.FilterOracle();
         const auto genesisFilter =
