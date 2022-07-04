@@ -483,7 +483,6 @@ find_package(
   1.75.0
   REQUIRED
   COMPONENTS
-    filesystem
     iostreams
     json
     program_options

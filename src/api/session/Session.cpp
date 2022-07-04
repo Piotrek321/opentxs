@@ -91,7 +91,7 @@ Session::Session(
     const api::Crypto& crypto,
     const api::Settings& config,
     const opentxs::network::zeromq::Context& zmq,
-    const UnallocatedCString& dataFolder,
+    const std::filesystem::path& dataFolder,
     const int instance,
     NetworkMaker network,
     std::unique_ptr<api::session::Factory> factory)

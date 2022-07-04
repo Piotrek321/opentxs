@@ -147,15 +147,15 @@ private:
     boost::shared_ptr<Imp> self_;
 
     auto broadcast_tip(const block::Position& tip) noexcept -> void;
-    auto do_shutdown() noexcept -> void;
-    auto do_startup() noexcept -> void;
+    auto do_shutdown() noexcept -> void override;
+    auto do_startup() noexcept -> void override;
     auto erase_obsolete(const block::Position& after, Data& data) noexcept
         -> void;
-    auto pipeline(const Work work, Message&& msg) noexcept -> void;
+    auto pipeline(const Work work, Message&& msg) noexcept -> void override;
     auto process_batch_finished(Message&& msg) noexcept -> void;
     auto process_block_received(Message&& msg) noexcept -> void;
     auto process_reorg(Message&& msg) noexcept -> void;
     auto update_tip(Data& data) noexcept -> void;
-    auto work() noexcept -> bool;
+    auto work() noexcept -> bool override;
 };
 }  // namespace opentxs::blockchain::node::blockoracle

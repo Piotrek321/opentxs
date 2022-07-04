@@ -10,6 +10,7 @@
 #include <irrxml/irrXML.hpp>
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <fstream>  // IWYU pragma: keep
 #include <memory>
 #include <utility>
@@ -783,7 +784,7 @@ auto Contract::WriteContract(
     if (!m_strRawFile->Exists()) {
         LogError()(OT_PRETTY_CLASS())(
             "Error saving file (contract contents are "
-            "empty): ")(folder)(api::Legacy::PathSeparator())(filename)(".")
+            "empty): ")(folder)('/')(filename)
             .Flush();
 
         return false;
@@ -796,7 +797,7 @@ auto Contract::WriteContract(
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
         LogError()(OT_PRETTY_CLASS())(
             "Error saving file (failed writing armored "
-            "string): ")(folder)(api::Legacy::PathSeparator())(filename)(".")
+            "string): ")(folder)('/')(filename)
             .Flush();
 
         return false;
@@ -806,8 +807,8 @@ auto Contract::WriteContract(
         api_, strFinal->Get(), api_.DataFolder(), folder, filename, "", "");
 
     if (!bSaved) {
-        LogError()(OT_PRETTY_CLASS())("Error saving file: ")(
-            folder)(api::Legacy::PathSeparator())(filename)(".")
+        LogError()(OT_PRETTY_CLASS())("Error saving file: ")(folder)('/')(
+            filename)
             .Flush();
 
         return false;
@@ -845,9 +846,9 @@ auto Contract::LoadContractRawFile() -> bool
 
     if (!OTDB::Exists(
             api_, api_.DataFolder(), szFoldername, szFilename, "", "")) {
-        LogVerbose()(OT_PRETTY_CLASS())("File does not "
-                                        "exist: ")(
-            szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
+        LogVerbose()(OT_PRETTY_CLASS())(
+            "File does not "
+            "exist: ")(szFoldername)('/')(szFilename)
             .Flush();
         return false;
     }
@@ -861,8 +862,7 @@ auto Contract::LoadContractRawFile() -> bool
 
     if (!strFileContents->Exists()) {
         LogError()(OT_PRETTY_CLASS())("Error reading "
-                                      "file: ")(
-            szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
+                                      "file: ")(szFoldername)('/')(szFilename)
             .Flush();
         return false;
     }
@@ -899,9 +899,9 @@ auto Contract::LoadContract(const char* szFoldername, const char* szFilename)
         return ParseRawFile();  // Parses m_strRawFile into the various
                                 // member variables.
     } else {
-        LogDetail()(OT_PRETTY_CLASS())("Failed loading raw contract "
-                                       "file: ")(
-            m_strFoldername)(api::Legacy::PathSeparator())(m_strFilename)(".")
+        LogDetail()(OT_PRETTY_CLASS())(
+            "Failed loading raw contract "
+            "file: ")(m_strFoldername)(" file")(m_strFilename)
             .Flush();
     }
     return false;
@@ -971,8 +971,7 @@ auto Contract::ParseRawFile() -> bool
     if (!m_strRawFile->GetLength()) {
         LogError()(OT_PRETTY_CLASS())(
             "Empty m_strRawFile in Contract::ParseRawFile. "
-            "Filename: ")(m_strFoldername)(api::Legacy::PathSeparator())(
-            m_strFilename)(".")
+            "Filename: ")(m_strFoldername)('/')(m_strFilename)
             .Flush();
         return false;
     }

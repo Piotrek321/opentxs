@@ -7,18 +7,22 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "api/Legacy.hpp"  // IWYU pragma: associated
 
-#include <boost/filesystem.hpp>
 #include <cstdlib>
+#include <filesystem>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "internal/api/Factory.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/String.hpp"
+#include "internal/util/P0330.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 #define CLIENT_CONFIG_KEY "client"
 #define OPENTXS_CONFIG_KEY "opentxs"
@@ -40,8 +44,6 @@ auto Legacy(const UnallocatedCString& home) noexcept
 
 namespace opentxs::api
 {
-auto Legacy::PathSeparator() noexcept -> const char* { return "/"; }
-
 auto Legacy::SuggestFolder(const UnallocatedCString& app) noexcept
     -> UnallocatedCString
 {
@@ -188,7 +190,7 @@ const char* Legacy::payment_inbox_{"paymentinbox"};
 const char* Legacy::receipt_{"receipt"};
 const char* Legacy::record_box_{"recordbox"};
 
-Legacy::Legacy(const UnallocatedCString& home) noexcept
+Legacy::Legacy(const fs::path& home) noexcept
     : app_data_folder_(get_app_data_folder(home))
     , client_data_folder_(
           UnallocatedCString(CLIENT_CONFIG_KEY) + DATA_FOLDER_EXT)
@@ -204,13 +206,13 @@ Legacy::Legacy(const UnallocatedCString& home) noexcept
 {
 }
 
-auto Legacy::AppendFile(String& out, const String& base, const String& file)
-    const noexcept -> bool
+auto Legacy::AppendFile(
+    fs::path& out,
+    const fs::path& base,
+    const fs::path& file) const noexcept -> bool
 {
     try {
-        const auto path = fs::path{base.Get()}.remove_trailing_separator() /
-                          fs::path{file.Get()}.remove_trailing_separator();
-        out.Set(path.string().c_str());
+        out = remove_trailing_separator(base) / remove_trailing_separator(file);
 
         return true;
     } catch (...) {
@@ -219,14 +221,14 @@ auto Legacy::AppendFile(String& out, const String& base, const String& file)
     }
 }
 
-auto Legacy::AppendFolder(String& out, const String& base, const String& file)
-    const noexcept -> bool
+auto Legacy::AppendFolder(
+    fs::path& out,
+    const fs::path& base,
+    const fs::path& file) const noexcept -> bool
 {
     try {
-        const auto path = fs::path{base.Get()}.remove_trailing_separator() /
-                          fs::path{file.Get()}.remove_trailing_separator() /
-                          fs::path{"/"};
-        out.Set(path.string().c_str());
+        out = remove_trailing_separator(base) /
+              remove_trailing_separator(file) += fs::path{seperator_};
 
         return true;
     } catch (...) {
@@ -235,19 +237,17 @@ auto Legacy::AppendFolder(String& out, const String& base, const String& file)
     }
 }
 
-auto Legacy::BuildFolderPath(const String& path) const noexcept -> bool
+auto Legacy::BuildFolderPath(const fs::path& path) const noexcept -> bool
 {
     return ConfirmCreateFolder(path);
 }
 
-auto Legacy::BuildFilePath(const String& path) const noexcept -> bool
+auto Legacy::BuildFilePath(const fs::path& path) const noexcept -> bool
 {
     try {
-        const auto incoming = fs::path{path.Get()};
+        if (false == path.has_parent_path()) { return false; }
 
-        if (false == incoming.has_parent_path()) { return false; }
-
-        const auto parent = incoming.parent_path();
+        const auto parent = path.parent_path();
         fs::create_directories(parent);
 
         return fs::exists(parent);
@@ -257,39 +257,34 @@ auto Legacy::BuildFilePath(const String& path) const noexcept -> bool
     }
 }
 
-auto Legacy::ClientConfigFilePath(const int instance) const noexcept
-    -> UnallocatedCString
+auto Legacy::ClientConfigFilePath(const int instance) const noexcept -> fs::path
 {
     return get_file(client_config_file_, instance);
 }
 
-auto Legacy::ClientDataFolder(const int instance) const noexcept
-    -> UnallocatedCString
+auto Legacy::ClientDataFolder(const int instance) const noexcept -> fs::path
 {
     return get_path(client_data_folder_, instance);
 }
 
-auto Legacy::ConfirmCreateFolder(const String& path) const noexcept -> bool
+auto Legacy::ConfirmCreateFolder(const fs::path& path) const noexcept -> bool
 {
     try {
-        const auto folder = fs::path{path.Get()};
-        fs::create_directories(folder);
+        fs::create_directories(path);
 
-        return fs::exists(folder);
+        return fs::exists(path);
     } catch (...) {
 
         return false;
     }
 }
 
-auto Legacy::FileExists(const String& path, std::size_t& size) const noexcept
+auto Legacy::FileExists(const fs::path& file, std::size_t& size) const noexcept
     -> bool
 {
-    size = 0;
+    size = 0_uz;
 
     try {
-        const auto file = fs::path{path.Get()};
-
         if (fs::exists(file)) {
             size = fs::file_size(file);
 
@@ -304,8 +299,7 @@ auto Legacy::FileExists(const String& path, std::size_t& size) const noexcept
     }
 }
 
-auto Legacy::get_app_data_folder(const UnallocatedCString& home) noexcept
-    -> fs::path
+auto Legacy::get_app_data_folder(const fs::path& home) noexcept -> fs::path
 {
     if (false == home.empty()) { return home; }
 
@@ -340,64 +334,87 @@ auto Legacy::get_suffix(const char* application) noexcept -> fs::path
     if (use_dot()) { output += '.'; }
 
     output += application;
-    output += '/';
+    output += seperator_;
 
     return std::move(output);
 }
 
-auto Legacy::get_file(const UnallocatedCString& fragment, const int instance)
-    const noexcept -> UnallocatedCString
+auto Legacy::get_file(const fs::path& fragment, const int instance)
+    const noexcept -> fs::path
 {
-    const auto output = get_path(fragment, instance);
+    const auto output = get_path(fragment, instance).string();
 
-    return {output.c_str(), output.size() - 1};
+    return UnallocatedCString{output.c_str(), output.size() - 1};
 }
 
-auto Legacy::get_path(const UnallocatedCString& fragment, const int instance)
-    const noexcept -> UnallocatedCString
+auto Legacy::get_path(const fs::path& fragment, const int instance)
+    const noexcept -> fs::path
 {
-    const auto name =
-        (0 == instance) ? fragment : fragment + "-" + std::to_string(instance);
-    auto output = String::Factory();
-    const auto success = AppendFolder(
-        output,
-        String::Factory(app_data_folder_.string()),
-        String::Factory(name.c_str()));
+    const auto name = [&] {
+        auto out = fragment;
+
+        if (0 != instance) {
+            out += "-";
+            out += std::to_string(instance);
+        }
+
+        return out;
+    }();
+    auto output = fs::path{};
+    const auto success = AppendFolder(output, app_data_folder_, name);
 
     OT_ASSERT(success)
 
-    return output->Get();
+    return output;
 }
 
-auto Legacy::OpentxsConfigFilePath() const noexcept -> UnallocatedCString
+auto Legacy::LedgerFileName(
+    const identifier::Notary& server,
+    const Identifier& account) const noexcept -> fs::path
+{
+    return fs::path{server.str()} / fs::path{account.str()};
+}
+
+auto Legacy::MintFileName(
+    const identifier::Notary& server,
+    const identifier::UnitDefinition& unit,
+    std::string_view extension) const noexcept -> fs::path
+{
+    auto out = fs::path{server.str()} / fs::path{unit.str()};
+
+    if (valid(extension)) { out += extension; }
+
+    return out;
+}
+
+auto Legacy::OpentxsConfigFilePath() const noexcept -> fs::path
 {
     return get_file(opentxs_config_file_);
 }
 
-auto Legacy::PathExists(const String& path) const noexcept -> bool
-{
-    try {
-
-        return fs::exists(fs::path{path.Get()});
-    } catch (...) {
-
-        return false;
-    }
-}
-
-auto Legacy::PIDFilePath() const noexcept -> UnallocatedCString
+auto Legacy::PIDFilePath() const noexcept -> fs::path
 {
     return get_file(pid_file_);
 }
 
-auto Legacy::ServerConfigFilePath(const int instance) const noexcept
-    -> UnallocatedCString
+auto Legacy::remove_trailing_separator(const fs::path& in) noexcept -> fs::path
+{
+    const auto path = fs::path{in}.make_preferred();
+    auto val = path.string();
+
+    while ((!val.empty()) && (fs::path::preferred_separator == val.back())) {
+        val.pop_back();
+    }
+
+    return std::move(val);
+}
+
+auto Legacy::ServerConfigFilePath(const int instance) const noexcept -> fs::path
 {
     return get_file(server_config_file_, instance);
 }
 
-auto Legacy::ServerDataFolder(const int instance) const noexcept
-    -> UnallocatedCString
+auto Legacy::ServerDataFolder(const int instance) const noexcept -> fs::path
 {
     return get_path(server_data_folder_, instance);
 }

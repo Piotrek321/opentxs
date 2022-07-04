@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <ctime>
+#include <string_view>
 
 #include "internal/otx/common/Contract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -95,10 +96,10 @@ public:
         const Amount& nDenom10,
         const std::size_t keySize,
         const PasswordPrompt& reason) -> void = 0;
-    virtual auto LoadMint(const char* szAppend = nullptr) -> bool = 0;
+    virtual auto LoadMint(std::string_view extension) -> bool = 0;
     virtual auto Release_Mint() -> void = 0;
     virtual auto ReleaseDenominations() -> void = 0;
-    virtual auto SaveMint(const char* szAppend = nullptr) -> bool = 0;
+    virtual auto SaveMint(std::string_view extension) -> bool = 0;
     virtual auto SetInstrumentDefinitionID(
         const identifier::UnitDefinition& newID) -> void = 0;
     virtual auto SetSavePrivateKeys(bool bDoIt = true) -> void = 0;

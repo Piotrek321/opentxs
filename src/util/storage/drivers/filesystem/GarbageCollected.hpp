@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <filesystem>
+#include <string_view>
+
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -70,13 +73,11 @@ public:
     ~GarbageCollected() final;
 
 private:
-    auto bucket_name(const bool bucket) const -> UnallocatedCString;
-    auto calculate_path(
-        const UnallocatedCString& key,
-        const bool bucket,
-        UnallocatedCString& directory) const -> UnallocatedCString final;
+    auto bucket_name(const bool bucket) const noexcept -> fs::path;
+    auto calculate_path(std::string_view key, bool bucket, fs::path& directory)
+        const noexcept -> fs::path final;
     void purge(const UnallocatedCString& path) const;
-    auto root_filename() const -> UnallocatedCString final;
+    auto root_filename() const -> fs::path final;
 
     void Cleanup_GarbageCollected();
     void Init_GarbageCollected();

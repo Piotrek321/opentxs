@@ -33,7 +33,6 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/Settings.hpp"
 )
 target_sources(opentxs-common PRIVATE ${cxx-install-headers})
-target_link_libraries(opentxs PUBLIC Boost::filesystem)
 
 if(OPENTXS_STANDALONE)
   install(

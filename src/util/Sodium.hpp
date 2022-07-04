@@ -19,6 +19,7 @@ auto ExpandSeed(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey) noexcept -> bool;
 auto MakeSiphashKey(const ReadView data) noexcept -> SiphashKey;
+auto Randomize(WritableView buffer) noexcept -> bool;
 auto Siphash(const SiphashKey& key, const ReadView data) noexcept
     -> std::size_t;
 auto ToCurveKeypair(

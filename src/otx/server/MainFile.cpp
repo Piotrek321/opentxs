@@ -10,6 +10,7 @@
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
 #include <cstdio>
+#include <filesystem>
 #include <memory>
 #include <utility>
 

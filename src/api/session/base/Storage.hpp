@@ -6,6 +6,7 @@
 #pragma once
 
 #include <chrono>
+#include <filesystem>
 #include <memory>
 
 #include "opentxs/Version.hpp"
@@ -81,7 +82,7 @@ public:
 protected:
     const api::Settings& config_;
     const Options args_;
-    const UnallocatedCString data_folder_;
+    const std::filesystem::path data_folder_;
     const opentxs::storage::Config storage_config_;
 
 private:
@@ -114,7 +115,7 @@ protected:
         const api::Legacy& legacy,
         const api::network::Asio& asio,
         const opentxs::network::zeromq::Context& zmq,
-        const UnallocatedCString& dataFolder,
+        const std::filesystem::path& dataFolder,
         std::unique_ptr<api::session::Factory> factory);
 };
 }  // namespace opentxs::api::session::base

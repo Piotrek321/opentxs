@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
 
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/StringXML.hpp"

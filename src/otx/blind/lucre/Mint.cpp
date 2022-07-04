@@ -38,10 +38,6 @@ extern "C" {
 #include "otx/blind/lucre/Token.hpp"
 #include "otx/blind/mint/Imp.hpp"
 
-#ifdef __APPLE__
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
 namespace opentxs::factory
 {
 auto MintLucre(const api::Session& api) noexcept -> otx::blind::Mint

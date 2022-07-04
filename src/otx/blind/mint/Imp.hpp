@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
+#include <string_view>
 
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/common/Contract.hpp"
@@ -107,11 +108,11 @@ public:
         const std::size_t keySize,
         const PasswordPrompt& reason) override;
     auto LoadContract() -> bool override;
-    auto LoadMint(const char* szAppend = nullptr) -> bool override;
+    auto LoadMint(std::string_view extension) -> bool override;
     void Release() override;
     void Release_Mint() override;
     void ReleaseDenominations() override;
-    auto SaveMint(const char* szAppend = nullptr) -> bool override;
+    auto SaveMint(std::string_view extension) -> bool override;
     void SetInstrumentDefinitionID(
         const identifier::UnitDefinition& newID) override
     {

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -61,7 +62,7 @@ public:
         UpdateCallback&& cb,
         std::size_t size) const noexcept -> WritableView;
 
-    Bulk(storage::lmdb::LMDB& lmdb, const UnallocatedCString& path) noexcept(
+    Bulk(storage::lmdb::LMDB& lmdb, const std::filesystem::path& path) noexcept(
         false);
     Bulk() = delete;
     Bulk(const Bulk&) = delete;

@@ -8,6 +8,7 @@
 #include <opentxs/opentxs.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <filesystem>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -33,7 +34,7 @@ struct OptionsData {
     ot::Set<ot::CString> blockchain_sync_servers_;
     bool blockchain_wallet_enabled_;
     bool experimental_;
-    ot::CString home_;
+    std::filesystem::path home_;
     opentxs::ConnectionMode ipv4_connection_mode_;
     opentxs::ConnectionMode ipv6_connection_mode_;
     ot::CString log_endpoint_;

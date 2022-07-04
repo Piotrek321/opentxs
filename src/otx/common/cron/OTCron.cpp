@@ -102,7 +102,7 @@ auto OTCron::SaveCron() -> bool
     if (!SignContract(*m_pServerNym, reason) || !SaveContract() ||
         !SaveContract(szFoldername, szFilename)) {
         LogError()(OT_PRETTY_CLASS())("Error saving main Cronfile: ")(
-            szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFoldername)('/')(szFilename)(".")
             .Flush();
         return false;
     } else {

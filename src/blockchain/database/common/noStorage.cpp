@@ -38,29 +38,28 @@ struct Sync::Imp {
 Sync::Sync(
     const api::Session&,
     storage::lmdb::LMDB&,
-    const UnallocatedCString&) noexcept(false)
+    const std::filesystem::path&) noexcept(false)
     : imp_(std::make_unique<Imp>())
 {
 }
 
-auto Sync::Load(const Chain chain, const Height height, Message& output)
-    const noexcept -> bool
+auto Sync::Load(const Chain, const Height, Message&) const noexcept -> bool
 {
     return {};
 }
 
-auto Sync::Reorg(const Chain chain, const Height height) const noexcept -> bool
+auto Sync::Reorg(const Chain, const Height) const noexcept -> bool
 {
     return {};
 }
 
-auto Sync::Store(const Chain chain, const network::p2p::SyncData& items)
-    const noexcept -> bool
+auto Sync::Store(const Chain, const network::p2p::SyncData&) const noexcept
+    -> bool
 {
     return {};
 }
 
-auto Sync::Tip(const Chain chain) const noexcept -> Height { return -1; }
+auto Sync::Tip(const Chain) const noexcept -> Height { return -1; }
 
 Sync::~Sync() = default;
 }  // namespace opentxs::blockchain::database::common

@@ -5,9 +5,11 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
+#include <chrono>
 #include <cstddef>
+#include <filesystem>
 #include <iosfwd>
+#include <string_view>
 
 #include "internal/api/Legacy.hpp"
 #include "opentxs/util/Container.hpp"
@@ -17,12 +19,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-class String;
+namespace identifier
+{
+class Notary;
+class UnitDefinition;
+}  // namespace identifier
+
+class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
-
-namespace fs = boost::filesystem;
 
 namespace opentxs::api::imp
 {
@@ -33,35 +39,42 @@ public:
     static auto get_suffix(const char* application) noexcept -> fs::path;
 
     auto Account() const noexcept -> const char* final { return account_; }
-    auto AppendFile(String& out, const String& base, const String& file)
+    auto AppendFile(fs::path& out, const fs::path& base, const fs::path& file)
         const noexcept -> bool final;
-    auto AppendFolder(String& out, const String& base, const String& folder)
-        const noexcept -> bool final;
-    auto BuildFolderPath(const String& path) const noexcept -> bool final;
-    auto BuildFilePath(const String& path) const noexcept -> bool final;
+    auto AppendFolder(
+        fs::path& out,
+        const fs::path& base,
+        const fs::path& folder) const noexcept -> bool final;
+    auto BuildFolderPath(const fs::path& path) const noexcept -> bool final;
+    auto BuildFilePath(const fs::path& path) const noexcept -> bool final;
     auto ClientConfigFilePath(const int instance) const noexcept
-        -> UnallocatedCString final;
-    auto ClientDataFolder(const int instance) const noexcept
-        -> UnallocatedCString final;
+        -> fs::path final;
+    auto ClientDataFolder(const int instance) const noexcept -> fs::path final;
     auto Common() const noexcept -> const char* final { return common_; }
-    auto ConfirmCreateFolder(const String& path) const noexcept -> bool final;
+    auto ConfirmCreateFolder(const fs::path& path) const noexcept -> bool final;
     auto Contract() const noexcept -> const char* final { return contract_; }
     auto Cron() const noexcept -> const char* final { return cron_; }
     auto ExpiredBox() const noexcept -> const char* final
     {
         return expired_box_;
     }
-    auto FileExists(const String& path, std::size_t& size) const noexcept
+    auto FileExists(const fs::path& path, std::size_t& size) const noexcept
         -> bool final;
     auto Inbox() const noexcept -> const char* final { return inbox_; }
+    auto LedgerFileName(
+        const identifier::Notary& server,
+        const Identifier& account) const noexcept -> fs::path final;
     auto Market() const noexcept -> const char* final { return market_; }
     auto Mint() const noexcept -> const char* final { return mint_; }
+    auto MintFileName(
+        const identifier::Notary& server,
+        const identifier::UnitDefinition& unit,
+        std::string_view extension) const noexcept -> fs::path final;
     auto Nym() const noexcept -> const char* final { return nym_; }
     auto Nymbox() const noexcept -> const char* final { return nymbox_; }
-    auto OpentxsConfigFilePath() const noexcept -> UnallocatedCString final;
+    auto OpentxsConfigFilePath() const noexcept -> fs::path final;
     auto Outbox() const noexcept -> const char* final { return outbox_; }
-    auto PathExists(const String& path) const noexcept -> bool final;
-    auto PIDFilePath() const noexcept -> UnallocatedCString final;
+    auto PIDFilePath() const noexcept -> fs::path final;
     auto PaymentInbox() const noexcept -> const char* final
     {
         return payment_inbox_;
@@ -69,11 +82,10 @@ public:
     auto Receipt() const noexcept -> const char* final { return receipt_; }
     auto RecordBox() const noexcept -> const char* final { return record_box_; }
     auto ServerConfigFilePath(const int instance) const noexcept
-        -> UnallocatedCString final;
-    auto ServerDataFolder(const int instance) const noexcept
-        -> UnallocatedCString final;
+        -> fs::path final;
+    auto ServerDataFolder(const int instance) const noexcept -> fs::path final;
 
-    Legacy(const UnallocatedCString& home) noexcept;
+    Legacy(const fs::path& home) noexcept;
     Legacy() = delete;
     Legacy(const Legacy&) = delete;
     Legacy(Legacy&&) = delete;
@@ -83,6 +95,10 @@ public:
     ~Legacy() final = default;
 
 private:
+    static constexpr auto seperator_ = std::string_view{
+        &fs::path::preferred_separator,
+        sizeof(fs::path::preferred_separator)};
+
     static const char* account_;
     static const char* common_;
     static const char* contract_;
@@ -106,16 +122,17 @@ private:
     const UnallocatedCString server_config_file_;
     const UnallocatedCString pid_file_;
 
-    static auto get_app_data_folder(const UnallocatedCString& home) noexcept
-        -> fs::path;
+    static auto get_app_data_folder(const fs::path& home) noexcept -> fs::path;
     static auto get_home_platform() noexcept -> UnallocatedCString;
     static auto get_suffix() noexcept -> fs::path;
     static auto prepend() noexcept -> UnallocatedCString;
+    static auto remove_trailing_separator(const fs::path& in) noexcept
+        -> fs::path;
     static auto use_dot() noexcept -> bool;
 
-    auto get_path(const UnallocatedCString& fragment, const int instance = 0)
-        const noexcept -> UnallocatedCString;
-    auto get_file(const UnallocatedCString& fragment, const int instance = 0)
-        const noexcept -> UnallocatedCString;
+    auto get_path(const fs::path& fragment, const int instance = 0)
+        const noexcept -> fs::path;
+    auto get_file(const fs::path& fragment, const int instance = 0)
+        const noexcept -> fs::path;
 };
 }  // namespace opentxs::api::imp

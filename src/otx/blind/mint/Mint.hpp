@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
+#include <string_view>
 
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/common/Contract.hpp"
@@ -126,14 +127,11 @@ public:
     {
     }
     auto LoadContract() -> bool override { return {}; }
-    auto LoadMint(const char*) -> bool override { return {}; }
+    auto LoadMint(std::string_view) -> bool override { return {}; }
     auto Release() -> void override {}
     auto Release_Mint() -> void override {}
     auto ReleaseDenominations() -> void override {}
-    auto SaveMint(const char* szAppend = nullptr) -> bool override
-    {
-        return {};
-    }
+    auto SaveMint(std::string_view extension) -> bool override { return {}; }
     auto SetInstrumentDefinitionID(const identifier::UnitDefinition&)
         -> void override
     {

@@ -11,6 +11,7 @@
 
 #include <chrono>
 #include <cstddef>
+#include <filesystem>
 #include <string_view>
 #include <utility>
 
@@ -78,6 +79,8 @@ public:
     auto operator()(const char* in) const noexcept -> const Log&;
     auto operator()(char* in) const noexcept -> const Log&;
     auto operator()(const std::string_view in) const noexcept -> const Log&;
+    auto operator()(const std::filesystem::path in) const noexcept
+        -> const Log&;
     auto operator()(const CString& in) const noexcept -> const Log&;
     auto operator()(const UnallocatedCString& in) const noexcept -> const Log&;
     auto operator()(const std::chrono::nanoseconds& in) const noexcept

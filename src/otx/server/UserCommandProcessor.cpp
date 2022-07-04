@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "otx/server/UserCommandProcessor.hpp"  // IWYU pragma: associated
 
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <utility>

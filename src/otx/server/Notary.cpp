@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
 #include <limits>
 #include <memory>
 #include <string_view>

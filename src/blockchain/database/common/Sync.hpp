@@ -9,6 +9,7 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
 #include <iosfwd>
 #include <iterator>
 #include <memory>
@@ -77,7 +78,7 @@ public:
     Sync(
         const api::Session& api,
         storage::lmdb::LMDB& lmdb,
-        const UnallocatedCString& path) noexcept(false);
+        const std::filesystem::path& path) noexcept(false);
 
     ~Sync();
 

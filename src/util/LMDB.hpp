@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
 #include <functional>
 #include <iosfwd>
 #include <memory>
@@ -166,7 +167,7 @@ public:
 
     LMDB(
         const TableNames& names,
-        const UnallocatedCString& folder,
+        const std::filesystem::path& folder,
         const TablesToInit init,
         const Flags flags = 0,
         const std::size_t extraTables = 0)

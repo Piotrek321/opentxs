@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <filesystem>
 #include <fstream>  // IWYU pragma: keep
 #include <functional>
 #include <iosfwd>
@@ -17,7 +18,6 @@
 #include <memory>
 #include <mutex>
 #include <stdexcept>
-#include <string_view>
 #include <utility>
 
 #include "internal/api/Crypto.hpp"

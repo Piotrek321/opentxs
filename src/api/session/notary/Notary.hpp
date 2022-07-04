@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <filesystem>
 #include <functional>
 #include <iosfwd>
 #include <memory>
@@ -118,7 +119,7 @@ public:
         const api::Crypto& crypto,
         const api::Settings& config,
         const opentxs::network::zeromq::Context& context,
-        const UnallocatedCString& dataFolder,
+        const std::filesystem::path& dataFolder,
         const int instance);
     Notary() = delete;
     Notary(const Notary&) = delete;

@@ -8,6 +8,7 @@
 #include "otx/common/OTStorage.hpp"  // IWYU pragma: associated
 
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <sstream>  // IWYU pragma: keep
 #include <typeinfo>
@@ -2708,18 +2709,14 @@ auto StorageFS::ConstructAndConfirmPathImp(
 ot_exit_block:
 
     // set as constants. (no more changing).
-    const UnallocatedCString strFolder(strBufFolder);
-    const UnallocatedCString strPath(strBufPath);
+    const auto strFolder = std::filesystem::path{strBufFolder};
+    const auto strPath = std::filesystem::path{strBufPath};
     strOutput = strPath;
 
-    if (bMakePath) {
-        api.Internal().Legacy().BuildFolderPath(
-            String::Factory(strFolder.c_str()));
-    }
+    if (bMakePath) { api.Internal().Legacy().BuildFolderPath(strFolder); }
 
     {
-        const bool bFolderExists = api.Internal().Legacy().PathExists(
-            String::Factory(strFolder.c_str()));
+        const bool bFolderExists = std::filesystem::exists(strFolder);
 
         if (bMakePath && !bFolderExists) {
             LogError()(OT_PRETTY_CLASS())("Error: was told to make path (")(
@@ -2736,8 +2733,8 @@ ot_exit_block:
 
     {
         auto lFileLength = 0_uz;
-        const bool bFileExists = api.Internal().Legacy().FileExists(
-            String::Factory(strPath.c_str()), lFileLength);
+        const bool bFileExists =
+            api.Internal().Legacy().FileExists(strPath, lFileLength);
 
         if (bFileExists) {
             return lFileLength;

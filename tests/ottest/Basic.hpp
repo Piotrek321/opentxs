@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <opentxs/opentxs.hpp>
-
-namespace ot = opentxs;
+#include <chrono>
+#include <filesystem>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -17,16 +16,19 @@ namespace opentxs  // NOLINT
 class Options;
 // }  // namespace v1
 }  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces)
 
 class QObject;
+// NOLINTEND(modernize-concat-nested-namespaces)
+
+namespace ot = opentxs;
+namespace fs = std::filesystem;
 
 namespace ottest
 {
 auto Args(bool lowlevel = false, int argc = 0, char** argv = nullptr) noexcept
     -> const ot::Options&;
 auto GetQT() noexcept -> QObject*;
-auto Home() noexcept -> const ot::UnallocatedCString&;
+auto Home() noexcept -> const fs::path&;
 auto StartQT(bool lowlevel = false) noexcept -> void;
 auto StopQT() noexcept -> void;
 auto WipeHome() noexcept -> void;

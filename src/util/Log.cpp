@@ -285,6 +285,12 @@ auto Log::operator()(const std::string_view in) const noexcept -> const Log&
     return (*imp_)(in);
 }
 
+auto Log::operator()(const std::filesystem::path in) const noexcept
+    -> const Log&
+{
+    return (*imp_)(in.c_str());
+}
+
 auto Log::operator()(const CString& in) const noexcept -> const Log&
 {
     return (*imp_)(in);

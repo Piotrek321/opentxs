@@ -34,7 +34,7 @@ struct Bulk::Imp final : private util::MappedFileStorage {
     }
 
     Imp(storage::lmdb::LMDB& lmdb,
-        const UnallocatedCString& path) noexcept(false)
+        const std::filesystem::path& path) noexcept(false)
         : MappedFileStorage(
               lmdb,
               path,
@@ -49,8 +49,9 @@ private:
     mutable std::mutex lock_;
 };
 
-Bulk::Bulk(storage::lmdb::LMDB& lmdb, const UnallocatedCString& path) noexcept(
-    false)
+Bulk::Bulk(
+    storage::lmdb::LMDB& lmdb,
+    const std::filesystem::path& path) noexcept(false)
     : imp_(std::make_unique<Imp>(lmdb, path))
 {
 }

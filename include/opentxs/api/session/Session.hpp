@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
+#include <filesystem>
 
 #include "opentxs/api/Periodic.hpp"
 #include "opentxs/util/Container.hpp"
@@ -69,7 +70,8 @@ public:
     /// Returns a handle to the session-level crypto API.
     virtual auto Crypto() const noexcept -> const session::Crypto& = 0;
     /// Returns the data folder for this session.
-    virtual auto DataFolder() const noexcept -> const UnallocatedCString& = 0;
+    virtual auto DataFolder() const noexcept
+        -> const std::filesystem::path& = 0;
     /// Returns the Endpoints for this session.
     virtual auto Endpoints() const noexcept -> const session::Endpoints& = 0;
     /// Returns the Factory used for instantiating session objects.

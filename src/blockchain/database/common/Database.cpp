@@ -12,11 +12,12 @@ extern "C" {
 #include <sodium.h>
 }
 
-#include <boost/filesystem.hpp>
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
 #include <fstream>  // IWYU pragma: keep
 #include <iosfwd>
 #include <iterator>
@@ -38,15 +39,15 @@ extern "C" {
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"  // IWYU pragma: keep
-#include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
 
 constexpr auto false_byte_ = std::byte{0x0};
 constexpr auto true_byte_ = std::byte{0x1};
+
+namespace fs = std::filesystem;
 
 namespace opentxs::blockchain::database::common
 {
@@ -57,9 +58,9 @@ struct Database::Imp {
 
     const api::Session& api_;
     const api::Legacy& legacy_;
-    const OTString blockchain_path_;
-    const OTString common_path_;
-    const OTString blocks_path_;
+    const fs::path blockchain_path_;
+    const fs::path common_path_;
+    const fs::path blocks_path_;
     storage::lmdb::LMDB lmdb_;
     Bulk bulk_;
     const SiphashKey siphash_key_;
@@ -77,10 +78,10 @@ struct Database::Imp {
     }
     static auto init_folder(
         const api::Legacy& legacy,
-        const String& parent,
-        const String& child) noexcept(false) -> OTString
+        const fs::path& parent,
+        const fs::path& child) noexcept(false) -> fs::path
     {
-        auto output = String::Factory();
+        auto output = fs::path{};
 
         if (false == legacy.AppendFolder(output, parent, child)) {
             throw std::runtime_error("Failed to calculate path");
@@ -94,21 +95,16 @@ struct Database::Imp {
     }
     static auto init_storage_path(
         const api::Legacy& legacy,
-        std::string_view dataFolder) noexcept(false) -> OTString
+        const fs::path& dataFolder) noexcept(false) -> fs::path
     {
-        auto output = String::Factory();
+        auto output = fs::path{};
 
-        if (false == legacy.AppendFolder(
-                         output,
-                         String::Factory(dataFolder.data(), dataFolder.size()),
-                         String::Factory("blockchain"))) {
+        if (false == legacy.AppendFolder(output, dataFolder, "blockchain")) {
             throw std::runtime_error("Failed to calculate path");
         }
 
-        namespace fs = boost::filesystem;
-
         constexpr auto version1{"version.1"};
-        const auto base = fs::path{output->Get()};
+        const auto base = fs::path{output};
         const auto v1 = base / fs::path{version1};
         const auto haveBase = [&] {
             try {
@@ -188,28 +184,24 @@ struct Database::Imp {
         return std::move(output);
     }
 
-    auto AllocateStorageFolder(const UnallocatedCString& dir) const noexcept
-        -> UnallocatedCString
+    auto AllocateStorageFolder(const fs::path& dir) const noexcept -> fs::path
     {
-        return init_folder(legacy_, blockchain_path_, String::Factory(dir))
-            ->Get();
+        return init_folder(legacy_, blockchain_path_, dir);
     }
 
     Imp(const api::Session& api,
         const api::crypto::Blockchain& blockchain,
         const api::Legacy& legacy,
-        const std::string_view dataFolder,
+        const fs::path& dataFolder,
         const Options& args) noexcept(false)
         : api_(api)
         , legacy_(legacy)
         , blockchain_path_(init_storage_path(legacy, dataFolder))
-        , common_path_(
-              init_folder(legacy, blockchain_path_, String::Factory("common")))
-        , blocks_path_(
-              init_folder(legacy, common_path_, String::Factory("blocks")))
+        , common_path_(init_folder(legacy, blockchain_path_, "common"))
+        , blocks_path_(init_folder(legacy, common_path_, "blocks"))
         , lmdb_(
               table_names_,
-              common_path_->Get(),
+              common_path_,
               [] {
                   auto output = storage::lmdb::TablesToInit{
                       {Table::PeerDetails, 0},
@@ -249,13 +241,13 @@ struct Database::Imp {
 
                   return deleted.size();
               }())
-        , bulk_(lmdb_, blocks_path_->Get())
+        , bulk_(lmdb_, blocks_path_)
         , siphash_key_(siphash_key(lmdb_))
         , headers_(lmdb_, bulk_)
         , peers_(api_, lmdb_)
         , filters_(api_, lmdb_, bulk_)
         , blocks_(lmdb_, bulk_)
-        , sync_(api_, lmdb_, blocks_path_->Get())
+        , sync_(api_, lmdb_, blocks_path_)
         , wallet_(api_, blockchain, lmdb_, bulk_)
         , config_(api_, lmdb_)
     {
@@ -304,7 +296,7 @@ Database::Database(
     const api::Session& api,
     const api::crypto::Blockchain& blockchain,
     const api::Legacy& legacy,
-    const std::string_view dataFolder,
+    const fs::path& dataFolder,
     const Options& args) noexcept(false)
     : imp_p_(std::make_unique<Imp>(api, blockchain, legacy, dataFolder, args))
     , imp_(*imp_p_)

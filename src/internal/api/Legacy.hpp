@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <filesystem>
+#include <string_view>
+
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -14,17 +17,24 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-class String;
+namespace identifier
+{
+class Notary;
+class UnitDefinition;
+}  // namespace identifier
+
+class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
+
+namespace fs = std::filesystem;
 
 namespace opentxs::api
 {
 class Legacy
 {
 public:
-    static auto PathSeparator() noexcept -> const char*;
     static auto SuggestFolder(const UnallocatedCString& app) noexcept
         -> UnallocatedCString;
     static auto GetFilenameBin(const char* filename) noexcept
@@ -54,43 +64,51 @@ public:
         const UnallocatedCString& unit_id,
         const char* append) -> UnallocatedCString;
     virtual auto Account() const noexcept -> const char* = 0;
-    virtual auto AppendFile(String& out, const String& base, const String& file)
-        const noexcept -> bool = 0;
+    virtual auto AppendFile(
+        fs::path& out,
+        const fs::path& base,
+        const fs::path& file) const noexcept -> bool = 0;
     virtual auto AppendFolder(
-        String& out,
-        const String& base,
-        const String& folder) const noexcept -> bool = 0;
-    virtual auto BuildFolderPath(const String& path) const noexcept -> bool = 0;
-    virtual auto BuildFilePath(const String& path) const noexcept -> bool = 0;
+        fs::path& out,
+        const fs::path& base,
+        const fs::path& folder) const noexcept -> bool = 0;
+    virtual auto BuildFolderPath(const fs::path& path) const noexcept
+        -> bool = 0;
+    virtual auto BuildFilePath(const fs::path& path) const noexcept -> bool = 0;
     virtual auto ClientConfigFilePath(const int instance) const noexcept
-        -> UnallocatedCString = 0;
+        -> fs::path = 0;
     virtual auto ClientDataFolder(const int instance) const noexcept
-        -> UnallocatedCString = 0;
+        -> fs::path = 0;
     virtual auto Common() const noexcept -> const char* = 0;
-    virtual auto ConfirmCreateFolder(const String& path) const noexcept
+    virtual auto ConfirmCreateFolder(const fs::path& path) const noexcept
         -> bool = 0;
     virtual auto Contract() const noexcept -> const char* = 0;
     virtual auto Cron() const noexcept -> const char* = 0;
     virtual auto ExpiredBox() const noexcept -> const char* = 0;
-    virtual auto FileExists(const String& path, std::size_t& size)
+    virtual auto FileExists(const fs::path& path, std::size_t& size)
         const noexcept -> bool = 0;
     virtual auto Inbox() const noexcept -> const char* = 0;
+    virtual auto LedgerFileName(
+        const identifier::Notary& server,
+        const Identifier& account) const noexcept -> fs::path = 0;
     virtual auto Market() const noexcept -> const char* = 0;
     virtual auto Mint() const noexcept -> const char* = 0;
+    virtual auto MintFileName(
+        const identifier::Notary& server,
+        const identifier::UnitDefinition& unit,
+        std::string_view extension = {}) const noexcept -> fs::path = 0;
     virtual auto Nym() const noexcept -> const char* = 0;
     virtual auto Nymbox() const noexcept -> const char* = 0;
-    virtual auto OpentxsConfigFilePath() const noexcept
-        -> UnallocatedCString = 0;
+    virtual auto OpentxsConfigFilePath() const noexcept -> fs::path = 0;
     virtual auto Outbox() const noexcept -> const char* = 0;
-    virtual auto PathExists(const String& path) const noexcept -> bool = 0;
-    virtual auto PIDFilePath() const noexcept -> UnallocatedCString = 0;
+    virtual auto PIDFilePath() const noexcept -> fs::path = 0;
     virtual auto PaymentInbox() const noexcept -> const char* = 0;
     virtual auto Receipt() const noexcept -> const char* = 0;
     virtual auto RecordBox() const noexcept -> const char* = 0;
     virtual auto ServerConfigFilePath(const int instance) const noexcept
-        -> UnallocatedCString = 0;
+        -> fs::path = 0;
     virtual auto ServerDataFolder(const int instance) const noexcept
-        -> UnallocatedCString = 0;
+        -> fs::path = 0;
 
     Legacy(const Legacy&) = delete;
     Legacy(Legacy&&) = delete;

@@ -27,7 +27,7 @@ Config::Config(
     const api::Legacy& legacy,
     const api::Settings& config,
     const Options& args,
-    const String& dataFolder) noexcept
+    const std::filesystem::path& dataFolder) noexcept
     : previous_primary_plugin_([&]() -> UnallocatedCString {
         auto exists{false};
         auto value = String::Factory();
@@ -110,13 +110,11 @@ Config::Config(
 
         return output;
     }())
-    , path_([&]() -> UnallocatedCString {
-        auto output = String::Factory();
+    , path_([&]() -> std::filesystem::path {
+        auto output = std::filesystem::path{};
         auto notUsed{false};
 
-        if (false ==
-            legacy.AppendFolder(
-                output, dataFolder, String::Factory(legacy.Common()))) {
+        if (!legacy.AppendFolder(output, dataFolder, legacy.Common())) {
             LogError()(OT_PRETTY_CLASS())("Failed to calculate storage path")
                 .Flush();
 
@@ -131,11 +129,11 @@ Config::Config(
         }
 
         if (primary_plugin_ == OT_STORAGE_PRIMARY_PLUGIN_LMDB) {
-            auto newPath = String::Factory();
-            const auto subdir = UnallocatedCString{legacy.Common()} + "_lmdb";
+            auto newPath = std::filesystem::path{};
+            const auto subdir = std::filesystem::path{legacy.Common()} +=
+                "_lmdb";
 
-            if (false ==
-                legacy.AppendFolder(newPath, output, String::Factory(subdir))) {
+            if (false == legacy.AppendFolder(newPath, output, subdir)) {
                 LogError()(OT_PRETTY_CLASS())(
                     "Failed to calculate lmdb storage path")
                     .Flush();
@@ -154,14 +152,15 @@ Config::Config(
             output = newPath;
         }
 
+        auto strPath = String::Factory(output.c_str());
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
             String::Factory("path"),
-            output,
-            output,
+            strPath,
+            strPath,
             notUsed);
 
-        return output->Get();
+        return output;
     }())
     , fs_primary_bucket_([&] {
         auto output = UnallocatedCString{};
@@ -332,7 +331,7 @@ Config::Config(
         return output;
     }())
 {
-    OT_ASSERT(dataFolder.Exists())
+    OT_ASSERT(false == dataFolder.empty())
 
     config.Save();
 }

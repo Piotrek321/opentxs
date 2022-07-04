@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "api/session/base/Storage.hpp"  // IWYU pragma: associated
 
+#include <filesystem>
 #include <utility>
 
 #include "internal/api/session/Crypto.hpp"
@@ -18,7 +19,7 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Storage.hpp"
-#include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -35,12 +36,12 @@ Storage::Storage(
     const api::Legacy& legacy,
     const api::network::Asio& asio,
     const opentxs::network::zeromq::Context& zmq,
-    const UnallocatedCString& dataFolder,
+    const std::filesystem::path& dataFolder,
     std::unique_ptr<api::session::Factory> factory)
     : config_(config)
     , args_(std::move(args))
     , data_folder_(dataFolder)
-    , storage_config_(legacy, config_, args_, String::Factory(dataFolder))
+    , storage_config_(legacy, config_, args_, dataFolder)
     , factory_p_(std::move(factory))
     , storage_(opentxs::factory::StorageAPI(
           crypto,

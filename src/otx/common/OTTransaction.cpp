@@ -10,6 +10,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cstring>
+#include <filesystem>
 #include <memory>
 
 #include "internal/api/Legacy.hpp"
@@ -1744,8 +1745,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     if (strFileContents.length() < 2) {
         LogError()(OT_PRETTY_CLASS())("Error reading "
                                       "transaction statement: ")(
-            szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
+            szFolder1name)('/')(szFolder2name)('/')(filename)(".")
             .Flush();
 
         return false;
@@ -1758,16 +1758,14 @@ auto OTTransaction::VerifyBalanceReceipt(
     if (false == bool(pContents)) {
         LogError()(OT_PRETTY_CLASS())("Unable to load "
                                       "transaction statement: ")(
-            szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
+            szFolder1name)('/')(szFolder2name)('/')(filename)(".")
             .Flush();
 
         return false;
     } else if (!pContents->VerifySignature(SERVER_NYM)) {
         LogError()(OT_PRETTY_CLASS())("Unable to verify "
                                       "signature on transaction statement: ")(
-            szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
+            szFolder1name)('/')(szFolder2name)('/')(filename)(".")
             .Flush();
 
         return false;
@@ -1781,8 +1779,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         LogError()(OT_PRETTY_CLASS())(
             "Was expecting an "
             "OTTransaction to be stored in the transaction statement "
-            "at: ")(szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
+            "at: ")(szFolder1name)('/')(szFolder2name)('/')(filename)(".")
             .Flush();
 
         return false;
@@ -2994,9 +2991,8 @@ auto OTTransaction::DeleteBoxReceipt(Ledger& theLedger) -> bool
             strFilename->Get())) {
         LogVerbose()(OT_PRETTY_CLASS())(
             "Box receipt already doesn't exist, thus no need to delete: ")(
-            "At location: ")(strFolder1name)(api::Legacy::PathSeparator())(
-            strFolder2name)(api::Legacy::PathSeparator())(
-            strFolder3name)(api::Legacy::PathSeparator())(strFilename)
+            "At location: ")(strFolder1name)('/')(strFolder2name)('/')(
+            strFolder3name)('/')(strFilename)
             .Flush();
         return false;
     }
@@ -3011,10 +3007,8 @@ auto OTTransaction::DeleteBoxReceipt(Ledger& theLedger) -> bool
             ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
             LogError()(OT_PRETTY_CLASS())(
                 "Error deleting (writing over) box receipt (failed "
-                "writing armored string): ")(
-                strFolder1name)(api::Legacy::PathSeparator())(
-                strFolder2name)(api::Legacy::PathSeparator())(
-                strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
+                "writing armored string): ")(strFolder1name)('/')(
+                strFolder2name)('/')(strFolder3name)('/')(strFilename)(".")
                 .Flush();
             return false;
         }
@@ -3062,9 +3056,7 @@ auto OTTransaction::DeleteBoxReceipt(Ledger& theLedger) -> bool
         strFilename->Get());
     if (!bDeleted) {
         LogError()(OT_PRETTY_CLASS())("Error deleting (writing over) file: ")(
-            strFolder1name)(api::Legacy::PathSeparator())(
-            strFolder2name)(api::Legacy::PathSeparator())(
-            strFolder3name)(api::Legacy::PathSeparator())(
+            strFolder1name)('/')(strFolder2name)('/')(strFolder3name)('/')(
             strFilename)(". Contents: ")(m_strRawFile)(".")
             .Flush();
     }
@@ -3112,9 +3104,8 @@ auto OTTransaction::SaveBoxReceipt(std::int64_t lLedgerType) -> bool
             strFilename->Get())) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Warning -- Box receipt already exists! (Overwriting)"
-            "At location: ")(strFolder1name)(api::Legacy::PathSeparator())(
-            strFolder2name)(api::Legacy::PathSeparator())(
-            strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
+            "At location: ")(strFolder1name)('/')(strFolder2name)('/')(
+            strFolder3name)('/')(strFilename)(".")
             .Flush();
         //        return false;
     }
@@ -3128,9 +3119,8 @@ auto OTTransaction::SaveBoxReceipt(std::int64_t lLedgerType) -> bool
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
         LogError()(OT_PRETTY_CLASS())(
             "Error saving box receipt (failed writing armored string): ")(
-            strFolder1name)(api::Legacy::PathSeparator())(
-            strFolder2name)(api::Legacy::PathSeparator())(
-            strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
+            strFolder1name)('/')(strFolder2name)('/')(strFolder3name)('/')(
+            strFilename)(".")
             .Flush();
         return false;
     }
@@ -3146,9 +3136,7 @@ auto OTTransaction::SaveBoxReceipt(std::int64_t lLedgerType) -> bool
 
     if (!bSaved) {
         LogError()(OT_PRETTY_CLASS())("Error writing file: ")(
-            strFolder1name)(api::Legacy::PathSeparator())(
-            strFolder2name)(api::Legacy::PathSeparator())(
-            strFolder3name)(api::Legacy::PathSeparator())(
+            strFolder1name)('/')(strFolder2name)('/')(strFolder3name)('/')(
             strFilename)(". Contents: ")(m_strRawFile)(".")
             .Flush();
     }

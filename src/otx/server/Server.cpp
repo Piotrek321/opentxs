@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <filesystem>
 #include <regex>
 #include <string_view>
 

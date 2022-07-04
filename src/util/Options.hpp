@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <filesystem>
 #include <optional>
 #include <string_view>
 
@@ -32,7 +33,7 @@ struct Options::Imp final {
     std::optional<bool> blockchain_wallet_enabled_;
     std::optional<std::size_t> default_mint_key_bytes_;
     std::optional<bool> experimental_;
-    std::optional<CString> home_;
+    std::optional<std::filesystem::path> home_;
     std::optional<CString> log_endpoint_;
     std::optional<ConnectionMode> ipv4_connection_mode_;
     std::optional<ConnectionMode> ipv6_connection_mode_;

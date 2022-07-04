@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <filesystem>
 #include <iterator>
 #include <stdexcept>
 #include <string_view>
@@ -4065,7 +4066,7 @@ auto Server::process_get_mint_response(const Lock& lock, const Message& reply)
         return false;
     }
 
-    return mint.SaveMint();
+    return mint.SaveMint({});
 }
 
 auto Server::process_get_nym_market_offers_response(
@@ -4558,9 +4559,8 @@ auto Server::process_process_box_response(
     } else {
         // This should never happen...
         filename = api::Legacy::GetFilenameError(receiptID->Get());
-        LogError()(OT_PRETTY_CLASS())(
-            "Error saving transaction "
-            "receipt: ")(notaryID)(api::Legacy::PathSeparator())(filename)(".")
+        LogError()(OT_PRETTY_CLASS())("Error saving transaction "
+                                      "receipt: ")(notaryID)('/')(filename)(".")
             .Flush();
         OTDB::StorePlainString(
             api_,
@@ -5113,8 +5113,8 @@ void Server::process_response_transaction(
     if (false == armored->WriteArmoredString(encoded, "TRANSACTION")) {
         LogError()(OT_PRETTY_CLASS())("Error saving transaction receipt "
                                       "(failed writing armored string): ")(
-            api_.Internal().Legacy().Receipt())(api::Legacy::PathSeparator())(
-            server_id_->str())(api::Legacy::PathSeparator())(receiptID)
+            api_.Internal().Legacy().Receipt())('/')(server_id_->str())('/')(
+            receiptID)
             .Flush();
 
         return;
@@ -6270,7 +6270,7 @@ void Server::process_incoming_cash_withdrawal(
     }
 
     auto& mint = pMint.Internal();
-    const bool validMint = mint.LoadMint() && mint.VerifyMint(serverNym);
+    const bool validMint = mint.LoadMint({}) && mint.VerifyMint(serverNym);
 
     if (validMint) {
         LogInsane()(OT_PRETTY_CLASS())("Mint is valid").Flush();

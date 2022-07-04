@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
 #include <functional>
 
 #include "opentxs/util/Container.hpp"
@@ -52,13 +53,13 @@ public:
     bool migrate_plugin_;
 
     std::int64_t gc_interval_;
-    UnallocatedCString path_;
+    std::filesystem::path path_;
 
-    UnallocatedCString fs_primary_bucket_;
-    UnallocatedCString fs_secondary_bucket_;
-    UnallocatedCString fs_root_file_;
-    UnallocatedCString fs_backup_directory_;
-    UnallocatedCString fs_encrypted_backup_directory_;
+    std::filesystem::path fs_primary_bucket_;
+    std::filesystem::path fs_secondary_bucket_;
+    std::filesystem::path fs_root_file_;
+    std::filesystem::path fs_backup_directory_;
+    std::filesystem::path fs_encrypted_backup_directory_;
 
     UnallocatedCString sqlite3_primary_bucket_;
     UnallocatedCString sqlite3_secondary_bucket_;
@@ -75,6 +76,6 @@ public:
         const api::Legacy& legacy,
         const api::Settings& options,
         const Options& cli,
-        const String& dataFolder) noexcept;
+        const std::filesystem::path& dataFolder) noexcept;
 };
 }  // namespace opentxs::storage

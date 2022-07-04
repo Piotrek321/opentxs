@@ -7,9 +7,8 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "util/storage/drivers/filesystem/Archiving.hpp"  // IWYU pragma: associated
 
-#include <boost/filesystem.hpp>
-#include <boost/system/error_code.hpp>
 #include <memory>
+#include <system_error>
 
 #include "Proto.tpp"
 #include "internal/util/Flag.hpp"
@@ -23,8 +22,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "util/storage/Config.hpp"
-
-#define ROOT_FILE_EXTENSION ".hash"
 
 namespace opentxs::factory
 {
@@ -62,27 +59,23 @@ Archiving::Archiving(
 }
 
 auto Archiving::calculate_path(
-    const UnallocatedCString& key,
-    const bool,
-    UnallocatedCString& directory) const -> UnallocatedCString
+    std::string_view key,
+    bool bucket,
+    fs::path& directory) const noexcept -> fs::path
 {
     directory = folder_;
     const auto& level1 = folder_;
     UnallocatedCString level2{};
 
     if (4 < key.size()) {
-        directory += path_seperator_;
-        directory += key.substr(0, 4);
+        directory / key.substr(0, 4);
         level2 = directory;
     }
 
-    if (8 < key.size()) {
-        directory += path_seperator_;
-        directory += key.substr(4, 4);
-    }
+    if (8 < key.size()) { directory / key.substr(4, 4); }
 
-    boost::system::error_code ec{};
-    boost::filesystem::create_directories(directory, ec);
+    auto ec = std::error_code{};
+    fs::create_directories(directory, ec);
 
     if (8 < key.size()) {
         if (false == sync(level2)) {
@@ -93,11 +86,11 @@ auto Archiving::calculate_path(
     }
 
     if (false == sync(level1)) {
-        LogError()(OT_PRETTY_CLASS())("Unable to sync directory ")(level1)(".")
+        LogError()(OT_PRETTY_CLASS())("Unable to sync directory ")(level1)
             .Flush();
     }
 
-    return {directory + path_seperator_ + key};
+    return fs::path{directory} / key;
 }
 
 void Archiving::Cleanup()
@@ -117,9 +110,9 @@ void Archiving::Init_Archiving()
 {
     OT_ASSERT(false == folder_.empty());
 
-    boost::system::error_code ec{};
+    auto ec = std::error_code{};
 
-    if (boost::filesystem::create_directory(folder_, ec)) { ready_->On(); }
+    if (fs::create_directory(folder_, ec)) { ready_->On(); }
 }
 
 auto Archiving::prepare_read(const UnallocatedCString& input) const
@@ -162,10 +155,10 @@ auto Archiving::prepare_write(const UnallocatedCString& plaintext) const
     return proto::ToString(ciphertext);
 }
 
-auto Archiving::root_filename() const -> UnallocatedCString
+auto Archiving::root_filename() const -> fs::path
 {
-    return folder_ + path_seperator_ + config_.fs_root_file_ +
-           ROOT_FILE_EXTENSION;
+    return (folder_ / config_.fs_root_file_)
+        .replace_extension(root_file_extension_);
 }
 
 Archiving::~Archiving() { Cleanup_Archiving(); }

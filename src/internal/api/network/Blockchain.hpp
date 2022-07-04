@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <string_view>
 
 #include "opentxs/network/p2p/State.hpp"
@@ -95,7 +96,7 @@ public:
     virtual auto Init(
         const api::crypto::Blockchain& crypto,
         const api::Legacy& legacy,
-        const std::string_view dataFolder,
+        const std::filesystem::path& dataFolder,
         const Options& args) noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 

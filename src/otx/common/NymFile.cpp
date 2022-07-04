@@ -10,6 +10,7 @@
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
 #include <cstdio>
+#include <filesystem>
 #include <memory>
 #include <utility>
 
@@ -737,8 +738,8 @@ auto NymFile::SerializeNymFile(const char* szFoldername, const char* szFilename)
         "",
         "");
     if (!bSaved) {
-        LogError()(OT_PRETTY_CLASS())("Error saving file: ")(
-            szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
+        LogError()(OT_PRETTY_CLASS())("Error saving file: ")(szFoldername)('/')(
+            szFilename)(".")
             .Flush();
     }
 

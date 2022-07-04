@@ -28,6 +28,7 @@ if(OT_PCH)
     "$<$<COMPILE_LANGUAGE:CXX>:<chrono$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<cmath$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<condition_variable$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<csignal$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<cstdarg$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<cstddef$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<cstdint$<ANGLE-R>>"
@@ -37,6 +38,7 @@ if(OT_PCH)
     "$<$<COMPILE_LANGUAGE:CXX>:<ctime$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<deque$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<exception$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<filesystem$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<forward_list$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<fstream$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<functional$<ANGLE-R>>"
@@ -66,6 +68,7 @@ if(OT_PCH)
     "$<$<COMPILE_LANGUAGE:CXX>:<stdexcept$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<string$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<string_view$<ANGLE-R>>"
+    "$<$<COMPILE_LANGUAGE:CXX>:<system_error$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<thread$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<tuple$<ANGLE-R>>"
     "$<$<COMPILE_LANGUAGE:CXX>:<typeindex$<ANGLE-R>>"
@@ -222,11 +225,6 @@ endif()
 if(OT_INSTALL_LIBRARY_DEPENDENCIES)
   string(TOUPPER "${CMAKE_BUILD_TYPE}" BUILD_TYPE_SUFFIX)
   get_target_property(
-    Boost_filesystem_LIBRARY
-    Boost::filesystem
-    IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
-  )
-  get_target_property(
     Boost_iostreams_LIBRARY
     Boost::iostreams
     IMPORTED_LOCATION_${BUILD_TYPE_SUFFIX}
@@ -272,7 +270,6 @@ if(OT_INSTALL_LIBRARY_DEPENDENCIES)
 
   install(
     FILES
-      "${Boost_filesystem_LIBRARY}"
       "${Boost_iostreams_LIBRARY}"
       "${Boost_system_LIBRARY}"
       "${Boost_thread_LIBRARY}"

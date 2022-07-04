@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
+#include <filesystem>
 
 #include "ottest/fixtures/common/Options.hpp"
 

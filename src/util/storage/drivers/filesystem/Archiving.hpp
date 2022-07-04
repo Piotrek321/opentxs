@@ -5,6 +5,10 @@
 
 #pragma once
 
+#include <chrono>
+#include <filesystem>
+#include <string_view>
+
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -52,8 +56,11 @@ class Flag;
 
 namespace opentxs::storage::driver::filesystem
 {
+using namespace std::literals;
+
 class Archiving final : public Common, public virtual storage::Driver
 {
+
 private:
     using ot_super = Common;
 
@@ -79,18 +86,18 @@ public:
     ~Archiving() final;
 
 private:
+    static constexpr auto root_file_extension_ = "hash"sv;
+
     crypto::key::Symmetric& encryption_key_;
     const bool encrypted_;
 
-    auto calculate_path(
-        const UnallocatedCString& key,
-        const bool bucket,
-        UnallocatedCString& directory) const -> UnallocatedCString final;
+    auto calculate_path(std::string_view key, bool bucket, fs::path& directory)
+        const noexcept -> fs::path final;
     auto prepare_read(const UnallocatedCString& ciphertext) const
         -> UnallocatedCString final;
     auto prepare_write(const UnallocatedCString& plaintext) const
         -> UnallocatedCString final;
-    auto root_filename() const -> UnallocatedCString final;
+    auto root_filename() const -> fs::path final;
 
     void Init_Archiving();
     void Cleanup_Archiving();

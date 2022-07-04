@@ -28,6 +28,8 @@ auto ExpandSeed(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey) noexcept -> bool
 {
+    assert(-1 != ::sodium_init());
+
     if ((nullptr == seed.data()) || (0 == seed.size())) {
         LogError()(__func__)(": Invalid provided seed").Flush();
 
@@ -118,6 +120,17 @@ auto MakeSiphashKey(const ReadView data) noexcept -> SiphashKey
     return out;
 }
 
+auto Randomize(WritableView buffer) noexcept -> bool
+{
+    assert(-1 != ::sodium_init());
+
+    if (false == buffer.valid()) { return false; }
+
+    ::randombytes_buf(buffer.data(), buffer.size());
+
+    return true;
+}
+
 auto Siphash(const SiphashKey& key, const ReadView data) noexcept -> std::size_t
 {
     assert(-1 != ::sodium_init());
@@ -140,6 +153,8 @@ auto ToCurveKeypair(
     const AllocateOutput curvePrivate,
     const AllocateOutput curvePublic) noexcept -> bool
 {
+    assert(-1 != ::sodium_init());
+
     if (nullptr == edPrivate.data() ||
         crypto_sign_SECRETKEYBYTES != edPrivate.size()) {
         LogError()(__func__)(": Invalid ed25519 private key").Flush();

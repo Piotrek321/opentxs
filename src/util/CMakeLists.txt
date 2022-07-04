@@ -98,10 +98,7 @@ set(cxx-install-headers
 target_link_libraries(
   opentxs-common
   PRIVATE
-    Boost::container
-    Boost::filesystem
     Boost::headers
-    Boost::iostreams
     opentxs::messages
     unofficial-sodium::sodium
 )
@@ -109,7 +106,6 @@ target_link_libraries(
   opentxs
   PUBLIC
     Boost::container
-    Boost::filesystem
     Boost::iostreams
     Boost::program_options
     unofficial-sodium::sodium

@@ -9,22 +9,14 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "util/storage/drivers/filesystem/Common.hpp"  // IWYU pragma: associated
 
-extern "C" {
-#include <fcntl.h>
-#include <unistd.h>
-}
-
-#include <boost/filesystem.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
-#include <boost/system/error_code.hpp>
 #include <fstream>
 #include <ios>
+#include <system_error>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-
-#define PATH_SEPERATOR "/"
 
 namespace opentxs::storage::driver::filesystem
 {
@@ -37,7 +29,6 @@ Common::Common(
     const Flag& bucket)
     : ot_super(crypto, asio, storage, config, bucket)
     , folder_(folder)
-    , path_seperator_(PATH_SEPERATOR)
     , ready_(Flag::Factory(false))
 {
     Init_Common();
@@ -61,11 +52,11 @@ auto Common::LoadFromBucket(
     const bool bucket) const -> bool
 {
     value.clear();
-    UnallocatedCString directory{};
+    auto directory = fs::path{};
     const auto filename = calculate_path(key, bucket, directory);
-    boost::system::error_code ec{};
+    auto ec = std::error_code{};
 
-    if (false == boost::filesystem::exists(filename, ec)) { return false; }
+    if (false == fs::exists(filename, ec)) { return false; }
 
     if (ready_.get() && false == folder_.empty()) {
         value = read_file(filename);
@@ -99,9 +90,9 @@ auto Common::prepare_write(const UnallocatedCString& input) const
 auto Common::read_file(const UnallocatedCString& filename) const
     -> UnallocatedCString
 {
-    boost::system::error_code ec{};
+    auto ec = std::error_code{};
 
-    if (false == boost::filesystem::exists(filename, ec)) { return {}; }
+    if (false == fs::exists(filename, ec)) { return {}; }
 
     std::ifstream file(
         filename, std::ios::in | std::ios::ate | std::ios::binary);
@@ -132,7 +123,7 @@ void Common::store(
     OT_ASSERT(nullptr != promise);
 
     if (ready_.get() && false == folder_.empty()) {
-        UnallocatedCString directory{};
+        auto directory = fs::path{};
         const auto filename = calculate_path(key, bucket, directory);
         promise->set_value(write_file(directory, filename, value));
     } else {
@@ -150,39 +141,12 @@ auto Common::StoreRoot(const bool, const UnallocatedCString& hash) const -> bool
     return false;
 }
 
-auto Common::sync(const UnallocatedCString& path) const -> bool
+auto Common::sync(const fs::path& path) const -> bool
 {
-    class FileDescriptor
-    {
-    public:
-        operator bool() const { return good(); }
-        operator int() const { return fd_; }
-
-        FileDescriptor(const UnallocatedCString& path)
-            : fd_(::open(path.c_str(), O_DIRECTORY | O_RDONLY))
-        {
-        }
-        FileDescriptor() = delete;
-        FileDescriptor(const FileDescriptor&) = delete;
-        FileDescriptor(FileDescriptor&&) = delete;
-        auto operator=(const FileDescriptor&) -> FileDescriptor& = delete;
-        auto operator=(FileDescriptor&&) -> FileDescriptor& = delete;
-
-        ~FileDescriptor()
-        {
-            if (good()) { ::close(fd_); }
-        }
-
-    private:
-        int fd_{-1};
-
-        auto good() const -> bool { return (-1 != fd_); }
-    };
-
-    FileDescriptor fd(path);
+    auto fd = FileDescriptor{path};
 
     if (!fd) {
-        LogError()(OT_PRETTY_CLASS())("Failed to open ")(path)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to open ")(path).Flush();
 
         return false;
     }
@@ -192,24 +156,13 @@ auto Common::sync(const UnallocatedCString& path) const -> bool
 
 auto Common::sync(File& file) const -> bool { return sync(file->handle()); }
 
-auto Common::sync(int fd) const -> bool
-{
-#if defined(__APPLE__)
-    // This is a Mac OS X system which does not implement
-    // fsync as such.
-    return 0 == ::fcntl(fd, F_FULLFSYNC);
-#else
-    return 0 == ::fsync(fd);
-#endif
-}
-
 auto Common::write_file(
     const UnallocatedCString& directory,
     const UnallocatedCString& filename,
     const UnallocatedCString& contents) const -> bool
 {
     if (false == filename.empty()) {
-        boost::filesystem::path filePath(filename);
+        fs::path filePath(filename);
         File file(filePath);
         const auto data = prepare_write(contents);
 
@@ -243,5 +196,4 @@ auto Common::write_file(
 }
 
 Common::~Common() { Cleanup_Common(); }
-
 }  // namespace opentxs::storage::driver::filesystem

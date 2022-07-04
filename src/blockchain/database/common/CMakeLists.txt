@@ -37,12 +37,17 @@ target_include_directories(
   PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 
-target_link_libraries(opentxs-common PRIVATE unofficial-sodium::sodium lmdb)
+target_link_libraries(
+  opentxs-common
+  PRIVATE
+    Boost::headers
+    unofficial-sodium::sodium
+    lmdb
+)
 target_link_libraries(
   opentxs
   PUBLIC
     unofficial-sodium::sodium
     Boost::thread
-    Boost::filesystem
     lmdb
 )

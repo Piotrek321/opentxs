@@ -8,6 +8,7 @@
 #include "otx/consensus/Base.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <filesystem>
 #include <stdexcept>
 #include <utility>
 

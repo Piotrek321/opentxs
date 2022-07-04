@@ -11,6 +11,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
 #include <functional>
 #include <future>
 #include <iterator>
@@ -1393,8 +1394,7 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
 
     if (false == exists) {
         LogError()(OT_PRETTY_CLASS())("File does not exist: ")(
-            api_.Internal().Legacy().Mint())(api::Legacy::PathSeparator())(
-            serverID)(api::Legacy::PathSeparator())(unitID)
+            api_.Internal().Legacy().Mint())('/')(serverID)('/')(unitID)
             .Flush();
 
         return {};
@@ -1409,7 +1409,7 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
     }
 
     auto& mint = pMint.Internal();
-    const bool validMint = mint.LoadMint() && mint.VerifyMint(serverNym);
+    const bool validMint = mint.LoadMint({}) && mint.VerifyMint(serverNym);
 
     if (false == validMint) {
         LogError()(OT_PRETTY_CLASS())("Invalid mint").Flush();

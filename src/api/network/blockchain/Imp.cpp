@@ -340,7 +340,7 @@ auto BlockchainImp::hello(
 auto BlockchainImp::Init(
     const api::crypto::Blockchain& crypto,
     const api::Legacy& legacy,
-    const std::string_view dataFolder,
+    const std::filesystem::path& dataFolder,
     const Options& options) noexcept -> void
 {
     crypto_ = &crypto;

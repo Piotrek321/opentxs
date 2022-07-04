@@ -7,10 +7,11 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "util/MappedFileStorage.hpp"  // IWYU pragma: associated
 
-#include <boost/filesystem.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <algorithm>
+#include <chrono>
 #include <cstring>
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -22,7 +23,7 @@
 #include "opentxs/util/Log.hpp"
 #include "util/FileSize.hpp"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace opentxs::util
 {
@@ -51,26 +52,25 @@ struct MappedFileStorage::Imp {
     using FileCounter = std::size_t;
 
     LMDB& lmdb_;
-    const UnallocatedCString path_prefix_;
-    const UnallocatedCString filename_prefix_;
+    const std::filesystem::path path_prefix_;
+    const std::filesystem::path filename_prefix_;
     const int table_;
     const std::size_t key_;
     mutable IndexData::MemoryPosition next_position_;
     mutable UnallocatedVector<boost::iostreams::mapped_file> files_;
 
     auto calculate_file_name(
-        const UnallocatedCString& prefix,
-        const FileCounter index) noexcept -> UnallocatedCString
+        const std::filesystem::path& prefix,
+        const FileCounter index) noexcept -> std::filesystem::path
     {
         auto number = std::to_string(index);
 
         while (5 > number.size()) { number.insert(0, 1, '0'); }
 
-        const auto filename = filename_prefix_ + number + ".dat";
-        auto path = fs::path{prefix};
-        path /= filename;
+        const auto filename = std::filesystem::path{filename_prefix_} +=
+            number + ".dat";
 
-        return path.string();
+        return prefix / filename;
     }
     auto check_file(const FileCounter position) noexcept -> void
     {
@@ -79,7 +79,7 @@ struct MappedFileStorage::Imp {
         }
     }
     auto create_or_load(
-        const UnallocatedCString& prefix,
+        const std::filesystem::path& prefix,
         const FileCounter file,
         UnallocatedVector<boost::iostreams::mapped_file>& output) noexcept
         -> void
@@ -186,7 +186,7 @@ struct MappedFileStorage::Imp {
         }
     }
     auto init_files(
-        const UnallocatedCString& prefix,
+        const std::filesystem::path& prefix,
         const IndexData::MemoryPosition position) noexcept
         -> UnallocatedVector<boost::iostreams::mapped_file>
     {
@@ -240,8 +240,8 @@ struct MappedFileStorage::Imp {
     }
 
     Imp(opentxs::storage::lmdb::LMDB& lmdb,
-        const UnallocatedCString& basePath,
-        const UnallocatedCString filenamePrefix,
+        const std::filesystem::path& basePath,
+        const std::filesystem::path filenamePrefix,
         int table,
         std::size_t key) noexcept(false)
         : lmdb_(lmdb)
@@ -281,8 +281,8 @@ struct MappedFileStorage::Imp {
 
 MappedFileStorage::MappedFileStorage(
     opentxs::storage::lmdb::LMDB& lmdb,
-    const UnallocatedCString& basePath,
-    const UnallocatedCString filenamePrefix,
+    const std::filesystem::path& basePath,
+    const std::filesystem::path filenamePrefix,
     int table,
     std::size_t key) noexcept(false)
     : lmdb_(lmdb)

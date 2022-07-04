@@ -8,8 +8,11 @@
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <atomic>
+#include <chrono>
+#include <filesystem>
 #include <future>
 #include <ios>
+#include <string_view>
 
 #include "internal/util/Flag.hpp"
 #include "opentxs/Version.hpp"
@@ -53,6 +56,8 @@ class Config;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace fs = std::filesystem;
+
 namespace opentxs::storage::driver::filesystem
 {
 // Simple filesystem implementation of opentxs::storage
@@ -81,11 +86,10 @@ public:
     ~Common() override;
 
 protected:
-    const UnallocatedCString folder_;
-    const UnallocatedCString path_seperator_;
+    const fs::path folder_;
     OTFlag ready_;
 
-    auto sync(const UnallocatedCString& path) const -> bool;
+    auto sync(const fs::path& path) const -> bool;
 
     Common(
         const api::Crypto& crypto,
@@ -99,17 +103,38 @@ private:
     using File =
         boost::iostreams::stream<boost::iostreams::file_descriptor_sink>;
 
+    class FileDescriptor
+    {
+    public:
+        operator bool() const noexcept { return good(); }
+        operator int() const noexcept { return fd_; }
+
+        FileDescriptor(const fs::path& path) noexcept;
+        FileDescriptor() = delete;
+        FileDescriptor(const FileDescriptor&) = delete;
+        FileDescriptor(FileDescriptor&&) = delete;
+        auto operator=(const FileDescriptor&) -> FileDescriptor& = delete;
+        auto operator=(FileDescriptor&&) -> FileDescriptor& = delete;
+
+        ~FileDescriptor();
+
+    private:
+        int fd_;
+
+        auto good() const noexcept -> bool;
+    };
+
     virtual auto calculate_path(
-        const UnallocatedCString& key,
-        const bool bucket,
-        UnallocatedCString& directory) const -> UnallocatedCString = 0;
+        std::string_view key,
+        bool bucket,
+        fs::path& directory) const noexcept -> fs::path = 0;
     virtual auto prepare_read(const UnallocatedCString& input) const
         -> UnallocatedCString;
     virtual auto prepare_write(const UnallocatedCString& input) const
         -> UnallocatedCString;
     auto read_file(const UnallocatedCString& filename) const
         -> UnallocatedCString;
-    virtual auto root_filename() const -> UnallocatedCString = 0;
+    virtual auto root_filename() const -> fs::path = 0;
     void store(
         const bool isTransaction,
         const UnallocatedCString& key,

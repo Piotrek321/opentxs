@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "util/storage/drivers/filesystem/GarbageCollected.hpp"  // IWYU pragma: associated
 
-#include <boost/filesystem.hpp>
 #include <cstdio>
 #include <memory>
 
@@ -49,20 +48,19 @@ GarbageCollected::GarbageCollected(
     Init_GarbageCollected();
 }
 
-auto GarbageCollected::bucket_name(const bool bucket) const
-    -> UnallocatedCString
+auto GarbageCollected::bucket_name(const bool bucket) const noexcept -> fs::path
 {
     return bucket ? config_.fs_secondary_bucket_ : config_.fs_primary_bucket_;
 }
 
 auto GarbageCollected::calculate_path(
-    const UnallocatedCString& key,
-    const bool bucket,
-    UnallocatedCString& directory) const -> UnallocatedCString
+    std::string_view key,
+    bool bucket,
+    fs::path& directory) const noexcept -> fs::path
 {
-    directory = folder_ + path_seperator_ + bucket_name(bucket);
+    directory = folder_ / bucket_name(bucket);
 
-    return directory + path_seperator_ + key;
+    return directory / key;
 }
 
 void GarbageCollected::Cleanup()
@@ -79,13 +77,13 @@ void GarbageCollected::Cleanup_GarbageCollected()
 auto GarbageCollected::EmptyBucket(const bool bucket) const -> bool
 {
     const auto oldDirectory = [&] {
-        auto out = UnallocatedCString{};
+        auto out = fs::path{};
         calculate_path("", bucket, out);
 
         return out;
     }();
-    const UnallocatedCString random = crypto_.Encode().RandomFilename();
-    const UnallocatedCString newName = folder_ + path_seperator_ + random;
+    const auto random = crypto_.Encode().RandomFilename();
+    const auto newName = folder_ / random;
 
     if (0 != std::rename(oldDirectory.c_str(), newName.c_str())) {
         return false;
@@ -96,15 +94,13 @@ auto GarbageCollected::EmptyBucket(const bool bucket) const -> bool
         [=] { purge(newName); },
         garbageCollectedThreadName);
 
-    return boost::filesystem::create_directory(oldDirectory);
+    return fs::create_directory(oldDirectory);
 }
 
 void GarbageCollected::Init_GarbageCollected()
 {
-    boost::filesystem::create_directory(
-        folder_ + path_seperator_ + config_.fs_primary_bucket_);
-    boost::filesystem::create_directory(
-        folder_ + path_seperator_ + config_.fs_secondary_bucket_);
+    fs::create_directory(folder_ / config_.fs_primary_bucket_);
+    fs::create_directory(folder_ / config_.fs_secondary_bucket_);
     ready_->On();
 }
 
@@ -112,16 +108,15 @@ void GarbageCollected::purge(const UnallocatedCString& path) const
 {
     if (path.empty()) { return; }
 
-    boost::filesystem::remove_all(path);
+    fs::remove_all(path);
 }
 
-auto GarbageCollected::root_filename() const -> UnallocatedCString
+auto GarbageCollected::root_filename() const -> fs::path
 {
     OT_ASSERT(false == folder_.empty());
-    OT_ASSERT(false == path_seperator_.empty());
     OT_ASSERT(false == config_.fs_root_file_.empty());
 
-    return folder_ + path_seperator_ + config_.fs_root_file_;
+    return folder_ / config_.fs_root_file_;
 }
 
 GarbageCollected::~GarbageCollected() { Cleanup_GarbageCollected(); }

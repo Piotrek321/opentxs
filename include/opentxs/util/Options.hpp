@@ -10,6 +10,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <filesystem>
 #include <string_view>
 
 #include "opentxs/blockchain/Types.hpp"
@@ -31,7 +32,7 @@ public:
     auto DisabledBlockchains() const noexcept -> const Set<blockchain::Type>&;
     auto Experimental() const noexcept -> bool;
     auto HelpText() const noexcept -> std::string_view;
-    auto Home() const noexcept -> std::string_view;
+    auto Home() const noexcept -> std::filesystem::path;
     auto Ipv4ConnectionMode() const noexcept -> ConnectionMode;
     auto Ipv6ConnectionMode() const noexcept -> ConnectionMode;
     auto LogLevel() const noexcept -> int;
@@ -71,7 +72,7 @@ public:
     auto SetBlockchainWalletEnabled(bool enabled) noexcept -> Options&;
     auto SetDefaultMintKeyBytes(std::size_t bytes) noexcept -> Options&;
     auto SetExperimental(bool enabled) noexcept -> Options&;
-    auto SetHome(std::string_view path) noexcept -> Options&;
+    auto SetHome(const std::filesystem::path& path) noexcept -> Options&;
     auto SetIpv4ConnectionMode(ConnectionMode mode) noexcept -> Options&;
     auto SetIpv6ConnectionMode(ConnectionMode mode) noexcept -> Options&;
     auto SetLogEndpoint(std::string_view endpoint) noexcept -> Options&;

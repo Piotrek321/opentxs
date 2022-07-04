@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstddef>
+#include <filesystem>
 #include <functional>
 #include <memory>
 
@@ -60,8 +61,8 @@ protected:
 
     MappedFileStorage(
         opentxs::storage::lmdb::LMDB& lmdb,
-        const UnallocatedCString& basePath,
-        const UnallocatedCString filenamePrefix,
+        const std::filesystem::path& basePath,
+        const std::filesystem::path filenamePrefix,
         int table,
         std::size_t key) noexcept(false);
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <filesystem>
 #include <functional>
 #include <future>
 #include <memory>
@@ -196,7 +197,7 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto Init(
         const api::crypto::Blockchain& crypto,
         const api::Legacy& legacy,
-        const std::string_view dataFolder,
+        const std::filesystem::path& dataFolder,
         const Options& args) noexcept -> void final;
     auto Shutdown() noexcept -> void final;
 

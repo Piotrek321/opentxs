@@ -10,6 +10,7 @@
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
 #include <cstdlib>
+#include <filesystem>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -492,8 +493,7 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
     } else {  // Loading FROM A FILE.
         if (!OTDB::Exists(api_, api_.DataFolder(), path1, path2, path3, "")) {
             LogDebug()(OT_PRETTY_CLASS())("does not exist in OTLedger::Load")(
-                pszType)(": ")(path1)(api::Legacy::PathSeparator())(
-                m_strFilename)
+                pszType)(": ")(path1)('/')(m_strFilename)
                 .Flush();
             return false;
         }
@@ -508,8 +508,8 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
             ""));  // <=== LOADING FROM DATA STORE.
 
         if (strFileContents.length() < 2) {
-            LogError()(OT_PRETTY_CLASS())("Error reading file: ")(
-                path1)(api::Legacy::PathSeparator())(m_strFilename)
+            LogError()(OT_PRETTY_CLASS())("Error reading file: ")(path1)('/')(
+                m_strFilename)
                 .Flush();
             return false;
         }
@@ -520,8 +520,7 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
     // NOTE: No need to deal with OT ARMORED INBOX file format here, since
     //       LoadContractFromString already handles that automatically.
     if (!strRawFile->Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Unable to load box (")(
-            path1)(api::Legacy::PathSeparator())(
+        LogError()(OT_PRETTY_CLASS())("Unable to load box (")(path1)('/')(
             m_strFilename)(") from empty string.")
             .Flush();
         return false;
@@ -531,16 +530,14 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
 
     if (!bSuccess) {
         LogError()(OT_PRETTY_CLASS())("Failed loading ")(pszType)(" ")(
-            (pString.Exists()) ? "from string"
-                               : "from file")(" in OTLedger::Load")(
-            pszType)(": ")(path1)(api::Legacy::PathSeparator())(m_strFilename)
+            (pString.Exists()) ? "from string" : "from file")(
+            " in OTLedger::Load")(pszType)(": ")(path1)('/')(m_strFilename)
             .Flush();
         return false;
     } else {
         LogVerbose()(OT_PRETTY_CLASS())("Successfully loaded ")(pszType)(" ")(
-            (pString.Exists()) ? "from string"
-                               : "from file")(" in OTLedger::Load")(
-            pszType)(": ")(path1)(api::Legacy::PathSeparator())(m_strFilename)
+            (pString.Exists()) ? "from string" : "from file")(
+            " in OTLedger::Load")(pszType)(": ")(path1)('/')(m_strFilename)
             .Flush();
     }
 
@@ -575,8 +572,8 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
     if (false ==
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
         LogError()(OT_PRETTY_CLASS())("Error saving ")(
-            pszType)(" (failed writing armored string): ")(
-            path1)(api::Legacy::PathSeparator())(m_strFilename)
+            pszType)(" (failed writing armored string): ")(path1)('/')(
+            m_strFilename)
             .Flush();
         return false;
     }
@@ -591,12 +588,12 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
         "");  // <=== SAVING TO DATA STORE.
     if (!bSaved) {
         LogError()(OT_PRETTY_CLASS())("Error writing ")(pszType)(" to file: ")(
-            path1)(api::Legacy::PathSeparator())(m_strFilename)
+            path1)('/')(m_strFilename)
             .Flush();
         return false;
     } else {
         LogVerbose()(OT_PRETTY_CLASS())("Successfully saved ")(pszType)(": ")(
-            path1)(api::Legacy::PathSeparator())(m_strFilename)
+            path1)('/')(m_strFilename)
             .Flush();
     }
 
@@ -717,10 +714,7 @@ auto Ledger::make_filename(const ledgerType theType) -> std::
     three = ledgerID->Get();
 
     if (false == m_strFilename->Exists()) {
-        m_strFilename->Set(
-            api::Legacy::Concatenate(
-                two.c_str(), api::Legacy::PathSeparator(), three.c_str())
-                .c_str());
+        m_strFilename->Set((fs::path{two} / fs::path{three}).c_str());
     }
 
     if (2 > one.size()) { return output; }
@@ -844,67 +838,55 @@ auto Ledger::generate_ledger(
     ledgerType theType,
     bool bCreateFile) -> bool
 {
-    // First we set the "Safe" ID and try to load the file, to make sure it
-    // doesn't already exist.
-    auto strID = String::Factory(theAcctID),
-         strNotaryID = String::Factory(theNotaryID);
-
     switch (theType) {
-        case ledgerType::nymbox:  // stored by NymID ONLY.
+        case ledgerType::nymbox: {
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().Nymbox());
-            m_strFilename->Set(api::Legacy::Concatenate(
-                                   strNotaryID->Get(),
-                                   api::Legacy::PathSeparator(),
-                                   strID->Get())
+            m_strFilename->Set(api_.Internal()
+                                   .Legacy()
+                                   .LedgerFileName(theNotaryID, theAcctID)
                                    .c_str());
-            break;
-        case ledgerType::inbox:  // stored by AcctID ONLY.
+        } break;
+        case ledgerType::inbox: {
             m_strFoldername = String::Factory(api_.Internal().Legacy().Inbox());
-            m_strFilename->Set(api::Legacy::Concatenate(
-                                   strNotaryID->Get(),
-                                   api::Legacy::PathSeparator(),
-                                   strID->Get())
+            m_strFilename->Set(api_.Internal()
+                                   .Legacy()
+                                   .LedgerFileName(theNotaryID, theAcctID)
                                    .c_str());
-            break;
-        case ledgerType::outbox:  // stored by AcctID ONLY.
+        } break;
+        case ledgerType::outbox: {
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().Outbox());
-            m_strFilename->Set(api::Legacy::Concatenate(
-                                   strNotaryID->Get(),
-                                   api::Legacy::PathSeparator(),
-                                   strID->Get())
+            m_strFilename->Set(api_.Internal()
+                                   .Legacy()
+                                   .LedgerFileName(theNotaryID, theAcctID)
                                    .c_str());
-            break;
-        case ledgerType::paymentInbox:  // stored by NymID ONLY.
+        } break;
+        case ledgerType::paymentInbox: {
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().PaymentInbox());
-            m_strFilename->Set(api::Legacy::Concatenate(
-                                   strNotaryID->Get(),
-                                   api::Legacy::PathSeparator(),
-                                   strID->Get())
+            m_strFilename->Set(api_.Internal()
+                                   .Legacy()
+                                   .LedgerFileName(theNotaryID, theAcctID)
                                    .c_str());
-            break;
-        case ledgerType::recordBox:  // stored by Acct ID *and* Nym ID
-                                     // (depending on the box.)
+        } break;
+        case ledgerType::recordBox: {
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().RecordBox());
-            m_strFilename->Set(api::Legacy::Concatenate(
-                                   strNotaryID->Get(),
-                                   api::Legacy::PathSeparator(),
-                                   strID->Get())
+            m_strFilename->Set(api_.Internal()
+                                   .Legacy()
+                                   .LedgerFileName(theNotaryID, theAcctID)
                                    .c_str());
-            break;
-        case ledgerType::expiredBox:  // stored by Nym ID only.
+        } break;
+        case ledgerType::expiredBox: {
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().ExpiredBox());
-            m_strFilename->Set(api::Legacy::Concatenate(
-                                   strNotaryID->Get(),
-                                   api::Legacy::PathSeparator(),
-                                   strID->Get())
+            m_strFilename->Set(api_.Internal()
+                                   .Legacy()
+                                   .LedgerFileName(theNotaryID, theAcctID)
                                    .c_str());
-            break;
-        case ledgerType::message:
+        } break;
+        case ledgerType::message: {
             LogTrace()(OT_PRETTY_CLASS())("Generating message ledger...")
                 .Flush();
             SetRealAccountID(theAcctID);
@@ -916,10 +898,12 @@ auto Ledger::generate_ledger(
             // anything that the server signs.
             m_Type = theType;
             return true;
-        default:
+        }
+        default: {
             OT_FAIL_MSG("OTLedger::GenerateLedger: GenerateLedger is only for "
                         "message, nymbox, inbox, outbox, and paymentInbox "
                         "ledgers.\n");
+        }
     }
 
     m_Type = theType;  // Todo make this Get/Set methods
@@ -932,10 +916,8 @@ auto Ledger::generate_ledger(
                                    // functions.)
 
     if (bCreateFile) {
-
-        auto strFilename = String::Factory();
-        strFilename = String::Factory(strID->Get());
-
+        const auto strNotaryID = String::Factory(theNotaryID);
+        const auto strFilename = String::Factory(theAcctID);
         const char* szFolder1name =
             m_strFoldername->Get();  // "nymbox" (or "inbox" or "outbox")
         const char* szFolder2name = strNotaryID->Get();  // "nymbox/NOTARY_ID"
@@ -953,16 +935,14 @@ auto Ledger::generate_ledger(
                 "")) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "ERROR: trying to generate ledger that already exists: ")(
-                szFolder1name)(api::Legacy::PathSeparator())(
-                szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
+                szFolder1name)('/')(szFolder2name)('/')(szFilename)(".")
                 .Flush();
             return false;
         }
 
         // Okay, it doesn't already exist. Let's generate it.
-        LogDetail()(OT_PRETTY_CLASS())("Generating ")(
-            szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
+        LogDetail()(OT_PRETTY_CLASS())("Generating ")(szFolder1name)('/')(
+            szFolder2name)('/')(szFilename)(".")
             .Flush();
     }
 

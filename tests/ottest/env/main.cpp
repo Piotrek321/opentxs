@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <iostream>
+#include <string>
 
 #include "ottest/Basic.hpp"
 #include "ottest/Cli.hpp"

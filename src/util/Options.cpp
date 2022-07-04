@@ -869,7 +869,7 @@ auto Options::HelpText() const noexcept -> std::string_view
     return imp_->help();
 }
 
-auto Options::Home() const noexcept -> std::string_view
+auto Options::Home() const noexcept -> std::filesystem::path
 {
     return Imp::get(imp_->home_);
 }
@@ -1017,7 +1017,7 @@ auto Options::SetExperimental(bool enabled) noexcept -> Options&
     return *this;
 }
 
-auto Options::SetHome(std::string_view path) noexcept -> Options&
+auto Options::SetHome(const std::filesystem::path& path) noexcept -> Options&
 {
     imp_->home_ = path;
 

@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <filesystem>
 #include <iosfwd>
 #include <memory>
 #include <optional>
@@ -204,7 +205,7 @@ public:
         const api::Session& api,
         const api::crypto::Blockchain& blockchain,
         const api::Legacy& legacy,
-        const std::string_view dataFolder,
+        const std::filesystem::path& dataFolder,
         const Options& args) noexcept(false);
     Database() = delete;
     Database(const Database&) = delete;

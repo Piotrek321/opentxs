@@ -18,10 +18,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#ifdef __APPLE__
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-
 namespace opentxs
 {
 constexpr auto OT_DEFAULT_ITERATION_COUNT = 65535;       // in bytes

@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -112,7 +113,7 @@ public:
     {
         return crypto_;
     }
-    auto DataFolder() const noexcept -> const UnallocatedCString& final
+    auto DataFolder() const noexcept -> const std::filesystem::path& final
     {
         return data_folder_;
     }
@@ -190,7 +191,7 @@ protected:
         const api::Crypto& crypto,
         const api::Settings& config,
         const opentxs::network::zeromq::Context& zmq,
-        const UnallocatedCString& dataFolder,
+        const std::filesystem::path& dataFolder,
         const int instance,
         NetworkMaker network,
         std::unique_ptr<api::session::Factory> factory);

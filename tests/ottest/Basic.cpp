@@ -5,14 +5,18 @@
 
 #include "ottest/Basic.hpp"  // IWYU pragma: associated
 
-#include <boost/filesystem.hpp>
 #include <opentxs/opentxs.hpp>
 #include <cassert>
+#include <filesystem>
+#include <functional>
 
-namespace fs = boost::filesystem;
+#include "internal/util/P0330.hpp"
+#include "util/Sodium.hpp"
 
 namespace ottest
 {
+using namespace opentxs::literals;
+
 auto Args(bool lowlevel, int argc, char** argv) noexcept -> const ot::Options&
 {
     using Connection = opentxs::ConnectionMode;
@@ -43,15 +47,22 @@ auto Args(bool lowlevel, int argc, char** argv) noexcept -> const ot::Options&
     }
 }
 
-auto Home() noexcept -> const ot::UnallocatedCString&
+auto Home() noexcept -> const fs::path&
 {
-    static const auto output = [&] {
-        const auto path = fs::temp_directory_path() /
-                          fs::unique_path("opentxs-test-%%%%-%%%%-%%%%-%%%%");
+    static const auto output = [&]() -> fs::path {
+        const auto random = [&] {
+            auto buf = ot::Space{};
 
-        assert(fs::create_directories(path));
+            assert(opentxs::crypto::sodium::Randomize(ot::writer(buf)(16_uz)));
 
-        return path.string();
+            return ot::to_hex(buf.data(), buf.size());
+        }();
+
+        const auto dir = fs::temp_directory_path() / "ottest" / random;
+
+        assert(fs::create_directories(dir));
+
+        return dir;
     }();
 
     return output;

@@ -74,7 +74,7 @@ auto NotarySession(
     const api::Crypto& crypto,
     const api::Settings& config,
     const opentxs::network::zeromq::Context& context,
-    const UnallocatedCString& dataFolder,
+    const std::filesystem::path& dataFolder,
     const int instance) -> std::unique_ptr<api::session::Notary>
 {
     using ReturnType = api::session::imp::Notary;
@@ -137,7 +137,7 @@ Notary::Notary(
     const api::Crypto& crypto,
     const api::Settings& config,
     const opentxs::network::zeromq::Context& context,
-    const UnallocatedCString& dataFolder,
+    const std::filesystem::path& dataFolder,
     const int instance)
     : Session(
           parent,
@@ -272,7 +272,7 @@ void Notary::generate_mint(
     internal.SignContract(nym, reason_);
     internal.SaveContract();
     internal.SaveMint(PUBLIC_SERIES);
-    internal.SaveMint();
+    internal.SaveMint({});
 }
 
 auto Notary::GetAdminNym() const -> UnallocatedCString
@@ -566,14 +566,12 @@ auto Notary::verify_mint(
 auto Notary::verify_mint_directory(const UnallocatedCString& serverID) const
     -> bool
 {
-    auto serverDir = String::Factory();
-    auto mintDir = String::Factory();
+    auto serverDir = std::filesystem::path{};
+    auto mintDir = std::filesystem::path{};
     const auto haveMint = parent_.Internal().Legacy().AppendFolder(
-        mintDir,
-        String::Factory(data_folder_.c_str()),
-        String::Factory(parent_.Internal().Legacy().Mint()));
-    const auto haveServer = parent_.Internal().Legacy().AppendFolder(
-        serverDir, mintDir, String::Factory(serverID.c_str()));
+        mintDir, data_folder_, parent_.Internal().Legacy().Mint());
+    const auto haveServer =
+        parent_.Internal().Legacy().AppendFolder(serverDir, mintDir, serverID);
 
     OT_ASSERT(haveMint)
     OT_ASSERT(haveServer)

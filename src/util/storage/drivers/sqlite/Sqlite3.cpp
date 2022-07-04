@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "util/storage/drivers/sqlite/Sqlite3.hpp"  // IWYU pragma: associated
 
+#include <filesystem>
 #include <limits>
 #include <memory>
 #include <sstream>  // IWYU pragma: keep

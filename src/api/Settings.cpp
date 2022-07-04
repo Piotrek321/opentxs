@@ -124,7 +124,7 @@ auto Settings::Load(const String& strConfigurationFileExactPath) const -> bool
         return false;
     }
 
-    if (!legacy_.BuildFilePath(strConfigurationFileExactPath)) {
+    if (!legacy_.BuildFilePath(strConfigurationFileExactPath.Get())) {
         LogError()(OT_PRETTY_CLASS())("Failed to construct path ")(
             strConfigurationFileExactPath)
             .Flush();
@@ -140,7 +140,7 @@ auto Settings::Load(const String& strConfigurationFileExactPath) const -> bool
     auto lFilelength = 0_uz;
 
     if (!legacy_.FileExists(
-            strConfigurationFileExactPath,
+            strConfigurationFileExactPath.Get(),
             lFilelength))  // we don't have a config file, lets
                            // create a blank one first.
     {

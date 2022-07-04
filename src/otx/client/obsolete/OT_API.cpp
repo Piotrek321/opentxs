@@ -8,6 +8,7 @@
 #include "internal/otx/client/obsolete/OT_API.hpp"  // IWYU pragma: associated
 
 #include <cstdlib>
+#include <filesystem>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -111,9 +112,8 @@ auto VerifyBalanceReceipt(
             filename,
             "")) {
         LogDetail()(__func__)("Receipt file doesn't exist: ")(
-            context.LegacyDataFolder())(api::Legacy::PathSeparator())(
-            szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(filename)
+            context.LegacyDataFolder())('/')(szFolder1name)('/')(
+            szFolder2name)('/')(filename)
             .Flush();
         return false;
     }
@@ -128,9 +128,8 @@ auto VerifyBalanceReceipt(
                // DATA STORE.
 
     if (strFileContents.length() < 2) {
-        LogError()(__func__)("Error reading file: ")(
-            szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
+        LogError()(__func__)("Error reading file: ")(szFolder1name)('/')(
+            szFolder2name)('/')(filename)(".")
             .Flush();
         return false;
     }
@@ -138,10 +137,9 @@ auto VerifyBalanceReceipt(
     auto strTransaction = String::Factory(strFileContents.c_str());
 
     if (!tranOut->LoadContractFromString(strTransaction)) {
-        LogError()(__func__)(
-            "Unable to load balance "
-            "statement: ")(szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
+        LogError()(__func__)("Unable to load balance "
+                             "statement: ")(szFolder1name)('/')(
+            szFolder2name)('/')(filename)(".")
             .Flush();
         return false;
     }
@@ -188,8 +186,7 @@ auto VerifyBalanceReceipt(
     if (!transaction->VerifySignature(SERVER_NYM)) {
         LogError()(__func__)("Unable to verify "
                              "SERVER_NYM signature on balance statement: ")(
-            szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
+            szFolder1name)('/')(szFolder2name)('/')(filename)(".")
             .Flush();
         return false;
     }
@@ -305,7 +302,7 @@ auto OT_API::LoadConfigFile() -> bool
     // then we pass it to the OpenPid function.
     auto strDataPath = String::Factory(api_.DataFolder().c_str());
 
-    if (!api_.Internal().Legacy().ConfirmCreateFolder(strDataPath)) {
+    if (!api_.Internal().Legacy().ConfirmCreateFolder(strDataPath->Get())) {
         return false;
     }
 

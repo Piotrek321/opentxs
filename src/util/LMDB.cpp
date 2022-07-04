@@ -518,7 +518,7 @@ struct LMDB::Imp {
     }
 
     Imp(const TableNames& names,
-        const UnallocatedCString& folder,
+        const std::filesystem::path& folder,
         const TablesToInit init,
         const Flags flags,
         const std::size_t extraTables) noexcept
@@ -578,7 +578,7 @@ private:
     }
 
     auto init_environment(
-        const UnallocatedCString& folder,
+        const std::filesystem::path& folder,
         const std::size_t tables,
         const Flags flags) noexcept -> void
     {
@@ -653,7 +653,7 @@ private:
 
 LMDB::LMDB(
     const TableNames& names,
-    const UnallocatedCString& folder,
+    const std::filesystem::path& folder,
     const TablesToInit init,
     const Flags flags,
     const std::size_t extraTables) noexcept

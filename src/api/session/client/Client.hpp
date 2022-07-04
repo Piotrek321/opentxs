@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -116,7 +117,7 @@ public:
         const api::Settings& config,
         const api::Crypto& crypto,
         const opentxs::network::zeromq::Context& context,
-        const UnallocatedCString& dataFolder,
+        const std::filesystem::path& dataFolder,
         const int instance);
     Client() = delete;
     Client(const Client&) = delete;

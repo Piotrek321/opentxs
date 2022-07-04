@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <filesystem>
 #include <iterator>
 #include <memory>
 #include <utility>
@@ -944,7 +945,7 @@ auto OTMarket::SaveMarket(const PasswordPrompt& reason) -> bool
     if (!SignContract(*(GetCron()->GetServerNym()), reason) ||
         !SaveContract() || !SaveContract(szFoldername, szFilename)) {
         LogError()(OT_PRETTY_CLASS())("Error saving Market: ")(
-            szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFoldername)('/')(szFilename)
             .Flush();
         return false;
     }
@@ -967,9 +968,8 @@ auto OTMarket::SaveMarket(const PasswordPrompt& reason) -> bool
                 filename,
                 "")) {  // markets/recent/<Market_ID>.bin
             LogError()(OT_PRETTY_CLASS())(
-                "Error saving recent trades for Market: ")(
-                szFoldername)(api::Legacy::PathSeparator())(
-                szSubFolder)(api::Legacy::PathSeparator())(szFilename)(".")
+                "Error saving recent trades for Market: ")(szFoldername)('/')(
+                szSubFolder)('/')(szFilename)
                 .Flush();
         }
     }
