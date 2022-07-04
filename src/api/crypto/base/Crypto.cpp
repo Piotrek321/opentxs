@@ -8,6 +8,7 @@
 #include "api/crypto/base/Crypto.hpp"  // IWYU pragma: associated
 
 #include "internal/api/crypto/Factory.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/crypto/Crypto.hpp"
 #include "internal/crypto/Factory.hpp"

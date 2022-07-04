@@ -25,7 +25,6 @@
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/network/Asio.hpp"
-#include "opentxs/api/network/Dht.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"

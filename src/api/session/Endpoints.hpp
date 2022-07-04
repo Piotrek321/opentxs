@@ -76,9 +76,6 @@ public:
     auto BlockchainWalletUpdated() const noexcept -> std::string_view final;
     auto ConnectionStatus() const noexcept -> std::string_view final;
     auto ContactUpdate() const noexcept -> std::string_view final;
-    auto DhtRequestNym() const noexcept -> std::string_view final;
-    auto DhtRequestServer() const noexcept -> std::string_view final;
-    auto DhtRequestUnit() const noexcept -> std::string_view final;
     auto FindNym() const noexcept -> std::string_view final;
     auto FindServer() const noexcept -> std::string_view final;
     auto FindUnitDefinition() const noexcept -> std::string_view final;
@@ -145,9 +142,6 @@ private:
     const CString blockchain_wallet_updated_;
     const CString connection_status_;
     const CString contact_update_;
-    const CString dht_request_nym_;
-    const CString dht_request_server_;
-    const CString dht_request_unit_;
     const CString find_nym_;
     const CString find_server_;
     const CString find_unit_definition_;

@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <memory>
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/StringXML.hpp"

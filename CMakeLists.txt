@@ -122,11 +122,6 @@ if(NOT OT_PCH)
 endif()
 
 option(
-  OT_DHT
-  "Enable OpenDHT support"
-  OFF
-)
-option(
   OT_STORAGE_FS
   "Enable filesystem backend for storage"
   OFF
@@ -361,9 +356,6 @@ endif()
 
 print_build_details(OPENTXS_PEDANTIC_BUILD OPENTXS_BUILD_TESTS)
 
-message(STATUS "Network plugins------------------------------")
-message(STATUS "DHT:                      ${OT_DHT}")
-
 message(STATUS "Storage backends-----------------------------")
 message(STATUS "filesystem:               ${OT_STORAGE_FS}")
 message(STATUS "sqlite                    ${OT_STORAGE_SQLITE}")
@@ -530,15 +522,6 @@ if(OT_WITH_BLOCKCHAIN)
   endif()
 endif()
 
-if(OT_DHT)
-  find_package(
-    opendht
-    1.10
-    REQUIRED
-  )
-  find_package(GnuTLS REQUIRED)
-endif()
-
 if(OT_STORAGE_SQLITE)
   find_package(SQLite3 REQUIRED)
 endif()
@@ -627,14 +610,6 @@ if(OT_VALGRIND)
   add_definitions(-DOT_VALGRIND=1)
 else()
   add_definitions(-DOT_VALGRIND=0)
-endif()
-
-# Network
-
-if(OT_DHT)
-  set(DHT_EXPORT 1)
-else()
-  set(DHT_EXPORT 0)
 endif()
 
 # Storage backends

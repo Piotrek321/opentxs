@@ -50,9 +50,9 @@ enum class WorkType : OTZMQWorkType {
     OTXSearchServer = 259,
     OTXSearchUnit = 260,
     OTXMessagability = 261,
-    DHTRequestNym = 1021,
-    DHTRequestServer = 1022,
-    DHTRequestUnit = 1023,
+    reserved1 = 1021,
+    reserved2 = 1022,
+    reserved3 = 1023,
     P2PBlockchainSyncRequest = 1024,
     P2PBlockchainSyncAck = 1025,
     P2PBlockchainSyncReply = 1026,
@@ -269,13 +269,6 @@ constexpr auto value(const WorkType in) noexcept
  *          1: task is as api::session::OTX::TaskID
  *          2: resolution as bool (success = true)
  *
- *   DHTRequestNym: request and response messages for dht nym retrieval
- *       * Request message additional frames:
- *          1: target id as identifier::Nym (encoded as byte sequence)
- *
- *       * Response message additional frames:
- *          1: return value as bool (valid id = true)
- *
  *   OTXSearchNym: request messages for OTX nym search
  *       * Additional frames:
  *          1: target id as identifier::Nym (encoded as byte sequence)
@@ -295,23 +288,6 @@ constexpr auto value(const WorkType in) noexcept
  *          1: local nym id as identifier::Nym (encoded as byte sequence)
  *          1: remote contact id as Identifier (encoded as byte sequence)
  *          2: status as opentxs::Messagability
- *
- *   DHTRequestServer: request and response messages for dht notary contract
- *                     retrieval
- *       * Request message additional frames:
- *          1: target id as identifier::Notary (encoded as byte sequence)
- *
- *       * Response message additional frames:
- *          1: return value as bool (valid id = true)
- *
- *   DHTRequestUnit: request and response messages for dht unit definition
- *                   contract retrieval
- *       * Request message additional frames:
- *          1: target id as identifier::UnitDefinition (encoded as byte
- *             sequence)
- *
- *       * Response message additional frames:
- *          1: return value as bool (valid id = true)
  *
  *   AsioRegister: request and response messages for asio wrapper backend router
  *                 socket

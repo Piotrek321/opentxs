@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "internal/core/Amount.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 
 namespace ot = opentxs;

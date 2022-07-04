@@ -16,6 +16,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/LogMacros.hpp"

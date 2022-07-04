@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Credential.hpp"

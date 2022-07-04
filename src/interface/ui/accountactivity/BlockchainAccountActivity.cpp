@@ -27,6 +27,7 @@
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Manager.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"

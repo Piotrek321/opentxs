@@ -11,23 +11,13 @@ add_subdirectory(zeromq)
 target_sources(
   opentxs-common
   PRIVATE
-    "${opentxs_SOURCE_DIR}/src/internal/network/Factory.hpp"
     "ServerConnection.cpp"
     "ServerConnection.hpp"
 )
 set(cxx-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/network/OpenDHT.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/ServerConnection.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/Types.hpp"
 )
-
-if(DHT_EXPORT)
-  target_sources(opentxs-common PRIVATE "OpenDHT.cpp" "OpenDHT.hpp")
-  target_link_libraries(opentxs-common PRIVATE opendht ${GNUTLS_LIBRARIES})
-  target_link_libraries(opentxs PUBLIC opendht ${GNUTLS_LIBRARIES})
-else()
-  target_sources(opentxs-common PRIVATE "Null.cpp")
-endif()
 
 target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 

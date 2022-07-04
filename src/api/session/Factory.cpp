@@ -22,6 +22,7 @@
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/p2p/P2P.hpp"
 #endif  // OT_BLOCKCHAIN
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"

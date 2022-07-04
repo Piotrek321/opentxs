@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"       // IWYU pragma: associated
 #include "api/network/ZAP.hpp"  // IWYU pragma: associated
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "opentxs/api/network/ZAP.hpp"
 #include "opentxs/network/zeromq/zap/Callback.hpp"

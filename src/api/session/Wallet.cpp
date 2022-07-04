@@ -2,13 +2,10 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
 // IWYU pragma: no_include <cxxabi.h>
-
 #include "0_stdafx.hpp"            // IWYU pragma: associated
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "api/session/Wallet.hpp"  // IWYU pragma: associated
-
 #include <algorithm>
 #include <atomic>
 #include <functional>
@@ -17,14 +14,13 @@
 #include <string_view>
 #include <thread>
 #include <type_traits>
-
+#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/core/Core.hpp"
-#include "internal/core/Factory.hpp"
 #include "internal/core/contract/Types.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/network/p2p/Factory.hpp"
@@ -148,9 +144,6 @@ Wallet::Wallet(const api::Session& api)
     , unit_publisher_(api_.Network().ZeroMQ().PublishSocket())
     , peer_reply_publisher_(api_.Network().ZeroMQ().PublishSocket())
     , peer_request_publisher_(api_.Network().ZeroMQ().PublishSocket())
-    , dht_nym_requester_{api_.Network().ZeroMQ().RequestSocket()}
-    , dht_server_requester_{api_.Network().ZeroMQ().RequestSocket()}
-    , dht_unit_requester_{api_.Network().ZeroMQ().RequestSocket()}
     , find_nym_(api_.Network().ZeroMQ().PushSocket(
           opentxs::network::zeromq::socket::Direction::Connect))
     , handle_([&] {
@@ -225,9 +218,6 @@ Wallet::Wallet(const api::Session& api)
     unit_publisher_->Start(api_.Endpoints().UnitUpdate().data());
     peer_reply_publisher_->Start(api_.Endpoints().PeerReplyUpdate().data());
     peer_request_publisher_->Start(api_.Endpoints().PeerRequestUpdate().data());
-    dht_nym_requester_->Start(api_.Endpoints().DhtRequestNym().data());
-    dht_server_requester_->Start(api_.Endpoints().DhtRequestServer().data());
-    dht_unit_requester_->Start(api_.Endpoints().DhtRequestUnit().data());
     find_nym_->Start(api_.Endpoints().FindNym().data());
 
     OT_ASSERT(nullptr != thread_);
@@ -2646,12 +2636,6 @@ auto Wallet::search_notary(const identifier::Notary& id) const noexcept -> void
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown notary ")(id)
         .Flush();
-    auto work =
-        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestServer);
-    work.AddFrame(id);
-
-    dht_server_requester_->Send(std::move(work));
-
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
         opentxs::network::zeromq::Message message{};
@@ -2666,12 +2650,6 @@ auto Wallet::search_nym(const identifier::Nym& id) const noexcept -> void
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown nym ")(id)
         .Flush();
-    auto work =
-        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestNym);
-    work.AddFrame(id);
-
-    dht_nym_requester_->Send(std::move(work));
-
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
         opentxs::network::zeromq::Message message{};
@@ -2687,12 +2665,6 @@ auto Wallet::search_unit(const identifier::UnitDefinition& id) const noexcept
     LogVerbose()(OT_PRETTY_CLASS())(
         "Searching remote networks for unknown unit definition ")(id)
         .Flush();
-    auto work =
-        opentxs::network::zeromq::tagged_message(WorkType::DHTRequestUnit);
-    work.AddFrame(id);
-
-    dht_unit_requester_->Send(std::move(work));
-
     to_loopback_.modify_detach([&id](auto& socket) {
         const auto command = factory::BlockchainSyncQueryContract(id);
         opentxs::network::zeromq::Message message{};

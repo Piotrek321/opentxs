@@ -12,6 +12,7 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Ledger.hpp"

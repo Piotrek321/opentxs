@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "api/network/Network.hpp"
-#include "api/session/base/Scheduler.hpp"
 #include "internal/api/network/Factory.hpp"
 
 namespace opentxs::factory
@@ -20,25 +19,13 @@ auto NetworkAPI(
     const api::network::Asio& asio,
     const network::zeromq::Context& zmq,
     const api::session::Endpoints& endpoints,
-    api::network::Blockchain::Imp* blockchain,
-    api::session::Scheduler& config,
-    bool dhtDefault) noexcept -> api::network::Network::Imp*
+    api::network::Blockchain::Imp* blockchain) noexcept
+    -> api::network::Network::Imp*
 {
     using ReturnType = api::network::Network;
 
     return std::make_unique<ReturnType::Imp>(
-               api,
-               asio,
-               zmq,
-               endpoints,
-               blockchain,
-               dhtDefault,
-               config.nym_publish_interval_,
-               config.nym_refresh_interval_,
-               config.server_publish_interval_,
-               config.server_refresh_interval_,
-               config.unit_publish_interval_,
-               config.unit_refresh_interval_)
+               api, asio, zmq, endpoints, blockchain)
         .release();
 }
 }  // namespace opentxs::factory
@@ -60,12 +47,7 @@ auto Network::Blockchain() const noexcept -> const network::Blockchain&
     return imp_->blockchain_;
 }
 
-auto Network::DHT() const noexcept -> const network::Dht&
-{
-    return *imp_->dht_;
-}
-
-auto Network::Shutdown() noexcept -> void { imp_->dht_.reset(); }
+auto Network::Shutdown() noexcept -> void {}
 
 auto Network::ZeroMQ() const noexcept
     -> const opentxs::network::zeromq::Context&

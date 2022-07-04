@@ -12,6 +12,7 @@
 
 #include "Proto.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"

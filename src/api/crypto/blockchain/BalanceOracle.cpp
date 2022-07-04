@@ -15,6 +15,7 @@
 #include <string_view>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/message/Message.hpp"

@@ -37,6 +37,7 @@
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/bitcoin/block/Types.hpp"
 #include "internal/core/Amount.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"

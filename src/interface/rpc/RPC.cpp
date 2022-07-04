@@ -23,6 +23,7 @@
 #include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/identity/credential/Credential.hpp"

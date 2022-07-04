@@ -39,6 +39,7 @@
 #include "internal/blockchain/node/Wallet.hpp"
 #include "internal/blockchain/node/p2p/Requestor.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/identity/Nym.hpp"

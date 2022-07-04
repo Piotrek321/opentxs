@@ -23,6 +23,7 @@
 #include "internal/api/session/Factory.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/client/obsolete/OT_API.hpp"

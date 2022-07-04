@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "util/NullCallback.hpp"  // IWYU pragma: associated
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "opentxs/core/Secret.hpp"
 

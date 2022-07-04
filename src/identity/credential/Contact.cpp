@@ -14,6 +14,7 @@
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"

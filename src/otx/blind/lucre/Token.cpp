@@ -20,6 +20,7 @@ extern "C" {
 
 #include "crypto/library/openssl/BIO.hpp"
 #include "crypto/library/openssl/OpenSSL.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Purse.hpp"

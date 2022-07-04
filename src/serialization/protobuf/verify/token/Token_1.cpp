@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstdint>
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/LucreTokenData.hpp"  // IWYU pragma: keep

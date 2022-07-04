@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"

@@ -13,6 +13,7 @@
 
 #include "Proto.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"

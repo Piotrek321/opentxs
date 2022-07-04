@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/identity/Nym.hpp"
 

@@ -98,42 +98,6 @@ Config::Config(
             return false;
         }
     }())
-    , auto_publish_nyms_([&] {
-        auto output{false};
-        auto notUsed{false};
-        config.CheckSet_bool(
-            String::Factory(STORAGE_CONFIG_KEY),
-            String::Factory("auto_publish_nyms"),
-            true,
-            output,
-            notUsed);
-
-        return output;
-    }())
-    , auto_publish_servers_([&] {
-        auto output{false};
-        auto notUsed{false};
-        config.CheckSet_bool(
-            String::Factory(STORAGE_CONFIG_KEY),
-            String::Factory("auto_publish_servers"),
-            true,
-            output,
-            notUsed);
-
-        return output;
-    }())
-    , auto_publish_units_([&] {
-        auto output{false};
-        auto notUsed{false};
-        config.CheckSet_bool(
-            String::Factory(STORAGE_CONFIG_KEY),
-            String::Factory("auto_publish_units"),
-            true,
-            output,
-            notUsed);
-
-        return output;
-    }())
     , gc_interval_([&] {
         auto output = std::int64_t{};
         auto notUsed{false};
@@ -199,7 +163,6 @@ Config::Config(
 
         return output->Get();
     }())
-    , dht_callback_()
     , fs_primary_bucket_([&] {
         auto output = UnallocatedCString{};
         auto notUsed{false};

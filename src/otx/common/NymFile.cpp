@@ -16,6 +16,7 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/Message.hpp"
@@ -33,6 +34,7 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "otx/common/OTStorage.hpp"
+#include "2_Factory.hpp"
 
 #define NYMFILE_VERSION "1.1"
 

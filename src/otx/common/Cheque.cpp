@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/common/StringXML.hpp"
 #include "internal/otx/common/XML.hpp"

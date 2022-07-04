@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/interface/rpc/RPC.hpp"
 #include "opentxs/core/Amount.hpp"

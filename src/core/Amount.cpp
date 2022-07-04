@@ -5,6 +5,7 @@
 
 #include "0_stdafx.hpp"               // IWYU pragma: associated
 #include "1_Internal.hpp"             // IWYU pragma: associated
+#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"  // IWYU pragma: associated
 #include "opentxs/core/Amount.hpp"    // IWYU pragma: associated
 

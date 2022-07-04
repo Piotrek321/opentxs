@@ -6,14 +6,13 @@
 #include "0_stdafx.hpp"                          // IWYU pragma: associated
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "core/contract/peer/BailmentReply.hpp"  // IWYU pragma: associated
-
 #include <memory>
 #include <stdexcept>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/peer/PeerReply.hpp"
-#include "internal/core/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerReply.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -21,6 +20,9 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BailmentReply.pb.h"
 #include "serialization/protobuf/PeerReply.pb.h"

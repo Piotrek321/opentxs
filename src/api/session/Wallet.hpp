@@ -510,9 +510,6 @@ private:
     OTZMQPublishSocket unit_publisher_;
     OTZMQPublishSocket peer_reply_publisher_;
     OTZMQPublishSocket peer_request_publisher_;
-    OTZMQRequestSocket dht_nym_requester_;
-    OTZMQRequestSocket dht_server_requester_;
-    OTZMQRequestSocket dht_unit_requester_;
     OTZMQPushSocket find_nym_;
     opentxs::network::zeromq::internal::Handle handle_;
     opentxs::network::zeromq::internal::Batch& batch_;
