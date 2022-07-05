@@ -7,12 +7,12 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "internal/crypto/key/Key.hpp"  // IWYU pragma: associated
 
+#include <Enums.pb.h>
 #include <robin_hood.h>
 
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
-#include "serialization/protobuf/Enums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::crypto::key

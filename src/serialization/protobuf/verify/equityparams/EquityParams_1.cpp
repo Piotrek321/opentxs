@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/EquityParams.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/ContractEnums.pb.h"
-#include "serialization/protobuf/EquityParams.pb.h"
+#include <ContractEnums.pb.h>
+#include <EquityParams.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

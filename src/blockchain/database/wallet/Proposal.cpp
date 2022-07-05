@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "blockchain/database/wallet/Proposal.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransactionProposal.pb.h>
 #include <mutex>
 #include <stdexcept>
 
@@ -17,7 +18,6 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database::wallet

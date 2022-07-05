@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "blockchain/crypto/HD.hpp"  // IWYU pragma: associated
 
+#include <BlockchainAddress.pb.h>
+#include <BlockchainHDAccountData.pb.h>
+#include <HDAccount.pb.h>
+#include <HDPath.pb.h>
 #include <robin_hood.h>
 #include <cstdint>
 #include <memory>
@@ -44,10 +48,6 @@
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainAddress.pb.h"
-#include "serialization/protobuf/BlockchainHDAccountData.pb.h"
-#include "serialization/protobuf/HDAccount.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"
 
 namespace opentxs::factory

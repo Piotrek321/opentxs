@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "util/storage/tree/Seeds.hpp"  // IWYU pragma: associated
 
+#include <Seed.pb.h>
+#include <StorageItemHash.pb.h>
+#include <StorageSeeds.pb.h>
 #include <cstdlib>
 #include <iostream>
 #include <tuple>
@@ -20,9 +23,6 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/Seed.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
-#include "serialization/protobuf/StorageSeeds.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

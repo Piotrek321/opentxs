@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <PeerEnums.pb.h>
+
 #include "Proto.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
 #include "internal/util/Mutex.hpp"
@@ -14,7 +16,6 @@
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/PeerEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

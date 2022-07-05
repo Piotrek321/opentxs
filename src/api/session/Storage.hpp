@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <PaymentWorkflowEnums.pb.h>
 #include <cstdint>
 #include <ctime>
 #include <iosfwd>
@@ -40,7 +41,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/storage/Config.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

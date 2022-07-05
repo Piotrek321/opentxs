@@ -13,10 +13,10 @@
 
 #pragma once
 
+#include <RPCEnums.pb.h>
 #include <memory>
 
 #include "opentxs/interface/rpc/Types.hpp"
-#include "serialization/protobuf/RPCEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

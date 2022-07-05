@@ -313,14 +313,14 @@ auto Legacy::get_home_directory() noexcept -> fs::path
     if (auto* env = ::getenv("HOME"); nullptr != env) {
         home = env;
 
-        return home;
+        return std::move(home);
     }
 
-    if (false == home.empty()) { return home; }
+    if (false == home.empty()) { return std::move(home); }
 
     home = get_home_platform();
 
-    if (false == home.empty()) { return home; }
+    if (false == home.empty()) { return std::move(home); }
 
     LogConsole()("Unable to determine home directory.").Flush();
 

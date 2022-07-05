@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                             // IWYU pragma: associated
 #include "core/contract/peer/OutBailmentRequest.hpp"  // IWYU pragma: associated
 
+#include <OutBailment.pb.h>
+#include <PeerRequest.pb.h>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -29,8 +31,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/OutBailment.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
 
 namespace opentxs
 {

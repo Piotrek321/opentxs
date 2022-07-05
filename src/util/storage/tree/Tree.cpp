@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "util/storage/tree/Tree.hpp"  // IWYU pragma: associated
 
+#include <Ciphertext.pb.h>
+#include <StorageItems.pb.h>
 #include <functional>
 #include <stdexcept>
 
@@ -16,8 +18,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
-#include "serialization/protobuf/StorageItems.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Accounts.hpp"
 #include "util/storage/tree/Contacts.hpp"

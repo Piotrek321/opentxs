@@ -5,6 +5,8 @@
 
 #include "RPC.hpp"  // IWYU pragma: associated
 
+#include <ConsensusEnums.pb.h>
+#include <RPCEnums.pb.h>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -18,8 +20,6 @@
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/ConsensusEnums.pb.h"
-#include "serialization/protobuf/RPCEnums.pb.h"
 
 namespace opentxs::rpc::implementation
 {

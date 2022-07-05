@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <Token.pb.h>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
@@ -19,7 +20,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "otx/blind/token/Imp.hpp"
-#include "serialization/protobuf/Token.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

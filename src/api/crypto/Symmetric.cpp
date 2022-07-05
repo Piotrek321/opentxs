@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "api/crypto/Symmetric.hpp"  // IWYU pragma: associated
 
+#include <Ciphertext.pb.h>
 #include <memory>
 
 #include "Proto.tpp"
@@ -18,7 +19,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
 
 namespace opentxs::factory
 {

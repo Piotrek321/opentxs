@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"        // IWYU pragma: associated
 #include "crypto/bip32/Imp.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -25,7 +26,6 @@
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::crypto
 {

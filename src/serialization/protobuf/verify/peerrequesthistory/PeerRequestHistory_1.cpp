@@ -5,11 +5,12 @@
 
 #include "internal/serialization/protobuf/verify/PeerRequestHistory.hpp"  // IWYU pragma: associated
 
+#include <PeerEnums.pb.h>
+#include <PeerRequestHistory.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/PeerRequestWorkflow.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContracts.hpp"
-#include "serialization/protobuf/PeerEnums.pb.h"
-#include "serialization/protobuf/PeerRequestHistory.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

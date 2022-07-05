@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <Issuer.pb.h>
 #include <functional>
 #include <iosfwd>
 #include <tuple>
@@ -25,7 +26,6 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/Issuer.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

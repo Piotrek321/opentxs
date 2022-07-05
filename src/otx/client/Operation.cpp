@@ -7,6 +7,14 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "otx/client/Operation.hpp"  // IWYU pragma: associated
 
+#include <Nym.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <PeerObject.pb.h>
+#include <PeerReply.pb.h>
+#include <PeerRequest.pb.h>
+#include <Purse.pb.h>
+#include <ServerContract.pb.h>
+#include <UnitDefinition.pb.h>  // IWYU pragma: keep
 #include <robin_hood.h>
 #include <atomic>
 #include <chrono>
@@ -89,14 +97,6 @@
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "otx/common/OTStorage.hpp"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/PeerObject.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"  // IWYU pragma: keep
 
 #define START_OPERATION()                                                      \
     Lock lock(decision_lock_);                                                 \

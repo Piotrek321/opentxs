@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <ContactEnums.pb.h>
+#include <ContractEnums.pb.h>
+#include <PeerEnums.pb.h>
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
@@ -18,9 +21,6 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
-#include "serialization/protobuf/ContractEnums.pb.h"
-#include "serialization/protobuf/PeerEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

@@ -7,6 +7,11 @@
 #include "1_Internal.hpp"       // IWYU pragma: associated
 #include "otx/client/Pair.hpp"  // IWYU pragma: associated
 
+#include <PairEvent.pb.h>
+#include <PeerReply.pb.h>
+#include <PeerRequest.pb.h>
+#include <PendingBailment.pb.h>
+#include <ZMQEnums.pb.h>
 #include <algorithm>
 #include <chrono>
 #include <ctime>
@@ -71,11 +76,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/PairEvent.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/PendingBailment.pb.h"
-#include "serialization/protobuf/ZMQEnums.pb.h"
 #include "util/Thread.hpp"
 
 #define MINIMUM_UNUSED_BAILMENTS 3

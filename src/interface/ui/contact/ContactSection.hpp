@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <ContactEnums.pb.h>
 #include <iosfwd>
 #include <string_view>
 #include <utility>
@@ -24,7 +25,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

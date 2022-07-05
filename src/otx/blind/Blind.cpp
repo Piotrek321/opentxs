@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "internal/otx/blind/Types.hpp"  // IWYU pragma: associated
 
+#include <CashEnums.pb.h>
 #include <robin_hood.h>
 
 #include "opentxs/otx/blind/CashType.hpp"
@@ -14,7 +15,6 @@
 #include "opentxs/otx/blind/TokenState.hpp"
 #include "opentxs/otx/blind/Types.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/CashEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::otx::blind

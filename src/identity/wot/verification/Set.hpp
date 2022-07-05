@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <VerificationGroup.pb.h>
 #include <memory>
 
 #include "internal/identity/wot/verification/Verification.hpp"
@@ -17,7 +18,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/VerificationGroup.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

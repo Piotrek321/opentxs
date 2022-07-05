@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "opentxs/network/p2p/Block.hpp"  // IWYU pragma: associated
 
+#include <P2PBlockchainSync.pb.h>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -15,7 +16,6 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/P2PBlockchainSync.pb.h"
 
 namespace opentxs::network::p2p
 {

@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "otx/Reply.hpp"   // IWYU pragma: associated
 
+#include <OTXPush.pb.h>
+#include <ServerReply.pb.h>
+#include <Signature.pb.h>
 #include <utility>
 
 #include "Proto.hpp"
@@ -33,9 +36,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
-#include "serialization/protobuf/OTXPush.pb.h"
-#include "serialization/protobuf/ServerReply.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs::otx
 {

@@ -9,6 +9,11 @@
 
 #pragma once
 
+#include <ContractEnums.pb.h>
+#include <PeerReply.pb.h>
+#include <PeerRequest.pb.h>
+#include <ServerContract.pb.h>
+#include <UnitDefinition.pb.h>
 #include <cstdint>
 
 #include "Proto.hpp"
@@ -44,11 +49,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/ContractEnums.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

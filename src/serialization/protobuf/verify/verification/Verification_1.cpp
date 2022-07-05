@@ -5,6 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/Verification.hpp"  // IWYU pragma: associated
 
+#include <Enums.pb.h>
+#include <Signature.pb.h>  // IWYU pragma: keep
+#include <Verification.pb.h>
 #include <stdexcept>
 #include <utility>
 
@@ -13,9 +16,6 @@
 #include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Signature.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Verification.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

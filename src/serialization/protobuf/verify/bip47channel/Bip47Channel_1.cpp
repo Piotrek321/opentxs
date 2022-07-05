@@ -5,6 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/Bip47Channel.hpp"  // IWYU pragma: associated
 
+#include <Bip47Channel.pb.h>
+#include <ContactEnums.pb.h>  // IWYU pragma: keep
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/Bip47Direction.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/BlockchainActivity.hpp"  // IWYU pragma: keep
@@ -13,8 +16,6 @@
 #include "internal/serialization/protobuf/verify/PaymentCode.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"  // IWYU pragma: keep
-#include "serialization/protobuf/Bip47Channel.pb.h"
-#include "serialization/protobuf/ContactEnums.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

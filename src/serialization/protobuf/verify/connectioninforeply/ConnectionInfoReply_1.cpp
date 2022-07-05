@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/ConnectionInfoReply.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/ConnectionInfoReply.pb.h"
+#include <ConnectionInfoReply.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

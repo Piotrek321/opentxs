@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "otx/client/obsolete/OTAPI_Func.hpp"  // IWYU pragma: associated
 
+#include <UnitDefinition.pb.h>
 #include <cstdint>
 #include <exception>
 
@@ -32,7 +33,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
 {

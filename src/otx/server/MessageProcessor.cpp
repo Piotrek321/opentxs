@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "otx/server/MessageProcessor.hpp"  // IWYU pragma: associated
 
+#include <OTXPush.pb.h>
+#include <ServerReply.pb.h>
+#include <ServerRequest.pb.h>
 #include <chrono>
 #include <cstdint>
 #include <limits>
@@ -62,9 +65,6 @@
 #include "opentxs/util/WorkType.hpp"
 #include "otx/server/Server.hpp"
 #include "otx/server/UserCommandProcessor.hpp"
-#include "serialization/protobuf/OTXPush.pb.h"
-#include "serialization/protobuf/ServerReply.pb.h"
-#include "serialization/protobuf/ServerRequest.pb.h"
 #include "util/Thread.hpp"
 
 namespace opentxs::server

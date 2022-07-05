@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <StorageItems.pb.h>
 #include <atomic>
 #include <cstdint>
 #include <memory>
@@ -14,7 +15,6 @@
 #include "internal/util/Editor.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/StorageItems.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

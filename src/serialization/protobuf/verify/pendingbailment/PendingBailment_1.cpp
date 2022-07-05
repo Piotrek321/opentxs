@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/PendingBailment.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/PendingBailment.pb.h"
+#include <PendingBailment.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

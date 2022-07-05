@@ -3,11 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include <Identifier.pb.h>
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 
 #include "internal/api/session/FactoryAPI.hpp"
-#include "serialization/protobuf/Identifier.pb.h"
 
 namespace ot = opentxs;
 

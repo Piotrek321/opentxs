@@ -7,7 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/database/common/BlockHeaders.hpp"  // IWYU pragma: associated
 
+#include <BlockchainBlockHeader.pb.h>
+#include <cstring>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -19,8 +22,8 @@
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
@@ -115,8 +118,10 @@ auto BlockHeader::store(
                 LogError()(OT_PRETTY_CLASS())(
                     "Failed to update index for block header ")(hash.asHex())
                     .Flush();
+
                 return false;
             }
+
             return true;
         };
         auto view = bulk_.WriteView(lock, pTx, index, std::move(cb2), bytes);

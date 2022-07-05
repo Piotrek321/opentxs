@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <BlockchainAddress.pb.h>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -41,7 +42,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/BlockchainAddress.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

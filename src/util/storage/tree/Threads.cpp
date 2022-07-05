@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "util/storage/tree/Threads.hpp"  // IWYU pragma: associated
 
+#include <StorageBlockchainTransactions.pb.h>
+#include <StorageItemHash.pb.h>
+#include <StorageNymList.pb.h>
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
@@ -29,9 +32,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/StorageBlockchainTransactions.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
-#include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 #include "util/storage/tree/Thread.hpp"

@@ -5,9 +5,15 @@
 
 #include "internal/serialization/protobuf/verify/StorageContacts.hpp"  // IWYU pragma: associated
 
+#include <StorageContactAddressIndex.pb.h>
+#include <StorageContactNymIndex.pb.h>
+#include <StorageContacts.pb.h>
+#include <StorageIDList.pb.h>
+#include <StorageItemHash.pb.h>
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/StorageContactAddressIndex.hpp"  // IWYU pragma: keep
@@ -15,11 +21,6 @@
 #include "internal/serialization/protobuf/verify/StorageIDList.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyStorage.hpp"
-#include "serialization/protobuf/StorageContactAddressIndex.pb.h"
-#include "serialization/protobuf/StorageContactNymIndex.pb.h"
-#include "serialization/protobuf/StorageContacts.pb.h"
-#include "serialization/protobuf/StorageIDList.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

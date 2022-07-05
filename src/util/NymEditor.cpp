@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "opentxs/util/NymEditor.hpp"  // IWYU pragma: associated
 
+#include <ContactData.pb.h>
+#include <Nym.pb.h>  // IWYU pragma: keep
 #include <utility>
 
 #include "Proto.tpp"
@@ -23,8 +25,6 @@
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/ContactData.pb.h"
-#include "serialization/protobuf/Nym.pb.h"  // IWYU pragma: keep
 
 namespace opentxs
 {

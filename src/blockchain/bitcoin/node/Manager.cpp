@@ -7,13 +7,14 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "blockchain/bitcoin/node/Manager.hpp"  // IWYU pragma: associated
 
+#include <BlockchainBlockHeader.pb.h>  // IWYU pragma: keep
+
 #include "Proto.tpp"
 #include "internal/blockchain/bitcoin/block/Factory.hpp"
 #include "internal/blockchain/block/Header.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 
 namespace opentxs::factory
 {

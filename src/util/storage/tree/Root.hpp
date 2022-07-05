@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <StorageRoot.pb.h>
 #include <atomic>
 #include <cstdint>
 #include <future>
@@ -20,7 +21,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Types.hpp"
-#include "serialization/protobuf/StorageRoot.pb.h"
 #include "util/storage/tree/Node.hpp"
 #include "util/storage/tree/Tree.hpp"
 

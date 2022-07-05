@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "identity/credential/Base.tpp"  // IWYU pragma: associated
 
+#include <ChildCredentialParameters.pb.h>
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <Signature.pb.h>
 #include <memory>
 #include <stdexcept>
 
@@ -37,10 +41,6 @@
 #include "opentxs/identity/credential/Primary.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/ChildCredentialParameters.pb.h"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs::identity::credential::implementation
 {

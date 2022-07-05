@@ -5,11 +5,12 @@
 
 #include "internal/serialization/protobuf/verify/BlindedSeriesList.hpp"  // IWYU pragma: associated
 
+#include <BlindedSeriesList.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyStorage.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/BlindedSeriesList.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

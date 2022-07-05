@@ -5,6 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainBlockHeader.hpp"  // IWYU pragma: associated
 
+#include <BlockchainBlockHeader.pb.h>
 #include <cstdint>
 #include <limits>
 
@@ -14,7 +15,6 @@
 #include "internal/serialization/protobuf/verify/EthereumBlockHeaderFields.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

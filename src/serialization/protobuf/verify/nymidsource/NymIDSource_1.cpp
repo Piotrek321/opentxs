@@ -5,6 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/NymIDSource.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>  // IWYU pragma: keep
+#include <Enums.pb.h>
+#include <NymIDSource.pb.h>
+#include <PaymentCode.pb.h>  // IWYU pragma: keep
 #include <stdexcept>
 #include <utility>
 
@@ -13,10 +17,6 @@
 #include "internal/serialization/protobuf/verify/AsymmetricKey.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/PaymentCode.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/NymIDSource.pb.h"
-#include "serialization/protobuf/PaymentCode.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

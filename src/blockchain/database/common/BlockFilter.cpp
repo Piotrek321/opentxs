@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/database/common/BlockFilter.hpp"  // IWYU pragma: associated
 
+#include <BlockchainFilterHeader.pb.h>
+
 #include <google/protobuf/arena.h>  // IWYU pragma: keep
 #include <array>
 #include <cstddef>
@@ -30,8 +32,6 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainFilterHeader.pb.h"
-#include "serialization/protobuf/GCS.pb.h"
 #include "util/ByteLiterals.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"

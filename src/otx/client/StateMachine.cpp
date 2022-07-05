@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "otx/client/StateMachine.tpp"  // IWYU pragma: associated
 
+#include <UnitDefinition.pb.h>
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -60,7 +61,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "otx/client/StateMachine.hpp"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Blank.hpp"
 
 #define CONTRACT_DOWNLOAD_MILLISECONDS 10000

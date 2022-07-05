@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "api/crypto/blockchain/Imp_blockchain.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransaction.pb.h>
+#include <StorageThread.pb.h>
+#include <StorageThreadItem.pb.h>
 #include <algorithm>
 #include <iosfwd>
 #include <iterator>
@@ -49,9 +52,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/BlockchainTransaction.pb.h"
-#include "serialization/protobuf/StorageThread.pb.h"
-#include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "util/Container.hpp"
 #include "util/Work.hpp"
 

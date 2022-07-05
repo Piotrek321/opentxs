@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "internal/otx/common/Contract.hpp"  // IWYU pragma: associated
 
+#include <Nym.pb.h>
 #include <irrxml/irrXML.hpp>
 #include <array>
 #include <cstdint>
@@ -40,7 +41,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
-#include "serialization/protobuf/Nym.pb.h"
 
 namespace opentxs
 {

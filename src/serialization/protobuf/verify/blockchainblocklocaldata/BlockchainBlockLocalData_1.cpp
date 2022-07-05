@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainBlockLocalData.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
+#include <BlockchainBlockLocalData.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto
@@ -13,10 +14,13 @@ namespace opentxs::proto
 auto CheckProto_1(const BlockchainBlockLocalData& input, const bool silent)
     -> bool
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
     if (input.has_work()) { CHECK_STRING_(work, 0, MAX_PLAUSIBLE_WORK); }
     if (input.has_inherit_work()) {
         CHECK_STRING_(inherit_work, 0, MAX_PLAUSIBLE_WORK);
     }
+#pragma GCC diagnostic pop
 
     return true;
 }

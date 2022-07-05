@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <ContactEnums.pb.h>
 #include <cs_deferred_guarded.h>
 #include <chrono>
 #include <cstdint>
@@ -56,7 +57,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Types.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

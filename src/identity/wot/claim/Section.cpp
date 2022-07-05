@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "opentxs/identity/wot/claim/Section.hpp"  // IWYU pragma: associated
 
+#include <ContactData.pb.h>
+#include <ContactItem.pb.h>
+#include <ContactSection.pb.h>
 #include <algorithm>
 #include <utility>
 
@@ -20,9 +23,6 @@
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/ContactData.pb.h"
-#include "serialization/protobuf/ContactItem.pb.h"
-#include "serialization/protobuf/ContactSection.pb.h"
 
 namespace opentxs::identity::wot::claim
 {

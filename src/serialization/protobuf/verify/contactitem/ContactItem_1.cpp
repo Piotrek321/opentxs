@@ -5,9 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/ContactItem.hpp"  // IWYU pragma: associated
 
+#include <ContactItem.pb.h>
+
 #include "internal/serialization/protobuf/Contact.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
-#include "serialization/protobuf/ContactItem.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

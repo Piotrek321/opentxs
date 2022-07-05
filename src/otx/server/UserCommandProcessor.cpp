@@ -7,6 +7,13 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "otx/server/UserCommandProcessor.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <BasketItem.pb.h>
+#include <BasketParams.pb.h>
+#include <Context.pb.h>
+#include <Nym.pb.h>
+#include <ServerContract.pb.h>
+#include <UnitDefinition.pb.h>
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
@@ -78,13 +85,6 @@
 #include "otx/server/Server.hpp"
 #include "otx/server/ServerSettings.hpp"
 #include "otx/server/Transactor.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/BasketItem.pb.h"
-#include "serialization/protobuf/BasketParams.pb.h"
-#include "serialization/protobuf/Context.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
 {

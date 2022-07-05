@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "blockchain/crypto/Subaccount.hpp"  // IWYU pragma: associated
 
+#include <BlockchainAccountData.pb.h>
+#include <BlockchainActivity.pb.h>
 #include <algorithm>
 #include <cstdint>
 #include <sstream>
@@ -32,8 +34,6 @@
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainAccountData.pb.h"
-#include "serialization/protobuf/BlockchainActivity.pb.h"
 
 namespace opentxs::blockchain::crypto::implementation
 {

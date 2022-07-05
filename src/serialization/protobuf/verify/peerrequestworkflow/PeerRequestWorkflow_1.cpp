@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/PeerRequestWorkflow.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/PeerRequestWorkflow.pb.h"
+#include <PeerRequestWorkflow.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

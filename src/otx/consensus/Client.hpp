@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <ConsensusEnums.pb.h>
+#include <Context.pb.h>
 #include <cstddef>
 #include <iosfwd>
 #include <mutex>
@@ -21,8 +23,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "otx/consensus/Base.hpp"
-#include "serialization/protobuf/ConsensusEnums.pb.h"
-#include "serialization/protobuf/Context.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

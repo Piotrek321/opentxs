@@ -5,13 +5,14 @@
 
 #pragma once
 
+#include <Signature.pb.h>
+
 #include "Proto.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/Signature.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

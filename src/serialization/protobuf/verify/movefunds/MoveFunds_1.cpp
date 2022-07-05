@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/MoveFunds.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/MoveFunds.pb.h"
-#include "serialization/protobuf/RPCEnums.pb.h"
+#include <MoveFunds.pb.h>
+#include <RPCEnums.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

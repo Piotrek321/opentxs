@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <Envelope.pb.h>
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -25,7 +26,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "otx/blind/purse/Purse.hpp"
-#include "serialization/protobuf/Envelope.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

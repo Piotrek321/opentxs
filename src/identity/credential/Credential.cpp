@@ -7,12 +7,12 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "identity/credential/Base.hpp"  // IWYU pragma: associated
 
+#include <Enums.pb.h>
 #include <robin_hood.h>
 
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/CredentialType.hpp"
-#include "serialization/protobuf/Enums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::identity::credential

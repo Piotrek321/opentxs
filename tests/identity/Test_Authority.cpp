@@ -3,6 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include <Authority.pb.h>
+#include <ContactData.pb.h>
+#include <Enums.pb.h>
+#include <HDPath.pb.h>
+#include <Signature.pb.h>
+#include <Verification.pb.h>
+#include <VerificationSet.pb.h>
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 #include <cstdint>
@@ -20,13 +27,6 @@
 #include "internal/identity/Types.hpp"
 #include "internal/otx/common/crypto/Signature.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
-#include "serialization/protobuf/Authority.pb.h"
-#include "serialization/protobuf/ContactData.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/Verification.pb.h"
-#include "serialization/protobuf/VerificationSet.pb.h"
 
 namespace ottest
 {

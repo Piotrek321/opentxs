@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "util/storage/tree/Credentials.hpp"  // IWYU pragma: associated
 
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <StorageCredentials.pb.h>
+#include <StorageItemHash.pb.h>
 #include <cstdlib>
 #include <iostream>
 #include <tuple>
@@ -20,10 +24,6 @@
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/StorageCredentials.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

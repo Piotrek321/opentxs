@@ -5,13 +5,13 @@
 
 #include "internal/serialization/protobuf/verify/PaymentEvent.hpp"  // IWYU pragma: associated
 
+#include <PaymentEvent.pb.h>
+#include <PaymentWorkflowEnums.pb.h>
 #include <cstdint>
 #include <stdexcept>
 
 #include "internal/serialization/protobuf/verify/VerifyWorkflows.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/PaymentEvent.pb.h"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

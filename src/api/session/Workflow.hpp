@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <PaymentWorkflowEnums.pb.h>
+#include <RPCEnums.pb.h>
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -31,8 +33,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
-#include "serialization/protobuf/RPCEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

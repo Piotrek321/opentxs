@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "core/contract/peer/PeerRequest.hpp"  // IWYU pragma: associated
 
+#include <PeerRequest.pb.h>
+#include <Signature.pb.h>
 #include <memory>
 
 #include "Proto.hpp"
@@ -30,8 +32,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs::factory
 {

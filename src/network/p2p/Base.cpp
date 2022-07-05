@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "opentxs/network/p2p/Base.hpp"  // IWYU pragma: associated
 
+#include <P2PBlockchainHello.pb.h>
+#include <P2PBlockchainSync.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <robin_hood.h>
 #include <cstdint>
@@ -34,8 +36,6 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/P2PBlockchainHello.pb.h"
-#include "serialization/protobuf/P2PBlockchainSync.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::network::p2p

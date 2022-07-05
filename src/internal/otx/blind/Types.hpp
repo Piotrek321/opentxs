@@ -11,7 +11,7 @@
 
 #include "opentxs/otx/blind/Types.hpp"
 
-#include "serialization/protobuf/CashEnums.pb.h"
+#include <CashEnums.pb.h>
 
 namespace opentxs
 {

@@ -5,6 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/KeyCredential.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <Enums.pb.h>
+#include <KeyCredential.pb.h>
 #include <stdexcept>
 #include <utility>
 
@@ -12,9 +15,6 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/AsymmetricKey.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/KeyCredential.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

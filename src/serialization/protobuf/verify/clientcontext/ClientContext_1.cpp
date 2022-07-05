@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/ClientContext.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/ClientContext.pb.h"  // IWYU pragma: keep
+#include <ClientContext.pb.h>  // IWYU pragma: keep
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

@@ -8,6 +8,7 @@
 #include "interface/rpc/response/Base.hpp"  // IWYU pragma: associated
 #include "opentxs/interface/rpc/response/GetAccountActivity.hpp"  // IWYU pragma: associated
 
+#include <RPCResponse.pb.h>
 #include <algorithm>
 #include <iterator>
 #include <memory>
@@ -16,7 +17,6 @@
 #include "Proto.hpp"
 #include "opentxs/interface/rpc/AccountEvent.hpp"
 #include "opentxs/interface/rpc/request/GetAccountActivity.hpp"
-#include "serialization/protobuf/RPCResponse.pb.h"
 
 namespace opentxs::rpc::response::implementation
 {

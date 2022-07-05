@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/PendingCommand.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/PendingCommand.pb.h"
+#include <PendingCommand.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

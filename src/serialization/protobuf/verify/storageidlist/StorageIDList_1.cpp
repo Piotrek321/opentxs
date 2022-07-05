@@ -5,8 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/StorageIDList.hpp"  // IWYU pragma: associated
 
+#include <StorageIDList.pb.h>
+
+#include "Proto.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/StorageIDList.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

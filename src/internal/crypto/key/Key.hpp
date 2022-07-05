@@ -5,12 +5,13 @@
 
 #pragma once
 
+#include <Enums.pb.h>
+
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
-#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

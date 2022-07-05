@@ -5,6 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/Purse.hpp"  // IWYU pragma: associated
 
+#include <CashEnums.pb.h>
+#include <Purse.pb.h>
 #include <cstdint>
 
 #include "internal/serialization/protobuf/Basic.hpp"
@@ -14,8 +16,6 @@
 #include "internal/serialization/protobuf/verify/VerifyCash.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/CashEnums.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

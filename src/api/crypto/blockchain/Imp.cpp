@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "api/crypto/blockchain/Imp.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <bech32.h>
 #include <boost/container/flat_map.hpp>
 #include <segwit_addr.h>
@@ -58,7 +59,6 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 #include "util/Container.hpp"
 #include "util/HDIndex.hpp"
 

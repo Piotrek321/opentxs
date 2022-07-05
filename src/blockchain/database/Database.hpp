@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <BlockchainTransactionProposal.pb.h>
 #include <boost/container/flat_set.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -58,7 +59,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

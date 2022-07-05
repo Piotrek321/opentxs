@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <BlockchainTransactionOutput.pb.h>
+#include <BlockchainTransactionProposal.pb.h>
+#include <Enums.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <boost/endian/conversion.hpp>
 #include <array>
@@ -54,9 +57,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
-#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
 #include "util/JobCounter.hpp"
 #include "util/Work.hpp"
 

@@ -5,14 +5,15 @@
 
 #include "internal/serialization/protobuf/verify/ServerRequest.hpp"  // IWYU pragma: associated
 
+#include <Enums.pb.h>
+#include <OTXEnums.pb.h>
+#include <ServerRequest.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/Nym.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyOTX.hpp"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/OTXEnums.pb.h"
-#include "serialization/protobuf/ServerRequest.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

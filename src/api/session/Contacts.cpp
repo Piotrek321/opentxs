@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "api/session/Contacts.hpp"  // IWYU pragma: associated
 
+#include <Contact.pb.h>  // IWYU pragma: keep
+#include <Nym.pb.h>      // IWYU pragma: keep
 #include <boost/system/error_code.hpp>
 #include <algorithm>
 #include <array>
@@ -58,8 +60,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/Contact.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Nym.pb.h"      // IWYU pragma: keep
 #include "util/Thread.hpp"
 
 namespace opentxs::factory

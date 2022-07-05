@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "internal/core/contract/peer/Peer.hpp"  // IWYU pragma: associated
 
+#include <PairEvent.pb.h>
+#include <PeerEnums.pb.h>
+#include <ZMQEnums.pb.h>
 #include <robin_hood.h>
 
 #include "Proto.tpp"
@@ -14,9 +17,6 @@
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
-#include "serialization/protobuf/PairEvent.pb.h"
-#include "serialization/protobuf/PeerEnums.pb.h"
-#include "serialization/protobuf/ZMQEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::contract::peer::internal

@@ -5,10 +5,12 @@
 
 #include "internal/serialization/protobuf/verify/StorageBlockchainAccountList.hpp"  // IWYU pragma: associated
 
+#include <StorageBlockchainAccountList.pb.h>
+
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Contact.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/StorageBlockchainAccountList.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

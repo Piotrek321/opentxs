@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/TransactionData.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/TransactionData.pb.h"
+#include <TransactionData.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

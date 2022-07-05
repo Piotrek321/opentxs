@@ -11,8 +11,9 @@
 
 #include "opentxs/identity/wot/claim/Types.hpp"
 
+#include <ContactEnums.pb.h>
+
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
 
 namespace opentxs
 {

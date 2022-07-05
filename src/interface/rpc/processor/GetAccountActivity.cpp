@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "interface/rpc/RPC.hpp"  // IWYU pragma: associated
 
+#include <PaymentWorkflow.pb.h>
+#include <PaymentWorkflowEnums.pb.h>
 #include <utility>
 
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -31,8 +33,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 
 namespace opentxs::rpc::implementation
 {

@@ -6,6 +6,7 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "internal/core/Core.hpp"  // IWYU pragma: associated
 
+#include <ContractEnums.pb.h>
 #include <robin_hood.h>
 #include <cstdint>
 #include <iosfwd>
@@ -33,7 +34,6 @@
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/ContractEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::blockchain

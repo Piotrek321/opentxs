@@ -5,24 +5,13 @@
 
 #pragma once
 
-#include "internal/serialization/protobuf/Basic.hpp"
-#include "opentxs/Version.hpp"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlanguage-extension-token"
-#pragma GCC diagnostic ignored "-Wundef"
-#pragma GCC diagnostic ignored "-Wdeprecated-dynamic-exception-spec"
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#pragma GCC diagnostic ignored "-Winconsistent-missing-destructor-override"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
-
-#pragma GCC diagnostic pop
-
+#include <PaymentWorkflowEnums.pb.h>
 #include <cstdint>
 #include <tuple>
 #include <utility>
 
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::proto

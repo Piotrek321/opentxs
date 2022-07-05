@@ -5,8 +5,9 @@
 
 #pragma once
 
+#include <Enums.pb.h>
+
 #include "opentxs/Version.hpp"
-#include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

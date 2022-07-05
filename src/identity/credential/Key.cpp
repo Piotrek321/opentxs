@@ -7,6 +7,11 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "identity/credential/Key.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <KeyCredential.pb.h>
+#include <Signature.pb.h>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
@@ -33,11 +38,6 @@
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/KeyCredential.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs::identity::credential::implementation
 {

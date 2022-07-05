@@ -5,6 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>

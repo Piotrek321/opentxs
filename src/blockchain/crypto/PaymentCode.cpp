@@ -7,6 +7,11 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "blockchain/crypto/PaymentCode.hpp"  // IWYU pragma: associated
 
+#include <Bip47Channel.pb.h>
+#include <Bip47Direction.pb.h>
+#include <BlockchainAddress.pb.h>
+#include <HDPath.pb.h>
+#include <PaymentCode.pb.h>
 #include <cstdint>
 #include <iterator>
 #include <memory>
@@ -40,11 +45,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Bip47Channel.pb.h"
-#include "serialization/protobuf/Bip47Direction.pb.h"
-#include "serialization/protobuf/BlockchainAddress.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/PaymentCode.pb.h"
 
 namespace opentxs::factory
 {

@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/PairEvent.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/PairEvent.pb.h"
-#include "serialization/protobuf/ZMQEnums.pb.h"
+#include <PairEvent.pb.h>
+#include <ZMQEnums.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

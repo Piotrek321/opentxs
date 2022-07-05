@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "crypto/parameters/Imp.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <ContactData.pb.h>
+#include <VerificationSet.pb.h>
 #include <cstdint>
 #include <memory>
 
@@ -25,9 +28,6 @@
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/ContactData.pb.h"
-#include "serialization/protobuf/VerificationSet.pb.h"
 
 namespace opentxs::crypto
 {

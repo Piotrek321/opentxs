@@ -5,12 +5,13 @@
 
 #include "internal/serialization/protobuf/verify/StorageNym.hpp"  // IWYU pragma: associated
 
+#include <StorageNym.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/HDAccount.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/StorageBlockchainAccountList.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyStorage.hpp"
-#include "serialization/protobuf/StorageNym.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

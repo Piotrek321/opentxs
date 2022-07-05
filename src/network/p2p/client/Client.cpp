@@ -9,6 +9,7 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "network/p2p/client/Client.hpp"  // IWYU pragma: associated
 
+#include <P2PBlockchainChainState.pb.h>
 #include <boost/system/error_code.hpp>
 #include <zmq.h>
 #include <algorithm>
@@ -63,7 +64,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/P2PBlockchainChainState.pb.h"
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
 

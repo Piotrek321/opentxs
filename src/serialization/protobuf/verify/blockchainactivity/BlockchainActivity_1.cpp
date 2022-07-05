@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainActivity.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/BlockchainActivity.pb.h"  // IWYU pragma: keep
+#include <BlockchainActivity.pb.h>  // IWYU pragma: keep
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

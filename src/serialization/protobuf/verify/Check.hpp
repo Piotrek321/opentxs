@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <Enums.pb.h>
 #include <boost/type_index.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -13,7 +14,6 @@
 #include "Proto.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs::proto
 {
@@ -93,6 +93,7 @@ void WriteLogMessage(const std::stringstream& message) noexcept;
                                                                                \
         return false;                                                          \
     }
+
 #define CHECK_STRING_(a, min, max)                                             \
     {                                                                          \
         if (input.has_##a() && (0 < input.a().size())) {                       \

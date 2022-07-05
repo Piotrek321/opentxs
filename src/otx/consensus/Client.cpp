@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "otx/consensus/Client.hpp"  // IWYU pragma: associated
 
+#include <ClientContext.pb.h>
+#include <Context.pb.h>
 #include <cstdint>
 #include <memory>
 #include <utility>
@@ -18,8 +20,6 @@
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
 #include "opentxs/util/Log.hpp"
 #include "otx/consensus/Base.hpp"
-#include "serialization/protobuf/ClientContext.pb.h"
-#include "serialization/protobuf/Context.pb.h"
 
 namespace opentxs::factory
 {

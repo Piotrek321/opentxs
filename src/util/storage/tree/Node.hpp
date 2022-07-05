@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <StorageEnums.pb.h>
 #include <cstdint>
 #include <cstdlib>
 #include <functional>
@@ -23,7 +24,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Types.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/StorageEnums.pb.h"
 #include "util/storage/Plugin.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

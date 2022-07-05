@@ -5,19 +5,20 @@
 
 #include "internal/serialization/protobuf/verify/Nym.hpp"  // IWYU pragma: associated
 
+#include <Authority.pb.h>
+#include <Enums.pb.h>
+#include <Nym.pb.h>
+#include <NymIDSource.pb.h>  // IWYU pragma: keep
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Authority.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/NymIDSource.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/Authority.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/NymIDSource.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

@@ -5,12 +5,20 @@
 
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"  // IWYU pragma: associated
 
+#include <BasketParams.pb.h>  // IWYU pragma: keep
+#include <ContractEnums.pb.h>
+#include <CurrencyParams.pb.h>  // IWYU pragma: keep
+#include <Enums.pb.h>
+#include <EquityParams.pb.h>  // IWYU pragma: keep
+#include <Nym.pb.h>
+#include <Signature.pb.h>  // IWYU pragma: keep
+#include <UnitDefinition.pb.h>
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
-#include "internal/serialization/protobuf/Contact.hpp"
 #include "internal/serialization/protobuf/verify/BasketParams.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/CurrencyParams.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/EquityParams.hpp"  // IWYU pragma: keep
@@ -18,14 +26,6 @@
 #include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContracts.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/BasketParams.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/ContractEnums.pb.h"
-#include "serialization/protobuf/CurrencyParams.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/EquityParams.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/Signature.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

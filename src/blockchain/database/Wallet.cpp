@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "blockchain/database/Wallet.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransactionProposal.pb.h>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/database/common/Database.hpp"
@@ -16,7 +18,6 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database::implemenation

@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/SendMessage.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/SendMessage.pb.h"
+#include <SendMessage.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

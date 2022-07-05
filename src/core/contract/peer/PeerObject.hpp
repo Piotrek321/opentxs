@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <PeerObject.pb.h>
 #include <cstdint>
 #include <memory>
 #include <optional>
@@ -18,7 +19,6 @@
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/PeerObject.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

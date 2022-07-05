@@ -9,6 +9,9 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "blockchain/bitcoin/block/header/Imp.hpp"  // IWYU pragma: associated
 
+#include <BitcoinBlockHeaderFields.pb.h>
+#include <BlockchainBlockHeader.pb.h>
+#include <BlockchainBlockLocalData.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <array>
 #include <cstring>
@@ -38,9 +41,6 @@
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/BitcoinBlockHeaderFields.pb.h"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
-#include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 #include "util/Blank.hpp"
 
 #define OT_BITCOIN_BLOCK_HEADER_SIZE 80

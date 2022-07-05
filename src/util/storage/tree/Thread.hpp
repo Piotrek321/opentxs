@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <StorageThread.pb.h>
+#include <StorageThreadItem.pb.h>
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
@@ -15,8 +17,6 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/StorageThread.pb.h"
-#include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

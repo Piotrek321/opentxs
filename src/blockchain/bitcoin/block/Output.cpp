@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "blockchain/bitcoin/block/Output.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
-#include "serialization/protobuf/BlockchainWalletKey.pb.h"
+#include <BlockchainTransactionOutput.pb.h>
+#include <BlockchainWalletKey.pb.h>
 #include <boost/container/vector.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -17,6 +17,7 @@
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -30,6 +31,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
@@ -45,6 +47,8 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+
 namespace opentxs::factory
 {
 auto BitcoinTransactionOutput(

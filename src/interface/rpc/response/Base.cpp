@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "opentxs/interface/rpc/response/Base.hpp"  // IWYU pragma: associated
 
+#include <RPCResponse.pb.h>
+#include <RPCStatus.pb.h>
+#include <RPCTask.pb.h>
 #include <cassert>
 #include <memory>
 #include <stdexcept>
@@ -22,9 +25,6 @@
 #include "opentxs/interface/rpc/response/ListAccounts.hpp"
 #include "opentxs/interface/rpc/response/ListNyms.hpp"
 #include "opentxs/interface/rpc/response/SendPayment.hpp"
-#include "serialization/protobuf/RPCResponse.pb.h"
-#include "serialization/protobuf/RPCStatus.pb.h"
-#include "serialization/protobuf/RPCTask.pb.h"
 
 namespace opentxs::rpc::response
 {

@@ -7,6 +7,12 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "identity/credential/Primary.hpp"  // IWYU pragma: associated
 
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <HDPath.pb.h>
+#include <MasterCredentialParameters.pb.h>
+#include <Signature.pb.h>
+#include <SourceProof.pb.h>
 #include <memory>
 #include <stdexcept>
 
@@ -34,12 +40,6 @@
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/MasterCredentialParameters.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/SourceProof.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs

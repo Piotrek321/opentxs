@@ -5,39 +5,16 @@
 
 #pragma once
 
+#if defined(OTDB_PROTOCOL_BUFFERS)
+
+#include <Bitcoin.pb.h>
+#include <Generics.pb.h>
+#include <Markets.pb.h>
+#include <Moneychanger.pb.h>
 #include <iostream>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
-
-#if defined(OTDB_PROTOCOL_BUFFERS)
-
-#ifdef _WIN32
-#pragma warning(push)
-#pragma warning(disable : 4244)
-#pragma warning(disable : 4267)
-#else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#ifndef __clang__
-// -Wuseless-cast does not exist in clang
-#pragma GCC diagnostic ignored "-Wuseless-cast"
-#endif
-#endif
-#ifndef PROTOBUF_INLINE_NOT_IN_HEADERS
-#define PROTOBUF_INLINE_NOT_IN_HEADERS 0
-#endif
-
-#include "Bitcoin.pb.h"
-#include "Generics.pb.h"
-#include "Markets.pb.h"
-#include "Moneychanger.pb.h"
-
-#ifdef _WIN32
-#pragma warning(pop)
-#else
-#pragma GCC diagnostic pop
-#endif
 
 namespace opentxs::OTDB
 {

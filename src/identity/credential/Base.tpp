@@ -5,6 +5,8 @@
 
 #include "identity/credential/Base.hpp"  // IWYU pragma: associated
 
+#include <Credential.pb.h>
+#include <Enums.pb.h>
 #include <cstdint>
 
 #include "2_Factory.hpp"
@@ -12,8 +14,6 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Credential.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

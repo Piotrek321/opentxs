@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <GCS.pb.h>
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -23,7 +24,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/GCS.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

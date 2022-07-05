@@ -5,11 +5,12 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainDeterministicAccountData.hpp"  // IWYU pragma: associated
 
+#include <BlockchainDeterministicAccountData.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/BlockchainAccountData.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/HDPath.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
-#include "serialization/protobuf/BlockchainDeterministicAccountData.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

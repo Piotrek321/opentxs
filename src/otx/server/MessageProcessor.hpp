@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <ServerRequest.pb.h>
 #include <atomic>
 #include <cstddef>
 #include <memory>
@@ -32,7 +33,6 @@
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/ServerRequest.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "util/storage/tree/Units.hpp"  // IWYU pragma: associated
 
+#include <StorageItemHash.pb.h>
+#include <StorageUnits.pb.h>
+#include <UnitDefinition.pb.h>
 #include <cstdlib>
 #include <iostream>
 #include <tuple>
@@ -18,9 +21,6 @@
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/StorageItemHash.pb.h"
-#include "serialization/protobuf/StorageUnits.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

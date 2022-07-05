@@ -7,6 +7,8 @@ if(CASH_LUCRE_EXPORT)
   add_subdirectory(lucre)
 endif()
 add_subdirectory(license)
+add_subdirectory(otprotob)
+add_subdirectory(protobuf)
 add_subdirectory(size)
 add_subdirectory(tests)
 

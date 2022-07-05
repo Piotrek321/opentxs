@@ -7,6 +7,12 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "identity/credential/Verification.hpp"  // IWYU pragma: associated
 
+#include <Credential.pb.h>
+#include <Signature.pb.h>
+#include <Verification.pb.h>
+#include <VerificationGroup.pb.h>
+#include <VerificationIdentity.pb.h>
+#include <VerificationSet.pb.h>
 #include <memory>
 #include <stdexcept>
 
@@ -28,12 +34,6 @@
 #include "opentxs/identity/credential/Verification.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/Verification.pb.h"
-#include "serialization/protobuf/VerificationGroup.pb.h"
-#include "serialization/protobuf/VerificationIdentity.pb.h"
-#include "serialization/protobuf/VerificationSet.pb.h"
 
 namespace opentxs
 {

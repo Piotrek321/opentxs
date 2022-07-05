@@ -7,6 +7,23 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "api/session/Storage.hpp"  // IWYU pragma: associated
 
+#include <Bip47Channel.pb.h>
+#include <Ciphertext.pb.h>
+#include <Contact.pb.h>
+#include <Context.pb.h>
+#include <Credential.pb.h>
+#include <HDAccount.pb.h>
+#include <Issuer.pb.h>
+#include <Nym.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <PeerReply.pb.h>
+#include <PeerRequest.pb.h>
+#include <Purse.pb.h>
+#include <Seed.pb.h>
+#include <ServerContract.pb.h>
+#include <StorageThread.pb.h>
+#include <StorageThreadItem.pb.h>
+#include <UnitDefinition.pb.h>
 #include <cstdint>
 #include <ctime>
 #include <functional>
@@ -36,23 +53,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
-#include "serialization/protobuf/Bip47Channel.pb.h"
-#include "serialization/protobuf/Ciphertext.pb.h"
-#include "serialization/protobuf/Contact.pb.h"
-#include "serialization/protobuf/Context.pb.h"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/HDAccount.pb.h"
-#include "serialization/protobuf/Issuer.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
-#include "serialization/protobuf/Seed.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/StorageThread.pb.h"
-#include "serialization/protobuf/StorageThreadItem.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Thread.hpp"
 #include "util/storage/Config.hpp"
 #include "util/storage/tree/Accounts.hpp"

@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <OTXEnums.pb.h>
+#include <ServerRequest.pb.h>
+
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "internal/util/Flag.hpp"
@@ -19,8 +22,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/OTXEnums.pb.h"
-#include "serialization/protobuf/ServerRequest.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

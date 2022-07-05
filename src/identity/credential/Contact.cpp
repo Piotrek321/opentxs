@@ -7,6 +7,11 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "identity/credential/Contact.hpp"  // IWYU pragma: associated
 
+#include <Claim.pb.h>
+#include <ContactData.pb.h>
+#include <ContactItem.pb.h>
+#include <Credential.pb.h>
+#include <Signature.pb.h>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
@@ -32,11 +37,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Claim.pb.h"
-#include "serialization/protobuf/ContactData.pb.h"
-#include "serialization/protobuf/ContactItem.pb.h"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs
 {

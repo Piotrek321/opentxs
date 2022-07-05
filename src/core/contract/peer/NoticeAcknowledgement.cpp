@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "core/contract/peer/NoticeAcknowledgement.hpp"  // IWYU pragma: associated
 
+#include <NoticeAcknowledgement.pb.h>
+#include <PeerReply.pb.h>
+#include <PeerRequest.pb.h>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -22,9 +25,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/NoticeAcknowledgement.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
 
 namespace opentxs
 {

@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/GCS.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/GCS.pb.h"
+#include <GCS.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

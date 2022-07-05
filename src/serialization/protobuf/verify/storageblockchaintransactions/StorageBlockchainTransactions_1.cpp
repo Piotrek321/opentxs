@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/StorageBlockchainTransactions.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/StorageBlockchainTransactions.pb.h"
+#include <StorageBlockchainTransactions.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

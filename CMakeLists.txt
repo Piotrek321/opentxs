@@ -346,11 +346,6 @@ if(${CMAKE_CXX_COMPILER_ID}
   )
 endif()
 
-# Protobuf generated code will generate this warning
-if(NOT MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=extra-semi")
-endif()
-
 # -----------------------------------------------------------------------------
 # Print system information and build options
 
@@ -790,8 +785,6 @@ endif()
 # -----------------------------------------------------------------------------
 # Build source
 
-add_subdirectory(generated)
-
 include_directories(
   "${opentxs_BINARY_DIR}/include"
   "${opentxs_BINARY_DIR}/src"
@@ -824,6 +817,7 @@ add_library(
   opentxs
 )
 
+add_subdirectory(generated)
 add_subdirectory(deps)
 add_subdirectory(src)
 

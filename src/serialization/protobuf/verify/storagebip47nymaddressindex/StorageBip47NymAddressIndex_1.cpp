@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/StorageBip47NymAddressIndex.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/StorageBip47NymAddressIndex.pb.h"
+#include <StorageBip47NymAddressIndex.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

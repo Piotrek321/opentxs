@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainPeerAddress.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/BlockchainPeerAddress.pb.h"
+#include <BlockchainPeerAddress.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

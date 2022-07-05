@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <BlockchainBlockHeader.pb.h>
 #include <mutex>
 
 #include "Proto.hpp"
@@ -15,7 +16,6 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "blockchain/crypto/Notification.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <memory>
 #include <utility>
 
@@ -26,7 +27,6 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::factory
 {

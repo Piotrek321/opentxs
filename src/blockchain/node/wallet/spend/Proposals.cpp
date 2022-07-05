@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/spend/Proposals.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransaction.pb.h>
+#include <BlockchainTransactionProposal.pb.h>
+#include <BlockchainTransactionProposedNotification.pb.h>
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -45,9 +48,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
-#include "serialization/protobuf/BlockchainTransaction.pb.h"
-#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
-#include "serialization/protobuf/BlockchainTransactionProposedNotification.pb.h"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::blockchain::node::wallet

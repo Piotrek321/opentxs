@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <Ciphertext.pb.h>
+#include <Enums.pb.h>
+#include <Signature.pb.h>
 #include <robin_hood.h>
 #include <cstdint>
 #include <functional>
@@ -26,9 +29,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

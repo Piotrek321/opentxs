@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "core/contract/ServerContract.hpp"  // IWYU pragma: associated
 
+#include <ListenAddress.pb.h>
+#include <Nym.pb.h>
+#include <ServerContract.pb.h>
+#include <Signature.pb.h>
 #include <algorithm>
 #include <cstdio>
 #include <iterator>
@@ -38,10 +42,6 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/ListenAddress.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs
 {

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <StorageContacts.pb.h>
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -19,7 +20,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Types.hpp"
-#include "serialization/protobuf/StorageContacts.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

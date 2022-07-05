@@ -5,9 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/StorageAccountIndex.hpp"  // IWYU pragma: associated
 
+#include <ContactEnums.pb.h>
+#include <StorageAccountIndex.pb.h>
+
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
-#include "serialization/protobuf/StorageAccountIndex.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "crypto/key/Symmetric.hpp"  // IWYU pragma: associated
 
+#include <Ciphertext.pb.h>
 #include <algorithm>
 #include <cstdint>
 #include <functional>
@@ -38,7 +39,6 @@
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Types.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
 #include "util/ScopeGuard.hpp"
 
 template class opentxs::Pimpl<opentxs::crypto::key::Symmetric>;

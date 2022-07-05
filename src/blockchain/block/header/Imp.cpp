@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "blockchain/block/header/Imp.hpp"  // IWYU pragma: associated
 
+#include <BlockchainBlockHeader.pb.h>  // IWYU pragma: keep
+#include <BlockchainBlockLocalData.pb.h>
 #include <cstdint>
 #include <stdexcept>
 #include <type_traits>
@@ -19,8 +21,6 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 
 namespace opentxs::blockchain::block::implementation
 {

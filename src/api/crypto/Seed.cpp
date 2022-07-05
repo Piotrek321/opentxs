@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"       // IWYU pragma: associated
 #include "api/crypto/Seed.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
+#include <Seed.pb.h>
 #include <iosfwd>
 #include <memory>
 #include <sstream>
@@ -62,8 +64,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/Seed.pb.h"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
 #include "util/Work.hpp"
 

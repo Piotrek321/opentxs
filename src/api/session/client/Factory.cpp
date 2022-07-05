@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "api/session/client/Factory.hpp"  // IWYU pragma: associated
 
+#include <BlockchainBlockHeader.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -47,7 +48,6 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 
 namespace opentxs::factory
 {

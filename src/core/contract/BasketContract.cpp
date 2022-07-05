@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "core/contract/BasketContract.hpp"  // IWYU pragma: associated
 
+#include <BasketItem.pb.h>
+#include <BasketParams.pb.h>
+#include <Signature.pb.h>
+#include <UnitDefinition.pb.h>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
@@ -24,10 +28,6 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BasketItem.pb.h"
-#include "serialization/protobuf/BasketParams.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
 {

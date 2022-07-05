@@ -7,6 +7,12 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "core/contract/Unit.hpp"  // IWYU pragma: associated
 
+#include <CurrencyParams.pb.h>
+#include <DisplayScale.pb.h>
+#include <Nym.pb.h>
+#include <ScaleRatio.pb.h>
+#include <Signature.pb.h>
+#include <UnitDefinition.pb.h>
 #include <cmath>  // IWYU pragma: keep
 #include <cstdio>
 #include <memory>
@@ -49,12 +55,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
-#include "serialization/protobuf/CurrencyParams.pb.h"
-#include "serialization/protobuf/DisplayScale.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/ScaleRatio.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
 {

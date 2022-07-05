@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "util/storage/tree/Nyms.hpp"  // IWYU pragma: associated
 
+#include <Nym.pb.h>
+#include <StorageItemHash.pb.h>
+#include <StorageNymList.pb.h>
 #include <cstdlib>
 #include <functional>
 #include <mutex>
@@ -23,9 +26,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
-#include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 #include "util/storage/tree/Nym.hpp"

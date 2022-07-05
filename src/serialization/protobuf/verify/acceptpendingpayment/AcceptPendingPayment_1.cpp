@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/AcceptPendingPayment.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/AcceptPendingPayment.pb.h"
+#include <AcceptPendingPayment.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

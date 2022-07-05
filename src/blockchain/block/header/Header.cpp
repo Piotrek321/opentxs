@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "blockchain/block/header/Header.hpp"  // IWYU pragma: associated
 
+#include <BlockchainBlockHeader.pb.h>  // IWYU pragma: keep
 #include <cstdint>
 #include <memory>
 #include <utility>
@@ -26,7 +27,6 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 
 namespace opentxs::factory
 {

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <GCS.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <boost/endian/conversion.hpp>
 #include <array>
@@ -32,7 +33,6 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/GCS.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

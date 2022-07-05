@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <Enums.pb.h>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -37,7 +38,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

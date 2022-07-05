@@ -3,6 +3,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include <AsymmetricKey.pb.h>
+#include <ChildCredentialParameters.pb.h>
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <KeyCredential.pb.h>
+#include <MasterCredentialParameters.pb.h>
+#include <NymIDSource.pb.h>  // IWYU pragma: keep
+#include <PaymentCode.pb.h>
+#include <Signature.pb.h>
+#include <SourceProof.pb.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
@@ -18,16 +28,6 @@
 #include "internal/identity/Nym.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/mocks/identity/credential/Primary.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/ChildCredentialParameters.pb.h"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/KeyCredential.pb.h"
-#include "serialization/protobuf/MasterCredentialParameters.pb.h"
-#include "serialization/protobuf/NymIDSource.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/PaymentCode.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/SourceProof.pb.h"
 #include "util/HDIndex.hpp"
 
 namespace opentxs

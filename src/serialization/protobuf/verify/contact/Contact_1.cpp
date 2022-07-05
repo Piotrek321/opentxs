@@ -5,16 +5,17 @@
 
 #include "internal/serialization/protobuf/verify/Contact.hpp"  // IWYU pragma: associated
 
+#include <Contact.pb.h>
+#include <ContactData.pb.h>  // IWYU pragma: keep
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/ContactData.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/Contact.pb.h"
-#include "serialization/protobuf/ContactData.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

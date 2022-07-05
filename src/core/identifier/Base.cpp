@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "core/identifier/Base.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
+#include <Identifier.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <robin_hood.h>
 #include <cstdint>
@@ -49,8 +51,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/Identifier.pb.h"
 
 namespace opentxs::factory
 {

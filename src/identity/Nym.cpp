@@ -7,6 +7,13 @@
 #include "1_Internal.hpp"    // IWYU pragma: associated
 #include "identity/Nym.hpp"  // IWYU pragma: associated
 
+#include <Authority.pb.h>
+#include <ContactData.pb.h>
+#include <Enums.pb.h>
+#include <HDPath.pb.h>
+#include <Nym.pb.h>
+#include <NymIDSource.pb.h>
+#include <Signature.pb.h>
 #include <atomic>
 #include <iterator>
 #include <limits>
@@ -60,13 +67,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Authority.pb.h"
-#include "serialization/protobuf/ContactData.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/NymIDSource.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 #include "util/HDIndex.hpp"
 
 namespace opentxs

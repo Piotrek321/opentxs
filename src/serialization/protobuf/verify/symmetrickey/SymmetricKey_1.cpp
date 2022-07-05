@@ -5,7 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/SymmetricKey.hpp"  // IWYU pragma: associated
 
+#include <Ciphertext.pb.h>
+#include <Enums.pb.h>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
@@ -13,8 +16,6 @@
 #include "internal/serialization/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
 #include "internal/util/P0330.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

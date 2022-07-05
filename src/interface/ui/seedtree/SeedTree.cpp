@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "interface/ui/seedtree/SeedTree.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <atomic>
 #include <chrono>
 #include <cstddef>
@@ -41,7 +42,6 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace zmq = opentxs::network::zeromq;
 

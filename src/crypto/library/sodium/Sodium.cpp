@@ -11,6 +11,8 @@ extern "C" {
 #include <sodium.h>
 }
 
+#include <Ciphertext.pb.h>
+#include <Enums.pb.h>
 #include <SHA1/sha1.hpp>
 #include <argon2.h>
 #include <array>
@@ -33,8 +35,6 @@ extern "C" {
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs::factory
 {

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <SpentTokenList.pb.h>
+#include <StorageNotary.pb.h>
 #include <cstdint>
 #include <memory>
 
@@ -14,8 +16,6 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/SpentTokenList.pb.h"
-#include "serialization/protobuf/StorageNotary.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

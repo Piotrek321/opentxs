@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <ContactEnums.pb.h>
 #include <atomic>
 #include <iosfwd>
 #include <memory>
@@ -23,7 +24,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
 
 class QVariant;
 

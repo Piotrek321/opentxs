@@ -5,11 +5,11 @@
 
 #pragma once
 
+#include <CashEnums.pb.h>
 #include <cstdint>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/CashEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

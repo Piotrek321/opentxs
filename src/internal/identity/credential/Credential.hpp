@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <Enums.pb.h>
 #include <optional>
 
 #include "internal/identity/Types.hpp"
@@ -17,7 +18,6 @@
 #include "opentxs/identity/credential/Primary.hpp"
 #include "opentxs/identity/credential/Secondary.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
-#include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

@@ -5,10 +5,11 @@
 
 #include "internal/serialization/protobuf/verify/StorageItems.hpp"  // IWYU pragma: associated
 
+#include <StorageItems.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyStorage.hpp"
-#include "serialization/protobuf/StorageItems.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

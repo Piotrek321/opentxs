@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "interface/ui/blockchainaccountstatus/BlockchainAccountStatus.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <atomic>
 #include <chrono>
 #include <memory>
@@ -47,7 +48,6 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::factory
 {

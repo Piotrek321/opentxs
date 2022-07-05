@@ -5,12 +5,12 @@
 
 #pragma once
 
+#include <PaymentWorkflowEnums.pb.h>
 #include <cstddef>
 #include <cstdint>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

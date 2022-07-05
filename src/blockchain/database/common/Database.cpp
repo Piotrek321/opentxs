@@ -12,6 +12,7 @@ extern "C" {
 #include <sodium.h>
 }
 
+#include <BlockchainBlockHeader.pb.h>
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
@@ -41,7 +42,6 @@ extern "C" {
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
 
 constexpr auto false_byte_ = std::byte{0x0};

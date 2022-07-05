@@ -12,6 +12,9 @@ extern "C" {
 #include <openssl/bn.h>
 }
 
+#include <Ciphertext.pb.h>
+#include <LucreTokenData.pb.h>
+#include <Token.pb.h>
 #include <algorithm>
 #include <cctype>
 #include <limits>
@@ -43,9 +46,6 @@ extern "C" {
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/blind/lucre/Lucre.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
-#include "serialization/protobuf/LucreTokenData.pb.h"
-#include "serialization/protobuf/Token.pb.h"
 
 #define LUCRE_TOKEN_VERSION 1
 

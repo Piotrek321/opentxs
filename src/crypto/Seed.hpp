@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <Ciphertext.pb.h>
 #include <cs_plain_guarded.h>
 #include <memory>
 #include <mutex>
@@ -18,7 +19,6 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

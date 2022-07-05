@@ -5,12 +5,13 @@
 
 #include "internal/serialization/protobuf/verify/LucreTokenData.hpp"  // IWYU pragma: associated
 
+#include <CashEnums.pb.h>
+#include <LucreTokenData.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCash.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/CashEnums.pb.h"
-#include "serialization/protobuf/LucreTokenData.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

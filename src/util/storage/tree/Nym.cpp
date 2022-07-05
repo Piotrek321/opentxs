@@ -7,8 +7,17 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "util/storage/tree/Nym.hpp"  // IWYU pragma: associated
 
+#include <BlockchainAccountData.pb.h>
+#include <BlockchainDeterministicAccountData.pb.h>
+#include <Enums.pb.h>
+#include <HDAccount.pb.h>
+#include <Nym.pb.h>
+#include <Purse.pb.h>
+#include <StorageBlockchainAccountList.pb.h>
+#include <StorageItemHash.pb.h>
+#include <StorageNym.pb.h>
+#include <StoragePurse.pb.h>
 #include <functional>
-#include <type_traits>
 
 #include "Proto.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
@@ -23,17 +32,8 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/BlockchainAccountData.pb.h"
-#include "serialization/protobuf/BlockchainDeterministicAccountData.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/HDAccount.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
-#include "serialization/protobuf/StorageBlockchainAccountList.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
-#include "serialization/protobuf/StorageNym.pb.h"
-#include "serialization/protobuf/StoragePurse.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Bip47Channels.hpp"
 #include "util/storage/tree/Contexts.hpp"

@@ -7,6 +7,11 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "util/storage/tree/Accounts.hpp"  // IWYU pragma: associated
 
+#include <StorageAccountIndex.pb.h>
+#include <StorageAccounts.pb.h>
+#include <StorageEnums.pb.h>
+#include <StorageIDList.pb.h>
+#include <StorageItemHash.pb.h>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -21,11 +26,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/StorageAccountIndex.pb.h"
-#include "serialization/protobuf/StorageAccounts.pb.h"
-#include "serialization/protobuf/StorageEnums.pb.h"
-#include "serialization/protobuf/StorageIDList.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

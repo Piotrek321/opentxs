@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/SpentTokenList.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/SpentTokenList.pb.h"
+#include <SpentTokenList.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

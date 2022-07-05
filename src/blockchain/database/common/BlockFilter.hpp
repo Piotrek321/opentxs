@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <GCS.pb.h>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
@@ -14,11 +15,11 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/GCS.pb.h"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 

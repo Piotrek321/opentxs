@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "opentxs/network/p2p/QueryContract.hpp"  // IWYU pragma: associated
 
+#include <Identifier.pb.h>
 #include <memory>
 #include <utility>
 
@@ -21,7 +22,6 @@
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "serialization/protobuf/Identifier.pb.h"
 
 namespace opentxs::factory
 {

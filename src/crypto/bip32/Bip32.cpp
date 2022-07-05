@@ -9,6 +9,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "opentxs/crypto/Bip32.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <cstdint>
 #include <memory>
 #include <sstream>
@@ -19,7 +20,6 @@
 #include "internal/crypto/Factory.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"
 
 namespace opentxs::crypto

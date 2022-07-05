@@ -5,6 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/Token.hpp"  // IWYU pragma: associated
 
+#include <CashEnums.pb.h>
+#include <Token.pb.h>
 #include <algorithm>
 #include <cstdint>
 
@@ -14,9 +16,8 @@
 #include "internal/serialization/protobuf/verify/LucreTokenData.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCash.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/CashEnums.pb.h"
-#include "serialization/protobuf/Token.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

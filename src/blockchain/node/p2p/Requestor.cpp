@@ -9,6 +9,7 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "blockchain/node/p2p/Requestor.hpp"  // IWYU pragma: associated
 
+#include <P2PBlockchainChainState.pb.h>
 #include <boost/smart_ptr/make_shared.hpp>
 #include <chrono>
 #include <string_view>
@@ -38,7 +39,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/P2PBlockchainChainState.pb.h"
 #include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::p2p

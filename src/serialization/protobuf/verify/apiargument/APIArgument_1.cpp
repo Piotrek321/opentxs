@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/APIArgument.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/APIArgument.pb.h"
+#include <APIArgument.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

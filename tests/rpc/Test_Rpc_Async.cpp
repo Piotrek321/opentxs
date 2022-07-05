@@ -3,6 +3,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include <APIArgument.pb.h>
+#include <AcceptPendingPayment.pb.h>
+#include <AccountEvent.pb.h>
+#include <PaymentWorkflowEnums.pb.h>
+#include <RPCCommand.pb.h>
+#include <RPCEnums.pb.h>
+#include <RPCPush.pb.h>
+#include <RPCResponse.pb.h>
+#include <RPCStatus.pb.h>
+#include <RPCTask.pb.h>
+#include <SendPayment.pb.h>
+#include <TaskComplete.pb.h>
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 #include <algorithm>
@@ -19,18 +31,6 @@
 #include "internal/serialization/protobuf/verify/RPCPush.hpp"
 #include "internal/serialization/protobuf/verify/RPCResponse.hpp"
 #include "ottest/Basic.hpp"
-#include "serialization/protobuf/APIArgument.pb.h"
-#include "serialization/protobuf/AcceptPendingPayment.pb.h"
-#include "serialization/protobuf/AccountEvent.pb.h"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
-#include "serialization/protobuf/RPCCommand.pb.h"
-#include "serialization/protobuf/RPCEnums.pb.h"
-#include "serialization/protobuf/RPCPush.pb.h"
-#include "serialization/protobuf/RPCResponse.pb.h"
-#include "serialization/protobuf/RPCStatus.pb.h"
-#include "serialization/protobuf/RPCTask.pb.h"
-#include "serialization/protobuf/SendPayment.pb.h"
-#include "serialization/protobuf/TaskComplete.pb.h"
 
 #define COMMAND_VERSION 3
 #define RESPONSE_VERSION 3

@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "identity/credential/Secondary.hpp"  // IWYU pragma: associated
 
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <Signature.pb.h>
 #include <memory>
 #include <stdexcept>
 
@@ -16,9 +19,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs
 {

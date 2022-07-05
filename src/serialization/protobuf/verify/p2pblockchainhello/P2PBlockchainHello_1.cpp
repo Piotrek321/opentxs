@@ -5,15 +5,16 @@
 
 #include "internal/serialization/protobuf/verify/P2PBlockchainHello.hpp"  // IWYU pragma: associated
 
+#include <P2PBlockchainChainState.pb.h>
+#include <P2PBlockchainHello.pb.h>  // IWYU pragma: keep
 #include <cstddef>
 #include <cstdint>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/P2PBlockchainChainState.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyP2P.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/P2PBlockchainChainState.pb.h"
-#include "serialization/protobuf/P2PBlockchainHello.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

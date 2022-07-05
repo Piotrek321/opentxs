@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "interface/ui/activitysummary/ActivitySummary.hpp"  // IWYU pragma: associated
 
+#include <StorageThread.pb.h>
+#include <StorageThreadItem.pb.h>
 #include <chrono>
 #include <memory>
 #include <sstream>
@@ -28,8 +30,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/StorageThread.pb.h"
-#include "serialization/protobuf/StorageThreadItem.pb.h"
 
 namespace opentxs::factory
 {

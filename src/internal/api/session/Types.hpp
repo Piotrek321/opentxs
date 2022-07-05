@@ -11,7 +11,7 @@
 
 #include "opentxs/otx/client/Types.hpp"
 
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
+#include <PaymentWorkflowEnums.pb.h>
 
 namespace opentxs
 {

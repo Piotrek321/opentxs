@@ -5,7 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/Identifier.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/Identifier.pb.h"
+#include <Identifier.pb.h>
+#include <string>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

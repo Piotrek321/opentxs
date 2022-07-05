@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/P2PBlockchainChainState.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/P2PBlockchainChainState.pb.h"  // IWYU pragma: keep
+#include <P2PBlockchainChainState.pb.h>  // IWYU pragma: keep
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

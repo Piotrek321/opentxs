@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "interface/ui/accountactivity/BalanceItem.hpp"  // IWYU pragma: associated
 
+#include <PaymentWorkflow.pb.h>
 #include <chrono>
 #include <memory>
 
@@ -35,7 +36,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
 
 namespace opentxs::factory
 {

@@ -7,6 +7,13 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "identity/Authority.hpp"  // IWYU pragma: associated
 
+#include <Authority.pb.h>  // IWYU pragma: keep
+#include <ContactData.pb.h>
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <HDPath.pb.h>
+#include <Signature.pb.h>
+#include <Verification.pb.h>
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
@@ -50,13 +57,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Authority.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/ContactData.pb.h"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/Verification.pb.h"
 
 namespace opentxs
 {

@@ -5,10 +5,15 @@
 
 #include "internal/serialization/protobuf/verify/DisplayScale.hpp"  // IWYU pragma: associated
 
-#include "internal/serialization/protobuf/verify/ScaleRatio.hpp"
+#include <DisplayScale.pb.h>
+#include <ScaleRatio.pb.h>
+#include <utility>
+
+#include "Proto.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/ScaleRatio.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContracts.hpp"
-#include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/DisplayScale.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

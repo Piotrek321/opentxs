@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "opentxs/core/Contact.hpp"  // IWYU pragma: associated
 
+#include <Contact.pb.h>
+#include <ContactEnums.pb.h>
+#include <ContactItem.pb.h>
 #include <robin_hood.h>
 #include <atomic>
 #include <cstdint>
@@ -53,9 +56,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Contact.pb.h"
-#include "serialization/protobuf/ContactEnums.pb.h"
-#include "serialization/protobuf/ContactItem.pb.h"
 #include "util/Container.hpp"
 
 #define ID_BYTES 32

@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "internal/interface/rpc/RPC.hpp"  // IWYU pragma: associated
 
+#include <RPCEnums.pb.h>
 #include <robin_hood.h>
 #include <string_view>
 
@@ -19,7 +20,6 @@
 #include "opentxs/interface/rpc/ResponseCode.hpp"
 #include "opentxs/interface/rpc/Types.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/RPCEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs

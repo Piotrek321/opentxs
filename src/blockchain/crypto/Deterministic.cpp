@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "blockchain/crypto/Deterministic.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <boost/container/vector.hpp>
 #include <algorithm>
 #include <cstdint>
@@ -36,7 +37,6 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::blockchain::crypto::implementation
 {

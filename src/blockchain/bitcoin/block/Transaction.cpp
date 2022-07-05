@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransaction.pb.h>
+#include <BlockchainTransactionInput.pb.h>
+#include <BlockchainTransactionOutput.pb.h>
+#include <ContactEnums.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
 #include <cstring>
@@ -49,10 +53,6 @@
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/BlockchainTransaction.pb.h"
-#include "serialization/protobuf/BlockchainTransactionInput.pb.h"
-#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
-#include "serialization/protobuf/ContactEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace be = boost::endian;

@@ -5,20 +5,21 @@
 
 #include "internal/serialization/protobuf/verify/PaymentWorkflow.hpp"  // IWYU pragma: associated
 
+#include <PaymentEvent.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <PaymentWorkflowEnums.pb.h>
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/InstrumentRevision.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/PaymentEvent.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyWorkflows.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/PaymentEvent.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 #define BAD_EVENTS(a, b)                                                       \

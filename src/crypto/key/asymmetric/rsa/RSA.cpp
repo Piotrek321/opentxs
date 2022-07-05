@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "crypto/key/asymmetric/rsa/RSA.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <Ciphertext.pb.h>
 #include <stdexcept>
 #include <utility>
 
@@ -17,8 +19,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/Ciphertext.pb.h"
 
 namespace opentxs::crypto::key::implementation
 {

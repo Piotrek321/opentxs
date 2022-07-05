@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "util/storage/tree/PeerReplies.hpp"  // IWYU pragma: associated
 
+#include <PeerReply.pb.h>
+#include <StorageItemHash.pb.h>
+#include <StorageNymList.pb.h>
 #include <cstdlib>
 #include <iostream>
 #include <tuple>
@@ -18,9 +21,6 @@
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
-#include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "core/contract/peer/BailmentRequest.hpp"  // IWYU pragma: associated
 
+#include <Bailment.pb.h>
+#include <PeerRequest.pb.h>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -26,8 +28,6 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/Bailment.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
 
 namespace opentxs
 {

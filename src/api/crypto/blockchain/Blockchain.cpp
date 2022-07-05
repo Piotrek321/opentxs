@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "api/crypto/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <utility>
 
 #include "Proto.hpp"
@@ -24,7 +25,6 @@
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace zmq = opentxs::network::zeromq;
 

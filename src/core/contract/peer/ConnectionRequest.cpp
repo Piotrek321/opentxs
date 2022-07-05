@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "core/contract/peer/ConnectionRequest.hpp"  // IWYU pragma: associated
 
+#include <ConnectionInfo.pb.h>
+#include <PeerRequest.pb.h>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -23,8 +25,6 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/ConnectionInfo.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
 
 namespace opentxs
 {

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <Ciphertext.pb.h>
 #include <atomic>
 #include <chrono>
 #include <filesystem>
@@ -38,7 +39,6 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
 #include "util/storage/Config.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

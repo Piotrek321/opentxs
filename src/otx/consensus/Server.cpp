@@ -7,6 +7,18 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "otx/consensus/Server.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <ConsensusEnums.pb.h>
+#include <Context.pb.h>
+#include <Nym.pb.h>
+#include <OTXEnums.pb.h>
+#include <OTXPush.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <PendingCommand.pb.h>
+#include <Purse.pb.h>
+#include <ServerContext.pb.h>
+#include <ServerContract.pb.h>
+#include <UnitDefinition.pb.h>
 #include <algorithm>
 #include <atomic>
 #include <filesystem>
@@ -109,18 +121,6 @@
 #include "opentxs/util/WorkType.hpp"
 #include "otx/common/OTStorage.hpp"
 #include "otx/consensus/Base.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/ConsensusEnums.pb.h"
-#include "serialization/protobuf/Context.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/OTXEnums.pb.h"
-#include "serialization/protobuf/OTXPush.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/PendingCommand.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
-#include "serialization/protobuf/ServerContext.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 #define START_SERVER_CONTEXT()                                                 \
     Lock lock(decision_lock_);                                                 \

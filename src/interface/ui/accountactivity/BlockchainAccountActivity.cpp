@@ -7,7 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "interface/ui/accountactivity/BlockchainAccountActivity.hpp"  // IWYU pragma: associated
 
-#include <opentxs/util/Log.hpp>
+#include <BlockchainTransaction.pb.h>
+#include <PaymentEvent.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <PaymentWorkflowEnums.pb.h>
 #include <atomic>
 #include <functional>
 #include <future>
@@ -60,10 +63,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/BlockchainTransaction.pb.h"
-#include "serialization/protobuf/PaymentEvent.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
 #include "util/Thread.hpp"
 
@@ -281,6 +280,7 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
 {
     wait_for_startup();
     const auto body = in.Body();
+
     OT_ASSERT(4 < body.size());
 
     const auto chain = body.at(1).as<blockchain::Type>();

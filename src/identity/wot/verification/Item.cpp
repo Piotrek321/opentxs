@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "identity/wot/verification/Item.hpp"  // IWYU pragma: associated
 
+#include <Signature.pb.h>
+#include <Verification.pb.h>
 #include <stdexcept>
 
 #include "internal/api/session/FactoryAPI.hpp"
@@ -22,8 +24,6 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/Verification.pb.h"
 
 namespace opentxs
 {

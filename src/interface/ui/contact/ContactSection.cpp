@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "interface/ui/contact/ContactSection.hpp"  // IWYU pragma: associated
 
+#include <ContactEnums.pb.h>
 #include <memory>
 #include <stdexcept>
 #include <thread>
@@ -21,7 +22,6 @@
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
 
 namespace opentxs::factory
 {

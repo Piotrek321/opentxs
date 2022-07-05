@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "blockchain/bitcoin/block/Outputs.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransaction.pb.h>
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
@@ -28,7 +29,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::factory

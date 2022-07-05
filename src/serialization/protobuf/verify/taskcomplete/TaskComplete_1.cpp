@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/TaskComplete.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/RPCEnums.pb.h"
-#include "serialization/protobuf/TaskComplete.pb.h"
+#include <RPCEnums.pb.h>
+#include <TaskComplete.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

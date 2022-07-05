@@ -7,6 +7,14 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "otx/client/Issuer.hpp"  // IWYU pragma: associated
 
+#include <Bailment.pb.h>
+#include <ConnectionInfo.pb.h>
+#include <Issuer.pb.h>
+#include <PeerReply.pb.h>
+#include <PeerRequest.pb.h>
+#include <PeerRequestHistory.pb.h>
+#include <PeerRequestWorkflow.pb.h>
+#include <UnitAccountMap.pb.h>
 #include <cstdint>
 #include <ctime>
 #include <iosfwd>
@@ -44,14 +52,6 @@
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Bailment.pb.h"
-#include "serialization/protobuf/ConnectionInfo.pb.h"
-#include "serialization/protobuf/Issuer.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/PeerRequestHistory.pb.h"
-#include "serialization/protobuf/PeerRequestWorkflow.pb.h"
-#include "serialization/protobuf/UnitAccountMap.pb.h"
 
 namespace opentxs::factory
 {

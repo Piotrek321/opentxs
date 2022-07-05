@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "api/session/activity/Activity.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransaction.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <StorageThread.pb.h>
+#include <StorageThreadItem.pb.h>
 #include <algorithm>
 #include <iterator>
 #include <limits>
@@ -52,10 +56,6 @@
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/BlockchainTransaction.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/StorageThread.pb.h"
-#include "serialization/protobuf/StorageThreadItem.pb.h"
 
 namespace opentxs::factory
 {

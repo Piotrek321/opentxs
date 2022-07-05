@@ -8,6 +8,7 @@
 #include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"  // IWYU pragma: associated
 
+#include <PaymentCode.pb.h>
 #include <array>
 #include <cstddef>
 #include <cstring>
@@ -31,7 +32,6 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "serialization/protobuf/PaymentCode.pb.h"
 
 namespace opentxs::factory
 {

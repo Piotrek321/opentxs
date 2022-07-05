@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "identity/wot/verification/Group.hpp"  // IWYU pragma: associated
 
+#include <Verification.pb.h>
+#include <VerificationGroup.pb.h>
+#include <VerificationIdentity.pb.h>
 #include <stdexcept>
 #include <utility>
 
@@ -22,9 +25,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Verification.pb.h"
-#include "serialization/protobuf/VerificationGroup.pb.h"
-#include "serialization/protobuf/VerificationIdentity.pb.h"
 
 namespace opentxs
 {

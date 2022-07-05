@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <HDPath.pb.h>
 #include <cs_ordered_guarded.h>
 #include <cs_shared_guarded.h>
 #include <atomic>
@@ -44,7 +45,6 @@
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace boost

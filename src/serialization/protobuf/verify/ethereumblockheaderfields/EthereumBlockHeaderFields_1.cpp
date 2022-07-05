@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/EthereumBlockHeaderFields.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/EthereumBlockHeaderFields.pb.h"  // IWYU pragma: keep
+#include <EthereumBlockHeaderFields.pb.h>  // IWYU pragma: keep
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

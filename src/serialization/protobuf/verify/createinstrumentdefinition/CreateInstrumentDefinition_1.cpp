@@ -5,9 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/CreateInstrumentDefinition.hpp"  // IWYU pragma: associated
 
+#include <CreateInstrumentDefinition.pb.h>
+
 #include "internal/serialization/protobuf/Contact.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/CreateInstrumentDefinition.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

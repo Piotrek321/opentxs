@@ -2,10 +2,22 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 // IWYU pragma: no_include <cxxabi.h>
+
 #include "0_stdafx.hpp"            // IWYU pragma: associated
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "api/session/Wallet.hpp"  // IWYU pragma: associated
+
+#include <Context.pb.h>
+#include <Credential.pb.h>
+#include <Issuer.pb.h>  // IWYU pragma: keep
+#include <Nym.pb.h>
+#include <PeerReply.pb.h>
+#include <PeerRequest.pb.h>
+#include <Purse.pb.h>
+#include <ServerContract.pb.h>
+#include <UnitDefinition.pb.h>
 #include <algorithm>
 #include <atomic>
 #include <functional>
@@ -14,6 +26,7 @@
 #include <string_view>
 #include <thread>
 #include <type_traits>
+
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
@@ -98,15 +111,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/Context.pb.h"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Issuer.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Exclusive.tpp"
 #include "util/Thread.hpp"
 

@@ -5,11 +5,11 @@
 
 #include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: associated
 
+#include <Enums.pb.h>
+#include <Signature.pb.h>
 #include <cstdint>
 
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

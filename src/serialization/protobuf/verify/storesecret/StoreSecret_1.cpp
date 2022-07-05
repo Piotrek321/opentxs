@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/StoreSecret.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/PeerEnums.pb.h"
-#include "serialization/protobuf/StoreSecret.pb.h"
+#include <PeerEnums.pb.h>
+#include <StoreSecret.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

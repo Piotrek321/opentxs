@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "blockchain/p2p/Address.hpp"  // IWYU pragma: associated
 
+#include <BlockchainPeerAddress.pb.h>
 #include <boost/asio.hpp>
 #include <cstring>
 #include <stdexcept>
@@ -22,7 +23,6 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainPeerAddress.pb.h"
 
 namespace opentxs::factory
 {

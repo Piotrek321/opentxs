@@ -7,11 +7,11 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "internal/api/session/Types.hpp"  // IWYU pragma: associated
 
+#include <PaymentWorkflowEnums.pb.h>
 #include <robin_hood.h>
 
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::api::session

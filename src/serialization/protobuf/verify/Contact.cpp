@@ -5,12 +5,6 @@
 
 #include "internal/serialization/protobuf/Contact.hpp"  // IWYU pragma: associated
 
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
-#include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/crypto/HashType.hpp"
-
 namespace opentxs::proto
 {
 auto AllowedItemAttributes() noexcept -> const ItemAttributeMap&

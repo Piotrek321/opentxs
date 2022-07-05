@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/NoticeAcknowledgement.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/NoticeAcknowledgement.pb.h"
+#include <NoticeAcknowledgement.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

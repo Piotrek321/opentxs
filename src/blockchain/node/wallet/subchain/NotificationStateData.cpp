@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/subchain/NotificationStateData.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <algorithm>
 #include <array>
@@ -54,7 +55,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::blockchain::node::wallet
 {

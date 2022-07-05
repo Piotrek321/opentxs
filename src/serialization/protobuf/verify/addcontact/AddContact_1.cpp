@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/AddContact.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/AddContact.pb.h"
+#include <AddContact.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

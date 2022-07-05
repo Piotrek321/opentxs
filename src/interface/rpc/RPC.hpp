@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <RPCEnums.pb.h>
+#include <RPCResponse.pb.h>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -33,8 +35,6 @@
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/RPCEnums.pb.h"
-#include "serialization/protobuf/RPCResponse.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

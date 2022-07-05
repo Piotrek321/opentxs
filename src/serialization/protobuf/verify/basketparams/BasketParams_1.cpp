@@ -5,16 +5,17 @@
 
 #include "internal/serialization/protobuf/verify/BasketParams.hpp"  // IWYU pragma: associated
 
+#include <BasketItem.pb.h>
+#include <BasketParams.pb.h>
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/BasketItem.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContracts.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/BasketItem.pb.h"
-#include "serialization/protobuf/BasketParams.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

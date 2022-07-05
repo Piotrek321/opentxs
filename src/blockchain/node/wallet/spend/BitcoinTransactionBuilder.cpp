@@ -7,6 +7,11 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/spend/BitcoinTransactionBuilder.hpp"  // IWYU pragma: associated
 
+#include <BlockchainOutputMultisigDetails.pb.h>
+#include <BlockchainTransactionOutput.pb.h>
+#include <BlockchainTransactionProposedNotification.pb.h>
+#include <BlockchainTransactionProposedOutput.pb.h>
+#include <HDPath.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
 #include <array>
@@ -77,11 +82,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
-#include "serialization/protobuf/BlockchainOutputMultisigDetails.pb.h"
-#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
-#include "serialization/protobuf/BlockchainTransactionProposedNotification.pb.h"
-#include "serialization/protobuf/BlockchainTransactionProposedOutput.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
 #include "util/ScopeGuard.hpp"
 
 namespace be = boost::endian;

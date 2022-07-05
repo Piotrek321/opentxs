@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <StorageNymList.pb.h>
 #include <memory>
 #include <mutex>
 #include <tuple>
@@ -16,7 +17,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

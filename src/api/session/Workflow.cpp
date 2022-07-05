@@ -7,6 +7,14 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "api/session/Workflow.hpp"  // IWYU pragma: associated
 
+#include <AccountEvent.pb.h>
+#include <InstrumentRevision.pb.h>
+#include <PaymentEvent.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <PaymentWorkflowEnums.pb.h>
+#include <Purse.pb.h>
+#include <RPCEnums.pb.h>
+#include <RPCPush.pb.h>
 #include <algorithm>
 #include <chrono>
 #include <iterator>
@@ -58,14 +66,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/AccountEvent.pb.h"
-#include "serialization/protobuf/InstrumentRevision.pb.h"
-#include "serialization/protobuf/PaymentEvent.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
-#include "serialization/protobuf/RPCEnums.pb.h"
-#include "serialization/protobuf/RPCPush.pb.h"
 
 namespace opentxs
 {

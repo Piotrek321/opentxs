@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "core/contract/peer/PeerObject.hpp"  // IWYU pragma: associated
 
+#include <Nym.pb.h>
+#include <PeerObject.pb.h>
+#include <PeerRequest.pb.h>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -38,9 +41,6 @@
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/PeerObject.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
 
 namespace opentxs::factory
 {

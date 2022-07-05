@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"  // IWYU pragma: associated
 
+#include <UnitDefinition.pb.h>
 #include <cstdint>
 #include <memory>
 #include <utility>
@@ -44,7 +45,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 #define OT_ERROR_AMOUNT INT64_MIN
 

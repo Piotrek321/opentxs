@@ -11,9 +11,10 @@
 
 #pragma once
 
+#include <ConsensusEnums.pb.h>
+#include <OTXEnums.pb.h>
+
 #include "opentxs/otx/Types.hpp"
-#include "serialization/protobuf/ConsensusEnums.pb.h"
-#include "serialization/protobuf/OTXEnums.pb.h"
 
 namespace opentxs
 {

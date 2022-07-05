@@ -5,10 +5,11 @@
 
 #include "internal/serialization/protobuf/verify/Bip47Direction.hpp"  // IWYU pragma: associated
 
+#include <Bip47Direction.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/BlockchainAddress.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
-#include "serialization/protobuf/Bip47Direction.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

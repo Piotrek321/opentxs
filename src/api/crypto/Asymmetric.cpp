@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "api/crypto/Asymmetric.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <Enums.pb.h>
+#include <HDPath.pb.h>
 #include <type_traits>
 #include <utility>
 
@@ -33,9 +36,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::factory
 {

@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "blockchain/crypto/Account.hpp"  // IWYU pragma: associated
 
+#include <Bip47Channel.pb.h>
+#include <HDAccount.pb.h>
 #include <optional>
 #include <stdexcept>
 #include <string_view>
@@ -44,8 +46,6 @@
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/Bip47Channel.pb.h"
-#include "serialization/protobuf/HDAccount.pb.h"
 
 namespace opentxs::factory
 {

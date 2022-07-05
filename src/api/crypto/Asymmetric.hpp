@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <HDPath.pb.h>
 #include <functional>
 #include <memory>
 
@@ -22,7 +23,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

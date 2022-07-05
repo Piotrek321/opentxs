@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/SessionData.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/SessionData.pb.h"  // IWYU pragma: keep
+#include <SessionData.pb.h>  // IWYU pragma: keep
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

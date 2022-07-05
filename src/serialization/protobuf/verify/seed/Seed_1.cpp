@@ -5,11 +5,12 @@
 
 #include "internal/serialization/protobuf/verify/Seed.hpp"  // IWYU pragma: associated
 
+#include <Enums.pb.h>
+#include <Seed.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Seed.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

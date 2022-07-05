@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <Enums.pb.h>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -17,7 +18,6 @@
 #include "opentxs/crypto/key/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

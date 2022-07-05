@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/InstrumentRevision.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/InstrumentRevision.pb.h"
+#include <InstrumentRevision.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

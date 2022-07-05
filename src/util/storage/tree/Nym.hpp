@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <StorageNym.pb.h>
 #include <atomic>
 #include <cstdint>
 #include <memory>
@@ -24,7 +25,6 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/StorageNym.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

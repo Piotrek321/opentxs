@@ -5,10 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/StorageWorkflowType.hpp"  // IWYU pragma: associated
 
+#include <PaymentWorkflowEnums.pb.h>
+#include <StorageWorkflowType.pb.h>
 #include <cstdint>
 
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
-#include "serialization/protobuf/StorageWorkflowType.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

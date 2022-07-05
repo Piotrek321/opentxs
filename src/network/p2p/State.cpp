@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "opentxs/network/p2p/State.hpp"  // IWYU pragma: associated
 
+#include <P2PBlockchainChainState.pb.h>
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
@@ -19,7 +20,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/P2PBlockchainChainState.pb.h"
 
 namespace opentxs::network::p2p
 {

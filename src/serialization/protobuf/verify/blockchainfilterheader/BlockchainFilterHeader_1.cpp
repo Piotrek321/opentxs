@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainFilterHeader.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/BlockchainFilterHeader.pb.h"
+#include <BlockchainFilterHeader.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

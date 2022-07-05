@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <UnitDefinition.pb.h>
 #include <atomic>
 #include <cstdint>
 #include <cstdlib>
@@ -31,7 +32,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

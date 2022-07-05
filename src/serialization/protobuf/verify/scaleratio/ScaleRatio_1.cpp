@@ -5,9 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/ScaleRatio.hpp"  // IWYU pragma: associated
 
-#include "internal/serialization/protobuf/verify/VerifyContracts.hpp"
-#include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/ScaleRatio.pb.h"
+#include <ScaleRatio.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

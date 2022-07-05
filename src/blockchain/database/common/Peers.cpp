@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "blockchain/database/common/Peers.hpp"  // IWYU pragma: associated
 
+#include <BlockchainPeerAddress.pb.h>
 #include <algorithm>
 #include <chrono>
 #include <iterator>
@@ -25,7 +26,6 @@
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/BlockchainPeerAddress.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database::common

@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "blockchain/bitcoin/cfilter/GCS.hpp"  // IWYU pragma: associated
 
+#include <GCS.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <algorithm>
@@ -47,7 +48,6 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/GCS.pb.h"
 #include "util/Container.hpp"
 
 namespace be = boost::endian;

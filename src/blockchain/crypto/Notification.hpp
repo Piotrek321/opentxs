@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <BlockchainDeterministicAccountData.pb.h>
+#include <HDPath.pb.h>
 #include <boost/container/flat_map.hpp>
 #include <cs_shared_guarded.h>
 #include <atomic>
@@ -35,8 +37,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/BlockchainDeterministicAccountData.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

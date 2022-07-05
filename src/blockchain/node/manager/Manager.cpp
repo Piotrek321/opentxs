@@ -7,6 +7,11 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "blockchain/node/manager/Manager.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransactionProposal.pb.h>
+#include <BlockchainTransactionProposedNotification.pb.h>
+#include <BlockchainTransactionProposedOutput.pb.h>
+#include <HDPath.pb.h>
+#include <PaymentCode.pb.h>
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <algorithm>
@@ -29,7 +34,6 @@
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/database/Factory.hpp"
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
@@ -39,7 +43,6 @@
 #include "internal/blockchain/node/Wallet.hpp"
 #include "internal/blockchain/node/p2p/Requestor.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/identity/Nym.hpp"
@@ -94,11 +97,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
-#include "serialization/protobuf/BlockchainTransactionProposedNotification.pb.h"
-#include "serialization/protobuf/BlockchainTransactionProposedOutput.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/PaymentCode.pb.h"
 #include "util/Thread.hpp"
 
 namespace opentxs::blockchain::node::internal

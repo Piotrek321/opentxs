@@ -5,6 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/MasterCredentialParameters.hpp"  // IWYU pragma: associated
 
+#include <MasterCredentialParameters.pb.h>
+#include <NymIDSource.pb.h>  // IWYU pragma: keep
+#include <SourceProof.pb.h>  // IWYU pragma: keep
 #include <stdexcept>
 #include <utility>
 
@@ -13,9 +16,6 @@
 #include "internal/serialization/protobuf/verify/NymIDSource.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/SourceProof.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
-#include "serialization/protobuf/MasterCredentialParameters.pb.h"
-#include "serialization/protobuf/NymIDSource.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/SourceProof.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

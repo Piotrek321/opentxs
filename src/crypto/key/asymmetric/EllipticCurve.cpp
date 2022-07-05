@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "crypto/key/asymmetric/EllipticCurve.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <Ciphertext.pb.h>
+#include <Enums.pb.h>
 #include <stdexcept>
 #include <utility>
 
@@ -23,9 +26,6 @@
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/Ciphertext.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs::crypto::key
 {

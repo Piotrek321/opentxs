@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/OTXPush.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/OTXEnums.pb.h"
-#include "serialization/protobuf/OTXPush.pb.h"
+#include <OTXEnums.pb.h>
+#include <OTXPush.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

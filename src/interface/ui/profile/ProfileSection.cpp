@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "interface/ui/profile/ProfileSection.hpp"  // IWYU pragma: associated
 
+#include <ContactEnums.pb.h>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -27,7 +28,6 @@
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/interface/ui/ProfileSection.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
 
 template class opentxs::SharedPimpl<opentxs::ui::ProfileSection>;
 

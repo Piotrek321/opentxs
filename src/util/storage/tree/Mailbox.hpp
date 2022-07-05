@@ -5,12 +5,12 @@
 
 #pragma once
 
+#include <StorageNymList.pb.h>
 #include <mutex>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

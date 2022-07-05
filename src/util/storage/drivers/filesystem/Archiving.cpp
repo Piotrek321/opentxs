@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "util/storage/drivers/filesystem/Archiving.hpp"  // IWYU pragma: associated
 
+#include <Ciphertext.pb.h>
 #include <memory>
 #include <system_error>
 
@@ -20,7 +21,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
 #include "util/storage/Config.hpp"
 
 namespace opentxs::factory

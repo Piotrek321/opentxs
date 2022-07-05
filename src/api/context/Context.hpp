@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <RPCResponse.pb.h>
 #include <boost/interprocess/sync/file_lock.hpp>
 #include <chrono>
 #include <cstddef>
@@ -36,7 +37,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
-#include "serialization/protobuf/RPCResponse.pb.h"
 
 class QObject;
 

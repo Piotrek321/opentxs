@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "opentxs/interface/rpc/request/Base.hpp"  // IWYU pragma: associated
 
+#include <RPCCommand.pb.h>
 #include <stdexcept>
 
 #include "Proto.hpp"
@@ -20,7 +21,6 @@
 #include "opentxs/interface/rpc/request/ListAccounts.hpp"
 #include "opentxs/interface/rpc/request/ListNyms.hpp"
 #include "opentxs/interface/rpc/request/SendPayment.hpp"
-#include "serialization/protobuf/RPCCommand.pb.h"
 
 namespace opentxs::rpc::request
 {

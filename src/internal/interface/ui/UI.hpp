@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <PaymentWorkflowEnums.pb.h>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -85,7 +86,6 @@
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Blank.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

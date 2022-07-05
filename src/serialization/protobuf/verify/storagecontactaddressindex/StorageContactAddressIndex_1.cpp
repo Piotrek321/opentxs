@@ -5,10 +5,12 @@
 
 #include "internal/serialization/protobuf/verify/StorageContactAddressIndex.hpp"  // IWYU pragma: associated
 
+#include <ContactEnums.pb.h>
+#include <StorageContactAddressIndex.pb.h>
+
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
-#include "serialization/protobuf/StorageContactAddressIndex.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

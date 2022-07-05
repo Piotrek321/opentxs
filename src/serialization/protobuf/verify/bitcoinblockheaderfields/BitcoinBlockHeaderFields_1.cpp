@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/BitcoinBlockHeaderFields.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/BitcoinBlockHeaderFields.pb.h"
+#include <BitcoinBlockHeaderFields.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <VerificationSet.pb.h>
 #include <memory>
 
 #include "Proto.hpp"
@@ -13,7 +14,6 @@
 #include "internal/identity/credential/Credential.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/VerificationSet.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

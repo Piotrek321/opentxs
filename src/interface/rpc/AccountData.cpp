@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "opentxs/interface/rpc/AccountData.hpp"  // IWYU pragma: associated
 
+#include <AccountData.pb.h>
 #include <algorithm>
 #include <cassert>
 #include <memory>
@@ -19,7 +20,6 @@
 #include "opentxs/interface/rpc/AccountType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/AccountData.pb.h"
 
 namespace opentxs::rpc
 {

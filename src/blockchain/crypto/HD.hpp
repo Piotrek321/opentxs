@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <HDAccount.pb.h>
 #include <atomic>
 #include <cstdint>
 #include <memory>
@@ -28,7 +29,6 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/HDAccount.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

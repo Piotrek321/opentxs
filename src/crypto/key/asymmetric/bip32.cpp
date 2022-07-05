@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "crypto/key/asymmetric/HD.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
@@ -27,7 +28,6 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::crypto::key::implementation
 {

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <StorageAccounts.pb.h>
 #include <tuple>
 
 #include "Proto.hpp"
@@ -17,7 +18,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/StorageAccounts.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

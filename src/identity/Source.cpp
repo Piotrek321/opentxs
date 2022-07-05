@@ -7,6 +7,13 @@
 #include "1_Internal.hpp"       // IWYU pragma: associated
 #include "identity/Source.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <KeyCredential.pb.h>
+#include <MasterCredentialParameters.pb.h>
+#include <NymIDSource.pb.h>
+#include <SourceProof.pb.h>
 #include <memory>
 #include <stdexcept>
 
@@ -37,13 +44,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/KeyCredential.pb.h"
-#include "serialization/protobuf/MasterCredentialParameters.pb.h"
-#include "serialization/protobuf/NymIDSource.pb.h"
-#include "serialization/protobuf/SourceProof.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs

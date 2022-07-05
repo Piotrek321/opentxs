@@ -5,13 +5,13 @@
 
 #pragma once
 
+#include <StorageCredentials.pb.h>
 #include <memory>
 #include <mutex>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/StorageCredentials.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

@@ -5,6 +5,14 @@
 
 #include "internal/serialization/protobuf/verify/PeerReply.hpp"  // IWYU pragma: associated
 
+#include <BailmentReply.pb.h>        // IWYU pragma: keep
+#include <ConnectionInfoReply.pb.h>  // IWYU pragma: keep
+#include <Enums.pb.h>
+#include <NoticeAcknowledgement.pb.h>  // IWYU pragma: keep
+#include <OutBailmentReply.pb.h>       // IWYU pragma: keep
+#include <PeerEnums.pb.h>
+#include <PeerReply.pb.h>
+#include <Signature.pb.h>  // IWYU pragma: keep
 #include <stdexcept>
 #include <utility>
 
@@ -17,14 +25,6 @@
 #include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyPeer.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/BailmentReply.pb.h"        // IWYU pragma: keep
-#include "serialization/protobuf/ConnectionInfoReply.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/NoticeAcknowledgement.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/OutBailmentReply.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/PeerEnums.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/Signature.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

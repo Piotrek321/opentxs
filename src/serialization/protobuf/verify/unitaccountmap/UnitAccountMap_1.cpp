@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/UnitAccountMap.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/UnitAccountMap.pb.h"
+#include <UnitAccountMap.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

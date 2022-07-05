@@ -3,6 +3,26 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include <APIArgument.pb.h>
+#include <AddClaim.pb.h>
+#include <AddContact.pb.h>
+#include <ContactItem.pb.h>
+#include <CreateInstrumentDefinition.pb.h>
+#include <CreateNym.pb.h>
+#include <Enums.pb.h>
+#include <GetWorkflow.pb.h>
+#include <HDSeed.pb.h>
+#include <ModifyAccount.pb.h>
+#include <MoveFunds.pb.h>
+#include <Nym.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <PaymentWorkflowEnums.pb.h>
+#include <RPCCommand.pb.h>
+#include <RPCEnums.pb.h>
+#include <RPCResponse.pb.h>
+#include <RPCStatus.pb.h>
+#include <ServerContract.pb.h>
+#include <SessionData.pb.h>
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 #include <chrono>
@@ -16,26 +36,6 @@
 #include "internal/serialization/protobuf/verify/RPCResponse.hpp"
 #include "internal/util/Shared.hpp"
 #include "ottest/Basic.hpp"
-#include "serialization/protobuf/APIArgument.pb.h"
-#include "serialization/protobuf/AddClaim.pb.h"
-#include "serialization/protobuf/AddContact.pb.h"
-#include "serialization/protobuf/ContactItem.pb.h"
-#include "serialization/protobuf/CreateInstrumentDefinition.pb.h"
-#include "serialization/protobuf/CreateNym.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/GetWorkflow.pb.h"
-#include "serialization/protobuf/HDSeed.pb.h"
-#include "serialization/protobuf/ModifyAccount.pb.h"
-#include "serialization/protobuf/MoveFunds.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
-#include "serialization/protobuf/RPCCommand.pb.h"
-#include "serialization/protobuf/RPCEnums.pb.h"
-#include "serialization/protobuf/RPCResponse.pb.h"
-#include "serialization/protobuf/RPCStatus.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/SessionData.pb.h"
 
 #define TEST_SEED                                                              \
     "one two three four five six seven eight nine ten eleven twelve"

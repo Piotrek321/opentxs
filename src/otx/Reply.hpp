@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <ServerReply.pb.h>
 #include <memory>
 
 #include "Proto.hpp"
@@ -20,7 +21,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/ServerReply.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

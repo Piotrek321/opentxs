@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/StorageWorkflowIndex.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/StorageWorkflowIndex.pb.h"
+#include <StorageWorkflowIndex.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

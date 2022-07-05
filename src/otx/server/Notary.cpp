@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "otx/server/Notary.hpp"  // IWYU pragma: associated
 
+#include <OTXEnums.pb.h>
+#include <OTXPush.pb.h>
+#include <Purse.pb.h>
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
@@ -84,9 +87,6 @@
 #include "otx/server/Server.hpp"
 #include "otx/server/ServerSettings.hpp"
 #include "otx/server/Transactor.hpp"
-#include "serialization/protobuf/OTXEnums.pb.h"
-#include "serialization/protobuf/OTXPush.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
 
 namespace zmq = opentxs::network::zeromq;
 

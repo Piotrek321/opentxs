@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "internal/otx/client/obsolete/OT_API.hpp"  // IWYU pragma: associated
 
+#include <BasketItem.pb.h>
+#include <BasketParams.pb.h>
+#include <UnitDefinition.pb.h>
 #include <cstdlib>
 #include <filesystem>
 #include <iterator>
@@ -72,9 +75,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "otx/common/OTStorage.hpp"
-#include "serialization/protobuf/BasketItem.pb.h"
-#include "serialization/protobuf/BasketParams.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 #define CLIENT_MASTER_KEY_TIMEOUT_DEFAULT 300
 

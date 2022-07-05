@@ -5,9 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainOutputMultisigDetails.hpp"  // IWYU pragma: associated
 
+#include <BlockchainOutputMultisigDetails.pb.h>
 #include <cstddef>
 
-#include "serialization/protobuf/BlockchainOutputMultisigDetails.pb.h"
+#include "Proto.hpp"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

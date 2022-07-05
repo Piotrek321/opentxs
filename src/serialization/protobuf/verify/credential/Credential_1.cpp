@@ -5,11 +5,20 @@
 
 #include "internal/serialization/protobuf/verify/Credential.hpp"  // IWYU pragma: associated
 
+#include <ChildCredentialParameters.pb.h>
+#include <ContactData.pb.h>  // IWYU pragma: keep
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <KeyCredential.pb.h>               // IWYU pragma: keep
+#include <MasterCredentialParameters.pb.h>  // IWYU pragma: keep
+#include <Signature.pb.h>
+#include <VerificationSet.pb.h>  // IWYU pragma: keep
 #include <cstdint>
 #include <ostream>
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/ChildCredentialParameters.hpp"  // IWYU pragma: keep
@@ -21,14 +30,6 @@
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/ChildCredentialParameters.pb.h"
-#include "serialization/protobuf/ContactData.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/KeyCredential.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/MasterCredentialParameters.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/VerificationSet.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

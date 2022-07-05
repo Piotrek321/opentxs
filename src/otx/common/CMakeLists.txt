@@ -6,7 +6,6 @@
 add_subdirectory(basket)
 add_subdirectory(cron)
 add_subdirectory(crypto)
-add_subdirectory(otprotob)
 add_subdirectory(recurring)
 add_subdirectory(script)
 add_subdirectory(trade)

@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/HDPath.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/HDPath.pb.h"
+#include <HDPath.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

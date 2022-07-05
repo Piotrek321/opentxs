@@ -5,10 +5,11 @@
 
 #include "internal/serialization/protobuf/verify/TaggedKey.hpp"  // IWYU pragma: associated
 
+#include <TaggedKey.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/SymmetricKey.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
-#include "serialization/protobuf/TaggedKey.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

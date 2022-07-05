@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "blockchain/database/Headers.hpp"  // IWYU pragma: associated
 
+#include <BlockchainBlockHeader.pb.h>
+#include <BlockchainBlockLocalData.pb.h>
 #include <algorithm>
 #include <cstring>
 #include <memory>
@@ -39,8 +41,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
-#include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 #include "util/LMDB.hpp"
 #include "util/Work.hpp"
 

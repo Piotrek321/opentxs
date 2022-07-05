@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <BlockchainTransactionInput.pb.h>
+#include <BlockchainTransactionOutput.pb.h>
+#include <BlockchainWalletKey.pb.h>
 #include <boost/container/flat_set.hpp>
 #include <boost/container/vector.hpp>
 #include <algorithm>
@@ -45,9 +48,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/BlockchainTransactionInput.pb.h"
-#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
-#include "serialization/protobuf/BlockchainWalletKey.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

@@ -8,6 +8,8 @@
 #include "interface/rpc/request/Base.hpp"  // IWYU pragma: associated
 #include "opentxs/interface/rpc/request/SendPayment.hpp"  // IWYU pragma: associated
 
+#include <RPCCommand.pb.h>
+#include <SendPayment.pb.h>
 #include <memory>
 
 #include "2_Factory.hpp"
@@ -16,8 +18,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/interface/rpc/CommandType.hpp"
 #include "opentxs/interface/rpc/PaymentType.hpp"
-#include "serialization/protobuf/RPCCommand.pb.h"
-#include "serialization/protobuf/SendPayment.pb.h"
 
 namespace opentxs::rpc::request::implementation
 {

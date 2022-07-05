@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "blockchain/database/wallet/Output.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransactionOutput.pb.h>  // IWYU pragma: keep
 #include <cs_shared_guarded.h>
 #include <robin_hood.h>
 #include <algorithm>
@@ -60,7 +61,6 @@
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database::wallet

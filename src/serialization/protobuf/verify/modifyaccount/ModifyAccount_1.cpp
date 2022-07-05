@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/ModifyAccount.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/ModifyAccount.pb.h"
+#include <ModifyAccount.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

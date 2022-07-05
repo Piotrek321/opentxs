@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <PaymentWorkflowEnums.pb.h>
 #include <atomic>
 #include <functional>
 #include <mutex>
@@ -33,7 +34,6 @@
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Polarity.hpp"
 #include "util/Work.hpp"
 

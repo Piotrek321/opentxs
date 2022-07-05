@@ -5,6 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"  // IWYU pragma: associated
 
+#include <Enums.pb.h>
+#include <PeerEnums.pb.h>
+#include <PeerRequest.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/Bailment.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/ConnectionInfo.hpp"  // IWYU pragma: keep
@@ -15,9 +19,6 @@
 #include "internal/serialization/protobuf/verify/StoreSecret.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerificationOffer.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyPeer.hpp"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/PeerEnums.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

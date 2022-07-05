@@ -7,6 +7,12 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "util/storage/tree/Bip47Channels.hpp"  // IWYU pragma: associated
 
+#include <Bip47Channel.pb.h>
+#include <BlockchainAccountData.pb.h>
+#include <BlockchainDeterministicAccountData.pb.h>
+#include <StorageBip47ChannelList.pb.h>
+#include <StorageBip47Contexts.pb.h>
+#include <StorageItemHash.pb.h>
 #include <mutex>
 #include <stdexcept>
 #include <tuple>
@@ -25,12 +31,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Types.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/Bip47Channel.pb.h"
-#include "serialization/protobuf/BlockchainAccountData.pb.h"
-#include "serialization/protobuf/BlockchainDeterministicAccountData.pb.h"
-#include "serialization/protobuf/StorageBip47ChannelList.pb.h"
-#include "serialization/protobuf/StorageBip47Contexts.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

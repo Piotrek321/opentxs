@@ -7,6 +7,16 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "api/session/Factory.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <BlockchainPeerAddress.pb.h>  // IWYU pragma: keep
+#include <Ciphertext.pb.h>
+#include <Enums.pb.h>
+#include <Envelope.pb.h>  // IWYU pragma: keep
+#include <HDPath.pb.h>
+#include <PaymentCode.pb.h>
+#include <PeerReply.pb.h>
+#include <PeerRequest.pb.h>
+#include <UnitDefinition.pb.h>
 #include <array>
 #include <stdexcept>
 #include <utility>
@@ -114,16 +124,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/BlockchainPeerAddress.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/Ciphertext.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Envelope.pb.h"  // IWYU pragma: keep
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/PaymentCode.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/HDIndex.hpp"
 
 namespace opentxs::api::session::imp

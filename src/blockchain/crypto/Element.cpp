@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "blockchain/crypto/Element.hpp"  // IWYU pragma: associated
 
+#include <AsymmetricKey.pb.h>
+#include <BlockchainAddress.pb.h>
 #include <boost/container/vector.hpp>
 #include <algorithm>
 #include <chrono>
@@ -30,8 +32,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
-#include "serialization/protobuf/BlockchainAddress.pb.h"
 
 namespace opentxs::blockchain::crypto::implementation
 {

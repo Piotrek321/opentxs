@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/VerifyClaim.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/VerifyClaim.pb.h"
+#include <VerifyClaim.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "otx/server/Server.hpp"  // IWYU pragma: associated
 
+#include <OTXEnums.pb.h>
+#include <OTXPush.pb.h>
+#include <ServerContract.pb.h>
 #include <algorithm>
 #include <cstdint>
 #include <filesystem>
@@ -65,9 +68,6 @@
 #include "otx/server/ConfigLoader.hpp"
 #include "otx/server/MainFile.hpp"
 #include "otx/server/Transactor.hpp"
-#include "serialization/protobuf/OTXEnums.pb.h"
-#include "serialization/protobuf/OTXPush.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
 
 namespace opentxs
 {

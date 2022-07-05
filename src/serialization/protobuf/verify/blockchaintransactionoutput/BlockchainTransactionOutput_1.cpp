@@ -5,10 +5,11 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainTransactionOutput.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransactionOutput.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/BlockchainWalletKey.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
-#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

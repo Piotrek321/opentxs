@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/SourceProof.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/SourceProof.pb.h"
+#include <Enums.pb.h>
+#include <SourceProof.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

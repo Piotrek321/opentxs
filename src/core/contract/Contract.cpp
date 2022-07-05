@@ -6,15 +6,15 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "internal/core/contract/Contract.hpp"  // IWYU pragma: associated
 
+#include <ContractEnums.pb.h>
+#include <PeerReply.pb.h>
+#include <PeerRequest.pb.h>
+#include <ServerContract.pb.h>
+#include <UnitDefinition.pb.h>
 #include <robin_hood.h>
 
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
-#include "serialization/protobuf/ContractEnums.pb.h"
-#include "serialization/protobuf/PeerReply.pb.h"
-#include "serialization/protobuf/PeerRequest.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::contract::peer::blank

@@ -5,10 +5,10 @@
 
 #include "internal/serialization/protobuf/verify/P2PBlockchainSync.hpp"  // IWYU pragma: associated
 
+#include <P2PBlockchainSync.pb.h>  // IWYU pragma: keep
 #include <cstdint>
 #include <limits>
 
-#include "serialization/protobuf/P2PBlockchainSync.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

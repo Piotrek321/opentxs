@@ -5,13 +5,14 @@
 
 #include "internal/serialization/protobuf/verify/RPCPush.hpp"  // IWYU pragma: associated
 
+#include <RPCEnums.pb.h>
+#include <RPCPush.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/AccountEvent.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/ContactEvent.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/TaskComplete.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyRPC.hpp"
-#include "serialization/protobuf/RPCEnums.pb.h"
-#include "serialization/protobuf/RPCPush.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

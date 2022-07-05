@@ -7,6 +7,13 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "core/paymentcode/Imp.hpp"  // IWYU pragma: associated
 
+#include <Credential.pb.h>
+#include <Enums.pb.h>
+#include <HDPath.pb.h>
+#include <MasterCredentialParameters.pb.h>
+#include <NymIDSource.pb.h>
+#include <PaymentCode.pb.h>
+#include <Signature.pb.h>
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
 #include <array>
@@ -55,13 +62,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Credential.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
-#include "serialization/protobuf/MasterCredentialParameters.pb.h"
-#include "serialization/protobuf/NymIDSource.pb.h"
-#include "serialization/protobuf/PaymentCode.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
 
 namespace be = boost::endian;
 

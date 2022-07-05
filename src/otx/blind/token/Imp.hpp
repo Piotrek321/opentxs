@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <Enums.pb.h>
+#include <Token.pb.h>
 #include <cstdint>
 
 #include "Proto.hpp"
@@ -22,8 +24,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "otx/blind/token/Token.hpp"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Token.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

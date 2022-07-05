@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "otx/blind/purse/Imp.hpp"  // IWYU pragma: associated
 
+#include <Envelope.pb.h>
+#include <Purse.pb.h>
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -47,8 +49,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Envelope.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
 
 #define OT_PURSE_VERSION 1
 

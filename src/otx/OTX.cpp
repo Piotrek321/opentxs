@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"        // IWYU pragma: associated
 #include "internal/otx/OTX.hpp"  // IWYU pragma: associated
 
+#include <ConsensusEnums.pb.h>
+#include <OTXEnums.pb.h>
 #include <robin_hood.h>
 
 #include "opentxs/otx/ConsensusType.hpp"
@@ -14,8 +16,6 @@
 #include "opentxs/otx/OTXPushType.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
-#include "serialization/protobuf/ConsensusEnums.pb.h"
-#include "serialization/protobuf/OTXEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::otx

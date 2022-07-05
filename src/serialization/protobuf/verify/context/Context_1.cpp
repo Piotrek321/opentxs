@@ -5,14 +5,15 @@
 
 #include "internal/serialization/protobuf/verify/Context.hpp"  // IWYU pragma: associated
 
+#include <ConsensusEnums.pb.h>
+#include <Context.pb.h>
+#include <Enums.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/ClientContext.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/ServerContext.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyConsensus.hpp"
-#include "serialization/protobuf/ConsensusEnums.pb.h"
-#include "serialization/protobuf/Context.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

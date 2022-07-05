@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <PaymentWorkflowEnums.pb.h>
+#include <StoragePaymentWorkflows.pb.h>
 #include <memory>
 #include <utility>
 
@@ -16,8 +18,6 @@
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
-#include "serialization/protobuf/StoragePaymentWorkflows.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

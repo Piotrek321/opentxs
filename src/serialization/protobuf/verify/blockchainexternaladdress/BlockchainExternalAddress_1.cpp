@@ -5,12 +5,12 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainExternalAddress.hpp"  // IWYU pragma: associated
 
-#include <cstddef>
+#include <BlockchainEnums.pb.h>
+#include <BlockchainExternalAddress.pb.h>
 
+#include "Proto.hpp"
 #include "internal/util/P0330.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/BlockchainEnums.pb.h"
-#include "serialization/protobuf/BlockchainExternalAddress.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

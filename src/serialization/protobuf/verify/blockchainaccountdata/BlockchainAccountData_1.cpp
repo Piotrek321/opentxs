@@ -5,12 +5,13 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainAccountData.hpp"  // IWYU pragma: associated
 
+#include <BlockchainAccountData.pb.h>
+#include <ContactEnums.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/BlockchainActivity.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
-#include "serialization/protobuf/BlockchainAccountData.pb.h"
-#include "serialization/protobuf/ContactEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

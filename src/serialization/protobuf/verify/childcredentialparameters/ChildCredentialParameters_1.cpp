@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/ChildCredentialParameters.hpp"  // IWYU pragma: associated
 
+#include <ChildCredentialParameters.pb.h>
+
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/ChildCredentialParameters.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

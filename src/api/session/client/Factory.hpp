@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <ContactEnums.pb.h>
+#include <Enums.pb.h>
+#include <PeerEnums.pb.h>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -61,9 +64,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/PeerEnums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

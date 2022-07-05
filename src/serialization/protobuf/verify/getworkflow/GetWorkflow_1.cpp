@@ -5,7 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/GetWorkflow.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/GetWorkflow.pb.h"
+#include <GetWorkflow.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

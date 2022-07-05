@@ -5,11 +5,12 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainTransactionProposedNotification.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransactionProposedNotification.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/HDPath.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/PaymentCode.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
-#include "serialization/protobuf/BlockchainTransactionProposedNotification.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

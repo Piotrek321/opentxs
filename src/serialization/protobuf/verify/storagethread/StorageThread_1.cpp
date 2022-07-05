@@ -5,16 +5,17 @@
 
 #include "internal/serialization/protobuf/verify/VerifyStorage.hpp"  // IWYU pragma: associated
 
+#include <StorageThread.pb.h>
+#include <StorageThreadItem.pb.h>
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/StorageThread.hpp"
 #include "internal/serialization/protobuf/verify/StorageThreadItem.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/StorageThread.pb.h"
-#include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

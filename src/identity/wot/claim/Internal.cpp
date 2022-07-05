@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "internal/identity/wot/claim/Types.hpp"  // IWYU pragma: associated
 
+#include <ContactEnums.pb.h>
 #include <robin_hood.h>
 
 #include "opentxs/core/UnitType.hpp"
@@ -15,7 +16,6 @@
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::identity::wot::claim

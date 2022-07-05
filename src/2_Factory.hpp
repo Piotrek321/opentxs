@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <Enums.pb.h>
+
 #include "internal/core/contract/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
@@ -14,7 +16,6 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/Enums.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

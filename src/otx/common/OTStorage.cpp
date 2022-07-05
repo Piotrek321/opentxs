@@ -7,16 +7,16 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "otx/common/OTStorage.hpp"  // IWYU pragma: associated
 
+#include <Bitcoin.pb.h>
+#include <Generics.pb.h>
+#include <Markets.pb.h>
+#include <Moneychanger.pb.h>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <sstream>  // IWYU pragma: keep
 #include <typeinfo>
 
-#include "Bitcoin.pb.h"
-#include "Generics.pb.h"
-#include "Markets.pb.h"
-#include "Moneychanger.pb.h"
 #include "Proto.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"

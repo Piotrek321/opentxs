@@ -7,6 +7,12 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "util/storage/tree/PaymentWorkflows.hpp"  // IWYU pragma: associated
 
+#include <InstrumentRevision.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <StorageItemHash.pb.h>
+#include <StoragePaymentWorkflows.pb.h>
+#include <StorageWorkflowIndex.pb.h>
+#include <StorageWorkflowType.pb.h>
 #include <tuple>
 #include <type_traits>
 
@@ -20,12 +26,6 @@
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/InstrumentRevision.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
-#include "serialization/protobuf/StoragePaymentWorkflows.pb.h"
-#include "serialization/protobuf/StorageWorkflowIndex.pb.h"
-#include "serialization/protobuf/StorageWorkflowType.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

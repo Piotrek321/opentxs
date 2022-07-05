@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "util/storage/tree/Thread.hpp"  // IWYU pragma: associated
 
+#include <StorageThread.pb.h>
+#include <StorageThreadItem.pb.h>
 #include <memory>
 #include <utility>
 
@@ -17,8 +19,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/StorageThread.pb.h"
-#include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Mailbox.hpp"
 #include "util/storage/tree/Node.hpp"

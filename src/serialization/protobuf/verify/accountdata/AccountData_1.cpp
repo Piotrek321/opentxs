@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/AccountData.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/AccountData.pb.h"
-#include "serialization/protobuf/RPCEnums.pb.h"
+#include <AccountData.pb.h>
+#include <RPCEnums.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

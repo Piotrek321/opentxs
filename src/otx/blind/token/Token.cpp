@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "opentxs/otx/blind/Token.hpp"  // IWYU pragma: associated
 
+#include <Token.pb.h>
 #include <memory>
 #include <utility>
 
@@ -21,7 +22,6 @@
 #include "opentxs/util/Log.hpp"
 #include "otx/blind/purse/Purse.hpp"
 #include "otx/blind/token/Token.hpp"
-#include "serialization/protobuf/Token.pb.h"
 
 namespace opentxs::factory
 {

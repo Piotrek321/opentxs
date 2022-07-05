@@ -5,11 +5,15 @@
 
 #include "internal/serialization/protobuf/verify/BlockchainTransaction.hpp"  // IWYU pragma: associated
 
+#include <BlockchainTransaction.pb.h>
+#include <BlockchainTransactionInput.pb.h>
+#include <BlockchainTransactionOutput.pb.h>
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/Contact.hpp"
@@ -18,9 +22,6 @@
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/BlockchainTransaction.pb.h"
-#include "serialization/protobuf/BlockchainTransactionInput.pb.h"
-#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

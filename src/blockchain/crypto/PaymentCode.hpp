@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <Bip47Channel.pb.h>
+#include <HDPath.pb.h>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -34,8 +36,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
-#include "serialization/protobuf/Bip47Channel.pb.h"
-#include "serialization/protobuf/HDPath.pb.h"
 #include "util/Latest.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

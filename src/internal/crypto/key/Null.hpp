@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <AsymmetricKey.pb.h>
 #include <memory>
 
 #include "internal/crypto/library/Null.hpp"
@@ -16,7 +17,6 @@
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "serialization/protobuf/AsymmetricKey.pb.h"
 
 namespace opentxs::crypto::key::blank
 {

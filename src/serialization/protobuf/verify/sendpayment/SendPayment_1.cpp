@@ -5,8 +5,9 @@
 
 #include "internal/serialization/protobuf/verify/SendPayment.hpp"  // IWYU pragma: associated
 
-#include "serialization/protobuf/RPCEnums.pb.h"
-#include "serialization/protobuf/SendPayment.pb.h"
+#include <RPCEnums.pb.h>
+#include <SendPayment.pb.h>
+
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

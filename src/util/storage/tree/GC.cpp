@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "util/storage/tree/Root.hpp"  // IWYU pragma: associated
 
+#include <StorageRoot.pb.h>
 #include <ctime>
 #include <utility>
 
@@ -15,7 +16,6 @@
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/StorageRoot.pb.h"
 #include "util/ScopeGuard.hpp"
 #include "util/Thread.hpp"
 #include "util/storage/tree/Node.hpp"

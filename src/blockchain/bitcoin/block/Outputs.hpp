@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <BlockchainTransactionOutput.pb.h>
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
@@ -27,7 +28,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

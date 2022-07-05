@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "opentxs/interface/rpc/AccountEvent.hpp"  // IWYU pragma: associated
 
+#include <AccountEvent.pb.h>
+#include <PaymentWorkflowEnums.pb.h>
 #include <algorithm>
 #include <cassert>
 #include <memory>
@@ -19,8 +21,6 @@
 #include "opentxs/interface/rpc/AccountEventType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/AccountEvent.pb.h"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 
 namespace opentxs::rpc
 {

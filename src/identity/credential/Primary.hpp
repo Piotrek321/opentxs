@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <Enums.pb.h>
+#include <SourceProof.pb.h>
 #include <robin_hood.h>
 #include <memory>
 
@@ -21,8 +23,6 @@
 #include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/SourceProof.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

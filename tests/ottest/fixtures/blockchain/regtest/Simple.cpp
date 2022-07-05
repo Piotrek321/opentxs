@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "ottest/fixtures/blockchain/regtest/Simple.hpp"  // IWYU pragma: associated
+#include "ottest/fixtures/blockchain/ScanListener.hpp"  
 
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
@@ -16,13 +17,15 @@
 #include <thread>
 #include <tuple>
 
+#include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
+#include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/blockchain/BlockListener.hpp"
 #include "ottest/fixtures/blockchain/Common.hpp"
 #include "ottest/fixtures/blockchain/WalletListener.hpp"
 #include "ottest/fixtures/common/User.hpp"
-#include "internal/blockchain/Blockchain.hpp"
+
 
 namespace ottest
 {

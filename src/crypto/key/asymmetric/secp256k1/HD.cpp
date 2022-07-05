@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "internal/crypto/key/Factory.hpp"  // IWYU pragma: associated
 
+#include <HDPath.pb.h>
 #include <exception>
 
 #include "crypto/key/asymmetric/secp256k1/Secp256k1.hpp"
@@ -22,7 +23,6 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::factory
 {

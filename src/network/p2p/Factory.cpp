@@ -8,6 +8,9 @@
 #include "internal/network/p2p/Factory.hpp"  // IWYU pragma: associated
 #include "opentxs/network/p2p/Base.hpp"      // IWYU pragma: associated
 
+#include <P2PBlockchainChainState.pb.h>
+#include <P2PBlockchainHello.pb.h>
+#include <P2PBlockchainSync.pb.h>
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -46,9 +49,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/P2PBlockchainChainState.pb.h"
-#include "serialization/protobuf/P2PBlockchainHello.pb.h"
-#include "serialization/protobuf/P2PBlockchainSync.pb.h"
 
 namespace opentxs::factory
 {

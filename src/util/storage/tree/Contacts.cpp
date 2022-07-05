@@ -7,6 +7,14 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "util/storage/tree/Contacts.hpp"  // IWYU pragma: associated
 
+#include <Contact.pb.h>
+#include <ContactData.pb.h>
+#include <ContactItem.pb.h>
+#include <ContactSection.pb.h>
+#include <StorageContactNymIndex.pb.h>
+#include <StorageContacts.pb.h>
+#include <StorageIDList.pb.h>
+#include <StorageItemHash.pb.h>
 #include <cstdlib>
 #include <tuple>
 
@@ -21,14 +29,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/Contact.pb.h"
-#include "serialization/protobuf/ContactData.pb.h"
-#include "serialization/protobuf/ContactItem.pb.h"
-#include "serialization/protobuf/ContactSection.pb.h"
-#include "serialization/protobuf/StorageContactNymIndex.pb.h"
-#include "serialization/protobuf/StorageContacts.pb.h"
-#include "serialization/protobuf/StorageIDList.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

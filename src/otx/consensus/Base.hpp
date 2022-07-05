@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <Context.pb.h>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -24,7 +25,6 @@
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "serialization/protobuf/Context.pb.h"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

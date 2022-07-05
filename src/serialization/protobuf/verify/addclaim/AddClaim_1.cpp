@@ -5,12 +5,13 @@
 
 #include "internal/serialization/protobuf/verify/AddClaim.hpp"  // IWYU pragma: associated
 
+#include <AddClaim.pb.h>
+
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Contact.hpp"
 #include "internal/serialization/protobuf/verify/ContactItem.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/serialization/protobuf/verify/VerifyRPC.hpp"
-#include "serialization/protobuf/AddClaim.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <StorageBip47Contexts.pb.h>
 #include <memory>
 #include <shared_mutex>
 #include <tuple>
@@ -17,7 +18,6 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/StorageBip47Contexts.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

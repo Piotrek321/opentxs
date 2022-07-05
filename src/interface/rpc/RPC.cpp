@@ -7,6 +7,31 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "interface/rpc/RPC.tpp"  // IWYU pragma: associated
 
+#include <APIArgument.pb.h>
+#include <AcceptPendingPayment.pb.h>
+#include <AccountEvent.pb.h>
+#include <AddClaim.pb.h>
+#include <AddContact.pb.h>
+#include <ContactItem.pb.h>
+#include <CreateInstrumentDefinition.pb.h>
+#include <CreateNym.pb.h>
+#include <GetWorkflow.pb.h>
+#include <HDSeed.pb.h>
+#include <ModifyAccount.pb.h>
+#include <MoveFunds.pb.h>
+#include <Nym.pb.h>
+#include <PaymentEvent.pb.h>
+#include <PaymentWorkflow.pb.h>
+#include <RPCCommand.pb.h>
+#include <RPCEnums.pb.h>
+#include <RPCPush.pb.h>
+#include <RPCResponse.pb.h>
+#include <RPCStatus.pb.h>
+#include <RPCTask.pb.h>
+#include <ServerContract.pb.h>
+#include <SessionData.pb.h>
+#include <TaskComplete.pb.h>
+#include <UnitDefinition.pb.h>
 #include <algorithm>
 #include <cstdint>
 #include <functional>
@@ -16,6 +41,7 @@
 #include <tuple>
 #include <type_traits>
 
+#include "2_Factory.hpp"
 #include "interface/rpc/RPC.hpp"
 #include "interface/rpc/response/Invalid.hpp"
 #include "internal/api/session/Client.hpp"
@@ -23,7 +49,6 @@
 #include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/identity/credential/Credential.hpp"
@@ -96,31 +121,6 @@
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
-#include "serialization/protobuf/APIArgument.pb.h"
-#include "serialization/protobuf/AcceptPendingPayment.pb.h"
-#include "serialization/protobuf/AccountEvent.pb.h"
-#include "serialization/protobuf/AddClaim.pb.h"
-#include "serialization/protobuf/AddContact.pb.h"
-#include "serialization/protobuf/ContactItem.pb.h"
-#include "serialization/protobuf/CreateInstrumentDefinition.pb.h"
-#include "serialization/protobuf/CreateNym.pb.h"
-#include "serialization/protobuf/GetWorkflow.pb.h"
-#include "serialization/protobuf/HDSeed.pb.h"
-#include "serialization/protobuf/ModifyAccount.pb.h"
-#include "serialization/protobuf/MoveFunds.pb.h"
-#include "serialization/protobuf/Nym.pb.h"
-#include "serialization/protobuf/PaymentEvent.pb.h"
-#include "serialization/protobuf/PaymentWorkflow.pb.h"
-#include "serialization/protobuf/RPCCommand.pb.h"
-#include "serialization/protobuf/RPCEnums.pb.h"
-#include "serialization/protobuf/RPCPush.pb.h"
-#include "serialization/protobuf/RPCResponse.pb.h"
-#include "serialization/protobuf/RPCStatus.pb.h"
-#include "serialization/protobuf/RPCTask.pb.h"
-#include "serialization/protobuf/ServerContract.pb.h"
-#include "serialization/protobuf/SessionData.pb.h"
-#include "serialization/protobuf/TaskComplete.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Thread.hpp"
 
 namespace opentxs

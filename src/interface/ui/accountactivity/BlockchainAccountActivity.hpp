@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <PaymentWorkflowEnums.pb.h>
 #include <atomic>
 #include <memory>
 #include <mutex>
@@ -45,7 +46,6 @@
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

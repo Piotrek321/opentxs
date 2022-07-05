@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "network/ServerConnection.hpp"  // IWYU pragma: associated
 
+#include <ServerReply.pb.h>
+#include <ServerRequest.pb.h>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -61,8 +63,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/ServerReply.pb.h"
-#include "serialization/protobuf/ServerRequest.pb.h"
 #include "util/Thread.hpp"
 
 namespace zmq = opentxs::network::zeromq;

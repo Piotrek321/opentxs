@@ -7,6 +7,10 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "core/contract/SecurityContract.hpp"  // IWYU pragma: associated
 
+#include <ContractEnums.pb.h>
+#include <EquityParams.pb.h>
+#include <Signature.pb.h>
+#include <UnitDefinition.pb.h>
 #include <memory>
 #include <utility>
 
@@ -17,10 +21,6 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"
 #include "opentxs/core/contract/Unit.hpp"
-#include "serialization/protobuf/ContractEnums.pb.h"
-#include "serialization/protobuf/EquityParams.pb.h"
-#include "serialization/protobuf/Signature.pb.h"
-#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
 {

@@ -7,6 +7,11 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "util/storage/tree/Notary.hpp"  // IWYU pragma: associated
 
+#include <BlindedSeriesList.pb.h>
+#include <SpentTokenList.pb.h>
+#include <StorageEnums.pb.h>
+#include <StorageItemHash.pb.h>
+#include <StorageNotary.pb.h>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -21,11 +26,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/BlindedSeriesList.pb.h"
-#include "serialization/protobuf/SpentTokenList.pb.h"
-#include "serialization/protobuf/StorageEnums.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
-#include "serialization/protobuf/StorageNotary.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

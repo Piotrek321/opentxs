@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "opentxs/network/p2p/Data.hpp"  // IWYU pragma: associated
 
+#include <P2PBlockchainSync.pb.h>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -29,7 +30,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/P2PBlockchainSync.pb.h"
 
 namespace opentxs::factory
 {

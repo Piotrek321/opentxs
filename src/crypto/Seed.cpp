@@ -8,6 +8,9 @@
 #include "crypto/Seed.hpp"              // IWYU pragma: associated
 #include "internal/crypto/Factory.hpp"  // IWYU pragma: associated
 
+#include <Ciphertext.pb.h>
+#include <Enums.pb.h>
+#include <Seed.pb.h>
 #include <robin_hood.h>
 #include <algorithm>
 #include <cstddef>
@@ -35,9 +38,6 @@
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Ciphertext.pb.h"
-#include "serialization/protobuf/Enums.pb.h"
-#include "serialization/protobuf/Seed.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::factory

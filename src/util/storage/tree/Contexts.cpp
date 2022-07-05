@@ -7,6 +7,9 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "util/storage/tree/Contexts.hpp"  // IWYU pragma: associated
 
+#include <Context.pb.h>
+#include <StorageItemHash.pb.h>
+#include <StorageNymList.pb.h>
 #include <tuple>
 #include <utility>
 
@@ -18,9 +21,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
-#include "serialization/protobuf/Context.pb.h"
-#include "serialization/protobuf/StorageItemHash.pb.h"
-#include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 

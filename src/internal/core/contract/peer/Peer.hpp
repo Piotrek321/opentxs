@@ -10,15 +10,15 @@
 
 #pragma once
 
+#include <ContractEnums.pb.h>
+#include <PairEvent.pb.h>
+#include <PeerEnums.pb.h>
+#include <ZMQEnums.pb.h>
 #include <cstdint>
 
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
-#include "serialization/protobuf/ContractEnums.pb.h"
-#include "serialization/protobuf/PairEvent.pb.h"
-#include "serialization/protobuf/PeerEnums.pb.h"
-#include "serialization/protobuf/ZMQEnums.pb.h"
 #include "util/Blank.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)

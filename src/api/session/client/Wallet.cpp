@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "api/session/client/Wallet.hpp"  // IWYU pragma: associated
 
+#include <Context.pb.h>
+#include <ServerContext.pb.h>
 #include <exception>
 #include <functional>
 #include <string_view>
@@ -35,8 +37,6 @@
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Context.pb.h"
-#include "serialization/protobuf/ServerContext.pb.h"
 
 namespace opentxs::factory
 {
