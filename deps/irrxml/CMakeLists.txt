@@ -22,28 +22,18 @@ if(NOT MSVC)
       -Wno-cast-align
       -Wno-cast-qual
       -Wno-conversion
+      -Wno-documentation
+      -Wno-documentation-unknown-command
       -Wno-effc++
       -Wno-extra-semi
       -Wno-implicit-int-conversion
       -Wno-old-style-cast
-      -Wno-sign-conversion
-      -Wno-zero-as-null-pointer-constant
-  )
-endif()
-
-if(${CMAKE_CXX_COMPILER_ID}
-   MATCHES
-   Clang
-)
-  target_compile_options(
-    irrxml
-    PRIVATE
-      -Wno-documentation
-      -Wno-documentation-unknown-command
       -Wno-reserved-id-macro
       -Wno-shorten-64-to-32
+      -Wno-sign-conversion
       -Wno-suggest-destructor-override
       -Wno-suggest-override
+      -Wno-zero-as-null-pointer-constant
   )
 endif()
 
