@@ -104,7 +104,7 @@ protected:
 private:
     enum class State { init, sync, run };
 
-    static constexpr std::size_t limit_{32_MiB};
+    static constexpr std::size_t limit_{32_mib};
     static constexpr auto init_timeout_{5s};
     static constexpr auto request_timeout_{45s};
     static constexpr auto remote_position_timeout_{2 * 60s};

@@ -139,7 +139,7 @@ private:
 
     static constexpr auto default_hwm_ = int{0};
     static constexpr auto untrusted_hwm_ = int{1024};
-    static constexpr auto untrusted_max_message_size_ = std::size_t{32_MiB};
+    static constexpr auto untrusted_max_message_size_ = std::size_t{32_mib};
     static constexpr auto default_send_timeout_ = 0ms;
 
     const socket::Type type_;

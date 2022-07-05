@@ -342,14 +342,14 @@ auto BlockFilter::StoreFilters(
         // NOTE do as much work as possible before locking mutexes
         static const auto options = [] {
             auto out = google::protobuf::ArenaOptions{};
-            out.start_block_size = 8_MiB;
-            out.max_block_size = 8_MiB;
+            out.start_block_size = 8_mib;
+            out.max_block_size = 8_mib;
 
             return out;
         }();
         auto arena = google::protobuf::Arena{options};
         auto upstream = alloc::StandardToBoost(alloc::System());
-        auto alloc = alloc::BoostMonotonic{4_MiB, &upstream};
+        auto alloc = alloc::BoostMonotonic{4_mib, &upstream};
         auto data = [&] {
             auto out = Vector<StorageItem>{&alloc};
             out.reserve(headers.size());

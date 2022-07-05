@@ -90,7 +90,7 @@ auto DeterministicIndex::process(
     const std::optional<Bip32Index>& current,
     Bip32Index target) noexcept -> void
 {
-    constexpr auto allocBytes = 1_KiB;
+    constexpr auto allocBytes = 1_kib;
     auto buf = std::array<std::byte, allocBytes>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
     auto elements = database::Wallet::ElementMap{&alloc};

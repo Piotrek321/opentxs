@@ -48,7 +48,7 @@
 
 namespace opentxs::blockchain::node::blockoracle
 {
-const std::size_t Cache::cache_limit_{8_MiB};
+const std::size_t Cache::cache_limit_{8_mib};
 const std::chrono::seconds Cache::download_timeout_{60};
 
 Cache::Cache(

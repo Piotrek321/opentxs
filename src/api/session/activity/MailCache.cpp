@@ -305,7 +305,7 @@ private:
     // NOTE this should only be called from the thread pool
     auto finish_task(const Identifier& key) noexcept -> void
     {
-        static constexpr auto limit = 250_MiB;
+        static constexpr auto limit = 250_mib;
         static constexpr auto wait = 0s;
 
         auto lock = Lock{lock_};

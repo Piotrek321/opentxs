@@ -437,7 +437,7 @@ auto Bip39::words_to_root_pkt(
                 passphrase,
                 salt,
                 32,
-                256_MiB,
+                256_mib,
                 8,
                 keyBytes,
                 key::symmetric::Source::Argon2id);

@@ -72,7 +72,7 @@ template <
 class ProtobufSubclass : public theBaseType, public IStorablePB
 {
 private:
-    theInternalType __pb_obj;
+    theInternalType pb_obj_;
     UnallocatedCString m_Type;
 
 public:
@@ -85,7 +85,7 @@ public:
     ProtobufSubclass()
         : theBaseType()
         , IStorablePB()
-        , __pb_obj()
+        , pb_obj_()
         , m_Type(
               StoredObjectTypeStrings[static_cast<std::int32_t>(theObjectType)])
     {
@@ -296,11 +296,11 @@ using AskData_InternalPB = OfferDataMarket_InternalPB;
 /*
 void SUBCLASS_HERE::hookBeforePack()
 {
-__pb_obj.set_PROPERTY_NAME_GOES_HERE(PROPERTY_NAME_GOES_HERE);
+pb_obj_.set_PROPERTY_NAME_GOES_HERE(PROPERTY_NAME_GOES_HERE);
 }
 void SUBCLASS_HERE::hookAfterUnpack()
 {
-PROPERTY_NAME_GOES_HERE    = __pb_obj.PROPERTY_NAME_GOES_HERE();
+PROPERTY_NAME_GOES_HERE    = pb_obj_.PROPERTY_NAME_GOES_HERE();
 }
 */
 

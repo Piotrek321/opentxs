@@ -11,18 +11,18 @@ if(UNIX
         EQUAL
         "8")
 )
-  set(OT_MAPPED_FILE_SIZE "8_TiB")
-  set(OT_DB_FILE_SIZE "1_TiB")
+  set(OT_MAPPED_FILE_SIZE "8_tib")
+  set(OT_DB_FILE_SIZE "1_tib")
 else()
-  set(OT_MAPPED_FILE_SIZE "1_GiB")
+  set(OT_MAPPED_FILE_SIZE "1_gib")
 
   if("${CMAKE_SIZEOF_VOID_P}"
      EQUAL
      "8"
   )
-    set(OT_DB_FILE_SIZE "4_GiB")
+    set(OT_DB_FILE_SIZE "4_gib")
   else()
-    set(OT_DB_FILE_SIZE "512_MiB")
+    set(OT_DB_FILE_SIZE "512_mib")
   endif()
 endif()
 

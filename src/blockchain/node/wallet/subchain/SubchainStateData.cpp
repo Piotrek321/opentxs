@@ -939,7 +939,7 @@ auto SubchainStateData::ProcessBlock(
     const auto& node = node_;
     const auto& filters = node.FilterOracleInternal();
     const auto& blockHash = position.hash_;
-    auto buf = std::array<std::byte, 16_KiB>{};
+    auto buf = std::array<std::byte, 16_kib>{};
     auto upstream = alloc::StandardToBoost{get_allocator().resource()};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size(), &upstream};
     auto haveTargets = Time{};
@@ -1021,7 +1021,7 @@ auto SubchainStateData::ProcessTransaction(
     const bitcoin::block::Transaction& tx,
     const Log& log) const noexcept -> void
 {
-    auto buf = std::array<std::byte, 4_KiB>{};
+    auto buf = std::array<std::byte, 4_kib>{};
     auto upstream = alloc::StandardToBoost{get_allocator().resource()};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size(), &upstream};
     auto copy = tx.clone();

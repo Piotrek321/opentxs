@@ -1353,7 +1353,7 @@ template <
 auto ProtobufSubclass<theBaseType, theInternalType, theObjectType>::
     getPBMessage() -> ::google::protobuf::MessageLite*
 {
-    return (&__pb_obj);
+    return (&pb_obj_);
 }
 
 //    if (!makeTStorablepStorable->pack(*pBuffer))
@@ -1510,17 +1510,17 @@ void BufferPB::SetData(const std::uint8_t* pData, std::size_t theSize)
 /*
  void SUBCLASS_HERE::hookBeforePack()
  {
- __pb_obj.set_PROPERTY_NAME_GOES_HERE(PROPERTY_NAME_GOES_HERE);
+ pb_obj_.set_PROPERTY_NAME_GOES_HERE(PROPERTY_NAME_GOES_HERE);
  }
  void SUBCLASS_HERE::hookAfterUnpack()
  {
- PROPERTY_NAME_GOES_HERE    = __pb_obj.PROPERTY_NAME_GOES_HERE();
+ PROPERTY_NAME_GOES_HERE    = pb_obj_.PROPERTY_NAME_GOES_HERE();
  }
  */
 //
 
 #define OT_IMPLEMENT_PB_LIST_PACK(pb_name, element_type)                       \
-    __pb_obj.clear_##pb_name();                                                \
+    pb_obj_.clear_##pb_name();                                                 \
     for (auto it = list_##element_type##s.begin();                             \
          it != list_##element_type##s.end();                                   \
          ++it) {                                                               \
@@ -1533,7 +1533,7 @@ void BufferPB::SetData(const std::uint8_t* pData, std::size_t theSize)
         element_type##_InternalPB* pInternal =                                 \
             dynamic_cast<element_type##_InternalPB*>(pMessage);                \
         OT_ASSERT(nullptr != pInternal);                                       \
-        element_type##_InternalPB* pNewInternal = __pb_obj.add_##pb_name();    \
+        element_type##_InternalPB* pNewInternal = pb_obj_.add_##pb_name();     \
         OT_ASSERT(nullptr != pNewInternal);                                    \
         pObject->hookBeforePack();                                             \
         pNewInternal->CopyFrom(*pInternal);                                    \
@@ -1541,8 +1541,8 @@ void BufferPB::SetData(const std::uint8_t* pData, std::size_t theSize)
 
 #define OT_IMPLEMENT_PB_LIST_UNPACK(pb_name, element_type, ELEMENT_ENUM)       \
     while (Get##element_type##Count() > 0) Remove##element_type(0);            \
-    for (std::int32_t i = 0; i < __pb_obj.pb_name##_size(); i++) {             \
-        const element_type##_InternalPB& theInternal = __pb_obj.pb_name(i);    \
+    for (std::int32_t i = 0; i < pb_obj_.pb_name##_size(); i++) {              \
+        const element_type##_InternalPB& theInternal = pb_obj_.pb_name(i);     \
         element_type##PB* pNewWrapper = dynamic_cast<element_type##PB*>(       \
             Storable::Create(ELEMENT_ENUM, PACK_PROTOCOL_BUFFERS));            \
         OT_ASSERT(nullptr != pNewWrapper);                                     \
@@ -1583,13 +1583,13 @@ void WalletDataPB::hookAfterUnpack()
 template <>
 void StringMapPB::hookBeforePack()
 {
-    __pb_obj.clear_node();  // "node" is the repeated field of Key/Values.
+    pb_obj_.clear_node();  // "node" is the repeated field of Key/Values.
 
     // Loop through all the key/value pairs in the map, and add them to
-    // __pb_obj.node.
+    // pb_obj_.node.
     //
-    for (const auto& it : the_map) {
-        KeyValue_InternalPB* pNode = __pb_obj.add_node();
+    for (auto& it : the_map) {
+        KeyValue_InternalPB* pNode = pb_obj_.add_node();
         pNode->set_key(it.first);
         pNode->set_value(it.second);
     }
@@ -1598,12 +1598,12 @@ void StringMapPB::hookBeforePack()
 template <>
 void StringMapPB::hookAfterUnpack()
 {
-    //    the_map = __pb_obj.the_map();
+    //    the_map = pb_obj_.the_map();
 
     the_map.clear();
 
-    for (std::int32_t i = 0; i < __pb_obj.node_size(); i++) {
-        const KeyValue_InternalPB& theNode = __pb_obj.node(i);
+    for (std::int32_t i = 0; i < pb_obj_.node_size(); i++) {
+        const KeyValue_InternalPB& theNode = pb_obj_.node(i);
 
         the_map.insert(std::pair<UnallocatedCString, UnallocatedCString>(
             theNode.key(), theNode.value()));
@@ -1613,7 +1613,7 @@ void StringMapPB::hookAfterUnpack()
 template <>
 void StringPB::hookBeforePack()
 {
-    __pb_obj.set_value(m_string);
+    pb_obj_.set_value(m_string);
     // The way StringPB is used, this function will never actually get called.
     // (But if you used it like the others, it would work, since this function
     // is here.)
@@ -1621,7 +1621,7 @@ void StringPB::hookBeforePack()
 template <>
 void StringPB::hookAfterUnpack()
 {
-    m_string = __pb_obj.value();
+    m_string = pb_obj_.value();
     // The way StringPB is used, this function will never actually get called.
     // (But if you used it like the others, it would work, since this function
     // is here.)
@@ -1631,14 +1631,14 @@ template <>
 void BlobPB::hookBeforePack()
 {
     if (m_memBuffer.size() > 0) {
-        __pb_obj.set_value(m_memBuffer.data(), m_memBuffer.size());
+        pb_obj_.set_value(m_memBuffer.data(), m_memBuffer.size());
     }
 }
 template <>
 void BlobPB::hookAfterUnpack()
 {
-    if (__pb_obj.has_value()) {
-        UnallocatedCString strTemp = __pb_obj.value();
+    if (pb_obj_.has_value()) {
+        UnallocatedCString strTemp = pb_obj_.value();
         m_memBuffer.assign(strTemp.begin(), strTemp.end());
     }
 }
@@ -1646,11 +1646,11 @@ void BlobPB::hookAfterUnpack()
 template <>
 void ContactPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_contact_id(contact_id);
-    __pb_obj.set_email(email);
-    __pb_obj.set_public_key(public_key);
-    __pb_obj.set_memo(memo);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_contact_id(contact_id);
+    pb_obj_.set_email(email);
+    pb_obj_.set_public_key(public_key);
+    pb_obj_.set_memo(memo);
 
     OT_IMPLEMENT_PB_LIST_PACK(nyms, ContactNym)
     OT_IMPLEMENT_PB_LIST_PACK(accounts, ContactAcct)
@@ -1659,11 +1659,11 @@ void ContactPB::hookBeforePack()
 template <>
 void ContactPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    contact_id = __pb_obj.contact_id();
-    email = __pb_obj.email();
-    public_key = __pb_obj.public_key();
-    memo = __pb_obj.memo();
+    gui_label = pb_obj_.gui_label();
+    contact_id = pb_obj_.contact_id();
+    email = pb_obj_.email();
+    public_key = pb_obj_.public_key();
+    memo = pb_obj_.memo();
 
     OT_IMPLEMENT_PB_LIST_UNPACK(nyms, ContactNym, STORED_OBJ_CONTACT_NYM)
     OT_IMPLEMENT_PB_LIST_UNPACK(accounts, ContactAcct, STORED_OBJ_CONTACT_ACCT)
@@ -1672,11 +1672,11 @@ void ContactPB::hookAfterUnpack()
 template <>
 void ContactNymPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_nym_id(nym_id);
-    __pb_obj.set_nym_type(nym_type);
-    __pb_obj.set_public_key(public_key);
-    __pb_obj.set_memo(memo);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_nym_id(nym_id);
+    pb_obj_.set_nym_type(nym_type);
+    pb_obj_.set_public_key(public_key);
+    pb_obj_.set_memo(memo);
 
     OT_IMPLEMENT_PB_LIST_PACK(servers, ServerInfo)
 }
@@ -1684,11 +1684,11 @@ void ContactNymPB::hookBeforePack()
 template <>
 void ContactNymPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    nym_id = __pb_obj.nym_id();
-    nym_type = __pb_obj.nym_type();
-    public_key = __pb_obj.public_key();
-    memo = __pb_obj.memo();
+    gui_label = pb_obj_.gui_label();
+    nym_id = pb_obj_.nym_id();
+    nym_type = pb_obj_.nym_type();
+    public_key = pb_obj_.public_key();
+    memo = pb_obj_.memo();
 
     OT_IMPLEMENT_PB_LIST_UNPACK(servers, ServerInfo, STORED_OBJ_SERVER_INFO)
 }
@@ -1708,175 +1708,175 @@ void AddressBookPB::hookAfterUnpack()
 template <>
 void ContactAcctPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_notary_id(notary_id);
-    __pb_obj.set_server_type(server_type);
-    __pb_obj.set_instrument_definition_id(instrument_definition_id);
-    __pb_obj.set_acct_id(acct_id);
-    __pb_obj.set_nym_id(nym_id);
-    __pb_obj.set_memo(memo);
-    __pb_obj.set_public_key(public_key);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_notary_id(notary_id);
+    pb_obj_.set_server_type(server_type);
+    pb_obj_.set_instrument_definition_id(instrument_definition_id);
+    pb_obj_.set_acct_id(acct_id);
+    pb_obj_.set_nym_id(nym_id);
+    pb_obj_.set_memo(memo);
+    pb_obj_.set_public_key(public_key);
 }
 template <>
 void ContactAcctPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    notary_id = __pb_obj.notary_id();
-    server_type = __pb_obj.server_type();
-    instrument_definition_id = __pb_obj.instrument_definition_id();
-    acct_id = __pb_obj.acct_id();
-    nym_id = __pb_obj.nym_id();
-    memo = __pb_obj.memo();
-    public_key = __pb_obj.public_key();
+    gui_label = pb_obj_.gui_label();
+    notary_id = pb_obj_.notary_id();
+    server_type = pb_obj_.server_type();
+    instrument_definition_id = pb_obj_.instrument_definition_id();
+    acct_id = pb_obj_.acct_id();
+    nym_id = pb_obj_.nym_id();
+    memo = pb_obj_.memo();
+    public_key = pb_obj_.public_key();
 }
 
 template <>
 void ServerInfoPB::hookBeforePack()
 {
-    __pb_obj.set_notary_id(notary_id);
-    __pb_obj.set_server_type(server_type);
+    pb_obj_.set_notary_id(notary_id);
+    pb_obj_.set_server_type(server_type);
 }
 template <>
 void ServerInfoPB::hookAfterUnpack()
 {
-    notary_id = __pb_obj.notary_id();
-    server_type = __pb_obj.server_type();
+    notary_id = pb_obj_.notary_id();
+    server_type = pb_obj_.server_type();
 }
 
 template <>
 void BitcoinAcctPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_acct_id(acct_id);
-    __pb_obj.set_notary_id(notary_id);
-    __pb_obj.set_bitcoin_acct_name(bitcoin_acct_name);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_acct_id(acct_id);
+    pb_obj_.set_notary_id(notary_id);
+    pb_obj_.set_bitcoin_acct_name(bitcoin_acct_name);
 }
 template <>
 void BitcoinAcctPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    acct_id = __pb_obj.acct_id();
-    notary_id = __pb_obj.notary_id();
-    bitcoin_acct_name = __pb_obj.bitcoin_acct_name();
+    gui_label = pb_obj_.gui_label();
+    acct_id = pb_obj_.acct_id();
+    notary_id = pb_obj_.notary_id();
+    bitcoin_acct_name = pb_obj_.bitcoin_acct_name();
 }
 
 template <>
 void BitcoinServerPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_notary_id(notary_id);
-    __pb_obj.set_server_type(server_type);
-    __pb_obj.set_server_host(server_host);
-    __pb_obj.set_server_port(server_port);
-    __pb_obj.set_bitcoin_username(bitcoin_username);
-    __pb_obj.set_bitcoin_password(bitcoin_password);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_notary_id(notary_id);
+    pb_obj_.set_server_type(server_type);
+    pb_obj_.set_server_host(server_host);
+    pb_obj_.set_server_port(server_port);
+    pb_obj_.set_bitcoin_username(bitcoin_username);
+    pb_obj_.set_bitcoin_password(bitcoin_password);
 }
 template <>
 void BitcoinServerPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    notary_id = __pb_obj.notary_id();
-    server_type = __pb_obj.server_type();
-    server_host = __pb_obj.server_host();
-    server_port = __pb_obj.server_port();
-    bitcoin_username = __pb_obj.bitcoin_username();
-    bitcoin_password = __pb_obj.bitcoin_password();
+    gui_label = pb_obj_.gui_label();
+    notary_id = pb_obj_.notary_id();
+    server_type = pb_obj_.server_type();
+    server_host = pb_obj_.server_host();
+    server_port = pb_obj_.server_port();
+    bitcoin_username = pb_obj_.bitcoin_username();
+    bitcoin_password = pb_obj_.bitcoin_password();
 }
 
 template <>
 void RippleServerPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_notary_id(notary_id);
-    __pb_obj.set_server_type(server_type);
-    __pb_obj.set_server_host(server_host);
-    __pb_obj.set_server_port(server_port);
-    __pb_obj.set_ripple_username(ripple_username);
-    __pb_obj.set_ripple_password(ripple_password);
-    __pb_obj.set_namefield_id(namefield_id);
-    __pb_obj.set_passfield_id(passfield_id);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_notary_id(notary_id);
+    pb_obj_.set_server_type(server_type);
+    pb_obj_.set_server_host(server_host);
+    pb_obj_.set_server_port(server_port);
+    pb_obj_.set_ripple_username(ripple_username);
+    pb_obj_.set_ripple_password(ripple_password);
+    pb_obj_.set_namefield_id(namefield_id);
+    pb_obj_.set_passfield_id(passfield_id);
 }
 template <>
 void RippleServerPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    notary_id = __pb_obj.notary_id();
-    server_type = __pb_obj.server_type();
-    server_host = __pb_obj.server_host();
-    server_port = __pb_obj.server_port();
-    ripple_username = __pb_obj.ripple_username();
-    ripple_password = __pb_obj.ripple_password();
-    namefield_id = __pb_obj.namefield_id();
-    passfield_id = __pb_obj.passfield_id();
+    gui_label = pb_obj_.gui_label();
+    notary_id = pb_obj_.notary_id();
+    server_type = pb_obj_.server_type();
+    server_host = pb_obj_.server_host();
+    server_port = pb_obj_.server_port();
+    ripple_username = pb_obj_.ripple_username();
+    ripple_password = pb_obj_.ripple_password();
+    namefield_id = pb_obj_.namefield_id();
+    passfield_id = pb_obj_.passfield_id();
 }
 
 template <>
 void LoomServerPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_notary_id(notary_id);
-    __pb_obj.set_server_type(server_type);
-    __pb_obj.set_server_host(server_host);
-    __pb_obj.set_server_port(server_port);
-    __pb_obj.set_loom_username(loom_username);
-    __pb_obj.set_namefield_id(namefield_id);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_notary_id(notary_id);
+    pb_obj_.set_server_type(server_type);
+    pb_obj_.set_server_host(server_host);
+    pb_obj_.set_server_port(server_port);
+    pb_obj_.set_loom_username(loom_username);
+    pb_obj_.set_namefield_id(namefield_id);
 }
 template <>
 void LoomServerPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    notary_id = __pb_obj.notary_id();
-    server_type = __pb_obj.server_type();
-    server_host = __pb_obj.server_host();
-    server_port = __pb_obj.server_port();
-    loom_username = __pb_obj.loom_username();
-    namefield_id = __pb_obj.namefield_id();
+    gui_label = pb_obj_.gui_label();
+    notary_id = pb_obj_.notary_id();
+    server_type = pb_obj_.server_type();
+    server_host = pb_obj_.server_host();
+    server_port = pb_obj_.server_port();
+    loom_username = pb_obj_.loom_username();
+    namefield_id = pb_obj_.namefield_id();
 }
 
 template <>
 void MarketDataPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_notary_id(notary_id);
-    __pb_obj.set_market_id(market_id);
-    __pb_obj.set_instrument_definition_id(instrument_definition_id);
-    __pb_obj.set_currency_type_id(currency_type_id);
-    __pb_obj.set_scale(scale);
-    __pb_obj.set_total_assets(total_assets);
-    __pb_obj.set_number_bids(number_bids);
-    __pb_obj.set_number_asks(number_asks);
-    __pb_obj.set_last_sale_price(last_sale_price);
-    __pb_obj.set_last_sale_date(last_sale_date);
-    __pb_obj.set_current_bid(current_bid);
-    __pb_obj.set_current_ask(current_ask);
-    __pb_obj.set_volume_trades(volume_trades);
-    __pb_obj.set_volume_assets(volume_assets);
-    __pb_obj.set_volume_currency(volume_currency);
-    __pb_obj.set_recent_highest_bid(recent_highest_bid);
-    __pb_obj.set_recent_lowest_ask(recent_lowest_ask);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_notary_id(notary_id);
+    pb_obj_.set_market_id(market_id);
+    pb_obj_.set_instrument_definition_id(instrument_definition_id);
+    pb_obj_.set_currency_type_id(currency_type_id);
+    pb_obj_.set_scale(scale);
+    pb_obj_.set_total_assets(total_assets);
+    pb_obj_.set_number_bids(number_bids);
+    pb_obj_.set_number_asks(number_asks);
+    pb_obj_.set_last_sale_price(last_sale_price);
+    pb_obj_.set_last_sale_date(last_sale_date);
+    pb_obj_.set_current_bid(current_bid);
+    pb_obj_.set_current_ask(current_ask);
+    pb_obj_.set_volume_trades(volume_trades);
+    pb_obj_.set_volume_assets(volume_assets);
+    pb_obj_.set_volume_currency(volume_currency);
+    pb_obj_.set_recent_highest_bid(recent_highest_bid);
+    pb_obj_.set_recent_lowest_ask(recent_lowest_ask);
 }
 
 template <>
 void MarketDataPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    notary_id = __pb_obj.notary_id();
-    market_id = __pb_obj.market_id();
-    instrument_definition_id = __pb_obj.instrument_definition_id();
-    currency_type_id = __pb_obj.currency_type_id();
-    scale = __pb_obj.scale();
-    total_assets = __pb_obj.total_assets();
-    number_bids = __pb_obj.number_bids();
-    number_asks = __pb_obj.number_asks();
-    last_sale_price = __pb_obj.last_sale_price();
-    last_sale_date = __pb_obj.last_sale_date();
-    current_bid = __pb_obj.current_bid();
-    current_ask = __pb_obj.current_ask();
-    volume_trades = __pb_obj.volume_trades();
-    volume_assets = __pb_obj.volume_assets();
-    volume_currency = __pb_obj.volume_currency();
-    recent_highest_bid = __pb_obj.recent_highest_bid();
-    recent_lowest_ask = __pb_obj.recent_lowest_ask();
+    gui_label = pb_obj_.gui_label();
+    notary_id = pb_obj_.notary_id();
+    market_id = pb_obj_.market_id();
+    instrument_definition_id = pb_obj_.instrument_definition_id();
+    currency_type_id = pb_obj_.currency_type_id();
+    scale = pb_obj_.scale();
+    total_assets = pb_obj_.total_assets();
+    number_bids = pb_obj_.number_bids();
+    number_asks = pb_obj_.number_asks();
+    last_sale_price = pb_obj_.last_sale_price();
+    last_sale_date = pb_obj_.last_sale_date();
+    current_bid = pb_obj_.current_bid();
+    current_ask = pb_obj_.current_ask();
+    volume_trades = pb_obj_.volume_trades();
+    volume_assets = pb_obj_.volume_assets();
+    volume_currency = pb_obj_.volume_currency();
+    recent_highest_bid = pb_obj_.recent_highest_bid();
+    recent_lowest_ask = pb_obj_.recent_lowest_ask();
 }
 
 template <>
@@ -1894,45 +1894,45 @@ void MarketListPB::hookAfterUnpack()
 template <>
 void BidDataPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_transaction_id(transaction_id);
-    __pb_obj.set_price_per_scale(price_per_scale);
-    __pb_obj.set_available_assets(available_assets);
-    __pb_obj.set_minimum_increment(minimum_increment);
-    __pb_obj.set_date(date);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_transaction_id(transaction_id);
+    pb_obj_.set_price_per_scale(price_per_scale);
+    pb_obj_.set_available_assets(available_assets);
+    pb_obj_.set_minimum_increment(minimum_increment);
+    pb_obj_.set_date(date);
 }
 
 template <>
 void BidDataPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    transaction_id = __pb_obj.transaction_id();
-    price_per_scale = __pb_obj.price_per_scale();
-    available_assets = __pb_obj.available_assets();
-    minimum_increment = __pb_obj.minimum_increment();
-    date = __pb_obj.date();
+    gui_label = pb_obj_.gui_label();
+    transaction_id = pb_obj_.transaction_id();
+    price_per_scale = pb_obj_.price_per_scale();
+    available_assets = pb_obj_.available_assets();
+    minimum_increment = pb_obj_.minimum_increment();
+    date = pb_obj_.date();
 }
 
 template <>
 void AskDataPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_transaction_id(transaction_id);
-    __pb_obj.set_price_per_scale(price_per_scale);
-    __pb_obj.set_available_assets(available_assets);
-    __pb_obj.set_minimum_increment(minimum_increment);
-    __pb_obj.set_date(date);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_transaction_id(transaction_id);
+    pb_obj_.set_price_per_scale(price_per_scale);
+    pb_obj_.set_available_assets(available_assets);
+    pb_obj_.set_minimum_increment(minimum_increment);
+    pb_obj_.set_date(date);
 }
 
 template <>
 void AskDataPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    transaction_id = __pb_obj.transaction_id();
-    price_per_scale = __pb_obj.price_per_scale();
-    available_assets = __pb_obj.available_assets();
-    minimum_increment = __pb_obj.minimum_increment();
-    date = __pb_obj.date();
+    gui_label = pb_obj_.gui_label();
+    transaction_id = pb_obj_.transaction_id();
+    price_per_scale = pb_obj_.price_per_scale();
+    available_assets = pb_obj_.available_assets();
+    minimum_increment = pb_obj_.minimum_increment();
+    date = pb_obj_.date();
 }
 
 template <>
@@ -1952,21 +1952,21 @@ void OfferListMarketPB::hookAfterUnpack()
 template <>
 void TradeDataMarketPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_transaction_id(transaction_id);
-    __pb_obj.set_date(date);
-    __pb_obj.set_price(price);
-    __pb_obj.set_amount_sold(amount_sold);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_transaction_id(transaction_id);
+    pb_obj_.set_date(date);
+    pb_obj_.set_price(price);
+    pb_obj_.set_amount_sold(amount_sold);
 }
 
 template <>
 void TradeDataMarketPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    transaction_id = __pb_obj.transaction_id();
-    date = __pb_obj.date();
-    price = __pb_obj.price();
-    amount_sold = __pb_obj.amount_sold();
+    gui_label = pb_obj_.gui_label();
+    transaction_id = pb_obj_.transaction_id();
+    date = pb_obj_.date();
+    price = pb_obj_.price();
+    amount_sold = pb_obj_.amount_sold();
 }
 
 template <>
@@ -1985,47 +1985,47 @@ void TradeListMarketPB::hookAfterUnpack()
 template <>
 void OfferDataNymPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_valid_from(valid_from);
-    __pb_obj.set_valid_to(valid_to);
-    __pb_obj.set_notary_id(notary_id);
-    __pb_obj.set_instrument_definition_id(instrument_definition_id);
-    __pb_obj.set_asset_acct_id(asset_acct_id);
-    __pb_obj.set_currency_type_id(currency_type_id);
-    __pb_obj.set_currency_acct_id(currency_acct_id);
-    __pb_obj.set_selling(selling);
-    __pb_obj.set_scale(scale);
-    __pb_obj.set_price_per_scale(price_per_scale);
-    __pb_obj.set_transaction_id(transaction_id);
-    __pb_obj.set_total_assets(total_assets);
-    __pb_obj.set_finished_so_far(finished_so_far);
-    __pb_obj.set_minimum_increment(minimum_increment);
-    __pb_obj.set_stop_sign(stop_sign);
-    __pb_obj.set_stop_price(stop_price);
-    __pb_obj.set_date(date);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_valid_from(valid_from);
+    pb_obj_.set_valid_to(valid_to);
+    pb_obj_.set_notary_id(notary_id);
+    pb_obj_.set_instrument_definition_id(instrument_definition_id);
+    pb_obj_.set_asset_acct_id(asset_acct_id);
+    pb_obj_.set_currency_type_id(currency_type_id);
+    pb_obj_.set_currency_acct_id(currency_acct_id);
+    pb_obj_.set_selling(selling);
+    pb_obj_.set_scale(scale);
+    pb_obj_.set_price_per_scale(price_per_scale);
+    pb_obj_.set_transaction_id(transaction_id);
+    pb_obj_.set_total_assets(total_assets);
+    pb_obj_.set_finished_so_far(finished_so_far);
+    pb_obj_.set_minimum_increment(minimum_increment);
+    pb_obj_.set_stop_sign(stop_sign);
+    pb_obj_.set_stop_price(stop_price);
+    pb_obj_.set_date(date);
 }
 
 template <>
 void OfferDataNymPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    valid_from = __pb_obj.valid_from();
-    valid_to = __pb_obj.valid_to();
-    notary_id = __pb_obj.notary_id();
-    instrument_definition_id = __pb_obj.instrument_definition_id();
-    asset_acct_id = __pb_obj.asset_acct_id();
-    currency_type_id = __pb_obj.currency_type_id();
-    currency_acct_id = __pb_obj.currency_acct_id();
-    selling = __pb_obj.selling();
-    scale = __pb_obj.scale();
-    price_per_scale = __pb_obj.price_per_scale();
-    transaction_id = __pb_obj.transaction_id();
-    total_assets = __pb_obj.total_assets();
-    finished_so_far = __pb_obj.finished_so_far();
-    minimum_increment = __pb_obj.minimum_increment();
-    stop_sign = __pb_obj.stop_sign();
-    stop_price = __pb_obj.stop_price();
-    date = __pb_obj.date();
+    gui_label = pb_obj_.gui_label();
+    valid_from = pb_obj_.valid_from();
+    valid_to = pb_obj_.valid_to();
+    notary_id = pb_obj_.notary_id();
+    instrument_definition_id = pb_obj_.instrument_definition_id();
+    asset_acct_id = pb_obj_.asset_acct_id();
+    currency_type_id = pb_obj_.currency_type_id();
+    currency_acct_id = pb_obj_.currency_acct_id();
+    selling = pb_obj_.selling();
+    scale = pb_obj_.scale();
+    price_per_scale = pb_obj_.price_per_scale();
+    transaction_id = pb_obj_.transaction_id();
+    total_assets = pb_obj_.total_assets();
+    finished_so_far = pb_obj_.finished_so_far();
+    minimum_increment = pb_obj_.minimum_increment();
+    stop_sign = pb_obj_.stop_sign();
+    stop_price = pb_obj_.stop_price();
+    date = pb_obj_.date();
 }
 
 template <>
@@ -2043,49 +2043,49 @@ void OfferListNymPB::hookAfterUnpack()
 template <>
 void TradeDataNymPB::hookBeforePack()
 {
-    __pb_obj.set_gui_label(gui_label);
-    __pb_obj.set_transaction_id(transaction_id);
-    __pb_obj.set_completed_count(completed_count);
-    __pb_obj.set_date(date);
-    __pb_obj.set_price(price);
-    __pb_obj.set_amount_sold(amount_sold);
-    __pb_obj.set_updated_id(updated_id);
-    __pb_obj.set_offer_price(offer_price);
-    __pb_obj.set_finished_so_far(finished_so_far);
-    __pb_obj.set_instrument_definition_id(instrument_definition_id);
-    __pb_obj.set_currency_id(currency_id);
-    __pb_obj.set_currency_paid(currency_paid);
-    __pb_obj.set_asset_acct_id(asset_acct_id);
-    __pb_obj.set_currency_acct_id(currency_acct_id);
-    __pb_obj.set_scale(scale);
-    __pb_obj.set_is_bid(is_bid);
-    __pb_obj.set_asset_receipt(asset_receipt);
-    __pb_obj.set_currency_receipt(currency_receipt);
-    __pb_obj.set_final_receipt(final_receipt);
+    pb_obj_.set_gui_label(gui_label);
+    pb_obj_.set_transaction_id(transaction_id);
+    pb_obj_.set_completed_count(completed_count);
+    pb_obj_.set_date(date);
+    pb_obj_.set_price(price);
+    pb_obj_.set_amount_sold(amount_sold);
+    pb_obj_.set_updated_id(updated_id);
+    pb_obj_.set_offer_price(offer_price);
+    pb_obj_.set_finished_so_far(finished_so_far);
+    pb_obj_.set_instrument_definition_id(instrument_definition_id);
+    pb_obj_.set_currency_id(currency_id);
+    pb_obj_.set_currency_paid(currency_paid);
+    pb_obj_.set_asset_acct_id(asset_acct_id);
+    pb_obj_.set_currency_acct_id(currency_acct_id);
+    pb_obj_.set_scale(scale);
+    pb_obj_.set_is_bid(is_bid);
+    pb_obj_.set_asset_receipt(asset_receipt);
+    pb_obj_.set_currency_receipt(currency_receipt);
+    pb_obj_.set_final_receipt(final_receipt);
 }
 
 template <>
 void TradeDataNymPB::hookAfterUnpack()
 {
-    gui_label = __pb_obj.gui_label();
-    transaction_id = __pb_obj.transaction_id();
-    completed_count = __pb_obj.completed_count();
-    date = __pb_obj.date();
-    price = __pb_obj.price();
-    amount_sold = __pb_obj.amount_sold();
-    updated_id = __pb_obj.updated_id();
-    offer_price = __pb_obj.offer_price();
-    finished_so_far = __pb_obj.finished_so_far();
-    instrument_definition_id = __pb_obj.instrument_definition_id();
-    currency_id = __pb_obj.currency_id();
-    currency_paid = __pb_obj.currency_paid();
-    asset_acct_id = __pb_obj.asset_acct_id();
-    currency_acct_id = __pb_obj.currency_acct_id();
-    scale = __pb_obj.scale();
-    is_bid = __pb_obj.is_bid();
-    asset_receipt = __pb_obj.asset_receipt();
-    currency_receipt = __pb_obj.currency_receipt();
-    final_receipt = __pb_obj.final_receipt();
+    gui_label = pb_obj_.gui_label();
+    transaction_id = pb_obj_.transaction_id();
+    completed_count = pb_obj_.completed_count();
+    date = pb_obj_.date();
+    price = pb_obj_.price();
+    amount_sold = pb_obj_.amount_sold();
+    updated_id = pb_obj_.updated_id();
+    offer_price = pb_obj_.offer_price();
+    finished_so_far = pb_obj_.finished_so_far();
+    instrument_definition_id = pb_obj_.instrument_definition_id();
+    currency_id = pb_obj_.currency_id();
+    currency_paid = pb_obj_.currency_paid();
+    asset_acct_id = pb_obj_.asset_acct_id();
+    currency_acct_id = pb_obj_.currency_acct_id();
+    scale = pb_obj_.scale();
+    is_bid = pb_obj_.is_bid();
+    asset_receipt = pb_obj_.asset_receipt();
+    currency_receipt = pb_obj_.currency_receipt();
+    final_receipt = pb_obj_.final_receipt();
 }
 
 template <>
