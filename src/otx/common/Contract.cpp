@@ -1114,7 +1114,6 @@ auto Contract::ParseRawFile() -> bool
                         LogDebug()(OT_PRETTY_CLASS())(
                             "Collecting signature metadata...")
                             .Flush();
-                        ;
 
                         if (line.length() != 13)  // "Meta:    knms" (It will
                                                   // always be exactly 13

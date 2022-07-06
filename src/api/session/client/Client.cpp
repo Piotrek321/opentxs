@@ -172,7 +172,7 @@ Client::Client(
 
 auto Client::Activity() const -> const session::Activity&
 {
-    OT_ASSERT(activity_)
+    OT_ASSERT(activity_);
 
     return *activity_;
 }
@@ -203,7 +203,7 @@ auto Client::Cleanup() -> void
 
 auto Client::Contacts() const -> const api::session::Contacts&
 {
-    OT_ASSERT(contacts_)
+    OT_ASSERT(contacts_);
 
     return *contacts_;
 }
@@ -301,7 +301,7 @@ void Client::StartContacts()
 
 auto Client::UI() const -> const api::session::UI&
 {
-    OT_ASSERT(ui_)
+    OT_ASSERT(ui_);
 
     return *ui_;
 }

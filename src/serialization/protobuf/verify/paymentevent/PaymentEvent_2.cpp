@@ -34,23 +34,23 @@ auto CheckProto_2(
                 "Invalid type. Workflow type: ",
                 static_cast<std::uint32_t>(parent),
                 " Event type: ",
-                static_cast<std::uint32_t>(input.type()))
+                static_cast<std::uint32_t>(input.type()));
         }
     } catch (const std::out_of_range&) {
-        FAIL_1("Invalid event type")
+        FAIL_1("Invalid event type");
     }
 
     switch (input.method()) {
         case TRANSPORTMETHOD_OT: {
-            CHECK_IDENTIFIER(transport)
+            CHECK_IDENTIFIER(transport);
         } break;
         case TRANSPORTMETHOD_NONE:
         case TRANSPORTMETHOD_OOB: {
-            CHECK_EXCLUDED(transport)
+            CHECK_EXCLUDED(transport);
         } break;
         case TRANSPORTMETHOD_ERROR:
         default: {
-            FAIL_1("Invalid transport method")
+            FAIL_1("Invalid transport method");
         }
     }
 
@@ -61,29 +61,29 @@ auto CheckProto_2(
                       .count(input.method()));
 
         if (false == valid) {
-            FAIL_1("Transport method not allowed for this version")
+            FAIL_1("Transport method not allowed for this version");
         }
     } catch (const std::out_of_range&) {
-        FAIL_1("Invalid event type")
+        FAIL_1("Invalid event type");
     }
 
     switch (input.type()) {
         case proto::PAYMENTEVENTTYPE_CREATE:
         case proto::PAYMENTEVENTTYPE_CONVEY:
         case proto::PAYMENTEVENTTYPE_ACCEPT: {
-            OPTIONAL_IDENTIFIER(nym)
+            OPTIONAL_IDENTIFIER(nym);
         } break;
         case proto::PAYMENTEVENTTYPE_CANCEL:
         case proto::PAYMENTEVENTTYPE_COMPLETE:
         case proto::PAYMENTEVENTTYPE_ABORT:
         case proto::PAYMENTEVENTTYPE_ACKNOWLEDGE: {
-            CHECK_EXCLUDED(nym)
+            CHECK_EXCLUDED(nym);
         } break;
         case proto::PAYMENTEVENTTYPE_EXPIRE:
         case proto::PAYMENTEVENTTYPE_REJECT:
         case proto::PAYMENTEVENTTYPE_ERROR:
         default: {
-            FAIL_1("Invalid event type")
+            FAIL_1("Invalid event type");
         }
     }
 

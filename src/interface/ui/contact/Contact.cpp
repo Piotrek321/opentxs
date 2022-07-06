@@ -70,7 +70,7 @@ Contact::Contact(
     setup_listeners(listeners_);
     startup_ = std::make_unique<std::thread>(&Contact::startup, this);
 
-    OT_ASSERT(startup_)
+    OT_ASSERT(startup_);
 }
 
 auto Contact::check_type(const identity::wot::claim::SectionType type) noexcept
@@ -178,13 +178,13 @@ auto Contact::process_contact(const Message& message) noexcept -> void
     const auto& id = body.at(1);
     const auto contactID = Widget::api_.Factory().Identifier(id);
 
-    OT_ASSERT(false == contactID->empty())
+    OT_ASSERT(false == contactID->empty());
 
     if (contactID != primary_id_) { return; }
 
     const auto contact = api_.Contacts().Contact(contactID);
 
-    OT_ASSERT(contact)
+    OT_ASSERT(contact);
 
     process_contact(*contact);
 }
@@ -206,7 +206,7 @@ auto Contact::startup() noexcept -> void
     LogVerbose()(OT_PRETTY_CLASS())("Loading contact ")(primary_id_).Flush();
     const auto contact = api_.Contacts().Contact(primary_id_);
 
-    OT_ASSERT(contact)
+    OT_ASSERT(contact);
 
     process_contact(*contact);
     finish_startup();

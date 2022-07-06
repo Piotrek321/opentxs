@@ -44,7 +44,7 @@ MailItem::MailItem(
     : ActivityThreadItem(parent, api, nymID, rowID, sortKey, custom)
 {
     OT_ASSERT(false == nym_id_.empty());
-    OT_ASSERT(false == item_id_.empty())
+    OT_ASSERT(false == item_id_.empty());
 }
 
 MailItem::~MailItem() = default;

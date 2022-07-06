@@ -142,7 +142,7 @@ public:
     {
         Storable* pNewStorable =
             Storable::Create(theObjectType, PACK_PROTOCOL_BUFFERS);
-        if (nullptr == pNewStorable) OT_FAIL;
+        if (nullptr == pNewStorable) { OT_FAIL; }
         CopyToObject(
             *(dynamic_cast<
                 ProtobufSubclass<theBaseType, theInternalType, theObjectType>*>(

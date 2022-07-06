@@ -136,8 +136,8 @@ auto Basket::FinalizeTemplate(
                 LogError()(OT_PRETTY_STATIC(Basket))(
                     "Failed to serialize unit definition.")
                     .Flush();
+
                 return false;
-                ;
             }
 
             return proto::Validate(serialized, VERBOSE, false);

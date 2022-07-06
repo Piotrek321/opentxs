@@ -167,7 +167,7 @@ auto Group::operator+(const Group& rhs) const -> Group
             map.emplace(id, item);
         }
 
-        OT_ASSERT(map[id])
+        OT_ASSERT(map[id]);
     }
 
     return {imp_->nym_, imp_->section_, imp_->type_, map};

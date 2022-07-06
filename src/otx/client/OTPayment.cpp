@@ -1768,7 +1768,7 @@ auto OTPayment::IsCancelledCheque(const PasswordPrompt& reason) -> bool
         }
     }
 
-    OT_ASSERT(m_bAreTempValuesSet)
+    OT_ASSERT(m_bAreTempValuesSet);
 
     if (false == IsCheque()) { return false; }
 

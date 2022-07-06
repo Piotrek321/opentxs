@@ -6,31 +6,32 @@
 #pragma once
 
 #include <cstdint>
+#include <string_view>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::proto
 {
-void PrintErrorMessage(const char* proto, const char* error) noexcept;
+void PrintErrorMessage(const char* proto, std::string_view error) noexcept;
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
-    const char* error) noexcept;
+    std::string_view error) noexcept;
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
-    const UnallocatedCString& error) noexcept;
+    std::string_view error) noexcept;
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
-    const char* error,
+    std::string_view error,
     const long long int value) noexcept;
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
-    const char* error,
-    const UnallocatedCString& value) noexcept;
+    std::string_view error,
+    std::string_view value) noexcept;
 
 template <typename T, typename... Args>
 auto Check(

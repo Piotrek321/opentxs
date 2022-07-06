@@ -32,24 +32,24 @@ auto CheckProto_1(const BlockchainTransaction& input, const bool silent) -> bool
         const bool validChain = ValidContactItemType(
             {6, CONTACTSECTION_CONTRACT}, static_cast<ContactItemType>(chain));
 
-        if (false == validChain) { FAIL_1("invalid chain") }
+        if (false == validChain) { FAIL_1("invalid chain"); }
     }
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.txid().size()) {
-        FAIL_1("invalid txid")
+        FAIL_1("invalid txid");
     }
 
     if (MAX_PLAUSIBLE_IDENTIFIER < input.txid().size()) {
-        FAIL_1("invalid txid")
+        FAIL_1("invalid txid");
     }
 
     if (input.has_serialized()) {
         if (MIN_PLAUSIBLE_SCRIPT > input.serialized().size()) {
-            FAIL_1("invalid serialized")
+            FAIL_1("invalid serialized");
         }
 
         if (MAX_PLAUSIBLE_SCRIPT < input.serialized().size()) {
-            FAIL_1("invalid serialized")
+            FAIL_1("invalid serialized");
         }
     }
 
@@ -61,10 +61,11 @@ auto CheckProto_1(const BlockchainTransaction& input, const bool silent) -> bool
                 BlockchainTransactionAllowedInput().at(txin.version()).second,
                 silent);
 
-            if (false == validInput) { FAIL_1("invalid input") }
+            if (false == validInput) { FAIL_1("invalid input"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
-                "allowed input version not defined for version", txin.version())
+                "allowed input version not defined for version",
+                txin.version());
         }
     }
 
@@ -76,40 +77,40 @@ auto CheckProto_1(const BlockchainTransaction& input, const bool silent) -> bool
                 BlockchainTransactionAllowedOutput().at(input.version()).second,
                 silent);
 
-            if (false == validOutput) { FAIL_1("invalid output") }
+            if (false == validOutput) { FAIL_1("invalid output"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed output version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
     if (input.has_blockhash()) {
         if (MIN_PLAUSIBLE_IDENTIFIER > input.blockhash().size()) {
-            FAIL_1("invalid blockhash")
+            FAIL_1("invalid blockhash");
         }
 
         if (MIN_PLAUSIBLE_IDENTIFIER < input.blockhash().size()) {
-            FAIL_1("invalid blockhash")
+            FAIL_1("invalid blockhash");
         }
     }
 
     for (const auto& conflict : input.conflicts()) {
         if (MIN_PLAUSIBLE_IDENTIFIER > conflict.size()) {
-            FAIL_1("invalid conflict")
+            FAIL_1("invalid conflict");
         }
 
         if (MIN_PLAUSIBLE_IDENTIFIER < conflict.size()) {
-            FAIL_1("invalid conflict")
+            FAIL_1("invalid conflict");
         }
     }
 
     if (MAX_TRANSACTION_MEMO_SIZE < input.memo().size()) {
-        FAIL_1("invalid memo")
+        FAIL_1("invalid memo");
     }
 
     if (std::numeric_limits<std::uint8_t>::max() < input.segwit_flag()) {
-        FAIL_2("invalid segwit flag", input.segwit_flag())
+        FAIL_2("invalid segwit flag", input.segwit_flag());
     }
 
     OPTIONAL_IDENTIFIER(wtxid);
@@ -119,107 +120,107 @@ auto CheckProto_1(const BlockchainTransaction& input, const bool silent) -> bool
 
 auto CheckProto_2(const BlockchainTransaction& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(2)
+    UNDEFINED_VERSION(2);
 }
 
 auto CheckProto_3(const BlockchainTransaction& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(3)
+    UNDEFINED_VERSION(3);
 }
 
 auto CheckProto_4(const BlockchainTransaction& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(4)
+    UNDEFINED_VERSION(4);
 }
 
 auto CheckProto_5(const BlockchainTransaction& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(5)
+    UNDEFINED_VERSION(5);
 }
 
 auto CheckProto_6(const BlockchainTransaction& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(6)
+    UNDEFINED_VERSION(6);
 }
 
 auto CheckProto_7(const BlockchainTransaction& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(const BlockchainTransaction& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(const BlockchainTransaction& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(const BlockchainTransaction& input, const bool silent)
     -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

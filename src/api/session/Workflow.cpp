@@ -232,7 +232,7 @@ auto Workflow::InstantiateCheque(
         case PaymentWorkflowType::IncomingInvoice: {
             cheque.reset(api.Factory().InternalSession().Cheque().release());
 
-            OT_ASSERT(cheque)
+            OT_ASSERT(cheque);
 
             const auto serialized = ExtractCheque(workflow);
 
@@ -466,13 +466,13 @@ Workflow::Workflow(
     LogDetail()(OT_PRETTY_CLASS())("Binding to ")(endpoint.data()).Flush();
     auto bound = account_publisher_->Start(endpoint.data());
 
-    OT_ASSERT(bound)
+    OT_ASSERT(bound);
 
     bound =
         rpc_publisher_->Start(opentxs::network::zeromq::MakeDeterministicInproc(
             "rpc/push/internal", -1, 1));
 
-    OT_ASSERT(bound)
+    OT_ASSERT(bound);
 }
 
 auto Workflow::AbortTransfer(
@@ -710,7 +710,7 @@ auto Workflow::add_cheque_event(
         case proto::PAYMENTEVENTTYPE_ERROR:
         case proto::PAYMENTEVENTTYPE_CREATE:
         default: {
-            OT_FAIL
+            OT_FAIL;
         }
     }
 
@@ -797,7 +797,7 @@ auto Workflow::add_transfer_event(
         case proto::PAYMENTEVENTTYPE_CREATE:
         case proto::PAYMENTEVENTTYPE_CANCEL:
         default: {
-            OT_FAIL
+            OT_FAIL;
         }
     }
 
@@ -845,7 +845,7 @@ auto Workflow::add_transfer_event(
         case proto::PAYMENTEVENTTYPE_CREATE:
         case proto::PAYMENTEVENTTYPE_CANCEL:
         default: {
-            OT_FAIL
+            OT_FAIL;
         }
     }
 
@@ -1103,7 +1103,7 @@ auto Workflow::can_expire_cheque(
             }
         } break;
         default: {
-            OT_FAIL
+            OT_FAIL;
         }
     }
 
@@ -1222,7 +1222,7 @@ auto Workflow::ClearCheque(
 
     if (false == can_accept_cheque(*workflow)) { return false; }
 
-    OT_ASSERT(1 == workflow->account_size())
+    OT_ASSERT(1 == workflow->account_size());
 
     const bool needNym = (0 == workflow->party_size());
     const auto time = Clock::now();
@@ -1605,7 +1605,7 @@ auto Workflow::create_cheque(
     const Message* message) const
     -> std::pair<OTIdentifier, proto::PaymentWorkflow>
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
 
     std::pair<OTIdentifier, proto::PaymentWorkflow> output{
         Identifier::Factory(), {}};
@@ -1647,7 +1647,7 @@ auto Workflow::create_cheque(
             event.set_type(proto::PAYMENTEVENTTYPE_CONVEY);
             event.set_method(proto::TRANSPORTMETHOD_OOB);
         } else {
-            OT_FAIL
+            OT_FAIL;
         }
     }
 
@@ -1688,7 +1688,7 @@ auto Workflow::create_transfer(
     const UnallocatedCString& destinationAccountID) const
     -> std::pair<OTIdentifier, proto::PaymentWorkflow>
 {
-    OT_ASSERT(verify_lock(global))
+    OT_ASSERT(verify_lock(global));
     OT_ASSERT(false == nymID.empty());
     OT_ASSERT(false == account.empty());
     OT_ASSERT(false == notaryID.empty());
@@ -1738,7 +1738,7 @@ auto Workflow::create_transfer(
         event.set_type(proto::PAYMENTEVENTTYPE_CONVEY);
         event.set_method(proto::TRANSPORTMETHOD_OT);
     } else {
-        OT_FAIL
+        OT_FAIL;
     }
 
     event.set_transport(notaryID);
@@ -2642,11 +2642,11 @@ auto Workflow::save_workflow(
 {
     const bool valid = proto::Validate(workflow, VERBOSE);
 
-    OT_ASSERT(valid)
+    OT_ASSERT(valid);
 
     const auto saved = api_.Storage().Store(nymID, workflow);
 
-    OT_ASSERT(saved)
+    OT_ASSERT(saved);
 
     if (false == accountID.empty()) {
         auto work = opentxs::network::zeromq::tagged_message(

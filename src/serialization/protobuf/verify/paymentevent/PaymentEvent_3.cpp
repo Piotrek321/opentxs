@@ -34,23 +34,23 @@ auto CheckProto_3(
                 "Invalid type. Workflow type: ",
                 static_cast<std::uint32_t>(parent),
                 " Event type: ",
-                static_cast<std::uint32_t>(input.type()))
+                static_cast<std::uint32_t>(input.type()));
         }
     } catch (const std::out_of_range&) {
-        FAIL_1("Invalid event type")
+        FAIL_1("Invalid event type");
     }
 
     switch (input.method()) {
         case TRANSPORTMETHOD_OT: {
-            CHECK_IDENTIFIER(transport)
+            CHECK_IDENTIFIER(transport);
         } break;
         case TRANSPORTMETHOD_NONE:
         case TRANSPORTMETHOD_OOB: {
-            CHECK_EXCLUDED(transport)
+            CHECK_EXCLUDED(transport);
         } break;
         case TRANSPORTMETHOD_ERROR:
         default: {
-            FAIL_1("Invalid transport method")
+            FAIL_1("Invalid transport method");
         }
     }
 
@@ -61,10 +61,10 @@ auto CheckProto_3(
                       .count(input.method()));
 
         if (false == valid) {
-            FAIL_1("Transport method not allowed for this version")
+            FAIL_1("Transport method not allowed for this version");
         }
     } catch (const std::out_of_range&) {
-        FAIL_1("Invalid event type")
+        FAIL_1("Invalid event type");
     }
 
     switch (input.type()) {
@@ -72,18 +72,18 @@ auto CheckProto_3(
         case proto::PAYMENTEVENTTYPE_CONVEY:
         case proto::PAYMENTEVENTTYPE_ACCEPT:
         case proto::PAYMENTEVENTTYPE_REJECT: {
-            OPTIONAL_IDENTIFIER(nym)
+            OPTIONAL_IDENTIFIER(nym);
         } break;
         case proto::PAYMENTEVENTTYPE_CANCEL:
         case proto::PAYMENTEVENTTYPE_COMPLETE:
         case proto::PAYMENTEVENTTYPE_ABORT:
         case proto::PAYMENTEVENTTYPE_ACKNOWLEDGE:
         case proto::PAYMENTEVENTTYPE_EXPIRE: {
-            CHECK_EXCLUDED(nym)
+            CHECK_EXCLUDED(nym);
         } break;
         case proto::PAYMENTEVENTTYPE_ERROR:
         default: {
-            FAIL_1("Invalid event type")
+            FAIL_1("Invalid event type");
         }
     }
 
@@ -101,7 +101,7 @@ auto CheckProto_4(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(4)
+    UNDEFINED_VERSION(4);
 }
 
 auto CheckProto_5(
@@ -112,7 +112,7 @@ auto CheckProto_5(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(5)
+    UNDEFINED_VERSION(5);
 }
 
 auto CheckProto_6(
@@ -123,7 +123,7 @@ auto CheckProto_6(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(6)
+    UNDEFINED_VERSION(6);
 }
 
 auto CheckProto_7(
@@ -134,7 +134,7 @@ auto CheckProto_7(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(
@@ -145,7 +145,7 @@ auto CheckProto_8(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(
@@ -156,7 +156,7 @@ auto CheckProto_9(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(
@@ -167,7 +167,7 @@ auto CheckProto_10(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(
@@ -178,7 +178,7 @@ auto CheckProto_11(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(
@@ -189,7 +189,7 @@ auto CheckProto_12(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(
@@ -200,7 +200,7 @@ auto CheckProto_13(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(
@@ -211,7 +211,7 @@ auto CheckProto_14(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(
@@ -222,7 +222,7 @@ auto CheckProto_15(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(
@@ -233,7 +233,7 @@ auto CheckProto_16(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(
@@ -244,7 +244,7 @@ auto CheckProto_17(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(
@@ -255,7 +255,7 @@ auto CheckProto_18(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(
@@ -266,7 +266,7 @@ auto CheckProto_19(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(
@@ -277,6 +277,6 @@ auto CheckProto_20(
     [[maybe_unused]] UnallocatedMap<PaymentEventType, std::size_t>& events)
     -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

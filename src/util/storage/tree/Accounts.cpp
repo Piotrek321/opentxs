@@ -30,66 +30,61 @@
 #include "util/storage/tree/Node.hpp"
 
 #define EXTRACT_SET_BY_VALUE(index, value)                                     \
-    {                                                                          \
-        try {                                                                  \
+    try {                                                                      \
                                                                                \
-            return index.at(value);                                            \
+        return index.at(value);                                                \
                                                                                \
-        } catch (...) {                                                        \
+    } catch (...) {                                                            \
                                                                                \
-            return {};                                                         \
-        }                                                                      \
-    }
+        return {};                                                             \
+    }                                                                          \
+    static_assert(0 < sizeof(char))  // NOTE silence -Wextra-semi-stmt
 
-#define EXTRACT_SET_BY_ID(index, id)                                           \
-    {                                                                          \
-        EXTRACT_SET_BY_VALUE(index, id)                                        \
-    }
+#define EXTRACT_SET_BY_ID(index, id) EXTRACT_SET_BY_VALUE(index, id)
 
 #define EXTRACT_FIELD(field)                                                   \
     {                                                                          \
         Lock lock(write_lock_);                                                \
                                                                                \
         return std::get<field>(get_account_data(lock, id));                    \
-    }
+    }                                                                          \
+    static_assert(0 < sizeof(char))  // NOTE silence -Wextra-semi-stmt
 
 #define SERIALIZE_INDEX(index, field)                                          \
-    {                                                                          \
-        for (const auto& [id, accounts] : index) {                             \
-            if (id->empty()) { continue; }                                     \
+    for (const auto& [id, accounts] : index) {                                 \
+        if (id->empty()) { continue; }                                         \
                                                                                \
-            auto& listProto = *serialized.add_##field();                       \
-            listProto.set_version(INDEX_VERSION);                              \
-            listProto.set_id(id->str());                                       \
+        auto& listProto = *serialized.add_##field();                           \
+        listProto.set_version(INDEX_VERSION);                                  \
+        listProto.set_id(id->str());                                           \
                                                                                \
-            for (const auto& accountID : accounts) {                           \
-                if (accountID->empty()) { continue; }                          \
+        for (const auto& accountID : accounts) {                               \
+            if (accountID->empty()) { continue; }                              \
                                                                                \
-                listProto.add_list(accountID->str());                          \
-            }                                                                  \
-                                                                               \
-            if (0 == listProto.list_size()) {                                  \
-                serialized.mutable_##field()->RemoveLast();                    \
-            }                                                                  \
+            listProto.add_list(accountID->str());                              \
         }                                                                      \
-    }
+                                                                               \
+        if (0 == listProto.list_size()) {                                      \
+            serialized.mutable_##field()->RemoveLast();                        \
+        }                                                                      \
+    }                                                                          \
+    static_assert(0 < sizeof(char))  // NOTE silence -Wextra-semi-stmt
 
 #define DESERIALIZE_INDEX(field, index, position, factory)                     \
-    {                                                                          \
-        for (const auto& it : serialized->field()) {                           \
-            const auto id = factory(it.id());                                  \
+    for (const auto& it : serialized->field()) {                               \
+        const auto id = factory(it.id());                                      \
                                                                                \
-            auto& map = index[id];                                             \
+        auto& map = index[id];                                                 \
                                                                                \
-            for (const auto& account : it.list()) {                            \
-                const auto accountID = Identifier::Factory(account);           \
+        for (const auto& account : it.list()) {                                \
+            const auto accountID = Identifier::Factory(account);               \
                                                                                \
-                map.emplace(accountID);                                        \
-                std::get<position>(get_account_data(lock, accountID))          \
-                    ->SetString(id->str());                                    \
-            }                                                                  \
+            map.emplace(accountID);                                            \
+            std::get<position>(get_account_data(lock, accountID))              \
+                ->SetString(id->str());                                        \
         }                                                                      \
-    }
+    }                                                                          \
+    static_assert(0 < sizeof(char))  // NOTE silence -Wextra-semi-stmt
 
 #define ACCOUNT_VERSION 1
 #define INDEX_VERSION 1
@@ -186,7 +181,7 @@ auto Accounts::add_set_index(
             return false;
         }
 
-        OT_ASSERT(1 == index.at(argID).count(accountID))
+        OT_ASSERT(1 == index.at(argID).count(accountID));
     }
 
     return true;
@@ -243,7 +238,7 @@ auto Accounts::check_update_account(
         return false;
     }
 
-    OT_ASSERT(verify_write_lock(lock))
+    OT_ASSERT(verify_write_lock(lock));
 
     auto& [mapOwner, mapSigner, mapIssuer, mapServer, mapContract, mapUnit] =
         get_account_data(lock, accountID);
@@ -304,7 +299,7 @@ auto Accounts::Delete(const UnallocatedCString& id) -> bool
 auto Accounts::get_account_data(const Lock& lock, const OTIdentifier& accountID)
     const -> Accounts::AccountData&
 {
-    OT_ASSERT(verify_write_lock(lock))
+    OT_ASSERT(verify_write_lock(lock));
 
     auto data = account_data_.find(accountID);
 
@@ -319,7 +314,7 @@ auto Accounts::get_account_data(const Lock& lock, const OTIdentifier& accountID)
         auto [output, added] =
             account_data_.emplace(accountID, std::move(blank));
 
-        OT_ASSERT(added)
+        OT_ASSERT(added);
 
         return output->second;
     }
@@ -346,12 +341,12 @@ void Accounts::init(const UnallocatedCString& hash)
             it.itemid(), Metadata{it.hash(), it.alias(), 0, false});
     }
 
-    DESERIALIZE_INDEX(owner, owner_index_, 0, identifier::Nym::Factory)
-    DESERIALIZE_INDEX(signer, signer_index_, 1, identifier::Nym::Factory)
-    DESERIALIZE_INDEX(issuer, issuer_index_, 2, identifier::Nym::Factory)
-    DESERIALIZE_INDEX(server, server_index_, 3, identifier::Notary::Factory)
+    DESERIALIZE_INDEX(owner, owner_index_, 0, identifier::Nym::Factory);
+    DESERIALIZE_INDEX(signer, signer_index_, 1, identifier::Nym::Factory);
+    DESERIALIZE_INDEX(issuer, issuer_index_, 2, identifier::Nym::Factory);
+    DESERIALIZE_INDEX(server, server_index_, 3, identifier::Notary::Factory);
     DESERIALIZE_INDEX(
-        unit, contract_index_, 4, identifier::UnitDefinition::Factory)
+        unit, contract_index_, 4, identifier::UnitDefinition::Factory);
 
     for (const auto& it : serialized->index()) {
         const auto unit = it.type();
@@ -410,11 +405,11 @@ auto Accounts::serialize() const -> proto::StorageAccounts
         }
     }
 
-    SERIALIZE_INDEX(owner_index_, owner)
-    SERIALIZE_INDEX(signer_index_, signer)
-    SERIALIZE_INDEX(issuer_index_, issuer)
-    SERIALIZE_INDEX(server_index_, server)
-    SERIALIZE_INDEX(contract_index_, unit)
+    SERIALIZE_INDEX(owner_index_, owner);
+    SERIALIZE_INDEX(signer_index_, signer);
+    SERIALIZE_INDEX(issuer_index_, issuer);
+    SERIALIZE_INDEX(server_index_, server);
+    SERIALIZE_INDEX(contract_index_, unit);
 
     for (const auto& [type, accounts] : unit_index_) {
         auto& listProto = *serialized.add_index();
@@ -465,3 +460,11 @@ auto Accounts::Store(
     return store_raw(lock, data, id, alias);
 }
 }  // namespace opentxs::storage
+
+#undef INDEX_VERSION
+#undef ACCOUNT_VERSION
+#undef DESERIALIZE_INDEX
+#undef SERIALIZE_INDEX
+#undef EXTRACT_FIELD
+#undef EXTRACT_SET_BY_ID
+#undef EXTRACT_SET_BY_VALUE

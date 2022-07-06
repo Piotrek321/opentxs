@@ -25,7 +25,7 @@ namespace opentxs::crypto::openssl
 {
 auto BIO::assertBioNotNull(::BIO* pBIO) -> ::BIO*
 {
-    if (nullptr == pBIO) OT_FAIL;
+    if (nullptr == pBIO) { OT_FAIL; }
     return pBIO;
 }
 

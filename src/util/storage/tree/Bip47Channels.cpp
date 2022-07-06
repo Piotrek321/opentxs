@@ -121,7 +121,7 @@ auto Bip47Channels::init(const UnallocatedCString& hash) -> void
         LogError()(OT_PRETTY_CLASS())(
             "Failed to load bip47 channel index file.")
             .Flush();
-        OT_FAIL
+        OT_FAIL;
     }
 
     init_version(CHANNEL_VERSION, *proto);
@@ -180,7 +180,7 @@ auto Bip47Channels::save(const std::unique_lock<std::mutex>& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
         LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
-        OT_FAIL
+        OT_FAIL;
     }
 
     auto serialized = serialize();

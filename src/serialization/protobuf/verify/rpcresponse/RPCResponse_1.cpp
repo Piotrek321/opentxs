@@ -29,7 +29,7 @@ namespace opentxs::proto
 {
 auto CheckProto_1(const RPCResponse& input, const bool silent) -> bool
 {
-    CHECK_IDENTIFIER(cookie)
+    CHECK_IDENTIFIER(cookie);
 
     bool atLeastOne = false;
     for (auto status : input.status()) {
@@ -814,7 +814,7 @@ auto CheckProto_1(const RPCResponse& input, const bool silent) -> bool
         case RPCCOMMAND_RENAMEACCOUNT:
         case RPCCOMMAND_ERROR:
         default: {
-            FAIL_1("invalid type")
+            FAIL_1("invalid type");
         }
     }
 

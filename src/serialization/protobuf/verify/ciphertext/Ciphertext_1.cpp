@@ -22,7 +22,7 @@ namespace opentxs::proto
 auto CheckProto_1(const Ciphertext& input, const bool silent, const bool nested)
     -> bool
 {
-    if (!input.has_mode()) { FAIL_1("missing mode") }
+    if (!input.has_mode()) { FAIL_1("missing mode"); }
 
     switch (input.mode()) {
         case SMODE_CHACHA20POLY1305: {
@@ -30,7 +30,7 @@ auto CheckProto_1(const Ciphertext& input, const bool silent, const bool nested)
         }
         case SMODE_ERROR:
         default: {
-            FAIL_2("invalid mode", input.mode())
+            FAIL_2("invalid mode", input.mode());
         }
     }
 
@@ -42,127 +42,127 @@ auto CheckProto_1(const Ciphertext& input, const bool silent, const bool nested)
 
     static constexpr auto limit = 64_uz;
 
-    if (1 > input.iv().size()) { FAIL_1("iv too small") }
+    if (1 > input.iv().size()) { FAIL_1("iv too small"); }
 
-    if (limit < input.iv().size()) { FAIL_1("iv too large") }
+    if (limit < input.iv().size()) { FAIL_1("iv too large"); }
 
-    if (limit < input.tag().size()) { FAIL_1("tag too large") }
+    if (limit < input.tag().size()) { FAIL_1("tag too large"); }
 
-    if (!input.has_data()) { FAIL_1("missing data") }
+    if (!input.has_data()) { FAIL_1("missing data"); }
 
     return true;
 }
 auto CheckProto_2(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(2)
+    UNDEFINED_VERSION(2);
 }
 
 auto CheckProto_3(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(3)
+    UNDEFINED_VERSION(3);
 }
 
 auto CheckProto_4(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(4)
+    UNDEFINED_VERSION(4);
 }
 
 auto CheckProto_5(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(5)
+    UNDEFINED_VERSION(5);
 }
 
 auto CheckProto_6(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(6)
+    UNDEFINED_VERSION(6);
 }
 
 auto CheckProto_7(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(const Ciphertext& input, const bool silent, const bool)
     -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

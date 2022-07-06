@@ -131,7 +131,7 @@ auto TransferBalanceItem::startup(
             api::session::Workflow::InstantiateTransfer(api_, workflow).second;
     }
 
-    OT_ASSERT(transfer_)
+    OT_ASSERT(transfer_);
 
     lock.unlock();
     auto text = UnallocatedCString{};

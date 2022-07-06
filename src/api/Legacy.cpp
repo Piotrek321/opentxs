@@ -363,7 +363,7 @@ auto Legacy::get_path(const fs::path& fragment, const int instance)
     auto output = fs::path{};
     const auto success = AppendFolder(output, app_data_folder_, name);
 
-    OT_ASSERT(success)
+    OT_ASSERT(success);
 
     return output;
 }

@@ -80,12 +80,12 @@ IssuerItem::IssuerItem(
     , issuer_{api_.Wallet().Internal().Issuer(parent.NymID(), rowID)}
     , currency_{currency}
 {
-    OT_ASSERT(issuer_)
+    OT_ASSERT(issuer_);
 
     setup_listeners(listeners_);
     startup_ = std::make_unique<std::thread>(&IssuerItem::startup, this);
 
-    OT_ASSERT(startup_)
+    OT_ASSERT(startup_);
 }
 
 auto IssuerItem::Debug() const noexcept -> UnallocatedCString
@@ -128,7 +128,7 @@ void IssuerItem::process_account(const Message& message) noexcept
     wait_for_startup();
     const auto body = message.Body();
 
-    OT_ASSERT(2 < message.Body().size())
+    OT_ASSERT(2 < message.Body().size());
 
     const auto accountID = api_.Factory().Identifier(body.at(1));
 

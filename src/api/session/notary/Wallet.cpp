@@ -98,7 +98,7 @@ auto Wallet::load_legacy_account(
     const auto& rowMutex = std::get<0>(row);
     auto& pAccount = std::get<1>(row);
 
-    OT_ASSERT(CheckLock(lock, rowMutex))
+    OT_ASSERT(CheckLock(lock, rowMutex));
 
     pAccount.reset(Account::LoadExistingAccount(api_, accountID, server_.ID()));
 
@@ -125,20 +125,20 @@ auto Wallet::load_legacy_account(
     auto serialized = String::Factory();
     auto saved = pAccount->SaveContractRaw(serialized);
 
-    OT_ASSERT(saved)
+    OT_ASSERT(saved);
 
     const auto& ownerID = pAccount->GetNymID();
 
-    OT_ASSERT(false == ownerID.empty())
+    OT_ASSERT(false == ownerID.empty());
 
     const auto& unitID = pAccount->GetInstrumentDefinitionID();
 
-    OT_ASSERT(false == unitID.empty())
+    OT_ASSERT(false == unitID.empty());
 
     const auto contract = UnitDefinition(unitID);
     const auto& serverID = pAccount->GetPurportedNotaryID();
 
-    OT_ASSERT(server_.ID() == serverID)
+    OT_ASSERT(server_.ID() == serverID);
 
     saved = api_.Storage().Store(
         accountID.str(),
@@ -151,7 +151,7 @@ auto Wallet::load_legacy_account(
         unitID,
         extract_unit(unitID));
 
-    OT_ASSERT(saved)
+    OT_ASSERT(saved);
 
     return true;
 }

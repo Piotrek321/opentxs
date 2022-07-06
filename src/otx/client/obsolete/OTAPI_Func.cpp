@@ -162,7 +162,7 @@ OTAPI_Func::OTAPI_Func(
     } else if (theType == GET_MARKET_LIST) {
         nTransNumsNeeded_ = 0;
     } else if (theType != GET_NYM_MARKET_OFFERS) {
-        OT_FAIL
+        OT_FAIL;
     }
 }
 
@@ -186,7 +186,7 @@ OTAPI_Func::OTAPI_Func(
             LogConsole()(OT_PRETTY_CLASS())(
                 "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
-            OT_FAIL
+            OT_FAIL;
         }
     }
 }
@@ -212,7 +212,7 @@ OTAPI_Func::OTAPI_Func(
             LogConsole()(OT_PRETTY_CLASS())(
                 "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
-            OT_FAIL
+            OT_FAIL;
         }
     }
 }
@@ -241,7 +241,7 @@ OTAPI_Func::OTAPI_Func(
             LogConsole()(OT_PRETTY_CLASS())(
                 "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
-            OT_FAIL
+            OT_FAIL;
         }
     }
 }
@@ -276,14 +276,14 @@ OTAPI_Func::OTAPI_Func(
                 LogConsole()(OT_PRETTY_CLASS())(
                     "Error setting transaction number. ")(e.what())
                     .Flush();
-                OT_FAIL
+                OT_FAIL;
             }
         } break;
         default: {
             LogConsole()(OT_PRETTY_CLASS())(
                 "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
-            OT_FAIL
+            OT_FAIL;
         }
     }
 }
@@ -322,7 +322,7 @@ OTAPI_Func::OTAPI_Func(
             "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
             "ERROR!!!!!!")
             .Flush();
-        OT_FAIL
+        OT_FAIL;
     }
 }
 
@@ -365,7 +365,7 @@ OTAPI_Func::OTAPI_Func(
             "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
             "ERROR!!!!!!")
             .Flush();
-        OT_FAIL
+        OT_FAIL;
     }
 }
 
@@ -400,7 +400,7 @@ OTAPI_Func::OTAPI_Func(
                 "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
                 "ERROR!!!!!!")
                 .Flush();
-            OT_FAIL
+            OT_FAIL;
         }
     }
 }
@@ -427,7 +427,7 @@ OTAPI_Func::OTAPI_Func(
         basketID_ = basketID;
         accountID_ = accountID;
     } else {
-        OT_FAIL
+        OT_FAIL;
     }
 }
 
@@ -469,7 +469,7 @@ OTAPI_Func::OTAPI_Func(
             LogConsole()(OT_PRETTY_CLASS())(
                 "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
-            OT_FAIL
+            OT_FAIL;
         }
     }
 }
@@ -502,7 +502,7 @@ void OTAPI_Func::run()
        DELETE_ASSET_ACCT: { last_attempt_ =
                     api_.InternalClient().OTAPI().deleteAssetAccount(context_,
        accountID_); } break; case ACTIVATE_SMART_CONTRACT: {
-                OT_ASSERT(contract_)
+                OT_ASSERT(contract_);
 
                 last_attempt_ =
        api_.InternalClient().OTAPI().activateSmartContract( context_,
@@ -533,7 +533,7 @@ void OTAPI_Func::run()
                     context_, accountID_, transactionNumber_);
             } break;
             case DEPOSIT_PAYMENT_PLAN: {
-                OT_ASSERT(paymentPlan_)
+                OT_ASSERT(paymentPlan_);
 
                 last_attempt_ =
        api_.InternalClient().OTAPI().depositPaymentPlan( context_,

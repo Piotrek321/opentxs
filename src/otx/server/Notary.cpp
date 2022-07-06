@@ -5269,7 +5269,7 @@ void Notary::NotarizeExchangeBasket(
                                 // now, let's Save them ALL to disk..
 
                                 for (auto& account : listUserAccounts) {
-                                    OT_ASSERT(account)
+                                    OT_ASSERT(account);
 
                                     if (bSuccess) {
                                         account.Release();
@@ -5279,7 +5279,7 @@ void Notary::NotarizeExchangeBasket(
                                 }
 
                                 for (auto& account : listServerAccounts) {
-                                    OT_ASSERT(account)
+                                    OT_ASSERT(account);
 
                                     if (bSuccess) {
                                         account.Release();
@@ -5292,7 +5292,7 @@ void Notary::NotarizeExchangeBasket(
                                 // if everything was successful.)
                                 while (!listInboxes.empty()) {
                                     Ledger* pTempInbox = listInboxes.front();
-                                    if (nullptr == pTempInbox) OT_FAIL;
+                                    if (nullptr == pTempInbox) { OT_FAIL; }
                                     listInboxes.pop_front();
 
                                     if (true == bSuccess) {

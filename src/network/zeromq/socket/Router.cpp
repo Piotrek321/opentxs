@@ -74,7 +74,7 @@ auto Router::clone() const noexcept -> Router*
 
 void Router::process_incoming(const Lock& lock, Message&& message) noexcept
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
 
     LogTrace()(OT_PRETTY_CLASS())(
         "Incoming messaged received. Triggering callback.")

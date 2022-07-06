@@ -101,7 +101,7 @@ auto BlockchainSubaccount::qt_data(
         } break;
         default: {
         }
-    };
+    }
 }
 
 auto BlockchainSubaccountSource::qt_data(
@@ -132,7 +132,7 @@ auto BlockchainSubaccountSource::qt_data(
         } break;
         default: {
         }
-    };
+    }
 }
 
 auto BlockchainSubchain::qt_data(
@@ -163,6 +163,6 @@ auto BlockchainSubchain::qt_data(
         } break;
         default: {
         }
-    };
+    }
 }
 }  // namespace opentxs::ui::implementation

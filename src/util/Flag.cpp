@@ -32,7 +32,7 @@ auto Flag::Toggle() -> bool
 {
     auto expected = flag_.load();
 
-    while (false == flag_.compare_exchange_weak(expected, !expected)) { ; }
+    while (false == flag_.compare_exchange_weak(expected, !expected)) {}
 
     return expected;
 }

@@ -104,7 +104,7 @@
                                                                                \
     Result result = op_.GetFuture().get();                                     \
     const auto success =                                                       \
-        otx::LastReplyStatus::MessageSuccess == std::get<0>(result);
+        otx::LastReplyStatus::MessageSuccess == std::get<0>(result)
 
 #define DO_OPERATION_TASK_DONE(a, ...)                                         \
     auto started = op_.a(__VA_ARGS__);                                         \
@@ -135,21 +135,16 @@
                                                                                \
     Result result = op_.GetFuture().get();                                     \
     const auto success =                                                       \
-        otx::LastReplyStatus::MessageSuccess == std::get<0>(result);
-
-#define SM_SHUTDOWN()                                                          \
-    {                                                                          \
-        SM_YIELD(50);                                                          \
-    }
+        otx::LastReplyStatus::MessageSuccess == std::get<0>(result)
 
 #define SM_YIELD(a)                                                            \
-    {                                                                          \
-        if (shutdown().load()) { return false; }                               \
+    if (shutdown().load()) return false;                                       \
                                                                                \
-        Sleep(std::chrono::milliseconds(a));                                   \
+    Sleep(std::chrono::milliseconds(a));                                       \
                                                                                \
-        if (shutdown().load()) { return false; }                               \
-    }
+    if (shutdown().load()) return false
+
+#define SM_SHUTDOWN() SM_YIELD(50)
 
 namespace opentxs::otx::client::implementation
 {
@@ -234,11 +229,11 @@ auto StateMachine::check_admin(const otx::context::Server& context) const
         get_admin(next_task_id(), serverPassword);
     }
 
-    SM_SHUTDOWN()
+    SM_SHUTDOWN();
 
     if (haveAdmin) { check_server_name(context); }
 
-    SM_SHUTDOWN()
+    SM_SHUTDOWN();
 
     return true;
 }
@@ -250,7 +245,7 @@ auto StateMachine::check_missing_contract(M& missing, U& unknown, bool skip)
     auto items = missing.Copy();
 
     for (const auto& [targetID, taskID] : items) {
-        SM_SHUTDOWN()
+        SM_SHUTDOWN();
 
         find_contract<T, C>(taskID, targetID, missing, unknown, skip);
     }
@@ -276,8 +271,8 @@ auto StateMachine::check_registration(
     const identifier::Nym& nymID,
     const identifier::Notary& serverID) const -> bool
 {
-    OT_ASSERT(false == nymID.empty())
-    OT_ASSERT(false == serverID.empty())
+    OT_ASSERT(false == nymID.empty());
+    OT_ASSERT(false == serverID.empty());
 
     auto context = client_.Wallet().ServerContext(nymID, serverID);
     RequestNumber request{0};
@@ -296,7 +291,7 @@ auto StateMachine::check_registration(
             .Flush();
         state_ = State::ready;
 
-        OT_ASSERT(context)
+        OT_ASSERT(context);
 
         return false;
     }
@@ -310,7 +305,7 @@ auto StateMachine::check_registration(
         state_ = State::ready;
         context = client_.Wallet().ServerContext(nymID, serverID);
 
-        OT_ASSERT(context)
+        OT_ASSERT(context);
 
         return false;
     } else {
@@ -323,7 +318,7 @@ auto StateMachine::check_registration(
 auto StateMachine::check_server_contract(
     const identifier::Notary& serverID) const -> bool
 {
-    OT_ASSERT(false == serverID.empty())
+    OT_ASSERT(false == serverID.empty());
 
     try {
         client_.Wallet().Server(serverID);
@@ -466,7 +461,7 @@ auto StateMachine::download_mint(
 auto StateMachine::download_nym(const TaskID taskID, const CheckNymTask& id)
     const -> bool
 {
-    OT_ASSERT(false == id->empty())
+    OT_ASSERT(false == id->empty());
 
     otx::context::Server::ExtraArgs args{};
 
@@ -510,7 +505,7 @@ auto StateMachine::download_server(
     const TaskID taskID,
     const DownloadContractTask& contractID) const -> bool
 {
-    OT_ASSERT(false == contractID->empty())
+    OT_ASSERT(false == contractID->empty());
 
     DO_OPERATION(DownloadContract, contractID);
 
@@ -525,7 +520,7 @@ auto StateMachine::download_unit_definition(
     const TaskID taskID,
     const DownloadUnitDefinitionTask& id) const -> bool
 {
-    OT_ASSERT(false == id->empty())
+    OT_ASSERT(false == id->empty());
 
     DO_OPERATION(DownloadContract, id);
 
@@ -700,7 +695,7 @@ auto StateMachine::main_loop() noexcept -> bool
     UniqueQueue<SendChequeTask> retrySendCheque{};
     auto pContext = client_.Wallet().ServerContext(nymID, serverID);
 
-    OT_ASSERT(pContext)
+    OT_ASSERT(pContext);
 
     const auto& context = *pContext;
 
@@ -774,7 +769,7 @@ auto StateMachine::message_nym(const TaskID taskID, const MessageTask& task)
         }
     };
 
-    OT_ASSERT(false == recipient->empty())
+    OT_ASSERT(false == recipient->empty());
 
     DO_OPERATION(SendMessage, recipient, String::Factory(text), updateID);
 
@@ -796,7 +791,7 @@ auto StateMachine::pay_nym(const TaskID taskID, const PaymentTask& task) const
 {
     const auto& [recipient, payment] = task;
 
-    OT_ASSERT(false == recipient->empty())
+    OT_ASSERT(false == recipient->empty());
 
     DO_OPERATION(ConveyPayment, recipient, payment);
 
@@ -808,7 +803,7 @@ auto StateMachine::pay_nym_cash(const TaskID taskID, const PayCashTask& task)
 {
     const auto& [recipient, workflowID] = task;
 
-    OT_ASSERT(false == recipient->empty())
+    OT_ASSERT(false == recipient->empty());
 
     DO_OPERATION(SendCash, recipient, workflowID);
 
@@ -819,7 +814,7 @@ auto StateMachine::process_inbox(
     const TaskID taskID,
     const ProcessInboxTask& id) const -> bool
 {
-    OT_ASSERT(false == id->empty())
+    OT_ASSERT(false == id->empty());
 
     DO_OPERATION(UpdateAccount, id);
 
@@ -832,7 +827,7 @@ auto StateMachine::publish_server_contract(
 {
     const auto& id = task.first;
 
-    OT_ASSERT(false == id->empty())
+    OT_ASSERT(false == id->empty());
 
     DO_OPERATION(PublishContract, id);
 
@@ -891,7 +886,7 @@ auto StateMachine::register_account(
 {
     const auto& [label, unitID] = task;
 
-    OT_ASSERT(false == unitID->empty())
+    OT_ASSERT(false == unitID->empty());
 
     try {
         client_.Wallet().UnitDefinition(unitID);
@@ -1026,7 +1021,7 @@ auto StateMachine::run_task(std::function<bool(const TaskID, const T&)> func)
     while (get_task<T>().Pop(task_id_, param)) {
         LogInsane()(OT_PRETTY_CLASS())(--task_count_).Flush();
 
-        SM_SHUTDOWN()
+        SM_SHUTDOWN();
 
         func(task_id_, param);
     }
@@ -1139,8 +1134,8 @@ auto StateMachine::write_and_send_cheque(
 {
     const auto& [accountID, recipient, value, memo, validFrom, validTo] = task;
 
-    OT_ASSERT(false == accountID->empty())
-    OT_ASSERT(false == recipient->empty())
+    OT_ASSERT(false == accountID->empty());
+    OT_ASSERT(false == recipient->empty());
 
     if (0 >= value) {
         LogError()(OT_PRETTY_CLASS())("Invalid amount.").Flush();
@@ -1214,3 +1209,11 @@ auto StateMachine::write_and_send_cheque_wrapper(
 
 StateMachine::Params::~Params() {}  // NOLINT
 }  // namespace opentxs::otx::client::implementation
+
+#undef SM_SHUTDOWN
+#undef SM_YIELD
+#undef DO_OPERATION_TASK_DONE
+#undef DO_OPERATION
+#undef STATE_MACHINE_READY_MILLISECONDS
+#undef NYM_REGISTRATION_MILLISECONDS
+#undef CONTRACT_DOWNLOAD_MILLISECONDS

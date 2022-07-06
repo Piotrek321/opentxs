@@ -23,10 +23,10 @@ namespace opentxs::proto
 
 auto CheckProto_1(const StorageSeeds& input, const bool silent) -> bool
 {
-    if (!input.has_defaultseed()) { FAIL_1("missing default seed") }
+    if (!input.has_defaultseed()) { FAIL_1("missing default seed"); }
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.defaultseed().size()) {
-        FAIL_1("invalid default seed")
+        FAIL_1("invalid default seed");
     }
 
     for (const auto& hash : input.seed()) {
@@ -37,11 +37,11 @@ auto CheckProto_1(const StorageSeeds& input, const bool silent) -> bool
                 StorageSeedsAllowedStorageItemHash().at(input.version()).second,
                 silent);
 
-            if (!valid) { FAIL_1("invalid has") }
+            if (!valid) { FAIL_1("invalid has"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed storage item hash version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
@@ -55,91 +55,91 @@ auto CheckProto_2(const StorageSeeds& input, const bool silent) -> bool
 
 auto CheckProto_3(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(3)
+    UNDEFINED_VERSION(3);
 }
 
 auto CheckProto_4(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(4)
+    UNDEFINED_VERSION(4);
 }
 
 auto CheckProto_5(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(5)
+    UNDEFINED_VERSION(5);
 }
 
 auto CheckProto_6(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(6)
+    UNDEFINED_VERSION(6);
 }
 
 auto CheckProto_7(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(const StorageSeeds& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

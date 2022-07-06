@@ -29,69 +29,69 @@ auto CheckProto_1(
     bool& haveHD,
     const AuthorityMode& mode) -> bool
 {
-    if (!input.has_nymid()) { FAIL_1("missing nym id") }
+    if (!input.has_nymid()) { FAIL_1("missing nym id"); }
 
-    if (nymID != input.nymid()) { FAIL_1("wrong nym id") }
+    if (nymID != input.nymid()) { FAIL_1("wrong nym id"); }
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.nymid().size()) {
-        FAIL_2("invalid nym id", input.nymid())
+        FAIL_2("invalid nym id", input.nymid());
     }
 
-    if (!input.has_masterid()) { FAIL_1("missing master credential id") }
+    if (!input.has_masterid()) { FAIL_1("missing master credential id"); }
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.masterid().size()) {
-        FAIL_2("invalid master credential id", input.masterid())
+        FAIL_2("invalid master credential id", input.masterid());
     }
 
-    if (!input.has_mode()) { FAIL_1("missing mode") }
+    if (!input.has_mode()) { FAIL_1("missing mode"); }
 
     const bool checkMode = (AUTHORITYMODE_ERROR != mode);
 
     if (checkMode) {
-        if (input.mode() != mode) { FAIL_2("incorrect mode", input.mode()) }
+        if (input.mode() != mode) { FAIL_2("incorrect mode", input.mode()); }
     }
 
     switch (input.mode()) {
         case AUTHORITYMODE_INDEX: {
             if (KEYMODE_PRIVATE == key) {
-                if (1 > input.index()) { FAIL_1("missing index") }
+                if (1 > input.index()) { FAIL_1("missing index"); }
             } else {
                 if (0 < input.index()) {
-                    FAIL_1("index present in public mode")
+                    FAIL_1("index present in public mode");
                 }
             }
 
             if (input.has_mastercredential()) {
-                FAIL_1("full master credential included in index mode")
+                FAIL_1("full master credential included in index mode");
             }
 
             if (0 < input.activechildren_size()) {
                 FAIL_2(
                     "full active credentials included in index mode",
-                    input.activechildren_size())
+                    input.activechildren_size());
             }
 
             if (0 < input.revokedchildren_size()) {
                 FAIL_2(
                     "full revoked credentials included in index mode",
-                    input.revokedchildren_size())
+                    input.revokedchildren_size());
             }
 
             for (const auto& it : input.activechildids()) {
                 if (MIN_PLAUSIBLE_IDENTIFIER > it.size()) {
-                    FAIL_2("invalid active child credential identifier", it)
+                    FAIL_2("invalid active child credential identifier", it);
                 }
             }
 
             for (const auto& it : input.revokedchildids()) {
                 if (MIN_PLAUSIBLE_IDENTIFIER > it.size()) {
-                    FAIL_2("invalid revoked child credential identifier", it)
+                    FAIL_2("invalid revoked child credential identifier", it);
                 }
             }
         } break;
         case AUTHORITYMODE_FULL: {
             if (!input.has_mastercredential()) {
-                FAIL_1("missing master credential")
+                FAIL_1("missing master credential");
             }
 
             if (!Check(
@@ -102,7 +102,7 @@ auto CheckProto_1(
                     key,
                     CREDROLE_MASTERKEY,
                     true)) {
-                FAIL_1("invalid master credential")
+                FAIL_1("invalid master credential");
             }
 
             if (CREDTYPE_HD == input.mastercredential().type()) {
@@ -110,19 +110,20 @@ auto CheckProto_1(
             }
 
             if (input.mastercredential().id() != input.masterid()) {
-                FAIL_2("wrong master credential", input.mastercredential().id())
+                FAIL_2(
+                    "wrong master credential", input.mastercredential().id());
             }
 
             if (0 < input.activechildids_size()) {
                 FAIL_2(
                     "active credential IDs included in full mode",
-                    input.activechildids_size())
+                    input.activechildids_size());
             }
 
             if (0 < input.revokedchildids_size()) {
                 FAIL_2(
                     "revoked credential IDs included in full mode",
-                    input.revokedchildids_size())
+                    input.revokedchildids_size());
             }
 
             for (const auto& it : input.activechildren()) {
@@ -134,13 +135,13 @@ auto CheckProto_1(
                         key,
                         CREDROLE_ERROR,
                         true)) {
-                    FAIL_1("invalid active child credential")
+                    FAIL_1("invalid active child credential");
                 }
 
                 if (CREDTYPE_HD == it.type()) { haveHD = true; }
 
                 if (CREDROLE_MASTERKEY == it.role()) {
-                    FAIL_1("unexpected master credential")
+                    FAIL_1("unexpected master credential");
                 }
             }
 
@@ -153,22 +154,22 @@ auto CheckProto_1(
                         key,
                         CREDROLE_ERROR,
                         true)) {
-                    FAIL_1("invalid revoked child credential")
+                    FAIL_1("invalid revoked child credential");
                 }
 
                 if (CREDTYPE_HD == it.type()) { haveHD = true; }
 
                 if (CREDROLE_MASTERKEY == it.role()) {
-                    FAIL_1("unexpected master credential")
+                    FAIL_1("unexpected master credential");
                 }
             }
 
             if (KEYMODE_PRIVATE == key) {
-                FAIL_1("private credentials serialized in public form")
+                FAIL_1("private credentials serialized in public form");
             } else {
                 if (haveHD) {
                     if (0 < input.index()) {
-                        FAIL_1("index present in public mode")
+                        FAIL_1("index present in public mode");
                     }
                 }
             }
@@ -176,7 +177,7 @@ auto CheckProto_1(
         } break;
         case AUTHORITYMODE_ERROR:
         default:
-            FAIL_2("unknown mode", input.mode())
+            FAIL_2("unknown mode", input.mode());
     }
 
     return true;
@@ -245,7 +246,7 @@ auto CheckProto_7(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(
@@ -256,7 +257,7 @@ auto CheckProto_8(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(
@@ -267,7 +268,7 @@ auto CheckProto_9(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(
@@ -278,7 +279,7 @@ auto CheckProto_10(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(
@@ -289,7 +290,7 @@ auto CheckProto_11(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(
@@ -300,7 +301,7 @@ auto CheckProto_12(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(
@@ -311,7 +312,7 @@ auto CheckProto_13(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(
@@ -322,7 +323,7 @@ auto CheckProto_14(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(
@@ -333,7 +334,7 @@ auto CheckProto_15(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(
@@ -344,7 +345,7 @@ auto CheckProto_16(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(
@@ -355,7 +356,7 @@ auto CheckProto_17(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(
@@ -366,7 +367,7 @@ auto CheckProto_18(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(
@@ -377,7 +378,7 @@ auto CheckProto_19(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(
@@ -388,6 +389,6 @@ auto CheckProto_20(
     bool&,
     const AuthorityMode&) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

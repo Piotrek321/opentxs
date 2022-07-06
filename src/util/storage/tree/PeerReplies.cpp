@@ -91,7 +91,6 @@ auto PeerReplies::Load(
     if (realID.empty()) { return false; }
 
     return load_proto<proto::PeerReply>(realID, output, notUsed, checking);
-    ;
 }
 
 auto PeerReplies::save(const std::unique_lock<std::mutex>& lock) const -> bool

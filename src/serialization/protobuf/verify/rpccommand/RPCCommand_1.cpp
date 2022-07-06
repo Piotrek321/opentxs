@@ -31,8 +31,8 @@ namespace opentxs::proto
 {
 auto CheckProto_1(const RPCCommand& input, const bool silent) -> bool
 {
-    CHECK_IDENTIFIER(cookie)
-    CHECK_EXISTS(type)
+    CHECK_IDENTIFIER(cookie);
+    CHECK_EXISTS(type);
 
     switch (input.type()) {
         case RPCCOMMAND_ADDCLIENTSESSION: {
@@ -1010,7 +1010,7 @@ auto CheckProto_1(const RPCCommand& input, const bool silent) -> bool
         case RPCCOMMAND_RENAMEACCOUNT:
         case RPCCOMMAND_ERROR:
         default: {
-            FAIL_1("invalid type")
+            FAIL_1("invalid type");
         }
     }
 

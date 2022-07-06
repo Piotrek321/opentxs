@@ -13,8 +13,8 @@ namespace opentxs::proto
 {
 auto CheckProto_1(const StorageRoot& input, const bool silent) -> bool
 {
-    CHECK_IDENTIFIER(items)
-    CHECK_EXCLUDED(sequence)
+    CHECK_IDENTIFIER(items);
+    CHECK_EXCLUDED(sequence);
 
     return true;
 }

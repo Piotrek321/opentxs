@@ -75,7 +75,7 @@ AccountSummary::AccountSummary(
     setup_listeners(listeners_);
     startup_ = std::make_unique<std::thread>(&AccountSummary::startup, this);
 
-    OT_ASSERT(startup_)
+    OT_ASSERT(startup_);
 }
 
 auto AccountSummary::construct_row(
@@ -153,8 +153,8 @@ void AccountSummary::process_issuer(const Message& message) noexcept
     const auto nymID = api_.Factory().NymID(body.at(1));
     const auto issuerID = api_.Factory().NymID(body.at(2));
 
-    OT_ASSERT(false == nymID->empty())
-    OT_ASSERT(false == issuerID->empty())
+    OT_ASSERT(false == nymID->empty());
+    OT_ASSERT(false == issuerID->empty());
 
     if (nymID != primary_id_) { return; }
 
@@ -188,7 +188,7 @@ void AccountSummary::process_server(const Message& message) noexcept
 
     const auto serverID = api_.Factory().ServerID(body.at(1));
 
-    OT_ASSERT(false == serverID->empty())
+    OT_ASSERT(false == serverID->empty());
 
     process_server(serverID);
 }

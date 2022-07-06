@@ -56,6 +56,6 @@ TEST(Test_Stress, PubSub_100)
         EXPECT_TRUE(socket->Send(opentxs::network::zeromq::Message{}));
     }
 
-    while (pub.size() > results.load()) { ; }
+    while (pub.size() > results.load()) {}
 }
 }  // namespace ottest

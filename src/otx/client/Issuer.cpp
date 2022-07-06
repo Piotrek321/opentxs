@@ -228,7 +228,7 @@ auto Issuer::toString() const -> UnallocatedCString
                 output << "faucet";
             } break;
             default: {
-                OT_FAIL
+                OT_FAIL;
             }
         }
 
@@ -286,7 +286,7 @@ auto Issuer::add_request(
     const Identifier& requestID,
     const Identifier& replyID) -> bool
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
 
     auto [found, it] = find_request(lock, type, requestID);
     const auto& notUsed [[maybe_unused]] = it;
@@ -613,7 +613,7 @@ auto Issuer::find_request(
     const contract::peer::PeerRequestType type,
     const Identifier& requestID) -> std::pair<bool, Issuer::Workflow::iterator>
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
 
     auto& work = peer_requests_[type];
     auto it = work.find(requestID);
@@ -765,7 +765,7 @@ auto Issuer::Serialize(proto::Issuer& output) const -> bool
         }
     }
 
-    OT_ASSERT(proto::Validate(output, VERBOSE))
+    OT_ASSERT(proto::Validate(output, VERBOSE));
 
     return true;
 }

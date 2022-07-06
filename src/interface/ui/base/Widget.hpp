@@ -126,7 +126,7 @@ public:
         {
             auto real = dynamic_cast<T*>(object);
 
-            OT_ASSERT(nullptr != real)
+            OT_ASSERT(nullptr != real);
 
             (real->*callback_)(message);
         }

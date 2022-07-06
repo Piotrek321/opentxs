@@ -849,13 +849,13 @@ auto UserCommandProcessor::cmd_get_box_receipt(ReplyMessage& reply) const
 
     switch (boxType) {
         case NYMBOX_DEPTH: {
-            OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_nymbox)
+            OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_nymbox);
         } break;
         case INBOX_DEPTH: {
-            OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_inbox)
+            OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_inbox);
         } break;
         case OUTBOX_DEPTH: {
-            OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_outbox)
+            OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_outbox);
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Invalid box type.").Flush();

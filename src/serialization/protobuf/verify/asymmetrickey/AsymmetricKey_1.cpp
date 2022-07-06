@@ -58,7 +58,7 @@ auto CheckProto_1(
         } break;
         case CREDTYPE_ERROR:
         default: {
-            FAIL_2("incorrect or unknown type", type)
+            FAIL_2("incorrect or unknown type", type);
         }
     }
 
@@ -121,7 +121,7 @@ auto CheckProto_2(
         } break;
         case CREDTYPE_ERROR:
         default: {
-            FAIL_2("incorrect or unknown type", type)
+            FAIL_2("incorrect or unknown type", type);
         }
     }
 
@@ -135,7 +135,7 @@ auto CheckProto_3(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(3)
+    UNDEFINED_VERSION(3);
 }
 
 auto CheckProto_4(
@@ -145,7 +145,7 @@ auto CheckProto_4(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(4)
+    UNDEFINED_VERSION(4);
 }
 
 auto CheckProto_5(
@@ -155,7 +155,7 @@ auto CheckProto_5(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(5)
+    UNDEFINED_VERSION(5);
 }
 
 auto CheckProto_6(
@@ -165,7 +165,7 @@ auto CheckProto_6(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(6)
+    UNDEFINED_VERSION(6);
 }
 
 auto CheckProto_7(
@@ -175,7 +175,7 @@ auto CheckProto_7(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(
@@ -185,7 +185,7 @@ auto CheckProto_8(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(
@@ -195,7 +195,7 @@ auto CheckProto_9(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(
@@ -205,7 +205,7 @@ auto CheckProto_10(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(
@@ -215,7 +215,7 @@ auto CheckProto_11(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(
@@ -225,7 +225,7 @@ auto CheckProto_12(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(
@@ -235,7 +235,7 @@ auto CheckProto_13(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(
@@ -245,7 +245,7 @@ auto CheckProto_14(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(
@@ -255,7 +255,7 @@ auto CheckProto_15(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(
@@ -265,7 +265,7 @@ auto CheckProto_16(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(
@@ -275,7 +275,7 @@ auto CheckProto_17(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(
@@ -285,7 +285,7 @@ auto CheckProto_18(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(
@@ -295,7 +295,7 @@ auto CheckProto_19(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(
@@ -305,6 +305,6 @@ auto CheckProto_20(
     const KeyMode,
     const KeyRole) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

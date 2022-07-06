@@ -331,19 +331,10 @@ if(MSVC)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4217")
   set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4217")
 else()
-  set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Wno-format-nonliteral -Wno-noexcept -Wno-redundant-move -Wno-shadow -Wno-sign-conversion -Wno-switch-enum -Wno-undef -Wno-unused-parameter"
-  )
-endif()
-
-if(${CMAKE_CXX_COMPILER_ID}
-   MATCHES
-   Clang
-)
-  # TODO c++20 disable -Wreturn-std-move-in-c++11
+  # TODO c++20 disable -Wreturn-std-move-in-c++11 and enable -Wredundant-move
   #TODO remove -Wno-reserved-identifier
   set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -Wno-reserved-identifier  -Wno-c++2a-compat -Wno-c++20-compat -Wno-documentation -Wno-documentation-unknown-command -Wno-extra-semi-stmt -Wno-implicit-int-conversion"
+      "${CMAKE_CXX_FLAGS} -Wno-reserved-identifier -Wno-c++2a-compat -Wno-c++20-compat -Wno-deprecated-declarations -Wno-format-nonliteral -Wno-implicit-int-conversion -Wno-noexcept -Wno-redundant-move -Wno-shadow -Wno-sign-conversion -Wno-switch-enum -Wno-undef -Wno-unused-parameter"
   )
 endif()
 

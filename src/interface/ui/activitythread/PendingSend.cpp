@@ -61,8 +61,8 @@ PendingSend::PendingSend(
     , display_amount_(std::move(display))
     , memo_(std::move(memo))
 {
-    OT_ASSERT(false == nym_id_.empty())
-    OT_ASSERT(false == item_id_.empty())
+    OT_ASSERT(false == nym_id_.empty());
+    OT_ASSERT(false == item_id_.empty());
 }
 
 auto PendingSend::Amount() const noexcept -> opentxs::Amount

@@ -150,7 +150,7 @@ void Sqlite3::Init_Sqlite3()
     } else {
         LogError()(OT_PRETTY_CLASS())("Failed to initialize database.").Flush();
 
-        OT_FAIL
+        OT_FAIL;
     }
 }
 
@@ -310,7 +310,7 @@ void Sqlite3::set_root(
         static_cast<int>(config_.sqlite3_root_key_.size()),
         SQLITE_STATIC);
 
-    OT_ASSERT(SQLITE_OK == bound)
+    OT_ASSERT(SQLITE_OK == bound);
 
     bound = sqlite3_bind_blob(
         root,
@@ -319,7 +319,7 @@ void Sqlite3::set_root(
         static_cast<int>(rootHash.size()),
         SQLITE_STATIC);
 
-    OT_ASSERT(SQLITE_OK == bound)
+    OT_ASSERT(SQLITE_OK == bound);
 
     sql << expand_sql(root) << " ";
     sqlite3_finalize(root);

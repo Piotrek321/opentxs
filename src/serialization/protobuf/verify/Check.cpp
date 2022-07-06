@@ -15,7 +15,7 @@
 
 namespace opentxs::proto
 {
-void PrintErrorMessage(const char* proto, const char* error) noexcept
+void PrintErrorMessage(const char* proto, std::string_view error) noexcept
 {
     std::stringstream out{};
     out << error << " for " << proto << std::endl;
@@ -25,7 +25,7 @@ void PrintErrorMessage(const char* proto, const char* error) noexcept
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
-    const char* error) noexcept
+    std::string_view error) noexcept
 {
     std::stringstream out{};
     out << "Verify version " << version << " " << proto << " failed: " << error
@@ -36,18 +36,7 @@ void PrintErrorMessage(
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
-    const UnallocatedCString& error) noexcept
-{
-    std::stringstream out{};
-    out << "Verify version " << version << " " << proto << " failed: " << error
-        << std::endl;
-    WriteLogMessage(out);
-}
-
-void PrintErrorMessage(
-    const char* proto,
-    const unsigned int version,
-    const char* error,
+    std::string_view error,
     const long long int value) noexcept
 {
     std::stringstream out{};
@@ -59,8 +48,8 @@ void PrintErrorMessage(
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
-    const char* error,
-    const UnallocatedCString& value) noexcept
+    std::string_view error,
+    std::string_view value) noexcept
 {
     std::stringstream out{};
     out << "Verify version " << version << " " << proto << " failed: " << error

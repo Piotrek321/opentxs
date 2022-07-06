@@ -337,7 +337,7 @@ auto Deserialize(const Type chain, const std::uint8_t type) noexcept
     switch (type) {
         case 0: {
             return DefaultFilter(chain);
-        };
+        }
         case 88: {
             return cfilter::Type::ES;
         }

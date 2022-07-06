@@ -100,7 +100,7 @@ auto Pull::have_callback() const noexcept -> bool { return true; }
 auto Pull::process_incoming(const Lock& lock, Message&& message) noexcept
     -> void
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
 
     callback_.Process(std::move(message));
 }

@@ -48,9 +48,7 @@ auto StringFill(
     if (nullptr != szAppend) { strString.append(szAppend); }
 
     for (; (static_cast<std::int32_t>(strString.length()) < iLength);
-         strString.append(" ")) {
-        ;
-    }
+         strString.append(" ")) {}
 
     out_strString.Set(strString.c_str());
 
@@ -130,7 +128,7 @@ auto Settings::Load(const String& strConfigurationFileExactPath) const -> bool
             .Flush();
 
         OT_FAIL;
-    };
+    }
 
     if (!IsEmpty()) {
         LogError()(OT_PRETTY_CLASS())("p_Settings is not empty!").Flush();

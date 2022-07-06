@@ -14,114 +14,114 @@ namespace opentxs::proto
 
 auto CheckProto_1(const Claim& input, const bool silent) -> bool
 {
-    if (!input.has_nymid()) { FAIL_1("missing nym id") }
+    if (!input.has_nymid()) { FAIL_1("missing nym id"); }
 
-    if (!input.has_section()) { FAIL_1("missing section") }
+    if (!input.has_section()) { FAIL_1("missing section"); }
 
-    if (!input.has_type()) { FAIL_1("missing type") }
+    if (!input.has_type()) { FAIL_1("missing type"); }
 
-    if (!input.has_start()) { FAIL_1("missing start") }
+    if (!input.has_start()) { FAIL_1("missing start"); }
 
-    if (!input.has_end()) { FAIL_1("missing end") }
+    if (!input.has_end()) { FAIL_1("missing end"); }
 
-    if (!input.has_value()) { FAIL_1("missing value") }
+    if (!input.has_value()) { FAIL_1("missing value"); }
 
-    if (input.start() > input.end()) { FAIL_1("invalid interval") }
+    if (input.start() > input.end()) { FAIL_1("invalid interval"); }
 
     return true;
 }
 auto CheckProto_2(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(2)
+    UNDEFINED_VERSION(2);
 }
 
 auto CheckProto_3(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(3)
+    UNDEFINED_VERSION(3);
 }
 
 auto CheckProto_4(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(4)
+    UNDEFINED_VERSION(4);
 }
 
 auto CheckProto_5(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(5)
+    UNDEFINED_VERSION(5);
 }
 
 auto CheckProto_6(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(6)
+    UNDEFINED_VERSION(6);
 }
 
 auto CheckProto_7(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(const Claim& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

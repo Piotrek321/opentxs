@@ -1167,7 +1167,7 @@ auto OT_API::SmartContract_ConfirmParty(
     pMessage->m_ascPayload->SetString(strInstrument);
 
     auto pNym = api_.Wallet().Nym(nymfile.get().ID());
-    OT_ASSERT(nullptr != pNym)
+    OT_ASSERT(nullptr != pNym);
 
     pMessage->SignContract(*pNym, reason);
     pMessage->SaveContract();

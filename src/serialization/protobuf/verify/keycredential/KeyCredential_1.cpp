@@ -33,12 +33,12 @@ auto CheckProto_1(
     bool validEncryptKey = false;
     bool validSignKey = false;
 
-    if (!input.has_mode()) { FAIL_1("missing mode") }
+    if (!input.has_mode()) { FAIL_1("missing mode"); }
 
-    if (input.mode() != mode) { FAIL_2("incorrect mode", input.mode()) }
+    if (input.mode() != mode) { FAIL_2("incorrect mode", input.mode()); }
 
     if (3 != input.key_size()) {
-        FAIL_4("wrong number of keys", input.key_size(), " required: ", "3")
+        FAIL_4("wrong number of keys", input.key_size(), " required: ", "3");
     }
 
     authKey = input.key(KEYROLE_AUTH - 1);
@@ -71,15 +71,15 @@ auto CheckProto_1(
             mode,
             KEYROLE_SIGN);
 
-        if (!validAuthKey) { FAIL_1("invalid auth key") }
+        if (!validAuthKey) { FAIL_1("invalid auth key"); }
 
-        if (!validEncryptKey) { FAIL_1("invalid encrypt key") }
+        if (!validEncryptKey) { FAIL_1("invalid encrypt key"); }
 
-        if (!validSignKey) { FAIL_1("invalid sign key") }
+        if (!validSignKey) { FAIL_1("invalid sign key"); }
     } catch (const std::out_of_range&) {
         FAIL_2(
             "allowed asymmetric key version not defined for version",
-            input.version())
+            input.version());
     }
 
     return true;
@@ -100,7 +100,7 @@ auto CheckProto_3(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(3)
+    UNDEFINED_VERSION(3);
 }
 
 auto CheckProto_4(
@@ -109,7 +109,7 @@ auto CheckProto_4(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(4)
+    UNDEFINED_VERSION(4);
 }
 
 auto CheckProto_5(
@@ -118,7 +118,7 @@ auto CheckProto_5(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(5)
+    UNDEFINED_VERSION(5);
 }
 
 auto CheckProto_6(
@@ -127,7 +127,7 @@ auto CheckProto_6(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(6)
+    UNDEFINED_VERSION(6);
 }
 
 auto CheckProto_7(
@@ -136,7 +136,7 @@ auto CheckProto_7(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(
@@ -145,7 +145,7 @@ auto CheckProto_8(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(
@@ -154,7 +154,7 @@ auto CheckProto_9(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(
@@ -163,7 +163,7 @@ auto CheckProto_10(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(
@@ -172,7 +172,7 @@ auto CheckProto_11(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(
@@ -181,7 +181,7 @@ auto CheckProto_12(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(
@@ -190,7 +190,7 @@ auto CheckProto_13(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(
@@ -199,7 +199,7 @@ auto CheckProto_14(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(
@@ -208,7 +208,7 @@ auto CheckProto_15(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(
@@ -217,7 +217,7 @@ auto CheckProto_16(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(
@@ -226,7 +226,7 @@ auto CheckProto_17(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(
@@ -235,7 +235,7 @@ auto CheckProto_18(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(
@@ -244,7 +244,7 @@ auto CheckProto_19(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(
@@ -253,6 +253,6 @@ auto CheckProto_20(
     const CredentialType,
     const KeyMode) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

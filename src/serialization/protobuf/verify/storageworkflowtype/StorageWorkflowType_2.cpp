@@ -15,7 +15,7 @@ namespace opentxs::proto
 {
 auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool
 {
-    CHECK_IDENTIFIER(workflow)
+    CHECK_IDENTIFIER(workflow);
 
     switch (input.type()) {
         case PAYMENTWORKFLOWTYPE_OUTGOINGCHEQUE: {
@@ -35,7 +35,7 @@ auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid outgoing cheque state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -56,7 +56,7 @@ auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid incoming cheque state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -77,7 +77,7 @@ auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid outgoing invoice state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -98,7 +98,7 @@ auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid incoming invoice state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -119,7 +119,7 @@ auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid outgoing transfer state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -140,7 +140,7 @@ auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid incoming transfer state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -161,7 +161,7 @@ auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid internal transfer state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -169,7 +169,7 @@ auto CheckProto_2(const StorageWorkflowType& input, const bool silent) -> bool
         case PAYMENTWORKFLOWTYPE_OUTGOINGCASH:
         case PAYMENTWORKFLOWTYPE_ERROR:
         default: {
-            FAIL_2("invalid type", static_cast<std::uint32_t>(input.type()))
+            FAIL_2("invalid type", static_cast<std::uint32_t>(input.type()));
         }
     }
 

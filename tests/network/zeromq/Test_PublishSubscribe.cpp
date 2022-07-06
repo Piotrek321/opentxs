@@ -89,7 +89,6 @@ void Test_PublishSubscribe::publishSocketThread(
     const ot::UnallocatedCString& msg)
 {
     auto publishSocket = context_.PublishSocket();
-    ;
 
     ASSERT_NE(nullptr, &publishSocket.get());
     ASSERT_EQ(zmq::socket::Type::Publish, publishSocket->Type());
@@ -126,7 +125,6 @@ void Test_PublishSubscribe::publishSocketThread(
 TEST_F(Test_PublishSubscribe, Publish_Subscribe)
 {
     auto publishSocket = context_.PublishSocket();
-    ;
 
     ASSERT_NE(nullptr, &publishSocket.get());
     ASSERT_EQ(zmq::socket::Type::Publish, publishSocket->Type());

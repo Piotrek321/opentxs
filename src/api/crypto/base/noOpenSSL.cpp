@@ -15,6 +15,6 @@ auto Crypto::Init_OpenSSL() noexcept -> void {}
 
 auto Crypto::OpenSSL() const noexcept -> const opentxs::crypto::OpenSSL&
 {
-    OT_FAIL
+    OT_FAIL;
 }
 }  // namespace opentxs::api::imp

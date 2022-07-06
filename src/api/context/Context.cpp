@@ -161,21 +161,21 @@ auto Context::Config(const UnallocatedCString& path) const noexcept
 
 auto Context::Crypto() const noexcept -> const api::Crypto&
 {
-    OT_ASSERT(crypto_)
+    OT_ASSERT(crypto_);
 
     return *crypto_;
 }
 
 auto Context::Factory() const noexcept -> const api::Factory&
 {
-    OT_ASSERT(factory_)
+    OT_ASSERT(factory_);
 
     return *factory_;
 }
 
 auto Context::GetPasswordCaller() const noexcept -> PasswordCaller&
 {
-    OT_ASSERT(nullptr != external_password_callback_)
+    OT_ASSERT(nullptr != external_password_callback_);
 
     return *external_password_callback_;
 }
@@ -249,7 +249,7 @@ auto Context::Init_Factory() -> void
 
 auto Context::Init_Log() -> void
 {
-    OT_ASSERT(legacy_)
+    OT_ASSERT(legacy_);
 
     const auto& config = Config(legacy_->OpentxsConfigFilePath());
     auto notUsed{false};
@@ -382,7 +382,7 @@ auto Context::shutdown() noexcept -> void
 
 auto Context::start_client(const Lock& lock, const Options& args) const -> void
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
     OT_ASSERT(crypto_);
     OT_ASSERT(legacy_);
     OT_ASSERT(std::numeric_limits<int>::max() > client_.size());
@@ -416,7 +416,7 @@ auto Context::StartClientSession(const Options& args, const int instance) const
 
     const auto& output = client_.at(effective);
 
-    OT_ASSERT(output)
+    OT_ASSERT(output);
 
     return *output;
 }
@@ -491,7 +491,7 @@ auto Context::StartNotarySession(const Options& args, const int instance) const
 
     const auto& output = server_.at(effective);
 
-    OT_ASSERT(output)
+    OT_ASSERT(output);
 
     return *output;
 }

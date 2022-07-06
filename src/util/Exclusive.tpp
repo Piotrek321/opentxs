@@ -34,7 +34,7 @@ Exclusive<C>::Exclusive(
     , success_{true}
     , callback_{callback}
 {
-    OT_ASSERT(lock_)
+    OT_ASSERT(lock_);
 }
 
 template <class C>
@@ -100,7 +100,7 @@ auto Exclusive<C>::Abort() -> bool
 template <class C>
 auto Exclusive<C>::get() const -> const C&
 {
-    OT_ASSERT(*this)
+    OT_ASSERT(*this);
 
     return **p_;
 }
@@ -108,7 +108,7 @@ auto Exclusive<C>::get() const -> const C&
 template <class C>
 auto Exclusive<C>::get() -> C&
 {
-    OT_ASSERT(*this)
+    OT_ASSERT(*this);
 
     return **p_;
 }

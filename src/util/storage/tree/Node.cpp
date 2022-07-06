@@ -54,7 +54,7 @@ auto Node::delete_item(const UnallocatedCString& id) -> bool
 
 auto Node::delete_item(const Lock& lock, const UnallocatedCString& id) -> bool
 {
-    OT_ASSERT(verify_write_lock(lock))
+    OT_ASSERT(verify_write_lock(lock));
 
     const auto items = item_map_.erase(id);
 
@@ -270,7 +270,7 @@ auto Node::store_raw(
     const UnallocatedCString& id,
     const UnallocatedCString& alias) -> bool
 {
-    OT_ASSERT(verify_write_lock(lock))
+    OT_ASSERT(verify_write_lock(lock));
 
     auto& metadata = item_map_[id];
     auto& hash = std::get<0>(metadata);

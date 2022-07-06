@@ -331,7 +331,7 @@ Config::Config(
         return output;
     }())
 {
-    OT_ASSERT(false == dataFolder.empty())
+    OT_ASSERT(false == dataFolder.empty());
 
     config.Save();
 }

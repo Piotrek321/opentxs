@@ -89,7 +89,7 @@ ActivitySummaryItem::ActivitySummaryItem(
     newest_item_thread_ =
         std::make_unique<std::thread>(&ActivitySummaryItem::get_text, this);
 
-    OT_ASSERT(newest_item_thread_)
+    OT_ASSERT(newest_item_thread_);
 }
 
 auto ActivitySummaryItem::DisplayName() const noexcept -> UnallocatedCString
@@ -134,7 +134,7 @@ auto ActivitySummaryItem::find_text(
                 nym_id_, thread, itemID);
         }
         default: {
-            OT_FAIL
+            OT_FAIL;
         }
     }
 

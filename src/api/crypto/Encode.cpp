@@ -149,8 +149,8 @@ auto Encode::IdentifierEncode(const void* data, const std::size_t size) const
         preimage.Bytes(),
         checksum.WriteInto());
 
-    OT_ASSERT(4 == checksum.size())
-    OT_ASSERT(hash)
+    OT_ASSERT(4 == checksum.size());
+    OT_ASSERT(hash);
 
     preimage += checksum;
 
@@ -178,8 +178,8 @@ auto Encode::IdentifierEncode(const Secret& input) const -> UnallocatedCString
         preimage.Bytes(),
         checksum.WriteInto());
 
-    OT_ASSERT(4 == checksum.size())
-    OT_ASSERT(hash)
+    OT_ASSERT(4 == checksum.size());
+    OT_ASSERT(hash);
 
     preimage += checksum;
 
@@ -208,8 +208,8 @@ auto Encode::IdentifierDecode(const UnallocatedCString& input) const
     auto hash = crypto_.Hash().Digest(
         opentxs::crypto::HashType::Sha256DC, output, checksum.WriteInto());
 
-    OT_ASSERT(4 == checksum.size())
-    OT_ASSERT(hash)
+    OT_ASSERT(4 == checksum.size());
+    OT_ASSERT(hash);
 
     if (incoming != checksum) {
         LogTrace()(OT_PRETTY_CLASS())("Checksum failure").Flush();

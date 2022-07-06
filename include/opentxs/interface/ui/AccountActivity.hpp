@@ -81,10 +81,9 @@ public:
     ///@{
     /**
        @name Send
-       Send funds from the account to an address or contact.
-       @param address Recipient address as string.
-       @param amount Amount as object or string.
+       Send funds from the account to an contact.
        @param contact Identifier containing recipient's Contact ID.
+       @param amount Amount as object or string.
        @param memo Optional memo field as string.
        @return Whether or not the send was successful.
     */
@@ -97,6 +96,15 @@ public:
         const UnallocatedCString& amount,
         const UnallocatedCString& memo = {},
         Scale scale = 0) const noexcept -> bool = 0;
+    ///@{
+    /**
+       @name Send
+       Send funds from the account to an address.
+       @param address Recipient address as string.
+       @param amount Amount as object or string.
+       @param memo Optional memo field as string.
+       @return Whether or not the send was successful.
+    */
     virtual auto Send(
         const UnallocatedCString& address,
         const Amount& amount,

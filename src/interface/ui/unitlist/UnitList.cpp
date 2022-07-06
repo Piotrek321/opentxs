@@ -75,7 +75,7 @@ UnitList::UnitList(
     setup_listeners(listeners_);
     startup_ = std::make_unique<std::thread>(&UnitList::startup, this);
 
-    OT_ASSERT(startup_)
+    OT_ASSERT(startup_);
 }
 
 auto UnitList::construct_row(

@@ -62,7 +62,7 @@ ContactSubsection::ContactSubsection(
         this,
         extract_custom<identity::wot::claim::Group>(custom));
 
-    OT_ASSERT(startup_)
+    OT_ASSERT(startup_);
 }
 
 auto ContactSubsection::construct_row(
@@ -84,12 +84,12 @@ auto ContactSubsection::process_group(
     const identity::wot::claim::Group& group) noexcept
     -> UnallocatedSet<ContactSubsectionRowID>
 {
-    OT_ASSERT(row_id_.second == group.Type())
+    OT_ASSERT(row_id_.second == group.Type());
 
     UnallocatedSet<ContactSubsectionRowID> active{};
 
     for (const auto& [id, claim] : group) {
-        OT_ASSERT(claim)
+        OT_ASSERT(claim);
 
         CustomData custom{new identity::wot::claim::Item(*claim)};
         add_item(id, ++sequence_, custom);

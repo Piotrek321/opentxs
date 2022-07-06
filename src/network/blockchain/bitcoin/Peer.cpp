@@ -489,7 +489,7 @@ auto Peer::process_protocol(Message&& message) noexcept -> void
                             print(command))(" during handshake")
                             .Flush();
                     }
-                };
+                }
             } break;
             case State::verify:
             case State::run:

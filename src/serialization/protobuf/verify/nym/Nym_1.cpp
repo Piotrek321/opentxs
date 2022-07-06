@@ -28,21 +28,21 @@ auto CheckProto_1(const Nym& input, const bool silent) -> bool
 {
     bool validSource = false;
 
-    if (!input.has_nymid()) { FAIL_1("missing nym id") }
+    if (!input.has_nymid()) { FAIL_1("missing nym id"); }
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.nymid().size()) {
-        FAIL_2("invalid nym id", input.nymid())
+        FAIL_2("invalid nym id", input.nymid());
     }
 
-    if (!input.has_mode()) { FAIL_1("missing mode") }
+    if (!input.has_mode()) { FAIL_1("missing mode"); }
 
     const auto actualMode = input.mode();
 
-    if (!input.has_revision()) { FAIL_1("missing revision") }
+    if (!input.has_revision()) { FAIL_1("missing revision"); }
 
-    if (1 > input.revision()) { FAIL_2("invalid revision", input.revision()) }
+    if (1 > input.revision()) { FAIL_2("invalid revision", input.revision()); }
 
-    if (!input.has_source()) { FAIL_1("missing nym id source") }
+    if (!input.has_source()) { FAIL_1("missing nym id source"); }
 
     try {
         validSource = Check(
@@ -51,11 +51,11 @@ auto CheckProto_1(const Nym& input, const bool silent) -> bool
             NymAllowedNymIDSource().at(input.version()).second,
             silent);
 
-        if (!validSource) { FAIL_1("invalid nym id source") }
+        if (!validSource) { FAIL_1("invalid nym id source"); }
     } catch (const std::out_of_range&) {
         FAIL_2(
             "allowed nym ID source version not defined for version",
-            input.version())
+            input.version());
     }
 
     bool haveHD = false;
@@ -73,11 +73,11 @@ auto CheckProto_1(const Nym& input, const bool silent) -> bool
                 mode,
                 haveHD);
 
-            if (false == validSet) { FAIL_1("invalid credential set") }
+            if (false == validSet) { FAIL_1("invalid credential set"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed credential set version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
@@ -94,30 +94,30 @@ auto CheckProto_1(const Nym& input, const bool silent) -> bool
                 mode,
                 haveHD);
 
-            if (false == validSet) { FAIL_1("invalid credential set") }
+            if (false == validSet) { FAIL_1("invalid credential set"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed credential set version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
     switch (actualMode) {
         case NYM_PRIVATE: {
             if (haveHD) {
-                if (1 > input.index()) { FAIL_1("missing index") }
+                if (1 > input.index()) { FAIL_1("missing index"); }
             }
 
             break;
         }
         case NYM_PUBLIC: {
-            if (input.has_index()) { FAIL_1("index present in public mode") }
+            if (input.has_index()) { FAIL_1("index present in public mode"); }
 
             break;
         }
         case NYM_ERROR:
         default: {
-            FAIL_2("invalid mode", actualMode)
+            FAIL_2("invalid mode", actualMode);
         }
     }
 
@@ -151,71 +151,71 @@ auto CheckProto_6(const Nym& input, const bool silent) -> bool
 
 auto CheckProto_7(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(const Nym& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

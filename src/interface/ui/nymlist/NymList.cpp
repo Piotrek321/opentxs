@@ -148,7 +148,7 @@ auto NymList::process_new_nym(Message&& in) noexcept -> void
 
     auto nymID = Widget::api_.Factory().NymID(body.at(1));
 
-    OT_ASSERT(false == nymID->empty())
+    OT_ASSERT(false == nymID->empty());
 
     load(std::move(nymID));
 }
@@ -162,7 +162,7 @@ auto NymList::process_nym_changed(Message&& in) noexcept -> void
 
     auto nymID = api.Factory().NymID(body.at(1));
 
-    OT_ASSERT(false == nymID->empty())
+    OT_ASSERT(false == nymID->empty());
 
     if (false == api.Wallet().IsLocalNym(nymID)) { return; }
 

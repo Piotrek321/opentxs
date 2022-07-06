@@ -216,7 +216,7 @@ auto ContactList::process_contact(const Message& in) noexcept -> void
     const auto& id = body.at(1);
     const auto contactID = Widget::api_.Factory().Identifier(id);
 
-    OT_ASSERT(false == contactID->empty())
+    OT_ASSERT(false == contactID->empty());
 
     process_contact(contactID);
 }

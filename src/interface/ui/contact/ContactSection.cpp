@@ -141,7 +141,7 @@ ContactSection::ContactSection(
         this,
         extract_custom<identity::wot::claim::Section>(custom));
 
-    OT_ASSERT(startup_)
+    OT_ASSERT(startup_);
 }
 
 auto ContactSection::check_type(const ContactSectionRowID type) noexcept -> bool
@@ -166,12 +166,12 @@ auto ContactSection::process_section(
     const identity::wot::claim::Section& section) noexcept
     -> UnallocatedSet<ContactSectionRowID>
 {
-    OT_ASSERT(row_id_ == section.Type())
+    OT_ASSERT(row_id_ == section.Type());
 
     UnallocatedSet<ContactSectionRowID> active{};
 
     for (const auto& [type, group] : section) {
-        OT_ASSERT(group)
+        OT_ASSERT(group);
 
         const ContactSectionRowID key{row_id_, type};
 

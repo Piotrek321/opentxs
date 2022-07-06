@@ -4331,7 +4331,7 @@ void OTTransaction::UpdateContents(const PasswordPrompt& reason)
                         "block. (Error).")
                         .Flush();
 
-                    OT_FAIL
+                    OT_FAIL;
                 }
                 default:
                     LogError()(OT_PRETTY_CLASS())(

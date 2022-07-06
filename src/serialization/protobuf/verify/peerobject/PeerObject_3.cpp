@@ -23,7 +23,7 @@ namespace opentxs::proto
 {
 auto CheckProto_7(const PeerObject& input, const bool silent) -> bool
 {
-    if (!input.has_type()) { FAIL_1("missing type") }
+    if (!input.has_type()) { FAIL_1("missing type"); }
 
     switch (input.type()) {
         case PEEROBJECT_MESSAGE: {
@@ -54,28 +54,28 @@ auto CheckProto_7(const PeerObject& input, const bool silent) -> bool
                 (input.otrequest().id() == input.otreply().cookie());
 
             if (!matchingID) {
-                FAIL_1("reply cookie does not match request id")
+                FAIL_1("reply cookie does not match request id");
             }
 
             const bool matchingtype =
                 (input.otrequest().type() == input.otreply().type());
 
             if (!matchingtype) {
-                FAIL_1("reply type does not match request type")
+                FAIL_1("reply type does not match request type");
             }
 
             const bool matchingInitiator =
                 (input.otrequest().initiator() == input.otreply().initiator());
 
             if (!matchingInitiator) {
-                FAIL_1("reply initiator does not match request initiator")
+                FAIL_1("reply initiator does not match request initiator");
             }
 
             const bool matchingRecipient =
                 (input.otrequest().recipient() == input.otreply().recipient());
 
             if (!matchingRecipient) {
-                FAIL_1("reply recipient does not match request recipient")
+                FAIL_1("reply recipient does not match request recipient");
             }
         } break;
         case PEEROBJECT_PAYMENT: {
@@ -96,7 +96,7 @@ auto CheckProto_7(const PeerObject& input, const bool silent) -> bool
         } break;
         case PEEROBJECT_ERROR:
         default: {
-            FAIL_1("invalid type")
+            FAIL_1("invalid type");
         }
     }
 
@@ -105,66 +105,66 @@ auto CheckProto_7(const PeerObject& input, const bool silent) -> bool
 
 auto CheckProto_8(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(const PeerObject& input, const bool silent) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

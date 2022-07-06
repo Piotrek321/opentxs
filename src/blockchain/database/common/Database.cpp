@@ -301,7 +301,7 @@ Database::Database(
     : imp_p_(std::make_unique<Imp>(api, blockchain, legacy, dataFolder, args))
     , imp_(*imp_p_)
 {
-    OT_ASSERT(imp_p_)
+    OT_ASSERT(imp_p_);
 }
 
 auto Database::AddOrUpdate(Address_p address) const noexcept -> bool

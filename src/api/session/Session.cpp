@@ -298,7 +298,7 @@ void Session::SetMasterKeyTimeout(
 
 auto Session::Storage() const noexcept -> const api::session::Storage&
 {
-    OT_ASSERT(storage_)
+    OT_ASSERT(storage_);
 
     return *storage_;
 }

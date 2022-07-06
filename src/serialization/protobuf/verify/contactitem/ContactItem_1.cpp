@@ -29,7 +29,7 @@ auto CheckProto_1(
     CHECK_EXISTS(type);
 
     if (false == ValidContactItemType(parentVersion, input.type())) {
-        FAIL_1("invalid type")
+        FAIL_1("invalid type");
     }
 
     CHECK_EXISTS(value);
@@ -37,12 +37,12 @@ auto CheckProto_1(
     for (const auto& it : input.attribute()) {
         if (!ValidContactItemAttribute(
                 input.version(), static_cast<ContactItemAttribute>(it))) {
-            FAIL_1("invalid attribute")
+            FAIL_1("invalid attribute");
         }
     }
 
     if (input.has_subtype()) {
-        if (3 > input.version()) { FAIL_1("Subtype present but not allowed") }
+        if (3 > input.version()) { FAIL_1("Subtype present but not allowed"); }
     }
 
     return true;
@@ -99,7 +99,7 @@ auto CheckProto_7(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(
@@ -108,7 +108,7 @@ auto CheckProto_8(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(
@@ -117,7 +117,7 @@ auto CheckProto_9(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(
@@ -126,7 +126,7 @@ auto CheckProto_10(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(
@@ -135,7 +135,7 @@ auto CheckProto_11(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(
@@ -144,7 +144,7 @@ auto CheckProto_12(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(
@@ -153,7 +153,7 @@ auto CheckProto_13(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(
@@ -162,7 +162,7 @@ auto CheckProto_14(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(
@@ -171,7 +171,7 @@ auto CheckProto_15(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(
@@ -180,7 +180,7 @@ auto CheckProto_16(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(
@@ -189,7 +189,7 @@ auto CheckProto_17(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(
@@ -198,7 +198,7 @@ auto CheckProto_18(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(
@@ -207,7 +207,7 @@ auto CheckProto_19(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(
@@ -216,6 +216,6 @@ auto CheckProto_20(
     const ClaimType indexed,
     const ContactSectionVersion parentVersion) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

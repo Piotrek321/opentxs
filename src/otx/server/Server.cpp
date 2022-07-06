@@ -400,19 +400,19 @@ void Server::CreateMainFile(bool& mainFileExists)
 
     strNotaryID = String::Factory(contract->ID())->Get();
 
-    OT_ASSERT(m_nymServer)
+    OT_ASSERT(m_nymServer);
 
     {
         auto nymData = manager_.Wallet().mutable_Nym(nymID, reason_);
 
         if (false == nymData.SetCommonName(contract->ID()->str(), reason_)) {
-            OT_FAIL
+            OT_FAIL;
         }
     }
 
     m_nymServer = manager_.Wallet().Nym(nymID);
 
-    OT_ASSERT(m_nymServer)
+    OT_ASSERT(m_nymServer);
 
     auto proto = proto::ServerContract{};
     if (false == contract->Serialize(proto, true)) {
@@ -890,7 +890,7 @@ auto Server::GetConnectInfo(
     const auto haveEndpoints =
         contract->ConnectInfo(contractHostname, contractPort, type, type);
 
-    OT_ASSERT(haveEndpoints)
+    OT_ASSERT(haveEndpoints);
 
     bool notUsed = false;
     std::int64_t port = 0;

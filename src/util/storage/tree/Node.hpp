@@ -90,7 +90,7 @@ protected:
         const UnallocatedCString& alias,
         UnallocatedCString& plaintext) -> bool
     {
-        OT_ASSERT(verify_write_lock(lock))
+        OT_ASSERT(verify_write_lock(lock));
 
         auto& metadata = item_map_[id];
         auto& hash = std::get<0>(metadata);

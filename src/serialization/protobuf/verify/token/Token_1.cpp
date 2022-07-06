@@ -91,7 +91,7 @@ auto CheckProto_2(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(2)
+    UNDEFINED_VERSION(2);
 }
 
 auto CheckProto_3(
@@ -103,7 +103,7 @@ auto CheckProto_3(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(3)
+    UNDEFINED_VERSION(3);
 }
 
 auto CheckProto_4(
@@ -115,7 +115,7 @@ auto CheckProto_4(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(4)
+    UNDEFINED_VERSION(4);
 }
 
 auto CheckProto_5(
@@ -127,7 +127,7 @@ auto CheckProto_5(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(5)
+    UNDEFINED_VERSION(5);
 }
 
 auto CheckProto_6(
@@ -139,7 +139,7 @@ auto CheckProto_6(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(6)
+    UNDEFINED_VERSION(6);
 }
 
 auto CheckProto_7(
@@ -151,7 +151,7 @@ auto CheckProto_7(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(
@@ -163,7 +163,7 @@ auto CheckProto_8(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(
@@ -175,7 +175,7 @@ auto CheckProto_9(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(
@@ -187,7 +187,7 @@ auto CheckProto_10(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(
@@ -199,7 +199,7 @@ auto CheckProto_11(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(
@@ -211,7 +211,7 @@ auto CheckProto_12(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(
@@ -223,7 +223,7 @@ auto CheckProto_13(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(
@@ -235,7 +235,7 @@ auto CheckProto_14(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(
@@ -247,7 +247,7 @@ auto CheckProto_15(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(
@@ -259,7 +259,7 @@ auto CheckProto_16(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(
@@ -271,7 +271,7 @@ auto CheckProto_17(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(
@@ -283,7 +283,7 @@ auto CheckProto_18(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(
@@ -295,7 +295,7 @@ auto CheckProto_19(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(
@@ -307,6 +307,6 @@ auto CheckProto_20(
     std::int64_t&,
     std::int64_t&) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

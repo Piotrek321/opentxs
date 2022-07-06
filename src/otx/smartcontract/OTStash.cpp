@@ -209,7 +209,7 @@ auto OTStash::GetAmount(const UnallocatedCString& str_instrument_definition_id)
 {
     OTStashItem* pStashItem =
         GetStash(str_instrument_definition_id);  // (Always succeeds, and will
-                                                 // OT_ASSERT()
+                                                 // OT_ASSERT();
                                                  // if failure.)
 
     return pStashItem->GetAmount();
@@ -221,7 +221,7 @@ auto OTStash::CreditStash(
 {
     OTStashItem* pStashItem =
         GetStash(str_instrument_definition_id);  // (Always succeeds, and will
-                                                 // OT_ASSERT()
+                                                 // OT_ASSERT();
                                                  // if failure.)
 
     return pStashItem->CreditStash(lAmount);
@@ -233,7 +233,7 @@ auto OTStash::DebitStash(
 {
     OTStashItem* pStashItem =
         GetStash(str_instrument_definition_id);  // (Always succeeds, and will
-                                                 // OT_ASSERT()
+                                                 // OT_ASSERT();
                                                  // if failure.)
 
     return pStashItem->DebitStash(lAmount);

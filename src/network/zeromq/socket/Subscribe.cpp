@@ -78,7 +78,7 @@ void Subscribe::init() noexcept
 
 void Subscribe::process_incoming(const Lock& lock, Message&& message) noexcept
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
 
     try {
         callback_.Process(std::move(message));

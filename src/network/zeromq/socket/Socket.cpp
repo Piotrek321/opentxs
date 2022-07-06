@@ -67,8 +67,8 @@ auto Socket::apply_socket(SocketCallback&& cb) const noexcept -> bool
 
 auto Socket::apply_timeouts(const Lock& lock) const noexcept -> bool
 {
-    OT_ASSERT(nullptr != socket_)
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(nullptr != socket_);
+    OT_ASSERT(verify_lock(lock));
 
     auto set = zmq_setsockopt(socket_, ZMQ_LINGER, &linger_, sizeof(linger_));
 
@@ -193,7 +193,7 @@ auto Socket::receive_message(
             return false;
         }
 
-        OT_ASSERT(optionBytes == sizeof(option))
+        OT_ASSERT(optionBytes == sizeof(option));
 
         if (1 != option) { receiving = false; }
     }

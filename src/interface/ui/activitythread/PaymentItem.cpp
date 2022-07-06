@@ -80,8 +80,8 @@ PaymentItem::PaymentItem(
     , memo_(std::move(memo))
     , payment_(std::move(contract))
 {
-    OT_ASSERT(false == nym_id_.empty())
-    OT_ASSERT(false == item_id_.empty())
+    OT_ASSERT(false == nym_id_.empty());
+    OT_ASSERT(false == item_id_.empty());
 }
 
 auto PaymentItem::Amount() const noexcept -> opentxs::Amount
@@ -207,7 +207,7 @@ auto PaymentItem::extract(
         case otx::client::StorageBox::DRAFT:
         case otx::client::StorageBox::UNKNOWN:
         default: {
-            OT_FAIL
+            OT_FAIL;
         }
     }
 

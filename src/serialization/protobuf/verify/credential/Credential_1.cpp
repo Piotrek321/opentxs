@@ -54,13 +54,13 @@ auto CheckProto_1(
     int32_t expectedSigCount = 1;  // public self-signature
     bool checkRole = (CREDROLE_ERROR != role);
 
-    if (!input.has_id()) { FAIL_1("missing identifier") }
+    if (!input.has_id()) { FAIL_1("missing identifier"); }
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.id().size()) {
-        FAIL_2("invalid identifier", input.id())
+        FAIL_2("invalid identifier", input.id());
     }
 
-    if (!input.has_type()) { FAIL_1("missing type") }
+    if (!input.has_type()) { FAIL_1("missing type"); }
 
     switch (input.type()) {
         case CREDTYPE_LEGACY:
@@ -68,16 +68,16 @@ auto CheckProto_1(
         } break;
         case CREDTYPE_ERROR:
         default: {
-            FAIL_2("invalid type", input.type())
+            FAIL_2("invalid type", input.type());
         }
     }
 
-    if (!input.has_role()) { FAIL_1("missing role") }
+    if (!input.has_role()) { FAIL_1("missing role"); }
 
     CredentialRole actualRole = input.role();
 
     if (checkRole && (role != actualRole)) {
-        FAIL_2("incorrect role", input.role())
+        FAIL_2("incorrect role", input.role());
     }
 
     bool masterCredential = (CREDROLE_MASTERKEY == actualRole);
@@ -93,9 +93,9 @@ auto CheckProto_1(
         expectMasterSignature = true;
     }
 
-    if (checkRole && !knownRole) { FAIL_2("invalid role", role) }
+    if (checkRole && !knownRole) { FAIL_2("invalid role", role); }
 
-    if (!input.has_mode()) { FAIL_1("missing mode") }
+    if (!input.has_mode()) { FAIL_1("missing mode"); }
 
     KeyMode requiredMode = KEYMODE_ERROR;
 
@@ -110,7 +110,7 @@ auto CheckProto_1(
         } break;
         case CREDROLE_ERROR:
         default: {
-            FAIL_2("incorrect role", input.role())
+            FAIL_2("incorrect role", input.role());
         }
     }
 
@@ -119,7 +119,10 @@ auto CheckProto_1(
     if (KEYMODE_ERROR != requiredMode) {
         if (actualMode != requiredMode) {
             FAIL_4(
-                "incorrect mode", actualMode, ". Required mode: ", requiredMode)
+                "incorrect mode",
+                actualMode,
+                ". Required mode: ",
+                requiredMode);
         }
     }
 
@@ -138,18 +141,18 @@ auto CheckProto_1(
         } break;
         case KEYMODE_ERROR:
         default: {
-            FAIL_2("invalid mode", actualMode)
+            FAIL_2("invalid mode", actualMode);
         }
     }
 
-    if (!input.has_nymid()) { FAIL_1("missing nym id") }
+    if (!input.has_nymid()) { FAIL_1("missing nym id"); }
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.nymid().size()) {
-        FAIL_2("invalid nym id", input.nymid())
+        FAIL_2("invalid nym id", input.nymid());
     }
 
     if (!masterCredential) {
-        if (!input.has_childdata()) { FAIL_1("missing child data") }
+        if (!input.has_childdata()) { FAIL_1("missing child data"); }
 
         try {
             validChildData = Check(
@@ -158,16 +161,16 @@ auto CheckProto_1(
                 CredentialAllowedChildParams().at(input.version()).second,
                 silent);
 
-            if (!validChildData) { FAIL_1("invalid child data") }
+            if (!validChildData) { FAIL_1("invalid child data"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed child params version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
     if (masterCredential) {
-        if (!input.has_masterdata()) { FAIL_1("missing master data") }
+        if (!input.has_masterdata()) { FAIL_1("missing master data"); }
 
         try {
             validMasterData = Check(
@@ -177,11 +180,11 @@ auto CheckProto_1(
                 silent,
                 expectSourceSignature);
 
-            if (!validMasterData) { FAIL_1("invalid master data") }
+            if (!validMasterData) { FAIL_1("invalid master data"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed master params version not defined for version",
-                input.version())
+                input.version());
         }
 
         if (expectSourceSignature) {
@@ -190,45 +193,45 @@ auto CheckProto_1(
     }
 
     if ((!masterCredential) && (input.has_masterdata())) {
-        FAIL_1("child credential contains master data")
+        FAIL_1("child credential contains master data");
     }
 
     if (isPublic && input.has_privatecredential()) {
-        FAIL_1(" public credential contains private data")
+        FAIL_1(" public credential contains private data");
     }
 
     if (keyCredential) {
         if (input.has_contactdata()) {
-            FAIL_1("key credential contains contact data")
+            FAIL_1("key credential contains contact data");
         }
 
         if (input.has_verification()) {
-            FAIL_1("key credential contains verification data")
+            FAIL_1("key credential contains verification data");
         }
 
-        if (!input.has_publiccredential()) { FAIL_1("missing public data") }
+        if (!input.has_publiccredential()) { FAIL_1("missing public data"); }
 
         if (isPrivate && (!input.has_privatecredential())) {
-            FAIL_1("missing private data")
+            FAIL_1("missing private data");
         }
     }
 
     if (metadataContainer) {
         if (input.has_privatecredential()) {
-            FAIL_1("metadata credential contains private key data")
+            FAIL_1("metadata credential contains private key data");
         }
 
         if (input.has_publiccredential()) {
-            FAIL_1("metadata credential contains public key data")
+            FAIL_1("metadata credential contains public key data");
         }
     }
 
     if (contactCredential) {
         if (input.has_verification()) {
-            FAIL_1("contact credential contains verification data")
+            FAIL_1("contact credential contains verification data");
         }
 
-        if (!input.has_contactdata()) { FAIL_1("missing contact data") }
+        if (!input.has_contactdata()) { FAIL_1("missing contact data"); }
 
         try {
             validContactData = Check(
@@ -238,20 +241,20 @@ auto CheckProto_1(
                 silent,
                 ClaimType::Normal);
 
-            if (!validContactData) { FAIL_1("invalid contact data") }
+            if (!validContactData) { FAIL_1("invalid contact data"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed contact data version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
     if (verifyCredential) {
         if (input.has_contactdata()) {
-            FAIL_1("verification credential contains contact data")
+            FAIL_1("verification credential contains contact data");
         }
 
-        if (!input.has_verification()) { FAIL_1("missing verification data") }
+        if (!input.has_verification()) { FAIL_1("missing verification data"); }
 
         try {
             bool validVerificationSet = Check(
@@ -261,11 +264,11 @@ auto CheckProto_1(
                 silent,
                 VerificationType::Normal);
 
-            if (!validVerificationSet) { FAIL_1("invalid verification data") }
+            if (!validVerificationSet) { FAIL_1("invalid verification data"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed verification version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
@@ -279,11 +282,11 @@ auto CheckProto_1(
                 input.type(),
                 KEYMODE_PUBLIC);
 
-            if (!validPublicData) { FAIL_1("invalid public data") }
+            if (!validPublicData) { FAIL_1("invalid public data"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed key credential version not defined for version",
-                input.version())
+                input.version());
         }
 
         if (isPrivate) {
@@ -296,11 +299,11 @@ auto CheckProto_1(
                     input.type(),
                     KEYMODE_PRIVATE);
 
-                if (!validPrivateData) { FAIL_1("invalid private data") }
+                if (!validPrivateData) { FAIL_1("invalid private data"); }
             } catch (const std::out_of_range&) {
                 FAIL_2(
                     "allowed key credential version not defined for version",
-                    input.version())
+                    input.version());
             }
         }
     }
@@ -313,7 +316,7 @@ auto CheckProto_1(
             ss << input.signature_size() << " of " << expectedSigCount
                << " found";
 
-            FAIL_2("incorrect number of signatures", ss.str())
+            FAIL_2("incorrect number of signatures", ss.str());
         }
 
         uint32_t selfPublicCount = 0;
@@ -335,11 +338,11 @@ auto CheckProto_1(
                     masterPublicCount,
                     sourcePublicCount);
 
-                if (!validSig) { FAIL_1("invalid signature") }
+                if (!validSig) { FAIL_1("invalid signature"); }
             } catch (const std::out_of_range&) {
                 FAIL_2(
                     "allowed signature version not defined for version",
-                    input.version())
+                    input.version());
             }
         }
 
@@ -348,14 +351,14 @@ auto CheckProto_1(
                 std::stringstream ss;
                 ss << selfPrivateCount << " of 1 found";
 
-                FAIL_2("incorrect number of private self-signatures", ss.str())
+                FAIL_2("incorrect number of private self-signatures", ss.str());
             }
 
             if (1 != selfPublicCount) {
                 std::stringstream ss;
                 ss << selfPublicCount << " of 1 found";
 
-                FAIL_2("incorrect number of public self-signatures", ss.str())
+                FAIL_2("incorrect number of public self-signatures", ss.str());
             }
         }
 
@@ -363,14 +366,14 @@ auto CheckProto_1(
             std::stringstream ss;
             ss << masterPublicCount << " of 1 found";
 
-            FAIL_2("incorrect number of public master signatures", ss.str())
+            FAIL_2("incorrect number of public master signatures", ss.str());
         }
 
         if ((1 != sourcePublicCount) && (expectSourceSignature)) {
             std::stringstream ss;
             ss << sourcePublicCount << " of 1 found";
 
-            FAIL_2("incorrect number of public source signatures", ss.str())
+            FAIL_2("incorrect number of public source signatures", ss.str());
         }
     }
 
@@ -434,7 +437,7 @@ auto CheckProto_7(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(
@@ -444,7 +447,7 @@ auto CheckProto_8(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(
@@ -454,7 +457,7 @@ auto CheckProto_9(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(
@@ -464,7 +467,7 @@ auto CheckProto_10(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(
@@ -474,7 +477,7 @@ auto CheckProto_11(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(
@@ -484,7 +487,7 @@ auto CheckProto_12(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(
@@ -494,7 +497,7 @@ auto CheckProto_13(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(
@@ -504,7 +507,7 @@ auto CheckProto_14(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(
@@ -514,7 +517,7 @@ auto CheckProto_15(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(
@@ -524,7 +527,7 @@ auto CheckProto_16(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(
@@ -534,7 +537,7 @@ auto CheckProto_17(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(
@@ -544,7 +547,7 @@ auto CheckProto_18(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(
@@ -554,7 +557,7 @@ auto CheckProto_19(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(
@@ -564,6 +567,6 @@ auto CheckProto_20(
     const CredentialRole,
     const bool) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

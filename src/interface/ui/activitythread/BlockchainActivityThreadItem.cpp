@@ -68,9 +68,9 @@ BlockchainActivityThreadItem::BlockchainActivityThreadItem(
     , memo_(std::move(memo))
     , amount_(amount)
 {
-    OT_ASSERT(false == nym_id_.empty())
-    OT_ASSERT(false == item_id_.empty())
-    OT_ASSERT(false == txid_.empty())
+    OT_ASSERT(false == nym_id_.empty());
+    OT_ASSERT(false == item_id_.empty());
+    OT_ASSERT(false == txid_.empty());
 }
 
 auto BlockchainActivityThreadItem::Amount() const noexcept -> opentxs::Amount

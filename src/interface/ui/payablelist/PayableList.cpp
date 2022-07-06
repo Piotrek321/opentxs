@@ -170,7 +170,7 @@ auto PayableList::process_contact(const Message& message) noexcept -> void
     const auto& id = body.at(1);
     const auto contactID = Widget::api_.Factory().Identifier(id);
 
-    OT_ASSERT(false == contactID->empty())
+    OT_ASSERT(false == contactID->empty());
 
     const auto name = Widget::api_.Contacts().ContactName(contactID);
     process_contact(contactID, {false, name});
@@ -185,7 +185,7 @@ auto PayableList::process_nym(const Message& message) noexcept -> void
     const auto& id = body.at(1);
     const auto nymID = Widget::api_.Factory().NymID(id);
 
-    OT_ASSERT(false == nymID->empty())
+    OT_ASSERT(false == nymID->empty());
 
     const auto contactID = Widget::api_.Contacts().ContactID(nymID);
     const auto name = Widget::api_.Contacts().ContactName(contactID);

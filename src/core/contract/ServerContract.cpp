@@ -209,7 +209,7 @@ Server::Server(const Server& rhs)
 }
 auto Server::EffectiveName() const -> UnallocatedCString
 {
-    OT_ASSERT(nym_)
+    OT_ASSERT(nym_);
 
     // TODO The version stored in nym_ might be out of date so load it from the
     // wallet. This can be fixed correctly by implementing in-place updates of

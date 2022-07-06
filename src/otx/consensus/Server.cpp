@@ -130,7 +130,8 @@
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
-    }
+    }                                                                          \
+    static_assert(0 < sizeof(char))  // NOTE silence -Wextra-semi-stmt
 
 namespace opentxs::factory
 {
@@ -483,27 +484,27 @@ auto Server::accept_entire_nymbox(
     std::shared_ptr<Item> balanceItem{
         statement(lock, *acceptTransaction, verifiedNumbers, reason)};
 
-    OT_ASSERT(balanceItem)
+    OT_ASSERT(balanceItem);
 
     acceptTransaction->AddItem(balanceItem);
 
-    OT_ASSERT((acceptedItems + 1) == acceptTransaction->GetItemCount())
+    OT_ASSERT((acceptedItems + 1) == acceptTransaction->GetItemCount());
 
     ready &= acceptTransaction->SignContract(nym, reason);
 
-    OT_ASSERT(ready)
+    OT_ASSERT(ready);
 
     ready &= acceptTransaction->SaveContract();
 
-    OT_ASSERT(ready)
+    OT_ASSERT(ready);
 
     ready &= processLedger->SignContract(nym, reason);
 
-    OT_ASSERT(ready)
+    OT_ASSERT(ready);
 
     ready &= processLedger->SaveContract();
 
-    OT_ASSERT(ready)
+    OT_ASSERT(ready);
 
     const auto serialized = String::Factory(*processLedger);
     initialize_server_command(
@@ -511,7 +512,7 @@ auto Server::accept_entire_nymbox(
     ready &= output.m_ascPayload->SetString(serialized);
     finalize_server_command(output, reason);
 
-    OT_ASSERT(ready)
+    OT_ASSERT(ready);
 
     return true;
 }
@@ -2864,7 +2865,7 @@ void Server::process_accept_cron_receipt_reply(
         pData->completed_count = std::to_string(theTrade->GetCompletedCount());
         auto account = api_.Wallet().Internal().Account(accountID);
 
-        OT_ASSERT(account)
+        OT_ASSERT(account);
 
         bool bIsAsset =
             (theTrade->GetInstrumentDefinitionID() ==
@@ -7713,7 +7714,6 @@ void Server::validate_number_set(
                 "Nymbox.) FYI, last known 'highest' number received: ")(
                 limit)(" (Current 'violator': ")(it)(") Skipping...")
                 .Flush();
-            ;
             bad.insert(it);
         } else {
             good.insert(it);
@@ -7862,3 +7862,5 @@ Server::~Server()
     }
 }
 }  // namespace opentxs::otx::context::implementation
+
+#undef START_SERVER_CONTEXT

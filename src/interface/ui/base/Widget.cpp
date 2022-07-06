@@ -78,7 +78,7 @@ auto Widget::setup_listeners(const ListenerDefinitions& definitions) noexcept
                 nextCallback.get(), widgetThreadName));
         const auto listening = socket->Start(endpoint);
 
-        OT_ASSERT(listening)
+        OT_ASSERT(listening);
     }
 }
 

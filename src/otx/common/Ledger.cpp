@@ -733,7 +733,7 @@ auto Ledger::save_box(
     Identifier& hash,
     bool (Ledger::*calc)(Identifier&) const) -> bool
 {
-    OT_ASSERT(nullptr != calc)
+    OT_ASSERT(nullptr != calc);
 
     if (m_Type != type) {
         LogError()(OT_PRETTY_CLASS())("Wrong type.").Flush();

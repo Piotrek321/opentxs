@@ -1228,7 +1228,7 @@ auto Peer::Imp::transmit(
 
 auto Peer::Imp::transmit(Message&& message) noexcept -> void
 {
-    OT_ASSERT(2 < message.Body().size())
+    OT_ASSERT(2 < message.Body().size());
 
     auto body = message.Body();
     auto& header = body.at(1);

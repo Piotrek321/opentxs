@@ -28,10 +28,10 @@ auto CheckProto_1(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    if (!input.has_name()) { FAIL_1("missing name") }
+    if (!input.has_name()) { FAIL_1("missing name"); }
 
     if (!ValidContactSectionName(parentVersion, input.name())) {
-        FAIL_2("invalid name", input.name())
+        FAIL_2("invalid name", input.name());
     }
 
     for (const auto& it : input.item()) {
@@ -44,11 +44,11 @@ auto CheckProto_1(
                 indexed,
                 ContactSectionVersion{input.version(), input.name()});
 
-            if (!validItem) { FAIL_1("invalid item") }
+            if (!validItem) { FAIL_1("invalid item"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed contact item version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
@@ -97,13 +97,13 @@ auto CheckProto_6(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    if (!input.has_name()) { FAIL_1("missing name") }
+    if (!input.has_name()) { FAIL_1("missing name"); }
 
     if (!ValidContactSectionName(parentVersion, input.name())) {
-        FAIL_2("invalid name", input.name())
+        FAIL_2("invalid name", input.name());
     }
 
-    if (0 == input.item_size()) { FAIL_1("empty section") }
+    if (0 == input.item_size()) { FAIL_1("empty section"); }
 
     for (const auto& it : input.item()) {
         try {
@@ -115,11 +115,11 @@ auto CheckProto_6(
                 indexed,
                 ContactSectionVersion{input.version(), input.name()});
 
-            if (!validItem) { FAIL_1("invalid item") }
+            if (!validItem) { FAIL_1("invalid item"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed contact item version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
@@ -132,7 +132,7 @@ auto CheckProto_7(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(7)
+    UNDEFINED_VERSION(7);
 }
 
 auto CheckProto_8(
@@ -141,7 +141,7 @@ auto CheckProto_8(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(8)
+    UNDEFINED_VERSION(8);
 }
 
 auto CheckProto_9(
@@ -150,7 +150,7 @@ auto CheckProto_9(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(9)
+    UNDEFINED_VERSION(9);
 }
 
 auto CheckProto_10(
@@ -159,7 +159,7 @@ auto CheckProto_10(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(10)
+    UNDEFINED_VERSION(10);
 }
 
 auto CheckProto_11(
@@ -168,7 +168,7 @@ auto CheckProto_11(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(11)
+    UNDEFINED_VERSION(11);
 }
 
 auto CheckProto_12(
@@ -177,7 +177,7 @@ auto CheckProto_12(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(12)
+    UNDEFINED_VERSION(12);
 }
 
 auto CheckProto_13(
@@ -186,7 +186,7 @@ auto CheckProto_13(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(13)
+    UNDEFINED_VERSION(13);
 }
 
 auto CheckProto_14(
@@ -195,7 +195,7 @@ auto CheckProto_14(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(14)
+    UNDEFINED_VERSION(14);
 }
 
 auto CheckProto_15(
@@ -204,7 +204,7 @@ auto CheckProto_15(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(15)
+    UNDEFINED_VERSION(15);
 }
 
 auto CheckProto_16(
@@ -213,7 +213,7 @@ auto CheckProto_16(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(16)
+    UNDEFINED_VERSION(16);
 }
 
 auto CheckProto_17(
@@ -222,7 +222,7 @@ auto CheckProto_17(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(17)
+    UNDEFINED_VERSION(17);
 }
 
 auto CheckProto_18(
@@ -231,7 +231,7 @@ auto CheckProto_18(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(18)
+    UNDEFINED_VERSION(18);
 }
 
 auto CheckProto_19(
@@ -240,7 +240,7 @@ auto CheckProto_19(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(19)
+    UNDEFINED_VERSION(19);
 }
 
 auto CheckProto_20(
@@ -249,6 +249,6 @@ auto CheckProto_20(
     const ClaimType indexed,
     const uint32_t parentVersion) -> bool
 {
-    UNDEFINED_VERSION(20)
+    UNDEFINED_VERSION(20);
 }
 }  // namespace opentxs::proto

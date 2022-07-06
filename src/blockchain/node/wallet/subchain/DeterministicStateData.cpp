@@ -374,7 +374,7 @@ auto DeterministicStateData::process(
             case bitcoin::block::Script::Pattern::PayToScriptHash:
             default: {
             }
-        };
+        }
     }
 }
 }  // namespace opentxs::blockchain::node::wallet

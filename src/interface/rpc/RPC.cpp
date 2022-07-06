@@ -138,7 +138,8 @@ constexpr auto TASKCOMPLETE_VERSION = 2;
         add_output_status(output, error);                                      \
                                                                                \
         return output;                                                         \
-    }
+    }                                                                          \
+    static_assert(0 < sizeof(char))  // NOTE silence -Wextra-semi-stmt
 
 #define CHECK_OWNER()                                                          \
     if (false == session.Wallet().IsLocalNym(command.owner())) {               \
@@ -147,9 +148,9 @@ constexpr auto TASKCOMPLETE_VERSION = 2;
         return output;                                                         \
     }                                                                          \
                                                                                \
-    const auto ownerID = identifier::Nym::Factory(command.owner());
+    const auto ownerID = identifier::Nym::Factory(command.owner())
 
-#define INIT() auto output = init(command);
+#define INIT() auto output = init(command)
 
 #define INIT_SESSION()                                                         \
     INIT();                                                                    \
@@ -161,7 +162,7 @@ constexpr auto TASKCOMPLETE_VERSION = 2;
     }                                                                          \
                                                                                \
     [[maybe_unused]] auto& session = get_session(command.session());           \
-    [[maybe_unused]] auto reason = session.Factory().PasswordPrompt("RPC");
+    [[maybe_unused]] auto reason = session.Factory().PasswordPrompt("RPC")
 
 #define INIT_CLIENT_ONLY()                                                     \
     INIT_SESSION();                                                            \
@@ -174,9 +175,9 @@ constexpr auto TASKCOMPLETE_VERSION = 2;
                                                                                \
     const auto pClient = get_client(command.session());                        \
                                                                                \
-    OT_ASSERT(nullptr != pClient)                                              \
+    OT_ASSERT(nullptr != pClient);                                             \
                                                                                \
-    [[maybe_unused]] const auto& client = *pClient;
+    [[maybe_unused]] const auto& client = *pClient
 
 #define INIT_SERVER_ONLY()                                                     \
     INIT_SESSION();                                                            \
@@ -189,15 +190,15 @@ constexpr auto TASKCOMPLETE_VERSION = 2;
                                                                                \
     const auto pServer = get_server(command.session());                        \
                                                                                \
-    OT_ASSERT(nullptr != pServer)                                              \
+    OT_ASSERT(nullptr != pServer);                                             \
                                                                                \
-    [[maybe_unused]] const auto& server = *pServer;
+    [[maybe_unused]] const auto& server = *pServer
 
 #define INIT_OTX(a, ...)                                                       \
     api::session::OTX::Result result{otx::LastReplyStatus::NotSent, nullptr};  \
     [[maybe_unused]] const auto& [status, pReply] = result;                    \
     [[maybe_unused]] auto [taskID, future] = client.OTX().a(__VA_ARGS__);      \
-    [[maybe_unused]] const auto ready = (0 != taskID);
+    [[maybe_unused]] const auto ready = (0 != taskID)
 
 namespace opentxs
 {
@@ -237,12 +238,12 @@ RPC::RPC(const api::Context& native)
     auto bound = push_receiver_->Start(
         network::zeromq::MakeDeterministicInproc("rpc/push/internal", -1, 1));
 
-    OT_ASSERT(bound)
+    OT_ASSERT(bound);
 
     bound = rpc_publisher_->Start(
         network::zeromq::MakeDeterministicInproc("rpc/push", -1, 1));
 
-    OT_ASSERT(bound)
+    OT_ASSERT(bound);
 }
 
 auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
@@ -1965,7 +1966,7 @@ auto RPC::start_client(const proto::RPCCommand& command) const
         auto bound = task_subscriber_->Start(
             UnallocatedCString{manager.Endpoints().TaskComplete()});
 
-        OT_ASSERT(bound)
+        OT_ASSERT(bound);
 
     } catch (...) {
         add_output_status(output, proto::RPCRESPONSE_INVALID);
@@ -2064,3 +2065,11 @@ RPC::~RPC()
     push_receiver_->Close();
 }
 }  // namespace opentxs::rpc::implementation
+
+#undef INIT_OTX
+#undef INIT_SERVER_ONLY
+#undef INIT_CLIENT_ONLY
+#undef INIT_SESSION
+#undef INIT
+#undef CHECK_OWNER
+#undef CHECK_INPUT

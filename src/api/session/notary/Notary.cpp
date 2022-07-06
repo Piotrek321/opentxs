@@ -218,7 +218,7 @@ void Notary::generate_mint(
         UnallocatedCString(SERIES_DIVIDER) + std::to_string(series);
     mint = factory_.Mint(server, nym.ID(), unit);
 
-    OT_ASSERT(mint)
+    OT_ASSERT(mint);
 
     const auto now = Clock::now();
     const std::chrono::seconds expireInterval(
@@ -573,8 +573,8 @@ auto Notary::verify_mint_directory(const UnallocatedCString& serverID) const
     const auto haveServer =
         parent_.Internal().Legacy().AppendFolder(serverDir, mintDir, serverID);
 
-    OT_ASSERT(haveMint)
-    OT_ASSERT(haveServer)
+    OT_ASSERT(haveMint);
+    OT_ASSERT(haveServer);
 
     return parent_.Internal().Legacy().BuildFolderPath(serverDir);
 }

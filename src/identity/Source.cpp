@@ -279,7 +279,7 @@ auto Source::Serialize(proto::NymIDSource& source) const noexcept -> bool
 
     switch (type_) {
         case identity::SourceType::PubKey: {
-            OT_ASSERT(pubkey_.get())
+            OT_ASSERT(pubkey_.get());
 
             auto key = proto::AsymmetricKey{};
             if (false == pubkey_->Serialize(key)) { return false; }

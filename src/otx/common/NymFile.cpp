@@ -194,7 +194,7 @@ auto NymFile::deserialize_nymfile(
                     //
                     if (strAccountID->Exists() && strHashValue->Exists()) {
                         auto pID = opentxs::Identifier::Factory(strHashValue);
-                        OT_ASSERT(!pID->empty())
+                        OT_ASSERT(!pID->empty());
                         m_mapInboxHash.emplace(strAccountID->Get(), pID);
                     }
                 } else if (strNodeName->Compare("outboxHashItem")) {
@@ -215,7 +215,7 @@ auto NymFile::deserialize_nymfile(
                     if (strAccountID->Exists() && strHashValue->Exists()) {
                         OTIdentifier pID =
                             opentxs::Identifier::Factory(strHashValue);
-                        OT_ASSERT(!pID->empty())
+                        OT_ASSERT(!pID->empty());
                         m_mapOutboxHash.emplace(strAccountID->Get(), pID);
                     }
                 } else if (strNodeName->Compare("MARKED_FOR_DELETION")) {

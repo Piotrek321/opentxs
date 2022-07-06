@@ -1414,7 +1414,7 @@ auto OTSmartContract::GetStashBalance(
     //
 
     OTStash* pStash = GetStash(from_stash_name);  // This ALWAYS succeeds.
-                                                  // (It will OT_ASSERT()
+                                                  // (It will OT_ASSERT();
                                                   // if failure.)
 
     //
@@ -1919,7 +1919,7 @@ auto OTSmartContract::UnstashAcctFunds(
 
     OTPartyAccount* pToAcct = GetPartyAccount(to_acct_name);
     OTStash* pStash = GetStash(from_stash_name);  // This ALWAYS succeeds.
-                                                  // (It will OT_ASSERT()
+                                                  // (It will OT_ASSERT();
                                                   // if failure.)
 
     if (nullptr == pToAcct) {
@@ -4915,7 +4915,7 @@ auto OTSmartContract::ConfirmParty(
     // only if all parties have validly signed.  (Server needs to verify.)
 }
 
-// ALWAYS succeeds. (It will OT_ASSERT() otherwise.)
+// ALWAYS succeeds. (It will OT_ASSERT() otherwise.);
 //
 auto OTSmartContract::GetStash(UnallocatedCString str_stash_name) -> OTStash*
 {

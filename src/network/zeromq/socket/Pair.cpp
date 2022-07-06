@@ -142,16 +142,16 @@ void Pair::init() noexcept
 {
     Bidirectional::init();
 
-    OT_ASSERT(false == endpoint_.empty())
+    OT_ASSERT(false == endpoint_.empty());
 
     const auto init = Bidirectional::Start(endpoint_);
 
-    OT_ASSERT(init)
+    OT_ASSERT(init);
 }
 
 void Pair::process_incoming(const Lock& lock, Message&& message) noexcept
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
 
     callback_.Process(std::move(message));
 }

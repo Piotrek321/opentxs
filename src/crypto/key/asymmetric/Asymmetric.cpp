@@ -370,7 +370,7 @@ auto Asymmetric::create_key(
     generate_key(provider, options, role, publicKey, privateKey, params);
     auto pOutput = std::make_unique<proto::Ciphertext>();
 
-    OT_ASSERT(pOutput)
+    OT_ASSERT(pOutput);
 
     auto& output = *pOutput;
 

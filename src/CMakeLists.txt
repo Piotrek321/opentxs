@@ -136,7 +136,11 @@ if(OT_QT_EXPORT)
 
   if(NOT MSVC)
     target_compile_options(
-      opentxs-moc PRIVATE -Wno-redundant-parens -Wno-reserved-identifier
+      opentxs-moc
+      PRIVATE
+        -Wno-extra-semi-stmt
+        -Wno-redundant-parens
+        -Wno-reserved-identifier
     )
   endif()
 

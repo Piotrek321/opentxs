@@ -114,7 +114,7 @@ auto ChequeBalanceItem::startup(
             api::session::Workflow::InstantiateCheque(api_, workflow).second;
     }
 
-    OT_ASSERT(cheque_)
+    OT_ASSERT(cheque_);
 
     lock.unlock();
     auto name = UnallocatedCString{};

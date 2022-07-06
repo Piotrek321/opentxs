@@ -378,7 +378,7 @@ auto OTScriptChai::RegisterNativeScriptableCalls(OTScriptable& parent) noexcept
 {
     using namespace chaiscript;
 
-    OT_ASSERT(nullptr != chai_)
+    OT_ASSERT(nullptr != chai_);
 
     chai_->add(fun(&OTScriptable::GetTime), "get_time");
     chai_->add(
@@ -394,7 +394,7 @@ auto OTScriptChai::RegisterNativeSmartContractCalls(
 
     using namespace chaiscript;
 
-    OT_ASSERT(nullptr != chai_)
+    OT_ASSERT(nullptr != chai_);
 
     // OT NATIVE FUNCTIONS
     // (These functions can be called from INSIDE the scripted clauses.)

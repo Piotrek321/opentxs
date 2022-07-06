@@ -139,8 +139,8 @@ auto Config::GetSetValue(
     std::int32_t& out_nValue) const -> bool
 
 {
-    OT_ASSERT(false == strKeyName.empty())
-    OT_ASSERT(2 < strKeyName.size())
+    OT_ASSERT(false == strKeyName.empty());
+    OT_ASSERT(2 < strKeyName.size());
 
     bool bIsNew{false};
     std::int64_t nValue{0};

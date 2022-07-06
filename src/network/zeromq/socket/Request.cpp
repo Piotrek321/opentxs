@@ -94,7 +94,7 @@ auto Request::SetSocksProxy(const UnallocatedCString& proxy) const noexcept
 
 auto Request::wait(const Lock& lock) const noexcept -> bool
 {
-    OT_ASSERT(verify_lock(lock))
+    OT_ASSERT(verify_lock(lock));
 
     const auto start = Clock::now();
     auto poll = std::array<::zmq_pollitem_t, 1>{};

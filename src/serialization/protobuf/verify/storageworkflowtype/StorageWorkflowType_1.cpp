@@ -15,7 +15,7 @@ namespace opentxs::proto
 {
 auto CheckProto_1(const StorageWorkflowType& input, const bool silent) -> bool
 {
-    CHECK_IDENTIFIER(workflow)
+    CHECK_IDENTIFIER(workflow);
 
     switch (input.type()) {
         case PAYMENTWORKFLOWTYPE_OUTGOINGCHEQUE: {
@@ -35,7 +35,7 @@ auto CheckProto_1(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -56,7 +56,7 @@ auto CheckProto_1(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -77,7 +77,7 @@ auto CheckProto_1(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -98,7 +98,7 @@ auto CheckProto_1(const StorageWorkflowType& input, const bool silent) -> bool
                 default: {
                     FAIL_2(
                         "invalid state",
-                        static_cast<std::uint32_t>(input.state()))
+                        static_cast<std::uint32_t>(input.state()));
                 }
             }
         } break;
@@ -109,7 +109,7 @@ auto CheckProto_1(const StorageWorkflowType& input, const bool silent) -> bool
         case PAYMENTWORKFLOWTYPE_INCOMINGCASH:
         case PAYMENTWORKFLOWTYPE_ERROR:
         default: {
-            FAIL_2("invalid type", static_cast<std::uint32_t>(input.type()))
+            FAIL_2("invalid type", static_cast<std::uint32_t>(input.type()));
         }
     }
 

@@ -79,7 +79,7 @@ Profile::Profile(
     setup_listeners(listeners_);
     startup_ = std::make_unique<std::thread>(&Profile::startup, this);
 
-    OT_ASSERT(startup_)
+    OT_ASSERT(startup_);
 }
 
 auto Profile::AddClaim(
@@ -292,13 +292,13 @@ void Profile::process_nym(const Message& message) noexcept
 
     const auto nymID = api_.Factory().NymID(message.Body_at(1));
 
-    OT_ASSERT(false == nymID->empty())
+    OT_ASSERT(false == nymID->empty());
 
     if (nymID != primary_id_) { return; }
 
     const auto nym = api_.Wallet().Nym(nymID);
 
-    OT_ASSERT(nym)
+    OT_ASSERT(nym);
 
     process_nym(*nym);
 }
@@ -362,7 +362,7 @@ void Profile::startup() noexcept
     LogVerbose()(OT_PRETTY_CLASS())("Loading nym ")(primary_id_).Flush();
     const auto nym = api_.Wallet().Nym(primary_id_);
 
-    OT_ASSERT(nym)
+    OT_ASSERT(nym);
 
     process_nym(*nym);
     finish_startup();

@@ -33,11 +33,11 @@ auto CheckProto_1(const StorageContacts& input, const bool silent) -> bool
                 StorageContactsAllowedList().at(input.version()).second,
                 silent);
 
-            if (!valid) { FAIL_1("invalid merge") }
+            if (!valid) { FAIL_1("invalid merge"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed storage id list version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
@@ -53,11 +53,11 @@ auto CheckProto_1(const StorageContacts& input, const bool silent) -> bool
                     .second,
                 silent);
 
-            if (!valid) { FAIL_1("invalid hash") }
+            if (!valid) { FAIL_1("invalid hash"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed storage item hash version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
@@ -69,16 +69,16 @@ auto CheckProto_1(const StorageContacts& input, const bool silent) -> bool
                 StorageContactsAllowedAddress().at(input.version()).second,
                 silent);
 
-            if (!valid) { FAIL_1("invalid address index") }
+            if (!valid) { FAIL_1("invalid address index"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed address index version not defined for version",
-                input.version())
+                input.version());
         }
     }
 
     if (0 < input.nym().size()) {
-        FAIL_2("nym index not allowed for version", input.version())
+        FAIL_2("nym index not allowed for version", input.version());
     }
 
     return true;

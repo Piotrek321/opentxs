@@ -35,33 +35,33 @@ auto CheckProto_1(
     const bool silent,
     const bool checkSig) -> bool
 {
-    if (!input.has_id()) { FAIL_1("missing id") }
+    if (!input.has_id()) { FAIL_1("missing id"); }
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.id().size()) {
-        FAIL_2("invalid id", input.id())
+        FAIL_2("invalid id", input.id());
     }
 
-    if (!input.has_issuer()) { FAIL_1("missing issuer id") }
+    if (!input.has_issuer()) { FAIL_1("missing issuer id"); }
 
     if (MIN_PLAUSIBLE_IDENTIFIER > input.issuer().size()) {
-        FAIL_2("invalid issuer id", input.issuer())
+        FAIL_2("invalid issuer id", input.issuer());
     }
 
-    if (!input.has_terms()) { FAIL_1("missing terms") }
+    if (!input.has_terms()) { FAIL_1("missing terms"); }
 
-    if (1 > input.terms().size()) { FAIL_2("invalid terms", input.terms()) }
+    if (1 > input.terms().size()) { FAIL_2("invalid terms", input.terms()); }
 
-    if (!input.has_name()) { FAIL_1("missing name") }
+    if (!input.has_name()) { FAIL_1("missing name"); }
 
-    if (1 > input.name().size()) { FAIL_2("invalid name", input.name()) }
+    if (1 > input.name().size()) { FAIL_2("invalid name", input.name()); }
 
-    if (!input.has_type()) { FAIL_1("missing type") }
+    if (!input.has_type()) { FAIL_1("missing type"); }
 
     bool goodParams = false;
 
     switch (input.type()) {
         case UNITTYPE_CURRENCY: {
-            if (!input.has_params()) { FAIL_1("missing currency params") }
+            if (!input.has_params()) { FAIL_1("missing currency params"); }
 
             try {
                 goodParams = Check(
@@ -76,13 +76,13 @@ auto CheckProto_1(
             } catch (const std::out_of_range&) {
                 FAIL_2(
                     "allowed currency params version not defined for version",
-                    input.version())
+                    input.version());
             }
 
-            if (!goodParams) { FAIL_1("invalid currency params") }
+            if (!goodParams) { FAIL_1("invalid currency params"); }
         } break;
         case UNITTYPE_SECURITY: {
-            if (!input.has_security()) { FAIL_1("missing security params") }
+            if (!input.has_security()) { FAIL_1("missing security params"); }
 
             try {
                 goodParams = Check(
@@ -97,13 +97,13 @@ auto CheckProto_1(
             } catch (const std::out_of_range&) {
                 FAIL_2(
                     "allowed security params version not defined for version",
-                    input.version())
+                    input.version());
             }
 
-            if (!goodParams) { FAIL_1("invalid security params") }
+            if (!goodParams) { FAIL_1("invalid security params"); }
         } break;
         case UNITTYPE_BASKET: {
-            if (!input.has_basket()) { FAIL_1("missing currency params") }
+            if (!input.has_basket()) { FAIL_1("missing currency params"); }
 
             try {
                 goodParams = Check(
@@ -118,14 +118,14 @@ auto CheckProto_1(
             } catch (const std::out_of_range&) {
                 FAIL_2(
                     "allowed basket params version not defined for version",
-                    input.version())
+                    input.version());
             }
 
-            if (!goodParams) { FAIL_1("invalid basket params") }
+            if (!goodParams) { FAIL_1("invalid basket params"); }
         } break;
         case UNITTYPE_ERROR:
         default: {
-            FAIL_1("invalid type")
+            FAIL_1("invalid type");
         }
     }
 
@@ -137,15 +137,15 @@ auto CheckProto_1(
                 UnitDefinitionAllowedNym().at(input.version()).second,
                 silent);
 
-            if (!goodPublicNym) { FAIL_1("invalid issuer") }
+            if (!goodPublicNym) { FAIL_1("invalid issuer"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed credential index version not defined for version",
-                input.version())
+                input.version());
         }
 
         if (input.issuer() != input.issuer_nym().nymid()) {
-            FAIL_1("wrong nym")
+            FAIL_1("wrong nym");
         }
     }
 
@@ -158,11 +158,11 @@ auto CheckProto_1(
                 silent,
                 SIGROLE_UNITDEFINITION);
 
-            if (false == valid) { FAIL_1("invalid signature") }
+            if (false == valid) { FAIL_1("invalid signature"); }
         } catch (const std::out_of_range&) {
             FAIL_2(
                 "allowed signature version not defined for version",
-                input.version())
+                input.version());
         }
     }
 

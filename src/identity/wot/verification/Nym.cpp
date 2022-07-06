@@ -156,7 +156,7 @@ auto Nym::AddItem(const Item::SerializedType item) noexcept -> bool
 
 auto Nym::add_item(Child pCandidate) noexcept -> bool
 {
-    OT_ASSERT(pCandidate)
+    OT_ASSERT(pCandidate);
 
     auto accept{true};
     const auto& candidate = *pCandidate;

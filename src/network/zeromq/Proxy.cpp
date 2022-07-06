@@ -60,7 +60,7 @@ Proxy::Proxy(
 {
     thread_ = std::make_unique<std::thread>(&Proxy::proxy, this);
 
-    OT_ASSERT(thread_)
+    OT_ASSERT(thread_);
 }
 
 auto Proxy::clone() const -> Proxy*

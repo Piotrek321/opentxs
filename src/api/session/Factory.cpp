@@ -623,7 +623,7 @@ auto Factory::Cheque(const OTTransaction& receipt) const
 {
     std::unique_ptr<opentxs::Cheque> output{new opentxs::Cheque{api_}};
 
-    OT_ASSERT(output)
+    OT_ASSERT(output);
 
     auto serializedItem = String::Factory();
     receipt.GetReferenceString(serializedItem);

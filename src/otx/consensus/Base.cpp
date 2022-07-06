@@ -349,7 +349,7 @@ auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
 
     nymbox->ReleaseSignatures();
 
-    OT_ASSERT(nym_)
+    OT_ASSERT(nym_);
 
     if (false == nymbox->SignContract(*nym_, reason)) {
         LogError()(OT_PRETTY_CLASS())("(")(type())(") ")(
@@ -442,7 +442,7 @@ auto Base::LocalNymboxHash() const -> OTIdentifier
 auto Base::mutable_Nymfile(const PasswordPrompt& reason)
     -> Editor<opentxs::NymFile>
 {
-    OT_ASSERT(nym_)
+    OT_ASSERT(nym_);
 
     return api_.Wallet().Internal().mutable_Nymfile(nym_->ID(), reason);
 }

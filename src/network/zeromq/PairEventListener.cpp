@@ -33,7 +33,7 @@ PairEventListener::PairEventListener(
         PAIR_EVENT_ENDPOINT_PATH, instance, PAIR_EVENT_ENDPOINT_VERSION);
     const bool started = Start(endpoint);
 
-    OT_ASSERT(started)
+    OT_ASSERT(started);
 
     LogVerbose()(OT_PRETTY_CLASS())("listening on ")(endpoint).Flush();
 }

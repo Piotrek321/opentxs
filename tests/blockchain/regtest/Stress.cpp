@@ -122,8 +122,8 @@ protected:
 
                 alice_p_ = client_1_.Wallet().Nym({seedID, 0}, reason, "Alice");
 
-                OT_ASSERT(alice_p_)
-                OT_ASSERT(alice_p_->PaymentCode() == vector.payment_code_)
+                OT_ASSERT(alice_p_);
+                OT_ASSERT(alice_p_->PaymentCode() == vector.payment_code_);
 
                 client_1_.Crypto().Blockchain().NewHDSubaccount(
                     alice_p_->ID(),
@@ -132,7 +132,7 @@ protected:
                     reason);
             }
 
-            OT_ASSERT(alice_p_)
+            OT_ASSERT(alice_p_);
 
             return *alice_p_;
         }())
@@ -156,7 +156,7 @@ protected:
 
                 bob_p_ = client_2_.Wallet().Nym({seedID, 0}, reason, "Alice");
 
-                OT_ASSERT(bob_p_)
+                OT_ASSERT(bob_p_);
 
                 client_2_.Crypto().Blockchain().NewHDSubaccount(
                     bob_p_->ID(),
@@ -165,7 +165,7 @@ protected:
                     reason);
             }
 
-            OT_ASSERT(bob_p_)
+            OT_ASSERT(bob_p_);
 
             return *bob_p_;
         }())
@@ -436,7 +436,7 @@ TEST_F(Regtest_stress, generate_transactions)
                 using State = std::future_status;
                 constexpr auto limit = std::chrono::minutes{10};
 
-                while (State::ready != future.wait_for(limit)) { ; }
+                while (State::ready != future.wait_for(limit)) {}
 
                 try {
                     auto [code, txid] = future.get();

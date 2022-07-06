@@ -32,26 +32,15 @@ auto pretty_function(T*, const char* function) noexcept -> UnallocatedCString
 #define OT_PRETTY_CLASS() opentxs::pretty_function(this, __func__)
 #define OT_PRETTY_STATIC(C) opentxs::pretty_function<C>(__func__)
 
-#define OT_TRACE                                                               \
-    {                                                                          \
-        ::opentxs::LogError().Trace(__FILE__, __LINE__, nullptr);              \
-    };
-#define OT_FAIL                                                                \
-    {                                                                          \
-        ::opentxs::LogError().Assert(__FILE__, __LINE__, nullptr);             \
-    };
-#define OT_FAIL_MSG(s)                                                         \
-    {                                                                          \
-        ::opentxs::LogError().Assert(__FILE__, __LINE__, (s));                 \
-    };
+#define OT_TRACE ::opentxs::LogError().Trace(__FILE__, __LINE__, nullptr)
+#define OT_FAIL ::opentxs::LogError().Assert(__FILE__, __LINE__, nullptr)
+#define OT_FAIL_MSG(s) ::opentxs::LogError().Assert(__FILE__, __LINE__, (s))
 #define OT_ASSERT(x)                                                           \
-    if (false == static_cast<bool>(x)) {                                       \
-        ::opentxs::LogError().Assert(__FILE__, __LINE__, nullptr);             \
-    };
+    if (false == static_cast<bool>(x))                                         \
+    ::opentxs::LogError().Assert(__FILE__, __LINE__, nullptr)
 #define OT_ASSERT_MSG(x, s)                                                    \
-    if (false == static_cast<bool>(x)) {                                       \
-        ::opentxs::LogError().Assert(__FILE__, __LINE__, (s));                 \
-    };
+    if (false == static_cast<bool>(x))                                         \
+    ::opentxs::LogError().Assert(__FILE__, __LINE__, (s))
 
 #define OT_INTERMEDIATE_FORMAT(OT_THE_ERROR_STRING)                            \
     (((OT_PRETTY_CLASS()) + UnallocatedCString(OT_THE_ERROR_STRING) +          \

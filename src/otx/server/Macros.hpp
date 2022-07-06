@@ -26,16 +26,12 @@ namespace opentxs::server
                                                                                \
         if (false == NYM_IS_ALLOWED(pNymAllowedIDStr, BOOL_VAR_NAME)) {        \
             LogConsole()(OT_PRETTY_CLASS())("Nym ")(                           \
-                pNymAllowedIDStr)(" attempted an action "                      \
-                                  "(")(pActionNameStr)("), but "               \
-                                                       "based on "             \
-                                                       "server "               \
-                                                       "configurati"           \
-                                                       "on,"                   \
-                                                       " he's not "            \
-                                                       "allowed.")             \
+                pNymAllowedIDStr)(" attempted an action (")(                   \
+                pActionNameStr)("), but based on server configuration, he's "  \
+                                "not allowed.")                                \
                 .Flush();                                                      \
             return false;                                                      \
         }                                                                      \
-    }
+    }                                                                          \
+    static_assert(0 < sizeof(char))  // NOTE silence -Wextra-semi-stmt
 }  // namespace opentxs::server

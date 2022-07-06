@@ -849,7 +849,6 @@ auto Input::Print() const noexcept -> UnallocatedCString
     if (Script::Position::Coinbase == script_->Role()) {
         out << "    coinbase: " << '\n';
         out << decode_coinbase() << '\n';
-        ;
     } else {
         out << "    script: " << '\n';
         out << script_->Print();
