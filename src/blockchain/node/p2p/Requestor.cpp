@@ -419,7 +419,7 @@ auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
             shutdown_actor();
         } break;
         case Work::PushTransaction: {
-            tdiag("-------------defer------------");
+            //tdiag(("-------------defer------------");
             defer(std::move(msg));
         } break;
         case Work::Register: {

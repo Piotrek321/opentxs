@@ -110,7 +110,7 @@ protected:
 
     template<typename ME>
     auto signal_startup(const boost::shared_ptr<ME> &me) noexcept -> void {
-        tdiag("signal_startup");
+        //tdiag(("signal_startup");
         if (running_ && start()) {
             boost::weak_ptr<ME> wp(me);
             pipeline_.Internal().SetCallback([wp](auto &&m) {
@@ -134,13 +134,13 @@ protected:
 
 protected:
     auto shutdown_actor() noexcept -> void {
-        tdiag(typeid(this), "CLOSE 1  XXXXXX");
-        tdiag("", static_cast<void *>(this));
+        //tdiag((typeid(this), "CLOSE 1  XXXXXX");
+        //tdiag(("", static_cast<void *>(this));
 
         if (in_reactor_thread()) {
             do_shutdown();
-            tdiag(typeid(this), "CLOSE 2R XXXXXX");
-            tdiag("", static_cast<void *>(this));
+            //tdiag((typeid(this), "CLOSE 2R XXXXXX");
+            //tdiag(("", static_cast<void *>(this));
             pipeline_.Close();
         } else {
             if (auto previous = running_.exchange(false); previous) {
@@ -149,11 +149,11 @@ protected:
                     wait_for_loop_exit();
                 }
                 do_shutdown();
-                tdiag(typeid(this), "CLOSE 2A XXXXXX");
-                tdiag("", static_cast<void *>(this));
+                //tdiag((typeid(this), "CLOSE 2A XXXXXX");
+                //tdiag(("", static_cast<void *>(this));
                 pipeline_.Close();
             } else {
-                tdiag(typeid(this), "CLOSE 3A XXXXXX");
+                //tdiag((typeid(this), "CLOSE 3A XXXXXX");
             }
         }
     }
@@ -184,11 +184,11 @@ protected:
         log_(name_)(" ")(__FUNCTION__)(": using ZMQ batch ")(
                 pipeline_.BatchID())
                 .Flush();
-        tdiag("Actor::Actor");
+        //tdiag(("Actor::Actor");
         notify();
     }
 
-    ~Actor() override { tdiag("Actor::~Actor", processing_thread_id()); }
+    ~Actor() override { }//tdiag(("Actor::~Actor", processing_thread_id()); }
 
 private:
     auto rate_limit_state_machine() const noexcept {

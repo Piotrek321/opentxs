@@ -91,7 +91,7 @@ public:
     auto synchronize(Functor&& f)
     {
         if (in_reactor_thread()) { return f(); }
-        tdiag(typeid(this), "synchronize command");
+        //tdiag((typeid(this), "synchronize command");
         std::unique_ptr<SynchronizableCommand<Functor>> fc(
             new SynchronizableCommand(std::move(f)));
         auto ft = fc->get_future();

@@ -153,7 +153,7 @@ protected:
                           .count();
             ms > max_ms) {
             diag_alert_ = true;
-            tdiag(std::move(tag), std::to_string(ms) + " ms");
+            //tdiag((std::move(tag), std::to_string(ms) + " ms");
             return false;
         }
         return true;

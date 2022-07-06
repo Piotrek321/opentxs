@@ -252,14 +252,14 @@ auto BlockOracle::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::process_block: {
             const auto body = msg.Body();
-            tdiag("pipeline 1 ", std::string{print(work)});
+            //tdiag(("pipeline 1 ", std::string{print(work)});
 
             if (1 >= body.size()) {
                 LogError()(OT_PRETTY_CLASS())("No block").Flush();
 
                 OT_FAIL;
             }
-            tdiag("pipeline 2 ", std::string{print(work)});
+            //tdiag(("pipeline 2 ", std::string{print(work)});
 
             cache_.lock()->ReceiveBlock(body.at(1));
             do_work();

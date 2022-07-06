@@ -157,13 +157,13 @@ Reactor::Reactor(const Log& logger, const CString& name) noexcept
     , processing_thread_id_{}
 {
     log_(name_)(" ")(__FUNCTION__).Flush();
-    tdiag("Reactor::Reactor");
+    //tdiag(("Reactor::Reactor");
     queue_event_flag_.notify_one();
 }
 
 Reactor::~Reactor()
 {
-    tdiag("Reactor::~Reactor 1", processing_thread_id_);
+    //tdiag(("Reactor::~Reactor 1", processing_thread_id_);
     try {
 
         if (thread_ && !in_reactor_thread() && thread_->joinable()) {
@@ -172,7 +172,7 @@ Reactor::~Reactor()
     } catch (const std::exception&) {
         // deliberately silent
     }
-    tdiag("Reactor::~Reactor 2", processing_thread_id_);
+    //tdiag(("Reactor::~Reactor 2", processing_thread_id_);
 }
 
 int Reactor::reactor_loop()
@@ -184,7 +184,7 @@ int Reactor::reactor_loop()
         }
         if (!active_) {
             {
-                tdiag("leaving reactor", processing_thread_id_);
+                //tdiag(("leaving reactor", processing_thread_id_);
             }
             break;
         }
@@ -197,7 +197,7 @@ int Reactor::reactor_loop()
         processing_thread_id_ = std::this_thread::get_id();
 
         {
-            tdiag("reactor initialization", processing_thread_id_);
+            //tdiag(("reactor initialization", processing_thread_id_);
         }
 
         while (active_) {
@@ -213,7 +213,7 @@ int Reactor::reactor_loop()
             while (active_) {
                 auto c = dequeue_command();
                 if (c) {
-                    tdiag(typeid(this), "dequeue command");
+                    //tdiag((typeid(this), "dequeue command");
                     time_it([&] { c->exec(); }, "XX COMMAND EXEC", 1200);
                 }
 
@@ -232,7 +232,7 @@ int Reactor::reactor_loop()
         }
         break;
     }
-    tdiag("leaving reactor", processing_thread_id_);
+    //tdiag(("leaving reactor", processing_thread_id_);
     promise_shutdown_.set_value();
     return 0;
 }

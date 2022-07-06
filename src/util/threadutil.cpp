@@ -409,7 +409,7 @@ void ThreadDisplay::tadiag(
     std::string&& tag) const noexcept
 {
     if (diag_alert_.exchange(false)) {
-        tdiag(std::move(s1), std::move(s2), std::move(tag));
+        //tdiag((std::move(s1), std::move(s2), std::move(tag));
     }
 }
 
