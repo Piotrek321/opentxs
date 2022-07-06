@@ -121,8 +121,8 @@ Job::Job(
               std::copy(extra.begin(), extra.end(), std::back_inserter(out));
 
               return out;
-          }(),
-          std::move(neverDrop))
+          }()
+)//std::move(neverDrop))
     , parent_p_(parent)
     , parent_(*parent_p_)
     , job_type_(type)
@@ -202,6 +202,11 @@ auto Job::last_reorg() const noexcept -> std::optional<StateSequence>
 
         return *reorgs_.crbegin();
     }
+}
+
+auto Job::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
 }
 
 auto Job::pipeline(const Work work, Message&& msg) noexcept -> void
@@ -314,7 +319,7 @@ auto Job::process_startup(Message&& msg) noexcept -> void
 {
     state_ = State::normal;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     flush_cache();
     do_work();
 }
@@ -481,7 +486,7 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
 
 auto Job::transition_state_normal() noexcept -> bool
 {
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     state_ = State::normal;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
     trigger();
@@ -495,7 +500,7 @@ auto Job::transition_state_reorg(StateSequence id) noexcept -> bool
 
     if (0u == reorgs_.count(id)) {
         reorgs_.emplace(id);
-        disable_automatic_processing_ = true;
+        disable_automatic_processing(true);
         state_ = State::reorg;
         log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {

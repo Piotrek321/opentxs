@@ -90,6 +90,7 @@ protected:
     auto do_shutdown() noexcept -> void override;
     auto pipeline(const Work work, Message&& msg) noexcept -> void override;
     auto work() noexcept -> bool override;
+    auto to_str(Work w) const noexcept -> std::string final;
 
 private:
     enum class State { init, sync, run };

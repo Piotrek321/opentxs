@@ -112,8 +112,7 @@ auto Root::Migrate(const Driver& to) const -> bool
             driver_.StoreRoot(true, root_);
         });
     } catch (const std::exception& e) {
-        LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
-
+        //        LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
         return false;
     }
 }

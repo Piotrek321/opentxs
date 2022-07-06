@@ -336,6 +336,11 @@ auto Account::Imp::instantiate(
     return output;
 }
 
+auto Account::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto Account::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
     switch (state_) {
@@ -512,7 +517,7 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
 
 auto Account::Imp::transition_state_normal() noexcept -> bool
 {
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     const auto cb = [](auto& value) {
         auto rc = value.second->ChangeState(Subchain::State::normal, {});
 
@@ -541,7 +546,7 @@ auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> bool
         if (!success) { return false; }
 
         reorgs_.emplace(id);
-        disable_automatic_processing_ = true;
+        disable_automatic_processing(true);
         state_ = State::reorg;
         log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {

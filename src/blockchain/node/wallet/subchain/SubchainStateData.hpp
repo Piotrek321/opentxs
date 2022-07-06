@@ -240,6 +240,7 @@ protected:
     auto do_shutdown() noexcept -> void override;
     auto pipeline(const Work work, Message&& msg) noexcept -> void override;
     auto work() noexcept -> bool override;
+    auto to_str(Work w) const noexcept -> std::string final;
 
     using TXOs = database::Wallet::TXOs;
     auto set_key_data(bitcoin::block::Transaction& tx) const noexcept -> void;

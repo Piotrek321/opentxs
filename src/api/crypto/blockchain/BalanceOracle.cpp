@@ -171,6 +171,11 @@ auto BalanceOracle::Imp::notify_subscribers(
     }
 }
 
+auto BalanceOracle::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto BalanceOracle::Imp::pipeline(const Work work, Message&& msg) noexcept
     -> void
 {

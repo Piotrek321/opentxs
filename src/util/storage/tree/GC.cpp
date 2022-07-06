@@ -47,7 +47,8 @@ auto Root::GC::Cleanup() noexcept -> void { future_.get(); }
 auto Root::GC::Check(const UnallocatedCString root) noexcept -> CheckState
 {
     if (0 == interval_) {
-        LogVerbose()(OT_PRETTY_CLASS())("Garbage collection disabled").Flush();
+        //        LogVerbose()(OT_PRETTY_CLASS())("Garbage collection
+        //        disabled").Flush();
 
         return CheckState::Skip;
     }

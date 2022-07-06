@@ -56,6 +56,7 @@ namespace opentxs::blockchain::node::wallet
 class Progress::Imp final : public statemachine::Job
 {
 public:
+
     auto ProcessReorg(
         const Lock& headerOracleLock,
         const block::Position& parent) noexcept -> void final;
