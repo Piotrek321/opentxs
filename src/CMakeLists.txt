@@ -135,7 +135,9 @@ if(OT_QT_EXPORT)
   )
 
   if(NOT MSVC)
-    target_compile_options(opentxs-moc PRIVATE -Wno-reserved-identifier)
+    target_compile_options(
+      opentxs-moc PRIVATE -Wno-redundant-parens -Wno-reserved-identifier
+    )
   endif()
 
   set_target_properties(
