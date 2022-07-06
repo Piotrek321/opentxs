@@ -116,7 +116,9 @@ auto Callbacks::RegisterWidget(
     WidgetData data{};
     std::get<0>(data) = type;
     auto& [limit, cb, promise] = std::get<2>(data);
-    limit = counter, cb = callback, promise = {};
+    limit = counter;
+    cb = callback;
+    promise = {};
     auto output = promise.get_future();
     widget_map_.emplace(id, std::move(data));
     ui_names_.emplace(type, id);

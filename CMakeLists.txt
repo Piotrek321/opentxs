@@ -343,7 +343,7 @@ if(${CMAKE_CXX_COMPILER_ID}
   # TODO c++20 disable -Wreturn-std-move-in-c++11
   #TODO remove -Wno-reserved-identifier
   set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -Wno-reserved-identifier -Wno-c++2a-compat -Wno-c++20-compat -Wno-comma -Wno-documentation -Wno-documentation-unknown-command -Wno-extra-semi-stmt -Wno-implicit-int-conversion"
+      "${CMAKE_CXX_FLAGS} -Wno-reserved-identifier -Wno-c++2a-compat -Wno-c++20-compat -Wno-documentation -Wno-documentation-unknown-command -Wno-extra-semi-stmt -Wno-implicit-int-conversion"
   )
 endif()
 

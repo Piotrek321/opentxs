@@ -131,7 +131,7 @@ auto String::StringToInt(const UnallocatedCString& strNumber) -> std::int32_t
     std::size_t i = 0;
 
     char sign = (strNumber[0] == '-' || strNumber[0] == '+')
-                    ? (++i, strNumber[0])
+                    ? (static_cast<void>(++i), strNumber[0])
                     : '+';
 
     for (; i < strNumber.size(); ++i) {
@@ -149,7 +149,7 @@ auto String::StringToLong(const UnallocatedCString& strNumber) -> std::int64_t
     std::size_t i = 0;
 
     char sign = (strNumber[0] == '-' || strNumber[0] == '+')
-                    ? (++i, strNumber[0])
+                    ? (static_cast<void>(++i), strNumber[0])
                     : '+';
 
     for (; i < strNumber.size(); ++i) {
