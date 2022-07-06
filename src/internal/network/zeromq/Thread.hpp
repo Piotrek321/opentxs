@@ -44,5 +44,7 @@ public:
     virtual auto Shutdown() noexcept -> void = 0;
 
     virtual ~Thread() = default;
+
+    virtual auto name(const std::string&, bool) noexcept -> void {}
 };
 }  // namespace opentxs::network::zeromq::internal

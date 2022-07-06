@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <cs_deferred_guarded.h>
 #include <zmq.h>
 #include <atomic>
+#include <condition_variable>
 #include <future>
 #include <mutex>
 #include <queue>
@@ -71,47 +71,65 @@ public:
         -> std::future<bool>;
     auto Shutdown() noexcept -> void final;
 
+    auto name(const std::string&, bool conditional) noexcept -> void final;
+
     Thread(zeromq::internal::Pool& parent) noexcept;
 
     ~Thread() final;
+
+private:
+    auto snc_add(ThreadStartArgs&& sockets) noexcept -> bool;
+    auto snc_modify(
+        SocketID socket,
+        ModifyCallback cb,
+        std::promise<bool>&&) noexcept -> void;
+    auto snc_remove(
+        BatchID id,
+        UnallocatedVector<socket::Raw*>&& sockets,
+        std::promise<bool> p) noexcept -> void;
+    auto from_reactor() const noexcept -> bool
+    {
+        return reactor_id_ == std::this_thread::get_id();
+    }
 
 private:
     struct Background {
         std::atomic_bool running_{false};
         std::thread handle_{};
     };
-    struct Items {
-        using ItemVector = Vector<::zmq_pollitem_t>;
-        using DataVector = Vector<ReceiveCallback>;
+    struct Receivers {
+        using SocksVector = Vector<::zmq_pollitem_t>;
+        using RxCallbVector = Vector<ReceiveCallback>;
 
-        ItemVector items_;
-        DataVector data_;
+        SocksVector socks_;
+        RxCallbVector rxcallbacks_;
 
-        Items(alloc::Resource* alloc) noexcept
-            : items_(alloc)
-            , data_(alloc)
+        Receivers(alloc::Resource* alloc) noexcept
+            : socks_(alloc)
+            , rxcallbacks_(alloc)
         {
         }
 
-        ~Items();
+        ~Receivers();
     };
 
-    using Data = libguarded::deferred_guarded<Items, std::shared_mutex>;
-
     zeromq::internal::Pool& parent_;
+    std::deque<std::packaged_task<void()>> skt_mgmt_tasks_;
+    std::thread::id reactor_id_;
+    std::mutex task_mtx_;
+    std::condition_variable active_cv_;
+    std::mutex active_mtx_;
     std::atomic_bool shutdown_;
-    socket::Raw null_;
+    socket::Raw null_skt_;
     alloc::BoostPoolSync alloc_;
     Gatekeeper gate_;
     Background thread_;
-    Data data_;
-    std::atomic<bool> idle_;
+    Receivers receivers_;
 
     auto join() noexcept -> void;
-    auto poll(Items& data) noexcept -> void;
+    auto poll(Receivers& data) noexcept -> void;
     auto receive_message(void* socket, Message& message) noexcept -> bool;
     auto run() noexcept -> void;
-    auto start() noexcept -> void;
     auto wait() noexcept -> void;
 
     Thread() = delete;
