@@ -7,6 +7,7 @@
 
 #include <ContractEnums.pb.h>
 #include <ListenAddress.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

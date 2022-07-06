@@ -8,6 +8,7 @@
 #include <RPCEnums.pb.h>
 #include <RPCResponse.pb.h>
 #include <RPCStatus.pb.h>
+#include <string>
 
 #include "Proto.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"

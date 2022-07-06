@@ -9,8 +9,8 @@
 
 #include <chrono>
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
+#include <string_view>
 
 #include "internal/otx/common/Instrument.hpp"
 #include "internal/otx/common/StringXML.hpp"
@@ -36,6 +36,8 @@
 
 namespace opentxs
 {
+using namespace std::literals;
+
 OTOffer::OTOffer(const api::Session& api)
     : Instrument(api)
     , m_pTrade(nullptr)
@@ -134,33 +136,23 @@ auto OTOffer::isPowerOfTen(const std::int64_t& x) -> bool
  */
 void OTOffer::GetIdentifier(Identifier& theIdentifier) const
 {
-    auto strTemp = String::Factory(),
-         strAsset = String::Factory(GetInstrumentDefinitionID()),
-         strCurrency = String::Factory(GetCurrencyID());
+    // In this way we generate a unique ID that will always be consistent for
+    // the same instrument definition id, currency ID, and market scale.
+    const auto preimage = [&] {
+        auto lScale = UnallocatedCString{};
+        GetScale().Serialize(writer(lScale));
+        auto out = String::Factory();
+        out->Concatenate("ASSET TYPE:\n"sv)
+            .Concatenate(GetInstrumentDefinitionID().Bytes())
+            .Concatenate("\nCURRENCY TYPE:\n"sv)
+            .Concatenate(GetCurrencyID().Bytes())
+            .Concatenate("\nMARKET SCALE:\n"sv)
+            .Concatenate(lScale)
+            .Concatenate("\n"sv);
 
-    UnallocatedCString lScale;
-    GetScale().Serialize(writer(lScale));
-
-    // In this way we generate a unique ID that will always be consistent
-    // for the same instrument definition id, currency ID, and market scale.
-
-    static UnallocatedCString fmt =
-        "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%s\n";
-    UnallocatedVector<char> tmp;
-    tmp.resize(
-        fmt.length() + strAsset->GetLength() + strCurrency->GetLength() +
-        lScale.length() + 1);
-    const auto rc = std::snprintf(
-        &tmp[0],
-        tmp.capacity(),
-        fmt.c_str(),
-        strAsset->Get(),
-        strCurrency->Get(),
-        lScale.c_str());
-
-    OT_ASSERT(0 >= rc);
-
-    theIdentifier.CalculateDigest(&tmp[0]);
+        return out;
+    }();
+    theIdentifier.CalculateDigest(preimage->Bytes());
 }
 auto OTOffer::IsMarketOrder() const -> bool { return (0 == GetPriceLimit()); }
 

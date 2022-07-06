@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/StorageBip47NymAddressIndex.hpp"  // IWYU pragma: associated
 
 #include <StorageBip47NymAddressIndex.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

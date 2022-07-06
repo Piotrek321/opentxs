@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/StorageWorkflowIndex.hpp"  // IWYU pragma: associated
 
 #include <StorageWorkflowIndex.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

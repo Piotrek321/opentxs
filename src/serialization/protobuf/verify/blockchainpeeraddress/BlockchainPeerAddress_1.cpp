@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/BlockchainPeerAddress.hpp"  // IWYU pragma: associated
 
 #include <BlockchainPeerAddress.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

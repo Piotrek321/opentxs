@@ -7,12 +7,13 @@
 #include "1_Internal.hpp"                          // IWYU pragma: associated
 #include "internal/otx/common/trade/OTMarket.hpp"  // IWYU pragma: associated
 
+#include <chrono>
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
 #include <filesystem>
 #include <iterator>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "internal/api/Legacy.hpp"
@@ -55,6 +56,8 @@
 // NOLINTBEGIN(cert-err33-c)
 namespace opentxs
 {
+using namespace std::literals;
+
 OTMarket::OTMarket(const api::Session& api, const char* szFilename)
     : Contract(api)
     , m_pCron(nullptr)
@@ -982,29 +985,23 @@ auto OTMarket::SaveMarket(const PasswordPrompt& reason) -> bool
 //
 void OTMarket::GetIdentifier(Identifier& theIdentifier) const
 {
-    auto strAsset = String::Factory(GetInstrumentDefinitionID()),
-         strCurrency = String::Factory(GetCurrencyID());
-
-    UnallocatedCString lScale;
-    GetScale().Serialize(writer(lScale));
-
     // In this way we generate a unique ID that will always be consistent
     // for the same instrument definition id, currency ID, and market scale.
-    static UnallocatedCString fmt{
-        "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%s\n"};
-    UnallocatedVector<char> buf;
-    buf.reserve(
-        fmt.length() + 1 + strAsset->GetLength() + strCurrency->GetLength() +
-        lScale.length());  // + 1 for line end
-    std::snprintf(
-        &buf[0],
-        buf.capacity(),
-        fmt.c_str(),
-        strAsset->Get(),
-        strCurrency->Get(),
-        lScale.c_str());
+    const auto preimage = [&] {
+        auto lScale = UnallocatedCString{};
+        GetScale().Serialize(writer(lScale));
+        auto out = String::Factory();
+        out->Concatenate("ASSET TYPE:\n"sv)
+            .Concatenate(GetInstrumentDefinitionID().Bytes())
+            .Concatenate("\nCURRENCY TYPE:\n"sv)
+            .Concatenate(GetCurrencyID().Bytes())
+            .Concatenate("\nMARKET SCALE:\n"sv)
+            .Concatenate(lScale)
+            .Concatenate("\n"sv);
 
-    theIdentifier.CalculateDigest(&buf[0]);
+        return out;
+    }();
+    theIdentifier.CalculateDigest(preimage->Bytes());
 }
 
 // returns 0 if there are no bids. Otherwise returns the value of the highest
@@ -2726,131 +2723,69 @@ auto OTMarket::ValidateOfferForMarket(OTOffer& theOffer) -> bool
     UnallocatedVector<char> buf;
     if (GetNotaryID() != theOffer.GetNotaryID()) {
         bValidOffer = false;
-        const auto strID = String::Factory(GetNotaryID()),
-                   strOtherID = String::Factory(theOffer.GetNotaryID());
-        static UnallocatedCString fmt{
-            "Wrong Notary ID on offer. Expected %s, but found %s"};
-        buf.reserve(
-            fmt.length() + 1 + strID->GetLength() + strOtherID->GetLength());
-        std::snprintf(
-            &buf[0],
-            buf.capacity(),
-            fmt.c_str(),
-            strID->Get(),
-            strOtherID->Get());
+        LogConsole()(OT_PRETTY_CLASS())("Offer is invalid for this market: "
+                                        "Wrong Notary ID on offer. Expected ")(
+            GetNotaryID())(", but found ")(theOffer.GetNotaryID())
+            .Flush();
     } else if (
         GetInstrumentDefinitionID() != theOffer.GetInstrumentDefinitionID()) {
         bValidOffer = false;
-        const auto strID = String::Factory(GetInstrumentDefinitionID()),
-                   strOtherID =
-                       String::Factory(theOffer.GetInstrumentDefinitionID());
-
-        static UnallocatedCString fmt{"Wrong Instrument Definition Id on "
-                                      "offer. Expected %s, but found %s"};
-        buf.reserve(
-            fmt.length() + 1 + strID->GetLength() + strOtherID->GetLength());
-        std::snprintf(
-            &buf[0],
-            buf.capacity(),
-            fmt.c_str(),
-            strID->Get(),
-            strOtherID->Get());
+        LogConsole()(OT_PRETTY_CLASS())(
+            "Offer is invalid for this market: Wrong Instrument Definition Id "
+            "on offer. Expected ")(GetInstrumentDefinitionID())(", but found ")(
+            theOffer.GetInstrumentDefinitionID())
+            .Flush();
     } else if (GetCurrencyID() != theOffer.GetCurrencyID()) {
         bValidOffer = false;
-        const auto strID = String::Factory(GetCurrencyID()),
-                   strOtherID = String::Factory(theOffer.GetCurrencyID());
-        static UnallocatedCString fmt{
-            "Wrong Currency ID on offer. Expected %s, but found %s"};
-        buf.reserve(
-            fmt.length() + 1 + strID->GetLength() + strOtherID->GetLength());
-        std::snprintf(
-            &buf[0],
-            buf.capacity(),
-            fmt.c_str(),
-            strID->Get(),
-            strOtherID->Get());
+        LogConsole()(OT_PRETTY_CLASS())(
+            "Offer is invalid for this market: Wrong Currency ID on offer. "
+            "Expected ")(GetCurrencyID())(", but found ")(
+            theOffer.GetCurrencyID())
+            .Flush();
     } else if (GetScale() != theOffer.GetScale()) {
         bValidOffer = false;
-        auto scale = definition.Format(GetScale());
-        auto offer_scale = offerDefinition.Format(theOffer.GetScale());
-        static UnallocatedCString fmt{
-            "Wrong Market Scale on offer. Expected %s, but found %s"};
-        buf.reserve(fmt.length() + 1 + scale.length() + offer_scale.length());
-        std::snprintf(
-            &buf[0],
-            buf.capacity(),
-            fmt.c_str(),
-            scale.c_str(),
-            offer_scale.c_str());
+        LogConsole()(OT_PRETTY_CLASS())(
+            "Offer is invalid for this market: Wrong Market Scale on offer. "
+            "Expected ")(definition.Format(GetScale()))(", but found ")(
+            offerDefinition.Format(theOffer.GetScale()))
+            .Flush();
     }
-
     // The above four items must match in order for it to even be the
     // same MARKET.
     else if (theOffer.GetMinimumIncrement() <= 0) {
         bValidOffer = false;
-        auto minimum_increment =
-            offerDefinition.Format(theOffer.GetMinimumIncrement());
-        static UnallocatedCString fmt{"Minimum Increment on offer is <= 0: %s"};
-        buf.reserve(fmt.length() + 1 + minimum_increment.length());
-        std::snprintf(
-            &buf[0], buf.capacity(), fmt.c_str(), minimum_increment.c_str());
+        LogConsole()(OT_PRETTY_CLASS())("Offer is invalid for this market: "
+                                        "Minimum Increment on offer is <= 0: ")(
+            offerDefinition.Format(theOffer.GetMinimumIncrement()))
+            .Flush();
     } else if (theOffer.GetMinimumIncrement() < GetScale()) {
         bValidOffer = false;
-        auto minimum_increment =
-            offerDefinition.Format(theOffer.GetMinimumIncrement());
-        auto scale = definition.Format(GetScale());
-        static UnallocatedCString fmt{
-            "Minimum Increment on offer (%s) is less than market scale (%s)."};
-        buf.reserve(
-            fmt.length() + 1 + minimum_increment.length() + scale.length());
-        std::snprintf(
-            &buf[0],
-            buf.capacity(),
-            fmt.c_str(),
-            minimum_increment.c_str(),
-            scale.c_str());
+        LogConsole()(OT_PRETTY_CLASS())(
+            "Offer is invalid for this market: Minimum Increment on offer (")(
+            offerDefinition.Format(theOffer.GetMinimumIncrement()))(
+            ") is less than market scale (")(definition.Format(GetScale()))(")")
+            .Flush();
     } else if ((theOffer.GetMinimumIncrement() % GetScale()) != 0) {
         bValidOffer = false;
-        auto minimum_increment =
-            offerDefinition.Format(theOffer.GetMinimumIncrement());
-        auto scale = definition.Format(GetScale());
-        static UnallocatedCString fmt{
-            "Minimum Increment on offer (%s) Mod market scale (%s) is not "
-            "equal to zero."};
-        buf.reserve(
-            fmt.length() + 1 + minimum_increment.length() + scale.length());
-        std::snprintf(
-            &buf[0],
-            buf.capacity(),
-            fmt.c_str(),
-            minimum_increment.c_str(),
-            scale.c_str());
+        LogConsole()(OT_PRETTY_CLASS())(
+            "Offer is invalid for this market: Minimum Increment on offer (")(
+            offerDefinition.Format(theOffer.GetMinimumIncrement()))(
+            ") Mod market scale (")(definition.Format(GetScale()))(
+            ") is not equal to zero")
+            .Flush();
     } else if (theOffer.GetMinimumIncrement() > theOffer.GetAmountAvailable()) {
         bValidOffer = false;
-        auto minimum_increment =
-            offerDefinition.Format(theOffer.GetMinimumIncrement());
-        auto amount_available =
-            offerDefinition.Format(theOffer.GetAmountAvailable());
-        static UnallocatedCString fmt{
-            "Minimum Increment on offer (%s) is more than the amount of assets "
-            "available for trade on that same offer (%s)."};
-        buf.reserve(
-            fmt.length() + 1 + minimum_increment.length() +
-            amount_available.length());
-        std::snprintf(
-            &buf[0],
-            buf.capacity(),
-            fmt.c_str(),
-            minimum_increment.c_str(),
-            amount_available.c_str());
+        LogConsole()(OT_PRETTY_CLASS())(
+            "Offer is invalid for this market: Minimum Increment on offer (")(
+            offerDefinition.Format(theOffer.GetMinimumIncrement()))(
+            ") is more than the amount of assets available for trade on that "
+            "same offer (")(
+            offerDefinition.Format(theOffer.GetAmountAvailable()))(")")
+            .Flush();
     }
 
     if (bValidOffer) {
         LogTrace()(OT_PRETTY_CLASS())("Offer is valid for market.").Flush();
-    } else {
-        LogConsole()(OT_PRETTY_CLASS())("Offer is invalid for this market: ") (
-            &buf[0])(".")
-            .Flush();
     }
 
     return bValidOffer;

@@ -14,7 +14,7 @@
 #include <Signature.pb.h>
 #include <VerificationSet.pb.h>  // IWYU pragma: keep
 #include <cstdint>
-#include <ostream>
+#include <sstream>
 #include <stdexcept>
 #include <utility>
 

@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/BlockchainTransactionInput.hpp"  // IWYU pragma: associated
 
 #include <BlockchainTransactionInput.pb.h>
+#include <string>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/BlockchainInputWitness.hpp"  // IWYU pragma: keep

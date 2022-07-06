@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/SendMessage.hpp"  // IWYU pragma: associated
 
 #include <SendMessage.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

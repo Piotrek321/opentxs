@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include "internal/api/Legacy.hpp"
+#include "ottest/Basic.hpp"  // IWYU pragma: keep
 
 class Filename : public ::testing::Test
 {
@@ -16,8 +17,8 @@ class Filename : public ::testing::Test
 
 TEST_F(Filename, GetFilenameBin)
 {
-    std::string exp{"filename.bin"};
-    std::string s{opentxs::api::Legacy::GetFilenameBin("filename")};
+    ot::UnallocatedCString exp{"filename.bin"};
+    ot::UnallocatedCString s{opentxs::api::Legacy::GetFilenameBin("filename")};
     ASSERT_STREQ(s.c_str(), exp.c_str());
 }
 
@@ -30,8 +31,8 @@ TEST_F(Filename, getFilenameBin_invalid_input)
 
 TEST_F(Filename, GetFilenameA)
 {
-    std::string exp{"filename.a"};
-    std::string s{opentxs::api::Legacy::GetFilenameA("filename")};
+    ot::UnallocatedCString exp{"filename.a"};
+    ot::UnallocatedCString s{opentxs::api::Legacy::GetFilenameA("filename")};
     ASSERT_STREQ(s.c_str(), exp.c_str());
 }
 
@@ -44,8 +45,8 @@ TEST_F(Filename, getFilenameA_invalid_input)
 
 TEST_F(Filename, GetFilenameR)
 {
-    std::string exp{"filename.r"};
-    std::string s{opentxs::api::Legacy::GetFilenameR("filename")};
+    ot::UnallocatedCString exp{"filename.r"};
+    ot::UnallocatedCString s{opentxs::api::Legacy::GetFilenameR("filename")};
     ASSERT_STREQ(s.c_str(), exp.c_str());
 }
 
@@ -59,13 +60,13 @@ TEST_F(Filename, getFilenameR_invalid_input)
 TEST_F(Filename, GetFilenameRct)
 {
     {
-        std::string exp{"123.rct"};
-        std::string s{opentxs::api::Legacy::GetFilenameRct(123)};
+        ot::UnallocatedCString exp{"123.rct"};
+        ot::UnallocatedCString s{opentxs::api::Legacy::GetFilenameRct(123)};
         ASSERT_STREQ(s.c_str(), exp.c_str());
     }
     {
-        std::string exp{"0.rct"};
-        std::string s{opentxs::api::Legacy::GetFilenameRct(000)};
+        ot::UnallocatedCString exp{"0.rct"};
+        ot::UnallocatedCString s{opentxs::api::Legacy::GetFilenameRct(000)};
         ASSERT_STREQ(s.c_str(), exp.c_str());
     }
 }
@@ -78,16 +79,16 @@ TEST_F(Filename, getFilenameRct_invalid_input)
 TEST_F(Filename, GetFilenameCrn)
 {
     {
-        std::string exp{"123.crn"};
+        ot::UnallocatedCString exp{"123.crn"};
         static_assert(
             std::is_same_v<int64_t, opentxs::TransactionNumber>,
             "type is not matching");  // detect if type change
-        std::string s{opentxs::api::Legacy::GetFilenameCrn(123)};
+        ot::UnallocatedCString s{opentxs::api::Legacy::GetFilenameCrn(123)};
         ASSERT_STREQ(s.c_str(), exp.c_str());
     }
     {
-        std::string exp{"0.crn"};
-        std::string s{opentxs::api::Legacy::GetFilenameCrn(000)};
+        ot::UnallocatedCString exp{"0.crn"};
+        ot::UnallocatedCString s{opentxs::api::Legacy::GetFilenameCrn(000)};
         ASSERT_STREQ(s.c_str(), exp.c_str());
     }
 }
@@ -99,8 +100,9 @@ TEST_F(Filename, getFilenameCrn_invalid_input)
 
 TEST_F(Filename, GetFilenameSuccess)
 {
-    std::string exp{"filename.success"};
-    std::string s{opentxs::api::Legacy::GetFilenameSuccess("filename")};
+    ot::UnallocatedCString exp{"filename.success"};
+    ot::UnallocatedCString s{
+        opentxs::api::Legacy::GetFilenameSuccess("filename")};
     ASSERT_STREQ(s.c_str(), exp.c_str());
 }
 
@@ -113,8 +115,8 @@ TEST_F(Filename, getFilenameSuccess_invalid_input)
 
 TEST_F(Filename, GetFilenameFail)
 {
-    std::string exp{"filename.fail"};
-    std::string s{opentxs::api::Legacy::GetFilenameFail("filename")};
+    ot::UnallocatedCString exp{"filename.fail"};
+    ot::UnallocatedCString s{opentxs::api::Legacy::GetFilenameFail("filename")};
     ASSERT_STREQ(s.c_str(), exp.c_str());
 }
 
@@ -127,8 +129,9 @@ TEST_F(Filename, getFilenameFail_invalid_input)
 
 TEST_F(Filename, GetFilenameError)
 {
-    std::string exp{"filename.error"};
-    std::string s{opentxs::api::Legacy::GetFilenameError("filename")};
+    ot::UnallocatedCString exp{"filename.error"};
+    ot::UnallocatedCString s{
+        opentxs::api::Legacy::GetFilenameError("filename")};
     ASSERT_STREQ(s.c_str(), exp.c_str());
 }
 
@@ -141,8 +144,8 @@ TEST_F(Filename, getFilenameError_invalid_input)
 
 TEST_F(Filename, GetFilenameLst)
 {
-    std::string exp{"filename.lst"};
-    std::string s{opentxs::api::Legacy::GetFilenameLst("filename")};
+    ot::UnallocatedCString exp{"filename.lst"};
+    ot::UnallocatedCString s{opentxs::api::Legacy::GetFilenameLst("filename")};
     ASSERT_STREQ(s.c_str(), exp.c_str());
 }
 

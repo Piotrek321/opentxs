@@ -94,28 +94,30 @@ public:
     virtual auto ToLong() const -> std::int64_t = 0;
     virtual auto ToUint() const -> std::uint32_t = 0;
     virtual auto ToUlong() const -> std::uint64_t = 0;
-    virtual void WriteToFile(std::ostream& ofs) const = 0;
+    virtual auto WriteToFile(std::ostream& ofs) const -> void = 0;
 
-    virtual void Concatenate(const String& data) = 0;
-    virtual void ConvertToUpperCase() = 0;
+    virtual auto Concatenate(const String& data) -> String& = 0;
+    virtual auto Concatenate(std::string_view data) -> String& = 0;
+    virtual auto ConvertToUpperCase() -> void = 0;
     virtual auto DecodeIfArmored(bool escapedIsAllowed = true) -> bool = 0;
     /** For a straight-across, exact-size copy of bytes. Source not expected to
      * be null-terminated. */
     virtual auto MemSet(const char* mem, std::uint32_t size) -> bool = 0;
-    virtual void Release() = 0;
+    virtual auto Release() -> void = 0;
     /** new_string MUST be at least nEnforcedMaxLength in size if
     nEnforcedMaxLength is passed in at all.
     That's because this function forces the null terminator at that length,
     minus 1. For example, if the max is set to 10, then the valid range is 0..9.
     Therefore 9 (10 minus 1) is where the nullptr terminator goes. */
-    virtual void Set(const char* data, std::uint32_t enforcedMaxLength = 0) = 0;
-    virtual void Set(const String& data) = 0;
+    virtual auto Set(const char* data, std::uint32_t enforcedMaxLength = 0)
+        -> void = 0;
+    virtual auto Set(const String& data) -> void = 0;
     /** true  == there are more lines to read.
     false == this is the last line. Like EOF. */
     virtual auto sgets(char* buffer, std::uint32_t size) -> bool = 0;
     virtual auto sgetc() -> char = 0;
-    virtual void swap(String& rhs) = 0;
-    virtual void reset() = 0;
+    virtual auto swap(String& rhs) -> void = 0;
+    virtual auto reset() -> void = 0;
     virtual auto WriteInto() noexcept -> AllocateOutput = 0;
 
     String(String&& rhs) = delete;

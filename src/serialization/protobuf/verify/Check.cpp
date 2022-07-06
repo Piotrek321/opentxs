@@ -10,6 +10,8 @@
 #else
 #include <iostream>
 #endif
+#include <string_view>
+
 #include "internal/serialization/protobuf/Check.hpp"
 #include "opentxs/util/Container.hpp"
 

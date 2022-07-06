@@ -21,8 +21,8 @@ using ::testing::StrictMock;
 
 TEST(OT_suite, ShouldThrowAnExceptionDuringGettingUninitializeContext)
 {
-    const std::string expected = "Context is not initialized";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "Context is not initialized";
+    ot::UnallocatedCString error_message;
 
     try {
         [[maybe_unused]] const auto& otx = opentxs::Context();
@@ -36,8 +36,8 @@ TEST(OT_suite, ShouldThrowAnExceptionDuringGettingUninitializeContext)
 
 TEST(OT_suite, ShouldSuccessfullyInitializeAndGetValidContext)
 {
-    const std::string expected = "";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "";
+    ot::UnallocatedCString error_message;
 
     try {
         opentxs::InitContext();
@@ -52,8 +52,8 @@ TEST(OT_suite, ShouldSuccessfullyInitializeAndGetValidContext)
 
 TEST(OT_suite, ShouldSuccessfullyInitializeContextWithArgs)
 {
-    const std::string expected = "";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "";
+    ot::UnallocatedCString error_message;
 
     try {
         opentxs::InitContext(ottest::Args(true));
@@ -68,8 +68,8 @@ TEST(OT_suite, ShouldSuccessfullyInitializeContextWithArgs)
 
 TEST(OT_suite, ShouldSuccessfullyInitializeContextWithInvalidPasswordCallback)
 {
-    const std::string expected = "";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "";
+    ot::UnallocatedCString error_message;
     try {
         opentxs::InitContext(nullptr);
         [[maybe_unused]] const auto& otx = opentxs::Context();
@@ -82,8 +82,8 @@ TEST(OT_suite, ShouldSuccessfullyInitializeContextWithInvalidPasswordCallback)
 
 TEST(OT_suite, ShouldSuccessfullyInitializeContextWithValidPasswordCaller)
 {
-    const std::string expected = "";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "";
+    ot::UnallocatedCString error_message;
 
     StrictMock<ot_mocks::PasswordCallbackMock> mock;
     opentxs::PasswordCaller caller;
@@ -104,8 +104,8 @@ TEST(
     OT_suite,
     ShouldInitializeContextWithArgsAndInvalidPasswordCallerWithoutThrowingAnException)
 {
-    const std::string expected = "";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "";
+    ot::UnallocatedCString error_message;
 
     try {
         opentxs::InitContext(ottest::Args(true), nullptr);
@@ -122,8 +122,8 @@ TEST(
     OT_suite,
     ShouldInitializeContextWithArgsAndValidPasswordCallerWithoutThrowingAnException)
 {
-    const std::string expected = "";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "";
+    ot::UnallocatedCString error_message;
 
     StrictMock<ot_mocks::PasswordCallbackMock> mock;
     opentxs::PasswordCaller caller;
@@ -142,8 +142,8 @@ TEST(
 
 TEST(OT_suite, ShouldDoubleDefaultInitializeContextAndThrowAnException)
 {
-    const std::string expected = "Context is already initialized";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "Context is already initialized";
+    ot::UnallocatedCString error_message;
     try {
         opentxs::InitContext();
         opentxs::InitContext();
@@ -157,8 +157,8 @@ TEST(OT_suite, ShouldDoubleDefaultInitializeContextAndThrowAnException)
 
 TEST(OT_suite, ShouldDoubleInitializeContextWithArgsAndThrowAnException)
 {
-    const std::string expected = "Context is already initialized";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "Context is already initialized";
+    ot::UnallocatedCString error_message;
     try {
         opentxs::InitContext(ottest::Args(true));
         opentxs::InitContext(ottest::Args(true));
@@ -174,8 +174,8 @@ TEST(
     OT_suite,
     ShouldDoubleInitializeContextWithValidPasswordCallerAndThrowAnException)
 {
-    const std::string expected = "Context is already initialized";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "Context is already initialized";
+    ot::UnallocatedCString error_message;
 
     StrictMock<ot_mocks::PasswordCallbackMock> mock;
     opentxs::PasswordCaller caller;
@@ -196,8 +196,8 @@ TEST(
     OT_suite,
     ShouldDoubleInitializeContextWithArgsAndValidPasswordCallerAndThrowAnException)
 {
-    const std::string expected = "Context is already initialized";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "Context is already initialized";
+    ot::UnallocatedCString error_message;
 
     StrictMock<ot_mocks::PasswordCallbackMock> mock;
     opentxs::PasswordCaller caller;
@@ -218,8 +218,8 @@ TEST(
     OT_suite,
     ShouldDoubleInitializeContextWithArgsAndNotValidPasswordCallerAndThrowAnException)
 {
-    const std::string expected = "Context is already initialized";
-    std::string error_message;
+    const ot::UnallocatedCString expected = "Context is already initialized";
+    ot::UnallocatedCString error_message;
 
     try {
         opentxs::InitContext(ottest::Args(true), nullptr);

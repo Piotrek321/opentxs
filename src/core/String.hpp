@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
+#include <string_view>
 
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -56,34 +57,36 @@ public:
     auto ToLong() const -> std::int64_t override;
     auto ToUint() const -> std::uint32_t override;
     auto ToUlong() const -> std::uint64_t override;
-    void WriteToFile(std::ostream& ofs) const override;
+    auto WriteToFile(std::ostream& ofs) const -> void override;
 
-    void Concatenate(const opentxs::String& data) override;
-    void ConvertToUpperCase() override;
+    auto Concatenate(const opentxs::String& data) -> String& override;
+    auto Concatenate(std::string_view data) -> String& override;
+    auto ConvertToUpperCase() -> void override;
     auto DecodeIfArmored(bool escapedIsAllowed = true) -> bool override;
     /** For a straight-across, exact-size copy of bytes. Source not expected to
      * be null-terminated. */
     auto MemSet(const char* mem, std::uint32_t size) -> bool override;
-    void Release() override;
+    auto Release() -> void override;
     /** new_string MUST be at least nEnforcedMaxLength in size if
     nEnforcedMaxLength is passed in at all.
     That's because this function forces the null terminator at that length,
     minus 1. For example, if the max is set to 10, then the valid range is 0..9.
     Therefore 9 (10 minus 1) is where the nullptr terminator goes. */
-    void Set(const char* data, std::uint32_t enforcedMaxLength = 0) override;
-    void Set(const opentxs::String& data) override;
+    auto Set(const char* data, std::uint32_t enforcedMaxLength = 0)
+        -> void override;
+    auto Set(const opentxs::String& data) -> void override;
     /** true  == there are more lines to read.
     false == this is the last line. Like EOF. */
     auto sgets(char* buffer, std::uint32_t size) -> bool override;
     auto sgetc() -> char override;
-    void swap(opentxs::String& rhs) override;
-    void reset() override;
+    auto swap(opentxs::String& rhs) -> void override;
+    auto reset() -> void override;
     auto WriteInto() noexcept -> AllocateOutput final;
 
     ~String() override;
 
 protected:
-    void Release_String();
+    auto Release_String() -> void;
 
     explicit String(const opentxs::Armored& value);
     explicit String(const opentxs::Signature& value);
@@ -115,11 +118,11 @@ private:
 
     /** Only call this right after calling Initialize() or Release(). Also, this
      * function ASSUMES the new_string pointer is good. */
-    void LowLevelSet(const char* data, std::uint32_t enforcedMaxLength);
+    auto LowLevelSet(const char* data, std::uint32_t enforcedMaxLength) -> void;
     /** You better have called Initialize() or Release() before you dare call
      * this. */
-    void LowLevelSetStr(const String& buffer);
-    void Initialize();
-    void zeroMemory();
+    auto LowLevelSetStr(const String& buffer) -> void;
+    auto Initialize() -> void;
+    auto zeroMemory() -> void;
 };
 }  // namespace opentxs::implementation

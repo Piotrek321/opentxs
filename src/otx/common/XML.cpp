@@ -8,8 +8,9 @@
 #include "internal/otx/common/XML.hpp"  // IWYU pragma: associated
 
 #include <array>
-#include <cstdio>
+#include <chrono>
 #include <cstring>
+#include <string_view>
 #include <utility>
 
 #include "internal/otx/common/crypto/OTSignatureMetadata.hpp"
@@ -23,6 +24,8 @@
 
 namespace opentxs
 {
+using namespace std::literals;
+
 auto AddBookendsAroundContent(
     String& strOutput,
     const String& strContents,
@@ -30,37 +33,38 @@ auto AddBookendsAroundContent(
     const crypto::HashType hashType,
     const listOfSignatures& listSignatures) -> bool
 {
-    auto strTemp = String::Factory();
-    auto strHashType = crypto::HashingProvider::HashTypeToString(hashType);
+    const auto begin_signature = [&] {
+        auto out = String::Factory();
+        out->Concatenate("-----BEGIN "sv)
+            .Concatenate(strContractType)
+            .Concatenate(" SIGNATURE-----\nVersion: Open Transactions "sv)
+            .Concatenate(VersionString())
+            .Concatenate("\nComment: http://opentransactions.org\n"sv);
 
-    static std::string fmt_begin_signed{
-        "-----BEGIN SIGNED %s-----\nHash: %s\n\n"};
-    static std::string fmt_begin_signature{
-        "-----BEGIN %s SIGNATURE-----\nVersion: Open Transactions %s\nComment: "
-        "http://opentransactions.org\n"};
-    static std::string fmt_end_signature{"\n-----END %s SIGNATURE-----\n\n"};
-    auto fn_signature = [](const String& input,
-                           const UnallocatedCString& fmt,
-                           const UnallocatedCString& option = "") {
-        UnallocatedVector<char> buf;
-        buf.reserve(fmt.length() + 1 + input.GetLength() + option.length());
+        return out;
+    }();
+    const auto end_signature = [&] {
+        auto out = String::Factory();
+        out->Concatenate("\n-----END "sv)
+            .Concatenate(strContractType)
+            .Concatenate(" SIGNATURE-----\n\n"sv);
 
-        auto size = std::snprintf(
-            &buf[0], buf.capacity(), fmt.c_str(), input.Get(), option.c_str());
+        return out;
+    }();
+    auto strTemp = [&] {
+        auto out = String::Factory();
+        out->Concatenate("-----BEGIN SIGNED "sv)
+            .Concatenate(strContractType)
+            .Concatenate("-----\nHash: "sv)
+            .Concatenate(crypto::HashingProvider::HashTypeToString(hashType))
+            .Concatenate("\n\n"sv);
 
-        return String::Factory(&buf[0], size);
-    };
-
-    auto begin_signature =
-        fn_signature(strContractType, fmt_begin_signature, VersionString());
-    auto end_signature = fn_signature(strContractType, fmt_end_signature);
-
-    strTemp->Concatenate(
-        fn_signature(strContractType, fmt_begin_signed, strHashType->Get()));
+        return out;
+    }();
     strTemp->Concatenate(strContents);
-
-    static std::string _meta{"Meta:    CCCC\n"};  // length 14 [9,10,11,12]
-                                                  // index to put chars on
+    static UnallocatedCString _meta{"Meta:    CCCC\n"};  // length 14
+                                                         // [9,10,11,12] index
+                                                         // to put chars on
     auto meta = String::Factory(_meta);
 
     for (const auto& sig : listSignatures) {

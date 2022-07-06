@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/HDPath.hpp"  // IWYU pragma: associated
 
 #include <HDPath.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

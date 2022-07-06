@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/VerifyClaim.hpp"  // IWYU pragma: associated
 
 #include <VerifyClaim.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

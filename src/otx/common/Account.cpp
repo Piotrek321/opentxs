@@ -7,10 +7,11 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "internal/otx/common/Account.hpp"  // IWYU pragma: associated
 
+#include <chrono>
 #include <cstdint>
-#include <cstdio>
 #include <filesystem>
 #include <memory>
+#include <string_view>
 
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
@@ -45,6 +46,8 @@
 
 namespace opentxs
 {
+using namespace std::literals;
+
 // NOLINTNEXTLINE(modernize-avoid-c-arrays)
 char const* const TypeStringsAccount[] = {
     "user",       // used by users
@@ -806,39 +809,29 @@ auto Account::GetBalance() const -> Amount
 
 auto Account::DisplayStatistics(String& contents) const -> bool
 {
-    auto strAccountID = String::Factory(GetPurportedAccountID());
-    auto strNotaryID = String::Factory(GetPurportedNotaryID());
-    auto strNymID = String::Factory(GetNymID());
-    auto strInstrumentDefinitionID =
-        String::Factory(acctInstrumentDefinitionID_);
+    const auto acctType = [&] {
+        auto out = String::Factory();
+        TranslateAccountTypeToString(acctType_, out);
 
-    auto acctType = String::Factory();
-    TranslateAccountTypeToString(acctType_, acctType);
-
-    static std::string fmt{
-        " Asset Account (%s) Name: %s\n Last retrieved Balance: %s  on date: "
-        "%s\n accountID: %s\n nymID: %s\n notaryID: %s\n "
-        "instrumentDefinitionID: %s\n\n"};
-    UnallocatedVector<char> buf;
-    buf.reserve(
-        fmt.length() + 1 + acctType->GetLength() + m_strName->GetLength() +
-        balanceAmount_->GetLength() + balanceDate_->GetLength() +
-        strAccountID->GetLength() + strNymID->GetLength() +
-        strNotaryID->GetLength() + strInstrumentDefinitionID->GetLength());
-    auto size = std::snprintf(
-        &buf[0],
-        buf.capacity(),
-        fmt.c_str(),
-        acctType->Get(),
-        m_strName->Get(),
-        balanceAmount_->Get(),
-        balanceDate_->Get(),
-        strAccountID->Get(),
-        strNymID->Get(),
-        strNotaryID->Get(),
-        strInstrumentDefinitionID->Get());
-
-    contents.Concatenate(String::Factory(&buf[0], size));
+        return out;
+    }();
+    contents.Concatenate(" Asset Account ("sv)
+        .Concatenate(acctType)
+        .Concatenate(") Name: "sv)
+        .Concatenate(m_strName)
+        .Concatenate("\n Last retrieved Balance: "sv)
+        .Concatenate(balanceAmount_)
+        .Concatenate(" on date: "sv)
+        .Concatenate(balanceDate_)
+        .Concatenate("\n accountID: "sv)
+        .Concatenate(GetPurportedAccountID().str())
+        .Concatenate("\n nymID: "sv)
+        .Concatenate(GetNymID().str())
+        .Concatenate("\n notaryID: "sv)
+        .Concatenate(GetPurportedNotaryID().str())
+        .Concatenate("\n instrumentDefinitionID: "sv)
+        .Concatenate(acctInstrumentDefinitionID_->str())
+        .Concatenate("\n\n"sv);
 
     return true;
 }

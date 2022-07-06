@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/StorageBlockchainTransactions.hpp"  // IWYU pragma: associated
 
 #include <StorageBlockchainTransactions.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

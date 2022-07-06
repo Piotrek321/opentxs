@@ -4355,7 +4355,8 @@ auto OT_API::issueMarketOffer(
 
     lMinimumIncrement *= lMarketScale;  // minimum increment is PER SCALE.
 
-    std::string offer_type = lPriceLimit > 0 ? "limit order" : "market order";
+    UnallocatedCString offer_type =
+        lPriceLimit > 0 ? "limit order" : "market order";
 
     const auto unittype =
         api_.Wallet().CurrencyTypeBasedOnUnitType(currencyContractID);
@@ -4364,13 +4365,13 @@ auto OT_API::issueMarketOffer(
         const auto price = displaydefinition.Format(lActivationPrice);
         offer_type.clear();
         if (lPriceLimit > 0) {
-            static std::string msg{"stop limit order, at threshhold: "};
+            static UnallocatedCString msg{"stop limit order, at threshhold: "};
             offer_type.reserve(msg.length() + price.length());
             offer_type.append(msg);
             offer_type.append(&cStopSign);  // 1
             offer_type.append(price);
         } else {
-            static std::string msg{"stop order, at threshhold: "};
+            static UnallocatedCString msg{"stop order, at threshhold: "};
             offer_type.reserve(msg.length() + price.length());
             offer_type.append(msg);
             offer_type.append(&cStopSign);  // 1
@@ -4378,10 +4379,10 @@ auto OT_API::issueMarketOffer(
         }
     }
 
-    std::string price_limit;
+    UnallocatedCString price_limit;
 
     if (lPriceLimit > 0) {
-        static std::string msg{"Price: "};
+        static UnallocatedCString msg{"Price: "};
         auto limit = displaydefinition.Format(lPriceLimit);
         price_limit.reserve(msg.length() + limit.length());
         price_limit.append(msg);

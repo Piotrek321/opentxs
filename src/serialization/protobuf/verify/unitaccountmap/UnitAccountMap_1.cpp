@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/UnitAccountMap.hpp"  // IWYU pragma: associated
 
 #include <UnitAccountMap.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

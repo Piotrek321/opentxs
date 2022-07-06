@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/PendingBailment.hpp"  // IWYU pragma: associated
 
 #include <PendingBailment.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

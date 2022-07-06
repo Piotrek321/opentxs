@@ -7,6 +7,7 @@
 
 #include <OTXEnums.pb.h>
 #include <OTXPush.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

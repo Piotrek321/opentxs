@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/BlockchainTransactionProposedNotification.hpp"  // IWYU pragma: associated
 
 #include <BlockchainTransactionProposedNotification.pb.h>
+#include <string>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/HDPath.hpp"  // IWYU pragma: keep

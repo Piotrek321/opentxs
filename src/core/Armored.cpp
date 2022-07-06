@@ -12,12 +12,12 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <limits>
 #include <sstream>  // IWYU pragma: keep
 #include <stdexcept>
+#include <string_view>
 
 #include "core/String.hpp"
 #include "2_Factory.hpp"
@@ -38,6 +38,8 @@ template class opentxs::Pimpl<opentxs::Armored>;
 
 namespace opentxs
 {
+using namespace std::literals;
+
 const char* OT_BEGIN_ARMORED = "-----BEGIN OT ARMORED";
 const char* OT_END_ARMORED = "-----END OT ARMORED";
 
@@ -571,44 +573,33 @@ auto Armored::SetString(
 
 auto Armored::WriteArmoredString(
     opentxs::String& strOutput,
-    const UnallocatedCString str_type,  // for "-----BEGIN OT LEDGER-----",
-                                        // str_type would contain "LEDGER"
-                                        // There's no default, to force you to
-                                        // enter the right string.
+    const UnallocatedCString type,
     bool bEscaped) const -> bool
 {
-    static std::string escape = "- ";
-    static std::string OT_BEGIN_ARMORED_{OT_BEGIN_ARMORED};
-    static std::string OT_END_ARMORED_{OT_END_ARMORED};
+    const auto escape = [&]() -> std::string_view {
+        if (bEscaped) {
 
-    // "%s-----BEGIN OT ARMORED %s-----\n"
-    // "%s-----END OT ARMORED %s-----\n"
-    UnallocatedVector<char> tmp;
-    static std::string fmt =
-        "%s%s %s-----\nVersion: Open Transactions %s\nComment: "
-        "http://opentransactions.org\n\n%s\n%s%s %s-----\n\n";
-    // 20 for version
-    tmp.resize(
-        fmt.length() + 1 + escape.length() + OT_BEGIN_ARMORED_.length() +
-        str_type.length() + 20 + GetLength() + escape.length() +
-        OT_END_ARMORED_.length() + str_type.length());
-    auto size = std::snprintf(
-        &tmp[0],
-        tmp.capacity(),
-        fmt.c_str(),
-        bEscaped ? escape.c_str() : "",
-        OT_BEGIN_ARMORED_.c_str(),
-        str_type.c_str(),  // "%s%s %s-----\n"
-        VersionString(),   // "Version: Open Transactions %s\n"
-        /* No variable */  // "Comment:
-        // http://github.com/FellowTraveler/Open-Transactions/wiki\n\n",
-        Get(),  //  "%s"     <==== CONTENTS OF THIS OBJECT BEING
-                // WRITTEN...
-        bEscaped ? escape.c_str() : "",
-        OT_END_ARMORED_.c_str(),
-        str_type.c_str());  // "%s%s %s-----\n"
+            return "- "sv;
+        } else {
 
-    strOutput.Concatenate(String::Factory(&tmp[0], size));
+            return {};
+        }
+    }();
+    strOutput.Release();
+    strOutput.Concatenate(escape)
+        .Concatenate(OT_BEGIN_ARMORED)
+        .Concatenate(" "sv)
+        .Concatenate(type)
+        .Concatenate("-----\nVersion: Open Transactions "sv)
+        .Concatenate(VersionString())
+        .Concatenate("\nComment: http://opentransactions.org\n\n"sv)
+        .Concatenate(Get())
+        .Concatenate("\n"sv)
+        .Concatenate(escape)
+        .Concatenate(OT_END_ARMORED)
+        .Concatenate(" "sv)
+        .Concatenate(type)
+        .Concatenate("-----\n\n"sv);
 
     return true;
 }

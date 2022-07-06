@@ -404,20 +404,24 @@ auto String::Compare(const opentxs::String& strCompare) const -> bool
     return true;
 }
 
-// append a string at the end of the current buffer.
-void String::Concatenate(const opentxs::String& strBuf)
+auto String::Concatenate(const opentxs::String& strBuf) -> String&
 {
-    UnallocatedCString str_output;
+    return Concatenate(strBuf.Bytes());
+}
+
+auto String::Concatenate(std::string_view in) -> String&
+{
+    auto str_output = UnallocatedCString{};
 
     if ((length_ > 0) && (false == internal_.empty())) {
         str_output += internal_.data();
     }
 
-    if (strBuf.Exists() && (strBuf.GetLength() > 0)) {
-        str_output += strBuf.Get();
-    }
+    if (false == in.empty()) { str_output += in; }
 
     Set(str_output.c_str());
+
+    return *this;
 }
 
 // Contains is like compare.  True if the substring is there, false if not.

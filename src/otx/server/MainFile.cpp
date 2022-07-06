@@ -8,10 +8,9 @@
 #include "otx/server/MainFile.hpp"  // IWYU pragma: associated
 
 #include <irrxml/irrXML.hpp>
-#include <cstdint>
-#include <cstdio>
 #include <filesystem>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "internal/api/Legacy.hpp"
@@ -33,6 +32,7 @@
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
 #include "otx/server/Server.hpp"
@@ -40,6 +40,8 @@
 
 namespace opentxs::server
 {
+using namespace std::literals;
+
 MainFile::MainFile(Server& server, const PasswordPrompt& reason)
     : server_(server)
     , version_()
@@ -169,45 +171,24 @@ auto MainFile::CreateMainFile(
         return false;
     }
 
-    static UnallocatedCString fmt =  // todo hardcoding.
-        "<notaryServer version=\"2.0\"\n"
-        " notaryID=\"%s\"\n"
-        " serverNymID=\"%s\"\n"
-        " transactionNum=\"%ld\" >\n"
-        "\n"
-        "<accountList type=\"voucher\" count=\"0\" >\n"
-        "\n"
-        "</accountList>\n"
-        "\n"
-        "</notaryServer>\n\n";
+    constexpr auto startNumber = TransactionNumber{5};
+    const auto notary = [&]() -> UnallocatedCString {
+        auto out = String::Factory();
+        out->Concatenate("<notaryServer version=\"2.0\"\n notaryID=\""sv)
+            .Concatenate(strNotaryID)
+            .Concatenate("\"\n serverNymID=\""sv)
+            .Concatenate(strNymID)
+            .Concatenate("\"\n transactionNum=\""sv)
+            .Concatenate(std::to_string(startNumber))
+            .Concatenate(
+                "\" >\n\n<accountList type=\"voucher\" count=\"0\" >\n\n</accountList>\n\n</notaryServer>\n\n"sv);
 
-    std::int64_t lTransNum = 5;  // a starting point, for the new server.
-
-    auto concatenation_lambda = [](const UnallocatedCString& fmt,
-                                   const UnallocatedCString& notary_id,
-                                   const UnallocatedCString& nym_id,
-                                   int64_t _trans_num) -> UnallocatedCString {
-        auto trans_num = std::to_string(_trans_num);
-        UnallocatedVector<char> tmp;
-        tmp.reserve(
-            fmt.length() + 1 + notary_id.length() + nym_id.length() +
-            trans_num.length());
-        auto size = std::snprintf(
-            &tmp[0],
-            tmp.capacity(),
-            fmt.c_str(),
-            notary_id.c_str(),
-            nym_id.c_str(),
-            _trans_num);
-
-        return {tmp.begin(), tmp.begin() + size};
-    };
-
-    auto notary{concatenation_lambda(fmt, strNotaryID, strNymID, lTransNum)};
+        return out->Get();
+    }();
 
     if (!OTDB::StorePlainString(
             server_.API(),
-            notary,
+            notary.c_str(),
             server_.API().DataFolder(),
             ".",
             "notaryServer.xml",

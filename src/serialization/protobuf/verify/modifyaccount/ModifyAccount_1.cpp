@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/ModifyAccount.hpp"  // IWYU pragma: associated
 
 #include <ModifyAccount.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

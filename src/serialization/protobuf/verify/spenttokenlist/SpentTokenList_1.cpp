@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/SpentTokenList.hpp"  // IWYU pragma: associated
 
 #include <SpentTokenList.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

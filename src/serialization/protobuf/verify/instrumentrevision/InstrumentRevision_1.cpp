@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/InstrumentRevision.hpp"  // IWYU pragma: associated
 
 #include <InstrumentRevision.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

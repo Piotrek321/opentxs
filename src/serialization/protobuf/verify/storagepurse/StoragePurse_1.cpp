@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/StoragePurse.hpp"  // IWYU pragma: associated
 
 #include <StoragePurse.pb.h>
+#include <string>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep

@@ -6,6 +6,7 @@
 #include "internal/serialization/protobuf/verify/StorageRoot.hpp"  // IWYU pragma: associated
 
 #include <StorageRoot.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

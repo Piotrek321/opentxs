@@ -7,6 +7,7 @@
 
 #include <PairEvent.pb.h>
 #include <ZMQEnums.pb.h>
+#include <string>
 
 #include "serialization/protobuf/verify/Check.hpp"
 

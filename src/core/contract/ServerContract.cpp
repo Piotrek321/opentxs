@@ -12,10 +12,10 @@
 #include <ServerContract.pb.h>
 #include <Signature.pb.h>
 #include <algorithm>
-#include <cstdio>
 #include <iterator>
 #include <memory>
 #include <stdexcept>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -150,6 +150,8 @@ const VersionNumber Server::DefaultVersion{2};
 
 namespace opentxs::contract::implementation
 {
+using namespace std::literals;
+
 Server::Server(
     const api::Session& api,
     const Nym_p& nym,
@@ -386,19 +388,11 @@ auto Server::Serialize(proto::ServerContract& serialized, bool includeNym) const
 
 auto Server::Statistics(String& strContents) const -> bool
 {
-    auto alias = nym_->Alias();
-
-    static std::string fmt{" Notary Provider:  %s\n NotaryID: %s\n\n"};
-    UnallocatedVector<char> buf;
-    buf.reserve(fmt.length() + 1 + alias.length() + id_->size());
-    auto size = std::snprintf(
-        &buf[0],
-        buf.capacity(),
-        fmt.c_str(),
-        alias.c_str(),
-        reinterpret_cast<const char*>(id_->data()));
-
-    strContents.Concatenate(String::Factory(&buf[0], size));
+    strContents.Concatenate(" Notary Provider: "sv)
+        .Concatenate(nym_->Alias())
+        .Concatenate(" NotaryID: "sv)
+        .Concatenate(id_->str())
+        .Concatenate("\n\n"sv);
 
     return true;
 }

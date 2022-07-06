@@ -9,9 +9,9 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <cstdio>
 #include <filesystem>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "internal/api/Legacy.hpp"
@@ -50,6 +50,8 @@ auto Factory::NymFile(const api::Session& api, Nym_p targetNym, Nym_p signerNym)
 
 namespace opentxs::implementation
 {
+using namespace std::literals;
+
 NymFile::NymFile(const api::Session& api, Nym_p targetNym, Nym_p signerNym)
     : api_{api}
     , target_nym_{targetNym}
@@ -86,7 +88,7 @@ void NymFile::ClearAll()
 
 auto NymFile::CompareID(const identifier::Nym& rhs) const -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return rhs == target_nym_->ID();
 }
@@ -97,7 +99,7 @@ auto NymFile::DeserializeNymFile(
     String::Map* pMapCredentials,
     const OTPassword* pImportPassword) -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return deserialize_nymfile(
         lock, strNym, converted, pMapCredentials, pImportPassword);
@@ -313,37 +315,31 @@ auto NymFile::deserialize_nymfile(
 
 void NymFile::DisplayStatistics(opentxs::String& strOutput) const
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
+    const auto marked_for_deletion = [&]() -> std::string_view {
+        if (m_bMarkForDeletion) {
 
-    auto out_payments = std::to_string(m_dequeOutpayments.size());
-    auto source = target_nym_->Source().asString();
-    auto alias = target_nym_->Alias();
-    auto theStringID = String::Factory(target_nym_->ID());
-    static std::string marked_for_deletion{"(MARKED FOR DELETION)"};
+            return "(MARKED FOR DELETION)"sv;
+        } else {
 
-    static std::string fmt{
-        "Source for ID:\n%s\nDescription: %s\n\n\n==>      Name: %s   %s\n     "
-        " Version: %s\nOutpayments count: %s\nNym ID: %s\n"};
-    UnallocatedVector<char> buf;
-    buf.reserve(
-        fmt.length() + 1 + source->GetLength() + m_strDescription->GetLength() +
-        alias.length() + marked_for_deletion.length() +
-        m_strVersion->GetLength() + out_payments.length() +
-        theStringID->GetLength());
-
-    auto size = std::snprintf(
-        &buf[0],
-        buf.capacity(),
-        fmt.c_str(),
-        source->Get(),
-        m_strDescription->Get(),
-        alias.c_str(),
-        (m_bMarkForDeletion ? marked_for_deletion.c_str() : ""),
-        m_strVersion->Get(),
-        out_payments.c_str(),
-        theStringID->Get());
-
-    strOutput.Concatenate(String::Factory(&buf[0], size));
+            return {};
+        }
+    }();
+    strOutput.Concatenate("Source for ID:\n"sv)
+        .Concatenate(target_nym_->Source().asString())
+        .Concatenate("\nDescription: "sv)
+        .Concatenate(m_strDescription)
+        .Concatenate("\n\n\n==>      Name: "sv)
+        .Concatenate(target_nym_->Alias())
+        .Concatenate("   "sv)
+        .Concatenate(marked_for_deletion)
+        .Concatenate("\n      Version: "sv)
+        .Concatenate(m_strVersion)
+        .Concatenate("\nOutpayments count: "sv)
+        .Concatenate(std::to_string(m_dequeOutpayments.size()))
+        .Concatenate("\nNym ID: "sv)
+        .Concatenate(target_nym_->ID().str())
+        .Concatenate("\n"sv);
 }
 
 auto NymFile::GetHash(
@@ -351,7 +347,7 @@ auto NymFile::GetHash(
     const UnallocatedCString& str_id,
     opentxs::Identifier& theOutput) const -> bool  // client-side
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     bool bRetVal =
         false;  // default is false: "No, I didn't find a hash for that id."
@@ -399,7 +395,7 @@ auto NymFile::GetOutboxHash(
 auto NymFile::GetOutpaymentsByIndex(std::int32_t nIndex) const
     -> std::shared_ptr<Message>
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
     const std::uint32_t uIndex = nIndex;
 
     // Out of bounds.
@@ -465,7 +461,7 @@ auto NymFile::GetOutpaymentsCount() const -> std::int32_t
 
 auto NymFile::LoadSignedNymFile(const PasswordPrompt& reason) -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return load_signed_nymfile(lock, reason);
 }
@@ -617,7 +613,7 @@ auto NymFile::RemoveOutpaymentsByTransNum(
 // Save the Pseudonym to a string...
 auto NymFile::SerializeNymFile(opentxs::String& output) const -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return serialize_nymfile(lock, output);
 }
@@ -724,7 +720,7 @@ auto NymFile::SerializeNymFile(const char* szFoldername, const char* szFilename)
     OT_ASSERT(nullptr != szFoldername);
     OT_ASSERT(nullptr != szFilename);
 
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     auto strNym = String::Factory();
     serialize_nymfile(lock, strNym);

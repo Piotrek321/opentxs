@@ -8,8 +8,8 @@
 #include "internal/otx/smartcontract/OTSmartContract.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <cstdio>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 #include "internal/api/session/FactoryAPI.hpp"
@@ -558,6 +558,7 @@ various sequence numbers. Hm.
 
 namespace opentxs
 {
+using namespace std::literals;
 
 // TODO: Finish up Smart Contracts (this file.)
 
@@ -646,7 +647,7 @@ activated with NO stashes. Server creates/maintains stashes AFTER activation.)
 
 DONE get_acct_balance(acct)                        Returns std::int64_t. (Named
 acct must be party to agreement with legitimate authorized agent.)
-DONE get_acct_instrument_definition_id(acct)                Returns
+DONE get_acct_instrument_definition_id(acctpstrLabel)                Returns
 UnallocatedCString. (Named acct must be party to agreement with legitimate
 authorized agent.) DONE get_stash_balance(stash, instrument_definition_id)
 Returns std::int64_t. (Named stash must exist.)
@@ -3465,19 +3466,20 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
 // virtual
 void OTSmartContract::SetDisplayLabel(const UnallocatedCString* pstrLabel)
 {
-    std::vector<char> tmp;
-    static std::string fmt{"smartcontract trans# %ld, clause: %s"};
-    tmp.reserve(
-        fmt.length() + 1 + (pstrLabel ? pstrLabel->length() : 0));  // 1 for
-                                                                    // line end
-    auto size = std::snprintf(
-        &tmp[0],
-        tmp.capacity(),
-        fmt.c_str(),
-        GetTransactionNum(),
-        (pstrLabel ? pstrLabel->c_str() : ""));
+    const auto clause = [&]() -> std::string_view {
+        if (nullptr == pstrLabel) {
 
-    m_strLabel->Set(&tmp[0], size);
+            return {};
+        } else {
+
+            return *pstrLabel;
+        }
+    }();
+    m_strLabel->Release();
+    m_strLabel->Concatenate("smartcontract trans# "sv)
+        .Concatenate(std::to_string(GetTransactionNum()))
+        .Concatenate(", clause: "sv)
+        .Concatenate(clause);
 }
 
 void OTSmartContract::ExecuteClauses(

@@ -30,7 +30,7 @@ public:
     MOCK_METHOD(UnallocatedCString, Name, (), (const, noexcept, override));
     MOCK_METHOD(Nym_p, Nym, (), (const, noexcept, override));
     MOCK_METHOD(
-        const UnallocatedCString&,
+        const ot::UnallocatedCString&,
         Terms,
         (),
         (const, noexcept, override));
@@ -39,7 +39,7 @@ public:
     MOCK_METHOD(VersionNumber, Version, (), (const, noexcept, override));
     MOCK_METHOD(Signable*, clone, (), (const, noexcept, override));
     MOCK_METHOD(
-        UnallocatedCString,
+        ot::UnallocatedCString,
         asString,
         (const bool asPrivate),
         (const, noexcept, override));
@@ -81,7 +81,7 @@ public:
     MOCK_METHOD(
         bool,
         SetAlias,
-        (const UnallocatedCString& alias),
+        (const ot::UnallocatedCString& alias),
         (noexcept, override));
     MOCK_METHOD(
         const crypto::key::Keypair&,
