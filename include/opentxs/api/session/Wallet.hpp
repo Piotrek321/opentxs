@@ -119,8 +119,8 @@ public:
      *    version is not available (such as by classes common to client and
      *    server).
      *
-     *    \param[in] notaryID
-     *    \param[in] clientNymID
+     *    \param[in] notaryID     remote notary
+     *    \param[in] clientNymID  local nym
      *    \returns A smart pointer to the object. The smart pointer will not be
      *             instantiated if the object does not exist or is invalid.
      */
@@ -194,7 +194,7 @@ public:
      *    The smart pointer will not be initialized if the provided serialized
      *    contract is invalid.
      *
-     *    \param[in] nym the serialized version of the contract
+     *    \param[in] bytes the serialized version of the contract
      */
     virtual auto Nym(const ReadView& bytes) const -> Nym_p = 0;
 
@@ -236,9 +236,9 @@ public:
 
     /**   Load a peer reply object
      *
-     *    \param[in] nym the identifier of the nym who owns the object
-     *    \param[in] request the identifier of the peer reply object
-     *    \param[in] box the box from which to retrive the peer object
+     *    \param[in] nym    the identifier of the nym who owns the object
+     *    \param[in] reply  the identifier of the peer reply object
+     *    \param[in] box    the box from which to retrive the peer object
      *    \returns A smart pointer to the object. The smart pointer will not be
      *             instantiated if the object does not exist or is invalid.
      */
@@ -312,9 +312,8 @@ public:
      *    The corresponding request is moved from the nym's SentPeerRequest
      *    box to the FinishedPeerRequest box.
      *
-     *    \param[in] nym the identifier of the nym who owns the object
-     *    \param[in] request the identifier of the corresponding request
-     *    \param[in] reply the serialized peer reply object
+     *    \param[in] nym    the identifier of the nym who owns the object
+     *    \param[in] reply  the serialized peer reply object
      *    \returns true if the request is successfully stored
      */
     virtual auto PeerReplyReceive(
@@ -484,11 +483,14 @@ public:
 
     /**   Create a new server contract
      *
-     *    \param[in] nymid the identifier of nym which will create the contract
-     *    \param[in] name the official name of the server
-     *    \param[in] terms human-readable server description & terms of use
-     *    \param[in] url externally-reachable IP address or hostname
-     *    \param[in] port externally-reachable listen port
+     *    \param[in] nymid      the identifier of nym which will create the
+     *                          contract
+     *    \param[in] name       the official name of the server
+     *    \param[in] terms      human-readable server description & terms of use
+     *    \param[in] endpoints  list of notary endpoints to include in the
+     *                          contract
+     *    \param[in] reason     password prompt data
+     *    \param[in] version    contract version to create
      *    \throw std::runtime_error the contract can not be created
      */
     virtual auto Server(

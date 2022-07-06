@@ -135,11 +135,11 @@ public:
     using session::Wallet::PeerReply;
     /**   Load a peer reply object
      *
-     *    \param[in] nym the identifier of the nym who owns the object
-     *    \param[in] request the identifier of the peer reply object
-     *    \param[in] box the box from which to retrive the peer object
-     *    \returns A smart pointer to the object. The smart pointer will not be
-     *             instantiated if the object does not exist or is invalid.
+     *    \param[in]  nym the identifier of the nym who owns the object
+     *    \param[in]  reply the identifier of the peer reply object
+     *    \param[in]  box the box from which to retrive the peer object
+     *    \param[out] serialized the serialized form of the requested object
+     *    \returns true if the object with the specified id was loaded
      */
     virtual auto PeerReply(
         const identifier::Nym& nym,

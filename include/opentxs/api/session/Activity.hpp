@@ -95,9 +95,9 @@ public:
         const otx::client::StorageBox box) const noexcept -> ObjectList = 0;
     /**   Delete a mail object
      *
-     *    \param[in] nym the identifier of the nym who owns the mail box
-     *    \param[in] mail the mail object to be stored
-     *    \param[in] box the box from which to retrieve the mail object
+     *    \param[in] nym  the identifier of the nym who owns the mail box
+     *    \param[in] id   the mail object to be stored
+     *    \param[in] box  the box from which to retrieve the mail object
      *    \returns The id of the stored message. The string will be empty if
      *             the mail object can not be stored.
      */
@@ -194,7 +194,7 @@ public:
         const bool unreadOnly = false) const noexcept -> ObjectList = 0;
     /**   Return the total number of unread thread items for a nym
      *
-     *    \param[in] nymId
+     *    \param[in] nym  nym whose activity will be queried
      */
     virtual auto UnreadCount(const identifier::Nym& nym) const noexcept
         -> std::size_t = 0;

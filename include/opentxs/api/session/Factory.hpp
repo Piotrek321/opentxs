@@ -560,12 +560,14 @@ public:
         -> OTSymmetricKey = 0;
     /** Derive a symmetric key from a seed
      *
-     *  \param[in] seed A binary or text seed to be expanded into a secret key
-     *  \param[in] salt
+     *  \param[in] engine     Symmetric provider compatible with the specified
+     *                        key type
+     *  \param[in] seed       A binary or text seed to be expanded into a secret
+     *                        key
      *  \param[in] operations The number of iterations/operations the KDF should
      *                        perform
      *  \param[in] difficulty A type-specific difficulty parameter used by the
-     *                        KDF.
+     *                        KDF
      *  \param[in] size       The target number of bytes for the derived secret
      *                        key
      *  \param[in] type       The KDF to be used for the derivation process
@@ -578,6 +580,23 @@ public:
         const std::size_t size,
         const opentxs::crypto::key::symmetric::Source type) const
         -> OTSymmetricKey = 0;
+    /** Derive a symmetric key from a seed
+     *
+     *  \param[in] engine     Symmetric provider compatible with the specified
+     *                        key type
+     *  \param[in] seed       A binary or text seed to be expanded into a secret
+     *                        key
+     *  \param[in] salt       Extra data to pass to the KDF
+     *  \param[in] operations The number of iterations/operations the KDF should
+     *                        perform
+     *  \param[in] difficulty A type-specific difficulty parameter used by the
+     *                        KDF
+     *  \param[in] parallel   A type-specific difficulty parameter used by some
+     *                        KDFs
+     *  \param[in] size       The target number of bytes for the derived secret
+     *                        key
+     *  \param[in] type       The KDF to be used for the derivation process
+     */
     virtual auto SymmetricKey(
         const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::Secret& seed,
