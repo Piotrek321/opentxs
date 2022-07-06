@@ -269,6 +269,8 @@ auto Requestor::Imp::to_str(Work w) const noexcept -> std::string
 
 auto Requestor::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (state_) {
         case State::init: {
             state_init(work, std::move(msg));
@@ -417,6 +419,7 @@ auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
             shutdown_actor();
         } break;
         case Work::PushTransaction: {
+            tdiag("-------------defer------------");
             defer(std::move(msg));
         } break;
         case Work::Register: {

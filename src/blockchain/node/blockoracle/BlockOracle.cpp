@@ -241,6 +241,8 @@ auto BlockOracle::Imp::to_str(Work w) const noexcept -> std::string
 
 auto BlockOracle::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (work) {
         case Work::shutdown: {
             shutdown_actor();
@@ -250,12 +252,14 @@ auto BlockOracle::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
         } break;
         case Work::process_block: {
             const auto body = msg.Body();
+            tdiag("pipeline 1 ", std::string{print(work)});
 
             if (1 >= body.size()) {
                 LogError()(OT_PRETTY_CLASS())("No block").Flush();
 
                 OT_FAIL;
             }
+            tdiag("pipeline 2 ", std::string{print(work)});
 
             cache_.lock()->ReceiveBlock(body.at(1));
             do_work();
@@ -270,7 +274,7 @@ auto BlockOracle::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
             do_work();
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type ")(
+            LogError()(OT_PRETTY_CLASS())(name())(" unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 

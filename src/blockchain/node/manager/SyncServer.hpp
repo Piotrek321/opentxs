@@ -196,6 +196,7 @@ private:
     auto download() noexcept -> void
     {
         auto work = NextBatch();
+        tdiag("SyncServer::download, size ", work.data_.size());
 
         for (const auto& task : work.data_) {
             // TODO allocator
@@ -453,18 +454,22 @@ auto SyncServer::pipeline(zmq::Message&& in) -> void
 
     switch (work) {
         case Work::shutdown: {
+            tdiag("SyncServer shutdown");
             protect_shutdown([this] { shut_down(); });
         } break;
         case Work::heartbeat: {
+            tdiag("SyncServer heartbeat");
             if (dm_enabled()) { process_position(filter_.Tip(type_)); }
 
             run_if_enabled();
         } break;
         case Work::filter: {
+            tdiag("SyncServer filter");
             process_position(in);
             run_if_enabled();
         } break;
         case Work::statemachine: {
+            tdiag("SyncServer statemachine");
             download();
             run_if_enabled();
         } break;

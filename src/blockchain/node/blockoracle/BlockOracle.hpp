@@ -114,15 +114,25 @@ public:
     {
         return submit_endpoint_;
     }
+
+    // TODO assess the thread safety
     auto GetBlockBatch(boost::shared_ptr<Imp> me) const noexcept -> BlockBatch;
+    // TODO assess the thread safety
     auto GetBlockJob() const noexcept -> BlockJob;
+
     auto Heartbeat() const noexcept -> void;
+
+    // TODO assess the thread safety
     auto LoadBitcoin(const block::Hash& block) const noexcept
         -> BitcoinBlockResult;
+    // TODO assess the thread safety
     auto LoadBitcoin(const Vector<block::Hash>& hashes) const noexcept
         -> BitcoinBlockResults;
+
     auto SubmitBlock(const ReadView in) const noexcept -> void;
     auto Tip() const noexcept -> block::Position { return db_.BlockTip(); }
+
+    // TODO check why this is always true
     auto Validate(const bitcoin::block::Block& block) const noexcept -> bool
     {
         return validator_->Validate(block);

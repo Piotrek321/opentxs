@@ -85,6 +85,9 @@ public:
             LogTrace()(log_)(" download job ")(id_)(" for block ")(
                 print(position_))(" completed")
                 .Flush();
+            //            if (std::string(log_)=="sync server") {
+            //                __builtin_trap();
+            //            }
         } catch (const std::exception& e) {
             LogError()(log_)(" download job ")(id_)(" for block ")(
                 print(position_))(" failed: ")(e.what())

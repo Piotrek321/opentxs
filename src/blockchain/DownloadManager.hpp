@@ -232,6 +232,7 @@ protected:
                     log_.data(),
                     extra));
                 previous = task->output_;
+                std::cerr << "DownloadManager about to call check_task\n";
                 downcast().check_task(*task);
             } else {
                 break;

@@ -63,6 +63,7 @@ Cache::Cache(
         auto out = api.Network().ZeroMQ().Internal().RawSocket(Type::Push);
         const auto endpoint = UnallocatedCString{
             api.Network().Blockchain().Internal().BlockAvailableEndpoint()};
+        std::cerr << "ENDPOINT block_available_ " << endpoint << "\n";
         const auto rc = out.Connect(endpoint.c_str());
 
         OT_ASSERT(rc);
@@ -74,6 +75,7 @@ Cache::Cache(
         auto out = api.Network().ZeroMQ().Internal().RawSocket(Type::Push);
         const auto endpoint = UnallocatedCString{
             api.Network().Blockchain().Internal().BlockQueueUpdateEndpoint()};
+        std::cerr << "ENDPOINT cache_size_publisher_ " << endpoint << "\n";
         const auto rc = out.Connect(endpoint.c_str());
 
         OT_ASSERT(rc);
@@ -265,8 +267,10 @@ auto Cache::ReceiveBlock(const std::string_view in) noexcept -> void
 auto Cache::ReceiveBlock(
     std::shared_ptr<const bitcoin::block::Block> in) noexcept -> void
 {
+    std::cerr << "ReceiveBlock\n";
     if (!in) {
         LogError()(OT_PRETTY_CLASS())("Invalid block").Flush();
+        std::cerr << "invalid\n";
 
         return;
     }
@@ -286,6 +290,7 @@ auto Cache::ReceiveBlock(
     if (pending_.end() == pending) {
         LogVerbose()(OT_PRETTY_CLASS())("Received block not in request list")
             .Flush();
+        std::cerr << "Received block not in request list\n";
 
         return;
     }
@@ -295,6 +300,7 @@ auto Cache::ReceiveBlock(
     publish(id);
     LogVerbose()(OT_PRETTY_CLASS())("Cached block ")(id.asHex()).Flush();
     mem_.push(block::Hash{id}, std::move(future));
+    std::cerr << "ReceiveBlock erase\n";
     pending_.erase(pending);
     publish_download_queue();
 }
@@ -432,7 +438,9 @@ auto Cache::Request(const Vector<block::Hash>& hashes) noexcept
 
         for (auto& [hash, futureOut] : download) {
             queue_hash(hash);
+            std::cerr << "Request 1 PENDING " << pending_.size() << "\n";
             auto& [time, promise, future, queued] = pending_[hash];
+            std::cerr << "Request 2 PENDING " << pending_.size() << "\n";
             time = Clock::now();
             future = promise.get_future();
             *futureOut = future;
@@ -496,6 +504,7 @@ auto Cache::StateMachine() noexcept -> bool
 
     if (!blockList.empty()) { node_.RequestBlocks(blockList); }
 
+    std::cerr << "PENDING" << pending_.size() << "\n";
     return !pending_.empty();
 }
 }  // namespace opentxs::blockchain::node::blockoracle
