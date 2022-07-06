@@ -567,7 +567,6 @@ auto SubchainStateData::ChangeState(
         return true;
     }
 
-    auto lock = lock_for_reorg(name_, reorg_lock_);
     auto output{false};
 
     switch (state) {

@@ -46,25 +46,6 @@ auto BlockchainWallet(
 
 namespace opentxs::blockchain::node::wallet
 {
-auto lock_for_reorg(
-    const std::string_view name,
-    std::timed_mutex& mutex) noexcept -> std::unique_lock<std::timed_mutex>
-{
-    auto lock = std::unique_lock<std::timed_mutex>{mutex, std::defer_lock};
-    auto failures{-1};
-
-    while (!lock.owns_lock()) {
-        if (++failures < 300) {
-            lock.try_lock_for(997ms);
-        } else {
-            LogError()(name)(" state machine is not responding").Flush();
-            lock.try_lock_for(997ms);
-        }
-    }
-
-    return lock;
-}
-
 auto print(WalletJobs job) noexcept -> std::string_view
 {
     try {

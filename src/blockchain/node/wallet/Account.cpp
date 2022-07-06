@@ -151,15 +151,25 @@ Account::Imp::Imp(
 {
 }
 
+Account::Imp::~Imp()
+{
+    tdiag("Account::Imp::~Imp");
+    signal_shutdown();
+}
+
 auto Account::Imp::ChangeState(const State state, StateSequence reorg) noexcept
     -> bool
 {
-    if (auto old = pending_state_.exchange(state); old == state) {
+    return synchronize(
+        [state, reorg, this] { return sChangeState(state, reorg); });
+}
 
+auto Account::Imp::sChangeState(const State state, StateSequence reorg) noexcept
+    -> bool
+{
+    if (auto old = pending_state_.exchange(state); old == state) {
         return true;
     }
-
-    auto lock = lock_for_reorg(name_, reorg_lock_);
     auto output{false};
 
     switch (state) {
@@ -184,7 +194,7 @@ auto Account::Imp::ChangeState(const State state, StateSequence reorg) noexcept
     }
 
     if (!output) {
-        LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
+        LogError()(OT_PRETTY_CLASS())(name())(" failed to change state from ")(
             print(state_))(" to ")(print(state))
             .Flush();
     }
@@ -216,7 +226,7 @@ auto Account::Imp::check_notification(
     if (0u < map.count(subaccount.ID())) { return; }
 
     const auto& code = subaccount.LocalPaymentCode();
-    log_("Initializing payment code ")(code.asBase58())(" on ")(name_).Flush();
+    log_("Initializing payment code ")(code.asBase58())(" on ")(name()).Flush();
     const auto& asio = api_.Network().ZeroMQ().Internal();
     const auto batchID = asio.PreallocateBatch();
     auto [it, added] = map.try_emplace(
@@ -256,12 +266,30 @@ auto Account::Imp::check_pc(const crypto::PaymentCode& subaccount) noexcept
 
 auto Account::Imp::clear_children() noexcept -> void
 {
-    const auto cb = [](auto& value) {
-        auto rc = value.second->ChangeState(Subchain::State::shutdown, {});
+    for (auto [key, sp] : notification_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+        std::chrono::milliseconds x(100);
+        std::this_thread::sleep_for(x);
+    }
+    //    std::for_each(notification_.begin(), notification_.end(), cb);
+    for (auto [key, sp] : internal_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+    }
+    //    std::for_each(notification_.begin(), internal_.end(), cb);
+    for (auto [key, sp] : external_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+    }
+    //    std::for_each(external_.begin(), external_.end(), cb);
+    for (auto [key, sp] : outgoing_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+    }
+    //    std::for_each(outgoing_.begin(), outgoing_.end(), cb);
+    for (auto [key, sp] : incoming_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+    }
+    //    std::for_each(incoming_.begin(), incoming_.end(), cb);
 
-        OT_ASSERT(rc);
-    };
-    for_each(cb);
+    //    for_each(cb);
     notification_.clear();
     internal_.clear();
     external_.clear();
@@ -307,7 +335,7 @@ auto Account::Imp::instantiate(
     const crypto::Subchain subchain,
     Subchains& map) noexcept -> Subchain&
 {
-    log_("Instantiating ")(name_)(" subaccount ")(subaccount.ID())(" ")(
+    log_("Instantiating ")(name())(" subaccount ")(subaccount.ID())(" ")(
         print(subchain))(" subchain for ")(subaccount.Parent().NymID())
         .Flush();
     const auto& asio = api_.Network().ZeroMQ().Internal();
@@ -343,6 +371,8 @@ auto Account::Imp::to_str(Work w) const noexcept -> std::string
 
 auto Account::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string(print(work)));
+
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
@@ -435,6 +465,18 @@ auto Account::Imp::ProcessReorg(
     std::atomic_int& errors,
     const block::Position& parent) noexcept -> void
 {
+    synchronize(
+        [&lock = std::as_const(headerOracleLock), &tx, &errors, &parent, this] {
+            sProcessReorg(lock, tx, errors, parent);
+        });
+}
+
+auto Account::Imp::sProcessReorg(
+    const Lock& headerOracleLock,
+    storage::lmdb::LMDB::Transaction& tx,
+    std::atomic_int& errors,
+    const block::Position& parent) noexcept -> void
+{
     for_each([&](auto& item) {
         item.second->ProcessReorg(headerOracleLock, tx, errors, parent);
     });
@@ -477,7 +519,7 @@ auto Account::Imp::state_normal(const Work work, Message&& msg) noexcept -> void
             do_work();
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type ")(
+            LogError()(OT_PRETTY_CLASS())(name())(" unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 
@@ -499,14 +541,14 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
         case Work::shutdown:
         case Work::prepare_shutdown:
         case Work::init: {
-            LogError()(OT_PRETTY_CLASS())(name_)(" wrong state for ")(
+            LogError()(OT_PRETTY_CLASS())(name())(" wrong state for ")(
                 print(work))(" message")
                 .Flush();
 
             OT_FAIL;
         }
         default: {
-            LogError()(OT_PRETTY_CLASS())(name_)(" unhandled message type ")(
+            LogError()(OT_PRETTY_CLASS())(name())(" unhandled message type ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 
@@ -525,7 +567,7 @@ auto Account::Imp::transition_state_normal() noexcept -> bool
     };
     for_each(cb);
     state_ = State::normal;
-    log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
+    log_(OT_PRETTY_CLASS())(name())(" transitioned to normal state ").Flush();
     trigger();
 
     return true;
@@ -548,9 +590,9 @@ auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> bool
         reorgs_.emplace(id);
         disable_automatic_processing(true);
         state_ = State::reorg;
-        log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
+        log_(OT_PRETTY_CLASS())(name())(" ready to process reorg ")(id).Flush();
     } else {
-        log_(OT_PRETTY_CLASS())(name_)(" reorg ")(id)(" already handled")
+        log_(OT_PRETTY_CLASS())(name())(" reorg ")(id)(" already handled")
             .Flush();
     }
 
@@ -561,7 +603,7 @@ auto Account::Imp::transition_state_shutdown() noexcept -> bool
 {
     clear_children();
     state_ = State::shutdown;
-    log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
+    log_(OT_PRETTY_CLASS())(name())(" transitioned to shutdown state ").Flush();
     signal_shutdown();
 
     return true;
@@ -629,6 +671,7 @@ auto Account::ChangeState(const State state, StateSequence reorg) noexcept
 
 Account::~Account()
 {
+    std::cerr << "Account::~Account\n";
     if (imp_) { imp_->Shutdown(); }
 }
 }  // namespace opentxs::blockchain::node::wallet
