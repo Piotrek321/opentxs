@@ -50,10 +50,7 @@ auto ListenCallback::clone() const -> ListenCallback*
     return new ListenCallback(*callback_.lock());
 }
 
-auto ListenCallback::Deactivate() const noexcept -> void
-{
-    const_cast<ListenCallback&>(*this).Replace(null_);
-}
+auto ListenCallback::Deactivate() noexcept -> void { Replace(nullptr); }
 
 auto ListenCallback::Process(zeromq::Message&& message) const noexcept -> void
 {

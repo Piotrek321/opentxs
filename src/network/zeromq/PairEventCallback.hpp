@@ -31,7 +31,7 @@ namespace opentxs::network::zeromq::implementation
 class PairEventCallback final : virtual public zeromq::PairEventCallback
 {
 public:
-    auto Deactivate() const noexcept -> void final;
+    auto Deactivate() noexcept -> void final;
     auto Process(zeromq::Message&& message) const noexcept -> void final;
 
     auto Replace(ListenCallback::ReceiveCallback callback) noexcept
