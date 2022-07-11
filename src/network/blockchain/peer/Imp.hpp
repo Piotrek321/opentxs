@@ -93,6 +93,11 @@ struct Address;
 class GCS;
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace network
 {
 namespace blockchain
@@ -107,7 +112,6 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 
-class Identifier;
 class Log;
 // }  // namespace v1
 }  // namespace opentxs
@@ -120,7 +124,7 @@ using namespace std::literals;
 class Peer::Imp : public Actor<PeerJob>
 {
 public:
-    auto AddressID() const noexcept -> const Identifier&;
+    auto AddressID() const noexcept -> const identifier::Generic&;
 
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void;
     auto Shutdown() noexcept -> void;

@@ -88,11 +88,11 @@ public:
        @return Whether or not the send was successful.
     */
     virtual auto Send(
-        const Identifier& contact,
+        const identifier::Generic& contact,
         const Amount& amount,
         const UnallocatedCString& memo = {}) const noexcept -> bool = 0;
     virtual auto Send(
-        const Identifier& contact,
+        const identifier::Generic& contact,
         const UnallocatedCString& amount,
         const UnallocatedCString& memo = {},
         Scale scale = 0) const noexcept -> bool = 0;

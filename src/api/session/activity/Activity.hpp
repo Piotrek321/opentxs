@@ -22,7 +22,6 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -88,14 +87,14 @@ public:
                                       transaction) const noexcept -> bool final;
     auto AddPaymentEvent(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const otx::client::StorageBox type,
-        const Identifier& itemID,
-        const Identifier& workflowID,
+        const identifier::Generic& itemID,
+        const identifier::Generic& workflowID,
         Time time) const noexcept -> bool final;
     auto Mail(
         const identifier::Nym& nym,
-        const Identifier& id,
+        const identifier::Generic& id,
         const otx::client::StorageBox& box) const noexcept
         -> std::unique_ptr<Message> final
     {
@@ -116,11 +115,11 @@ public:
         const noexcept -> ObjectList final;
     auto MailRemove(
         const identifier::Nym& nym,
-        const Identifier& id,
+        const identifier::Generic& id,
         const otx::client::StorageBox box) const noexcept -> bool final;
     auto MailText(
         const identifier::Nym& nym,
-        const Identifier& id,
+        const identifier::Generic& id,
         const otx::client::StorageBox& box,
         const PasswordPrompt& reason) const noexcept
         -> std::shared_future<UnallocatedCString> final
@@ -129,12 +128,12 @@ public:
     }
     auto MarkRead(
         const identifier::Nym& nymId,
-        const Identifier& threadId,
-        const Identifier& itemId) const noexcept -> bool final;
+        const identifier::Generic& threadId,
+        const identifier::Generic& itemId) const noexcept -> bool final;
     auto MarkUnread(
         const identifier::Nym& nymId,
-        const Identifier& threadId,
-        const Identifier& itemId) const noexcept -> bool final;
+        const identifier::Generic& threadId,
+        const identifier::Generic& itemId) const noexcept -> bool final;
     auto Cheque(
         const identifier::Nym& nym,
         const UnallocatedCString& id,
@@ -155,17 +154,17 @@ public:
         const PasswordPrompt& reason) const noexcept -> void final;
     auto PreloadThread(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const std::size_t start,
         const std::size_t count,
         const PasswordPrompt& reason) const noexcept -> void final;
     auto Thread(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         proto::StorageThread& serialzied) const noexcept -> bool final;
     auto Thread(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         AllocateOutput output) const noexcept -> bool final;
     auto Threads(const identifier::Nym& nym, const bool unreadOnly = false)
         const noexcept -> ObjectList final;
@@ -191,16 +190,18 @@ private:
     const OTZMQPublishSocket message_loaded_;
     mutable activity::MailCache mail_;
     mutable std::mutex publisher_lock_;
-    mutable UnallocatedMap<OTIdentifier, OTZMQPublishSocket> thread_publishers_;
-    mutable UnallocatedMap<OTNymID, OTZMQPublishSocket> blockchain_publishers_;
+    mutable UnallocatedMap<identifier::Generic, OTZMQPublishSocket>
+        thread_publishers_;
+    mutable UnallocatedMap<identifier::Nym, OTZMQPublishSocket>
+        blockchain_publishers_;
 
     auto activity_preload_thread(
         OTPasswordPrompt reason,
-        const OTIdentifier nymID,
+        const identifier::Nym nymID,
         const std::size_t count) const noexcept -> void;
     auto thread_preload_thread(
         OTPasswordPrompt reason,
-        const UnallocatedCString nymID,
+        const identifier::Nym nymID,
         const UnallocatedCString threadID,
         const std::size_t start,
         const std::size_t count) const noexcept -> void;
@@ -212,7 +213,7 @@ private:
         const blockchain::bitcoin::block::Transaction& transaction)
         const noexcept -> bool;
 #endif  // OT_BLOCKCHAIN
-    auto nym_to_contact(const UnallocatedCString& nymID) const noexcept
+    auto nym_to_contact(const identifier::Nym& nymID) const noexcept
         -> std::shared_ptr<const Contact>;
 #if OT_BLOCKCHAIN
     auto get_blockchain(const eLock&, const identifier::Nym& nymID)
@@ -224,12 +225,13 @@ private:
         const identifier::Nym& nymID,
         UnallocatedCString& endpoint) const noexcept
         -> const opentxs::network::zeromq::socket::Publish&;
-    auto publish(const identifier::Nym& nymID, const Identifier& threadID)
-        const noexcept -> void;
+    auto publish(
+        const identifier::Nym& nymID,
+        const identifier::Generic& threadID) const noexcept -> void;
     auto start_publisher(const UnallocatedCString& endpoint) const noexcept
         -> OTZMQPublishSocket;
     auto verify_thread_exists(
-        const UnallocatedCString& nym,
+        const identifier::Nym& nym,
         const UnallocatedCString& thread) const noexcept -> bool;
 };
 }  // namespace opentxs::api::session::imp

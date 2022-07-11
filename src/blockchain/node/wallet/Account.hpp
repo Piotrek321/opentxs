@@ -31,7 +31,6 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
@@ -88,6 +87,7 @@ class SubchainStateData;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -102,8 +102,6 @@ class Raw;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -142,7 +140,7 @@ protected:
     auto work() noexcept -> bool override;
 
 private:
-    using Subchains = Map<OTIdentifier, boost::shared_ptr<SubchainStateData>>;
+    using Subchains = Map<identifier::Generic, boost::shared_ptr<SubchainStateData>>;
     using HandledReorgs = Set<StateSequence>;
 
     const api::Session& api_;
@@ -162,12 +160,13 @@ private:
     Subchains outgoing_;
     Subchains incoming_;
 
-    auto check_hd(const Identifier& subaccount) noexcept -> void;
+    auto check_hd(const identifier::Generic& subaccount) noexcept -> void;
     auto check_hd(const crypto::HD& subaccount) noexcept -> void;
-    auto check_notification(const Identifier& subaccount) noexcept -> void;
+    auto check_notification(const identifier::Generic& subaccount) noexcept
+        -> void;
     auto check_notification(const crypto::Notification& subaccount) noexcept
         -> void;
-    auto check_pc(const Identifier& subaccount) noexcept -> void;
+    auto check_pc(const identifier::Generic& subaccount) noexcept -> void;
     auto check_pc(const crypto::PaymentCode& subaccount) noexcept -> void;
     auto clear_children() noexcept -> void;
     template <typename Callback>
@@ -193,7 +192,7 @@ private:
     auto process_rescan(Message&& in) noexcept -> void;
     auto process_subaccount(Message&& in) noexcept -> void;
     auto process_subaccount(
-        const Identifier& id,
+        const identifier::Generic& id,
         const crypto::SubaccountType type) noexcept -> void;
     auto scan_subchains() noexcept -> void;
     auto state_normal(const Work work, Message&& msg) noexcept -> void;

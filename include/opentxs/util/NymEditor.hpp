@@ -47,6 +47,7 @@ class Parameters;
 
 namespace identifier
 {
+class Generic;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -69,7 +70,6 @@ class ContactData;
 class Nym;
 }  // namespace proto
 
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -89,8 +89,9 @@ public:
     auto BestSocialMediaProfile(
         const identity::wot::claim::ClaimType type) const -> UnallocatedCString;
     auto Claims() const -> const identity::wot::claim::Data&;
-    auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
-        -> bool;
+    auto DeleteClaim(
+        const identifier::Generic& id,
+        const PasswordPrompt& reason) -> bool;
     auto EmailAddresses(bool active = true) const -> UnallocatedCString;
     auto HaveContract(
         const identifier::UnitDefinition& id,
@@ -112,7 +113,7 @@ public:
     auto Valid() const -> bool;
 
     auto AddChildKeyCredential(
-        const Identifier& strMasterID,
+        const identifier::Generic& strMasterID,
         const crypto::Parameters& nymParameters,
         const PasswordPrompt& reason) -> UnallocatedCString;
     auto AddClaim(const Claim& claim, const PasswordPrompt& reason) -> bool;

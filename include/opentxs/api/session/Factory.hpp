@@ -37,10 +37,6 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
@@ -105,6 +101,7 @@ class Definition;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 class Notary;
 class UnitDefinition;
@@ -139,6 +136,7 @@ class Server;
 }  // namespace otx
 
 class ByteArray;
+class Item;
 class Secret;
 class PaymentCode;
 // }  // namespace v1
@@ -174,7 +172,7 @@ public:
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         const UnallocatedCString& txid,
         const Amount& amount,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -182,7 +180,7 @@ public:
     virtual auto BailmentReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -310,7 +308,7 @@ public:
     virtual auto ConnectionReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const bool ack,
         const UnallocatedCString& url,
@@ -356,18 +354,6 @@ public:
         noexcept(false) -> OTEnvelope = 0;
     virtual auto Envelope(const opentxs::ReadView& serialized) const
         noexcept(false) -> OTEnvelope = 0;
-    virtual auto Identifier() const -> OTIdentifier = 0;
-    virtual auto Identifier(const UnallocatedCString& serialized) const
-        -> OTIdentifier = 0;
-    virtual auto Identifier(const opentxs::String& serialized) const
-        -> OTIdentifier = 0;
-    virtual auto Identifier(const opentxs::Contract& contract) const
-        -> OTIdentifier = 0;
-    virtual auto Identifier(const opentxs::Item& item) const
-        -> OTIdentifier = 0;
-    virtual auto Identifier(const ReadView bytes) const -> OTIdentifier = 0;
-    virtual auto Identifier(const opentxs::network::zeromq::Frame& bytes) const
-        -> OTIdentifier = 0;
     OPENTXS_NO_EXPORT virtual auto InternalSession() const noexcept
         -> const internal::Factory& = 0;
     virtual auto Keypair(
@@ -406,18 +392,12 @@ public:
         const identifier::Nym& serverNym,
         const identifier::UnitDefinition& unit) const noexcept
         -> otx::blind::Mint = 0;
-    virtual auto NymID() const -> OTNymID = 0;
-    virtual auto NymID(const UnallocatedCString& serialized) const
-        -> OTNymID = 0;
-    virtual auto NymID(const opentxs::String& serialized) const -> OTNymID = 0;
-    virtual auto NymID(const opentxs::network::zeromq::Frame& bytes) const
-        -> OTNymID = 0;
     virtual auto NymIDFromPaymentCode(
-        const UnallocatedCString& serialized) const -> OTNymID = 0;
+        const UnallocatedCString& serialized) const -> identifier::Nym = 0;
     virtual auto OutbailmentReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -509,7 +489,7 @@ public:
     virtual auto ReplyAcknowledgement(
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const contract::peer::PeerRequestType type,
         const bool& ack,
@@ -526,13 +506,6 @@ public:
         const Amount& redemptionIncrement) const noexcept(false)
         -> OTSecurityContract = 0;
     virtual auto ServerContract() const noexcept(false) -> OTServerContract = 0;
-    virtual auto ServerID() const -> OTNotaryID = 0;
-    virtual auto ServerID(const UnallocatedCString& serialized) const
-        -> OTNotaryID = 0;
-    virtual auto ServerID(const opentxs::String& serialized) const
-        -> OTNotaryID = 0;
-    virtual auto ServerID(const opentxs::network::zeromq::Frame& bytes) const
-        -> OTNotaryID = 0;
     virtual auto StoreSecret(
         const Nym_p& nym,
         const identifier::Nym& recipientID,
@@ -617,13 +590,6 @@ public:
         const opentxs::crypto::SymmetricProvider& engine,
         const opentxs::Secret& raw,
         const opentxs::PasswordPrompt& reason) const -> OTSymmetricKey = 0;
-    virtual auto UnitID() const -> OTUnitID = 0;
-    virtual auto UnitID(const UnallocatedCString& serialized) const
-        -> OTUnitID = 0;
-    virtual auto UnitID(const opentxs::String& serialized) const
-        -> OTUnitID = 0;
-    virtual auto UnitID(const opentxs::network::zeromq::Frame& bytes) const
-        -> OTUnitID = 0;
     virtual auto UnitDefinition() const noexcept -> OTUnitDefinition = 0;
 
     OPENTXS_NO_EXPORT virtual auto InternalSession() noexcept

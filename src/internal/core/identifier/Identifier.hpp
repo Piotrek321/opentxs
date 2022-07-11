@@ -3,45 +3,20 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/identifier/Algorithm.hpp"
+// IWYU pragma: no_include "opentxs/core/identifier/Type.hpp"
+
 #pragma once
 
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "util/Blank.hpp"
+#include <string_view>
+
+#include "opentxs/core/identifier/Types.hpp"
 
 namespace opentxs
 {
-template <>
-struct make_blank<OTIdentifier> {
-    static auto value(const api::Session&) -> OTIdentifier
-    {
-        return Identifier::Factory();
-    }
-};
+using namespace std::literals;
 
-template <>
-struct make_blank<OTNymID> {
-    static auto value(const api::Session&) -> OTNymID
-    {
-        return identifier::Nym::Factory();
-    }
-};
-
-template <>
-struct make_blank<OTNotaryID> {
-    static auto value(const api::Session&) -> OTNotaryID
-    {
-        return identifier::Notary::Factory();
-    }
-};
-
-template <>
-struct make_blank<OTUnitID> {
-    static auto value(const api::Session&) -> OTUnitID
-    {
-        return identifier::UnitDefinition::Factory();
-    }
-};
+static constexpr auto identifier_header_ =
+    sizeof(identifier::Algorithm) + sizeof(identifier::Type);
+static constexpr auto identifier_prefix_ = "ot"sv;
 }  // namespace opentxs

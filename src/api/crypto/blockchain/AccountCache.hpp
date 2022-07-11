@@ -15,8 +15,6 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -31,10 +29,9 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -47,15 +44,15 @@ public:
     auto List(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto New(
         const opentxs::blockchain::crypto::SubaccountType type,
         const opentxs::blockchain::Type chain,
-        const Identifier& account,
+        const identifier::Generic& account,
         const identifier::Nym& owner) const noexcept -> void;
-    auto Owner(const Identifier& accountID) const noexcept
+    auto Owner(const identifier::Generic& accountID) const noexcept
         -> const identifier::Nym&;
-    auto Type(const Identifier& accountID) const noexcept
+    auto Type(const identifier::Generic& accountID) const noexcept
         -> opentxs::blockchain::crypto::SubaccountType;
 
     auto Populate() noexcept -> void;
@@ -63,13 +60,14 @@ public:
     AccountCache(const api::Session& api) noexcept;
 
 private:
-    using Accounts = UnallocatedSet<OTIdentifier>;
-    using NymAccountMap = UnallocatedMap<OTNymID, Accounts>;
+    using Accounts = UnallocatedSet<identifier::Generic>;
+    using NymAccountMap = UnallocatedMap<identifier::Nym, Accounts>;
     using ChainAccountMap =
         UnallocatedMap<opentxs::blockchain::Type, std::optional<NymAccountMap>>;
-    using AccountNymIndex = UnallocatedMap<OTIdentifier, OTNymID>;
+    using AccountNymIndex =
+        UnallocatedMap<identifier::Generic, identifier::Nym>;
     using AccountTypeIndex = UnallocatedMap<
-        OTIdentifier,
+        identifier::Generic,
         opentxs::blockchain::crypto::SubaccountType>;
 
     const api::Session& api_;

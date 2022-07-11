@@ -32,6 +32,21 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace identity
 {
 class Nym;
@@ -59,7 +74,6 @@ class Threads;
 }  // namespace storage
 
 class Data;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -106,7 +120,7 @@ public:
     auto mutable_Threads() -> Editor<storage::Threads>;
     auto mutable_Threads(
         const Data& txid,
-        const Identifier& contact,
+        const identifier::Generic& contact,
         const bool add) -> Editor<storage::Threads>;
     auto mutable_PaymentWorkflows() -> Editor<storage::PaymentWorkflows>;
 
@@ -134,6 +148,12 @@ public:
         UnallocatedCString& plaintext) -> bool;
     auto Store(const proto::Purse& purse) -> bool;
 
+    Nym(const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& id,
+        const UnallocatedCString& hash,
+        const UnallocatedCString& alias);
     Nym() = delete;
     Nym(const identity::Nym&) = delete;
     Nym(Nym&&) = delete;
@@ -145,7 +165,7 @@ public:
 private:
     friend Nyms;
 
-    using PurseID = std::pair<OTNotaryID, OTUnitID>;
+    using PurseID = std::pair<identifier::Notary, identifier::UnitDefinition>;
 
     static constexpr auto current_version_ = VersionNumber{9};
     static constexpr auto blockchain_index_version_ = VersionNumber{1};
@@ -250,10 +270,5 @@ private:
         std::mutex& mutex,
         UnallocatedCString& root);
     auto serialize() const -> proto::StorageNym;
-
-    Nym(const Driver& storage,
-        const UnallocatedCString& id,
-        const UnallocatedCString& hash,
-        const UnallocatedCString& alias);
 };
 }  // namespace opentxs::storage

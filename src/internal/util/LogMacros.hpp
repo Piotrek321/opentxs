@@ -91,7 +91,6 @@ auto pretty_function(T*, const char* function) noexcept -> UnallocatedCString
 // This is it -- the golden banana.
 //
 #define OT_NEW_ASSERT_MSG(X, Z)                                                \
-                                                                               \
     OT_ASSERT_MSG((X), (OT_INTERMEDIATE_FORMAT((Z))))
 //
 // This one is the same thing except without a message.
@@ -108,7 +107,6 @@ auto pretty_function(T*, const char* function) noexcept -> UnallocatedCString
 // a valid Opentxs ID. Otherwise, assert with a message.
 //
 #define OT_VERIFY_OT_ID(OT_ID_OBJECT)                                          \
-                                                                               \
     OT_ASSERT_MSG((!(OT_ID_OBJECT).empty()), OT_ID_FORMAT(OT_ID_OBJECT))
 
 // -------------------------------------------------------
@@ -116,10 +114,7 @@ auto pretty_function(T*, const char* function) noexcept -> UnallocatedCString
 // a valid Opentxs ID. Otherwise, assert with a message.
 //
 #define OT_VERIFY_ID_STR(STD_STR_OF_ID)                                        \
-                                                                               \
-    OT_ASSERT_MSG(                                                             \
-        (!(STD_STR_OF_ID).empty() && (Identifier::Validate((STD_STR_OF_ID)))), \
-        OT_OTHER_ID_FORMAT(STD_STR_OF_ID))
+    OT_ASSERT_MSG((!(STD_STR_OF_ID).empty()), OT_OTHER_ID_FORMAT(STD_STR_OF_ID))
 
 // -------------------------------------------------------
 // OT_VERIFY_BOUNDS

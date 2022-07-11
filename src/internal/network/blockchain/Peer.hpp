@@ -12,7 +12,10 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-class Identifier;
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -24,7 +27,7 @@ class Peer
 public:
     class Imp;
 
-    auto AddressID() const noexcept -> const Identifier&;
+    auto AddressID() const noexcept -> const identifier::Generic&;
 
     auto Start() noexcept -> void;
     auto Stop() noexcept -> void;

@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
@@ -113,11 +114,11 @@ struct Contact::Imp {
     VersionNumber version_{0};
     UnallocatedCString label_{""};
     mutable std::mutex lock_{};
-    const OTIdentifier id_;
-    OTIdentifier parent_;
-    OTNymID primary_nym_;
-    UnallocatedMap<OTNymID, Nym_p> nyms_;
-    UnallocatedSet<OTIdentifier> merged_children_;
+    const identifier::Generic id_;
+    identifier::Generic parent_;
+    identifier::Nym primary_nym_;
+    UnallocatedMap<identifier::Nym, Nym_p> nyms_;
+    UnallocatedSet<identifier::Generic> merged_children_;
     std::unique_ptr<identity::wot::claim::Data> contact_data_{};
     mutable std::shared_ptr<identity::wot::claim::Data> cached_contact_data_{};
     std::atomic<std::uint64_t> revision_{0};
@@ -132,13 +133,13 @@ struct Contact::Imp {
         return in;
     }
 
-    static auto generate_id(const api::Session& api) -> OTIdentifier
+    static auto generate_id(const api::Session& api) -> identifier::Generic
     {
         const auto& encode = api.Crypto().Encode();
         auto random = ByteArray{};
         encode.Nonce(ID_BYTES, random);
 
-        return api.Factory().Identifier(random.Bytes());
+        return api.Factory().IdentifierFromPreimage(random.Bytes());
     }
 
     static auto translate(
@@ -171,9 +172,9 @@ struct Contact::Imp {
         , version_(check_version(serialized.version(), OT_CONTACT_VERSION))
         , label_(serialized.label())
         , lock_()
-        , id_(api_.Factory().Identifier(serialized.id()))
-        , parent_(api_.Factory().Identifier(serialized.mergedto()))
-        , primary_nym_(api_.Factory().NymID())
+        , id_(api_.Factory().IdentifierFromBase58(serialized.id()))
+        , parent_(api_.Factory().IdentifierFromBase58(serialized.mergedto()))
+        , primary_nym_()
         , nyms_()
         , merged_children_()
         , contact_data_(new identity::wot::claim::Data(
@@ -196,7 +197,8 @@ struct Contact::Imp {
         OT_ASSERT(contact_data_);
 
         for (const auto& child : serialized.merged()) {
-            merged_children_.emplace(api_.Factory().Identifier(child));
+            merged_children_.emplace(
+                api_.Factory().IdentifierFromBase58(child));
         }
 
         init_nyms();
@@ -208,8 +210,8 @@ struct Contact::Imp {
         , label_(label)
         , lock_()
         , id_(generate_id(api_))
-        , parent_(api_.Factory().Identifier())
-        , primary_nym_(api_.Factory().NymID())
+        , parent_()
+        , primary_nym_()
         , nyms_()
         , merged_children_()
         , contact_data_(nullptr)
@@ -354,15 +356,15 @@ struct Contact::Imp {
 
         if (false == bool(nyms)) { return; }
 
-        // TODO conversion
-        primary_nym_ = api_.Factory().NymID(nyms->Primary().str());
+        primary_nym_ =
+            api_.Factory().Internal().NymIDConvertSafe(nyms->Primary());
 
         for (const auto& it : *nyms) {
             const auto& item = it.second;
 
             OT_ASSERT(item);
 
-            const auto nymID = api_.Factory().NymID(item->Value());
+            const auto nymID = api_.Factory().NymIDFromBase58(item->Value());
             auto& nym = nyms_[nymID];
             nym = api_.Wallet().Nym(nymID);
 
@@ -388,7 +390,7 @@ struct Contact::Imp {
 
         OT_ASSERT(output);
 
-        if (false == primary_nym_->empty()) {
+        if (false == primary_nym_.empty()) {
             try {
                 const auto& primary = nyms_.at(primary_nym_);
 
@@ -493,7 +495,7 @@ auto Contact::operator+=(Contact& rhs) -> Contact&
 
     rhs.imp_->parent_ = imp_->id_;
 
-    if (imp_->primary_nym_->empty()) {
+    if (imp_->primary_nym_.empty()) {
         imp_->primary_nym_ = rhs.imp_->primary_nym_;
     }
 
@@ -843,7 +845,7 @@ auto Contact::ExtractType(const identity::Nym& nym)
     return nym.Claims().Type();
 }
 
-auto Contact::ID() const -> const Identifier& { return imp_->id_; }
+auto Contact::ID() const -> const identifier::Generic& { return imp_->id_; }
 
 auto Contact::Label() const -> const UnallocatedCString&
 {
@@ -888,7 +890,7 @@ auto Contact::LastUpdated() const -> std::time_t
 }
 
 auto Contact::Nyms(const bool includeInactive) const
-    -> UnallocatedVector<opentxs::OTNymID>
+    -> UnallocatedVector<opentxs::identifier::Nym>
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -902,7 +904,7 @@ auto Contact::Nyms(const bool includeInactive) const
 
     if (false == bool(group)) { return {}; }
 
-    UnallocatedVector<OTNymID> output{};
+    UnallocatedVector<identifier::Nym> output{};
     const auto& primaryID = group->Primary();
 
     for (const auto& it : *group) {
@@ -916,10 +918,12 @@ auto Contact::Nyms(const bool includeInactive) const
 
         if (primaryID == itemID) {
             output.emplace(
-                output.begin(), imp_->api_.Factory().NymID(item->Value()));
+                output.begin(),
+                imp_->api_.Factory().NymIDFromBase58(item->Value()));
         } else {
             output.emplace(
-                output.end(), imp_->api_.Factory().NymID(item->Value()));
+                output.end(),
+                imp_->api_.Factory().NymIDFromBase58(item->Value()));
         }
     }
 
@@ -1022,7 +1026,7 @@ auto Contact::Print() const -> UnallocatedCString
         << imp_->version_ << "revision " << imp_->revision_ << "\n"
         << "Label: " << imp_->label_ << "\n";
 
-    if (false == imp_->parent_->empty()) {
+    if (false == imp_->parent_.empty()) {
         out << "Merged to: " << String::Factory(imp_->parent_)->Get() << "\n";
     }
 
@@ -1062,9 +1066,7 @@ auto Contact::RemoveNym(const identifier::Nym& nymID) -> bool
 
     auto result = imp_->nyms_.erase(nymID);
 
-    if (imp_->primary_nym_ == nymID) {
-        imp_->primary_nym_ = imp_->api_.Factory().NymID();
-    }
+    if (imp_->primary_nym_ == nymID) { imp_->primary_nym_ = {}; }
 
     return (0 < result);
 }

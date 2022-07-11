@@ -103,7 +103,8 @@ public:
     auto hasOpenSSL() const noexcept -> bool final;
     auto hasSodium() const noexcept -> bool final;
 
-    auto Init(const api::Factory& factory) noexcept -> void final;
+    auto Init(const std::shared_ptr<const api::Factory>& factory) noexcept
+        -> void final;
 
     Crypto(const api::Settings& settings) noexcept;
     Crypto() = delete;

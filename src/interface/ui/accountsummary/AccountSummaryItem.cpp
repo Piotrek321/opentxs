@@ -18,7 +18,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/display/Definition.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::factory
@@ -46,7 +46,8 @@ AccountSummaryItem::AccountSummaryItem(
     const IssuerItemSortKey& sortKey,
     CustomData& custom) noexcept
     : AccountSummaryItemRow(parent, api, rowID, true)
-    , account_id_(std::get<0>(row_id_).get())
+    , api_(api)
+    , account_id_(std::get<0>(row_id_))
     , currency_(std::get<1>(row_id_))
     , balance_(extract_custom<Amount>(custom))
     , name_(sortKey)
@@ -83,7 +84,7 @@ auto AccountSummaryItem::DisplayBalance() const noexcept -> UnallocatedCString
 
 auto AccountSummaryItem::load_unit(
     const api::Session& api,
-    const Identifier& id) -> OTUnitDefinition
+    const identifier::Generic& id) -> OTUnitDefinition
 {
     try {
         return api.Wallet().UnitDefinition(api.Storage().AccountContract(id));

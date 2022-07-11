@@ -75,6 +75,8 @@ using BalanceItemRow =
 class BalanceItem : public BalanceItemRow
 {
 public:
+    const api::session::Client& api_;
+
     static auto recover_workflow(CustomData& custom) noexcept
         -> const proto::PaymentWorkflow&;
 
@@ -100,7 +102,7 @@ public:
     ~BalanceItem() override;
 
 protected:
-    const OTNymID nym_id_;
+    const identifier::Nym nym_id_;
     const UnallocatedCString workflow_;
     const otx::client::StorageBox type_;
     UnallocatedCString text_;
@@ -123,11 +125,11 @@ protected:
         const AccountActivitySortKey& sortKey,
         CustomData& custom,
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const UnallocatedCString& text = {}) noexcept;
 
 private:
-    const OTIdentifier account_id_;
+    const identifier::Generic account_id_;
     const UnallocatedVector<UnallocatedCString> contacts_;
 
     static auto extract_contacts(

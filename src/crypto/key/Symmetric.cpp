@@ -676,7 +676,8 @@ auto Symmetric::get_plaintext(const Lock& lock) const
     return plaintext_key_;
 }
 
-auto Symmetric::ID(const opentxs::PasswordPrompt& reason) const -> OTIdentifier
+auto Symmetric::ID(const opentxs::PasswordPrompt& reason) const
+    -> identifier::Generic
 {
     auto lock = Lock{lock_};
     auto& plain = get_plaintext(lock);
@@ -686,13 +687,13 @@ auto Symmetric::ID(const opentxs::PasswordPrompt& reason) const -> OTIdentifier
             LogError()(OT_PRETTY_CLASS())("Unable to unlock master key.")
                 .Flush();
 
-            return api_.Factory().Identifier();
+            return identifier::Generic{};
         }
     }
 
     OT_ASSERT(plain.has_value());
 
-    return api_.Factory().Identifier(plain.value()->Bytes());
+    return api_.Factory().IdentifierFromPreimage(plain.value()->Bytes());
 }
 
 auto Symmetric::RawKey(const opentxs::PasswordPrompt& reason, Secret& output)

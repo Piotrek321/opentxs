@@ -27,10 +27,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -72,7 +68,7 @@ class StateMachine final : public opentxs::internal::StateMachine,
 {
 public:
     using BackgroundTask = api::session::OTX::BackgroundTask;
-    using ContextID = std::pair<OTNymID, OTNotaryID>;
+    using ContextID = std::pair<identifier::Nym, identifier::Notary>;
     using Future = api::session::OTX::Future;
     using RefreshTask = std::pair<int, std::promise<void>>;
     using Result = api::session::OTX::Result;
@@ -141,8 +137,8 @@ public:
         std::atomic<TaskID>& nextTaskID,
         const UniqueQueue<CheckNymTask>& missingNyms,
         const UniqueQueue<CheckNymTask>& outdatedNyms,
-        const UniqueQueue<OTNotaryID>& missingServers,
-        const UniqueQueue<OTUnitID>& missingUnitDefinitions,
+        const UniqueQueue<identifier::Notary>& missingServers,
+        const UniqueQueue<identifier::UnitDefinition>& missingUnitDefinitions,
         const PasswordPrompt& reason);
     StateMachine() = delete;
 
@@ -157,8 +153,8 @@ private:
     std::atomic<TaskID>& next_task_id_;
     const UniqueQueue<CheckNymTask>& missing_nyms_;
     const UniqueQueue<CheckNymTask>& outdated_nyms_;
-    const UniqueQueue<OTNotaryID>& missing_servers_;
-    const UniqueQueue<OTUnitID>& missing_unit_definitions_;
+    const UniqueQueue<identifier::Notary>& missing_servers_;
+    const UniqueQueue<identifier::UnitDefinition>& missing_unit_definitions_;
     const OTPasswordPrompt reason_;
     std::unique_ptr<otx::client::internal::Operation> pOp_;
     otx::client::internal::Operation& op_;
@@ -189,17 +185,18 @@ private:
     mutable std::mutex lock_;
     UnallocatedVector<RefreshTask> tasks_;
     mutable State state_;
-    mutable UnallocatedMap<OTNymID, int> unknown_nyms_;
-    mutable UnallocatedMap<OTNotaryID, int> unknown_servers_;
-    mutable UnallocatedMap<OTUnitID, int> unknown_units_;
+    mutable UnallocatedMap<identifier::Nym, int> unknown_nyms_;
+    mutable UnallocatedMap<identifier::Notary, int> unknown_servers_;
+    mutable UnallocatedMap<identifier::UnitDefinition, int> unknown_units_;
 
     static auto task_done(bool done) -> TaskDone
     {
         return done ? TaskDone::yes : TaskDone::no;
     }
 
-    void associate_message_id(const Identifier& messageID, const TaskID taskID)
-        const
+    void associate_message_id(
+        const identifier::Generic& messageID,
+        const TaskID taskID) const
     {
         return parent_.Internal().associate_message_id(messageID, taskID);
     }
@@ -251,7 +248,7 @@ private:
     }
     auto get_admin(const TaskID taskID, const Secret& password) const -> bool;
     auto get_nym_fetch(const identifier::Notary& serverID) const
-        -> UniqueQueue<OTNymID>&
+        -> UniqueQueue<identifier::Nym>&
     {
         return parent_.Internal().get_nym_fetch(serverID);
     }

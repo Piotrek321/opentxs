@@ -31,9 +31,9 @@ struct Group : virtual public verification::Group {
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
 
     virtual void Register(
-        const Identifier& id,
+        const identifier::Generic& id,
         const identifier::Nym& nym) noexcept = 0;
-    virtual void Unregister(const Identifier& id) noexcept = 0;
+    virtual void Unregister(const identifier::Generic& id) noexcept = 0;
     virtual auto UpgradeNymVersion(const VersionNumber nymVersion) noexcept
         -> bool = 0;
 
@@ -59,9 +59,9 @@ struct Set : virtual public verification::Set {
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
 
     virtual void Register(
-        const Identifier& id,
+        const identifier::Generic& id,
         const bool external) noexcept = 0;
-    virtual void Unregister(const Identifier& id) noexcept = 0;
+    virtual void Unregister(const identifier::Generic& id) noexcept = 0;
     virtual auto UpgradeGroupVersion(const VersionNumber groupVersion) noexcept
         -> bool = 0;
 

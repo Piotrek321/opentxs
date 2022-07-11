@@ -27,6 +27,7 @@ namespace proto
 {
 class Authority;
 class ContactData;
+class HDPath;
 class Signature;
 class Verification;
 class VerificationSet;

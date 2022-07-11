@@ -10,8 +10,9 @@
 #include <memory>
 
 #include "internal/interface/ui/UI.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -37,13 +38,14 @@ NymListItem::NymListItem(
     const NymListRowID& rowID,
     const NymListSortKey& key) noexcept
     : NymListItemRow(parent, api, rowID, true)
+    , api_(api)
     , name_(key)
 {
 }
 
 auto NymListItem::NymID() const noexcept -> UnallocatedCString
 {
-    return row_id_->str();
+    return row_id_.asBase58(api_.Crypto());
 }
 
 auto NymListItem::Name() const noexcept -> UnallocatedCString

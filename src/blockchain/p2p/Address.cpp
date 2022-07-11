@@ -174,7 +174,7 @@ auto Address::calculate_id(
     const Network network,
     const ReadView bytes,
     const std::uint16_t port,
-    const blockchain::Type chain) noexcept -> OTIdentifier
+    const blockchain::Type chain) noexcept -> identifier::Generic
 {
     const auto serialized = serialize(
         version,
@@ -186,7 +186,7 @@ auto Address::calculate_id(
         Clock::from_time_t(0),
         {});
 
-    return api.Factory().InternalSession().Identifier(serialized);
+    return api.Factory().InternalSession().IdentifierFromPreimage(serialized);
 }
 
 auto Address::Display() const noexcept -> UnallocatedCString
@@ -218,7 +218,7 @@ auto Address::Display() const noexcept -> UnallocatedCString
             output = api_.Crypto().Encode().DataEncode(bytes_) + ".i2p";
         } break;
         case Network::zmq: {
-            output = bytes_.str();
+            output = bytes_.Bytes();
         } break;
         default: {
             OT_FAIL;
@@ -277,7 +277,7 @@ auto Address::Serialize(SerializedType& output) const noexcept -> bool
         chain_,
         last_connected_,
         services_);
-    output.set_id(id_->str());
+    output.set_id(id_.asBase58(api_.Crypto()));
 
     return true;
 }

@@ -39,6 +39,7 @@ BlockchainSubchain::BlockchainSubchain(
     const BlockchainSubaccountSortKey& sortKey,
     CustomData& custom) noexcept
     : BlockchainSubchainRow(parent, api, rowID, true)
+    , api_(api)
     , name_(sortKey)
     , progress_(extract_custom<UnallocatedCString>(custom, 0))
 {

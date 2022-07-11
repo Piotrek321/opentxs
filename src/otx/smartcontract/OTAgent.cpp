@@ -23,6 +23,9 @@
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -49,8 +52,8 @@
 //
 namespace opentxs
 {
-OTAgent::OTAgent(const api::session::Wallet& wallet)
-    : wallet_{wallet}
+OTAgent::OTAgent(const api::Session& api)
+    : api_(api)
     , m_bNymRepresentsSelf(false)
     , m_bIsAnIndividual(false)
     , m_pNym(nullptr)
@@ -63,14 +66,14 @@ OTAgent::OTAgent(const api::session::Wallet& wallet)
 }
 
 OTAgent::OTAgent(
-    const api::session::Wallet& wallet,
+    const api::Session& api,
     bool bNymRepresentsSelf,
     bool bIsAnIndividual,
     const String& strName,
     const String& strNymID,
     const String& strRoleID,
     const String& strGroupName)
-    : wallet_{wallet}
+    : api_(api)
     , m_bNymRepresentsSelf(bNymRepresentsSelf)
     , m_bIsAnIndividual(bIsAnIndividual)
     , m_pNym(nullptr)
@@ -83,12 +86,12 @@ OTAgent::OTAgent(
 }
 
 OTAgent::OTAgent(
-    const api::session::Wallet& wallet,
+    const api::Session& api,
     const UnallocatedCString& str_agent_name,
     const identity::Nym& theNym,
     const bool bNymRepresentsSelf)
     /*IF false, then: ROLE parameter goes here.*/
-    : wallet_{wallet}
+    : api_(api)
     , m_bNymRepresentsSelf(bNymRepresentsSelf)
     , m_bIsAnIndividual(true)
     , m_pNym(&theNym)
@@ -99,9 +102,9 @@ OTAgent::OTAgent(
     , m_strGroupName(String::Factory())
 {
     // Grab m_strNymID
-    auto theNymID = identifier::Nym::Factory();
+    auto theNymID = identifier::Nym{};
     theNym.GetIdentifier(theNymID);
-    theNymID->GetString(m_strNymID);
+    theNymID.GetString(api_.Crypto(), m_strNymID);
 
     //
 
@@ -183,11 +186,11 @@ auto OTAgent::VerifySignature(const Contract& theContract) const -> bool
 //
 auto OTAgent::LoadNym() -> Nym_p
 {
-    auto theAgentNymID = identifier::Nym::Factory();
+    auto theAgentNymID = identifier::Nym{};
     bool bNymID = GetNymID(theAgentNymID);
 
     if (bNymID) {
-        m_pNym = wallet_.Nym(theAgentNymID);
+        m_pNym = api_.Wallet().Nym(theAgentNymID);
         OT_ASSERT(m_pNym);
 
         return m_pNym;
@@ -343,10 +346,10 @@ auto OTAgent::IsAGroup() const -> bool { return !m_bIsAnIndividual; }
 // (whether he DoesRepresentHimself() or DoesRepresentAnEntity() -- either way).
 // Otherwise if IsGroup(), this returns false.
 //
-auto OTAgent::GetNymID(Identifier& theOutput) const -> bool
+auto OTAgent::GetNymID(identifier::Generic& theOutput) const -> bool
 {
     if (IsAnIndividual()) {
-        theOutput.SetString(m_strNymID);
+        theOutput = api_.Factory().IdentifierFromBase58(m_strNymID->Bytes());
 
         return true;
     }
@@ -358,10 +361,10 @@ auto OTAgent::GetNymID(Identifier& theOutput) const -> bool
 // that Entity. Otherwise, if IsGroup() or DoesRepresentHimself(), then this
 // returns false.
 
-auto OTAgent::GetRoleID(Identifier& theOutput) const -> bool
+auto OTAgent::GetRoleID(identifier::Generic& theOutput) const -> bool
 {
     if (IsAnIndividual() && DoesRepresentAnEntity()) {
-        theOutput.SetString(m_strRoleID);
+        theOutput = api_.Factory().IdentifierFromBase58(m_strRoleID->Bytes());
 
         return true;
     }
@@ -384,7 +387,7 @@ auto OTAgent::GetRoleID(Identifier& theOutput) const -> bool
 // needing that,
 // as part of the script, would also therefore be impossible.
 //
-auto OTAgent::GetSignerID(Identifier& theOutput) const -> bool
+auto OTAgent::GetSignerID(identifier::Generic& theOutput) const -> bool
 {
     // If IsIndividual() and DoesRepresentAnEntity() then this returns
     // GetRoleID().
@@ -406,9 +409,9 @@ auto OTAgent::GetSignerID(Identifier& theOutput) const -> bool
     return false;
 }
 
-auto OTAgent::IsValidSignerID(const Identifier& theNymID) -> bool
+auto OTAgent::IsValidSignerID(const identifier::Generic& theNymID) -> bool
 {
-    auto theAgentNymID = Identifier::Factory();
+    auto theAgentNymID = identifier::Generic{};
     bool bNymID = GetNymID(theAgentNymID);
 
     // If there's a NymID on this agent, and it matches theNymID...
@@ -424,7 +427,7 @@ auto OTAgent::IsValidSignerID(const Identifier& theNymID) -> bool
 //
 auto OTAgent::IsValidSigner(const identity::Nym& theNym) -> bool
 {
-    auto theAgentNymID = identifier::Nym::Factory();
+    auto theAgentNymID = identifier::Nym{};
     bool bNymID = GetNymID(theAgentNymID);
 
     // If there's a NymID on this agent, and it matches theNym's ID...
@@ -465,7 +468,7 @@ auto OTAgent::IsValidSigner(const identity::Nym& theNym) -> bool
 // I'm debating making this function private along with DoesRepresentHimself /
 // DoesRepresentAnEntity().
 //
-auto OTAgent::GetEntityID(Identifier& theOutput) const -> bool
+auto OTAgent::GetEntityID(identifier::Generic& theOutput) const -> bool
 {
     // IF represents an entity, then this is its ID. Else fail.
     //
@@ -477,7 +480,8 @@ auto OTAgent::GetEntityID(Identifier& theOutput) const -> bool
 
         if (bSuccessEntityID && (str_entity_id.size() > 0)) {
             auto strEntityID = String::Factory(str_entity_id.c_str());
-            theOutput.SetString(strEntityID);
+            theOutput =
+                api_.Factory().IdentifierFromBase58(strEntityID->Bytes());
 
             return true;
         }
@@ -530,7 +534,7 @@ auto OTAgent::GetGroupName(String& strGroupName) -> bool
 
 // PARTY is either a NYM or an ENTITY. This returns ID for that Nym or Entity.
 //
-auto OTAgent::GetPartyID(Identifier& theOutput) const -> bool
+auto OTAgent::GetPartyID(identifier::Generic& theOutput) const -> bool
 {
     if (DoesRepresentHimself()) { return GetNymID(theOutput); }
 
@@ -539,7 +543,7 @@ auto OTAgent::GetPartyID(Identifier& theOutput) const -> bool
 
 auto OTAgent::VerifyAgencyOfAccount(const Account& theAccount) const -> bool
 {
-    auto theSignerID = identifier::Nym::Factory();
+    auto theSignerID = identifier::Nym{};
 
     if (!GetSignerID(theSignerID)) {
         LogError()(OT_PRETTY_CLASS())("ERROR: Entities and roles "
@@ -559,7 +563,7 @@ auto OTAgent::VerifyAgencyOfAccount(const Account& theAccount) const -> bool
 auto OTAgent::DropFinalReceiptToInbox(
     const String& strNotaryID,
     OTSmartContract& theSmartContract,
-    const Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const std::int64_t& lNewTransactionNumber,
     const std::int64_t& lClosingNumber,
     const String& strOrigCronItem,
@@ -570,7 +574,7 @@ auto OTAgent::DropFinalReceiptToInbox(
     // TODO: When entites and ROLES are added, this function may change a bit to
     // accommodate them.
 
-    auto theAgentNymID = identifier::Nym::Factory();
+    auto theAgentNymID = identifier::Nym{};
     bool bNymID = GetNymID(theAgentNymID);
 
     // Not all agents have Nyms. (Might be a voting group.) But in the case of
@@ -580,7 +584,7 @@ auto OTAgent::DropFinalReceiptToInbox(
     if (bNymID) {
         // IsAnIndividual() is definitely true.
 
-        auto context = wallet_.ClientContext(theAgentNymID);
+        auto context = api_.Wallet().ClientContext(theAgentNymID);
 
         OT_ASSERT(context);
 
@@ -620,7 +624,7 @@ auto OTAgent::DropFinalReceiptToNymbox(
     OTString pstrNote,
     OTString pstrAttachment) -> bool
 {
-    auto theAgentNymID = identifier::Nym::Factory();
+    auto theAgentNymID = identifier::Nym{};
     bool bNymID = GetNymID(theAgentNymID);
 
     // Not all agents have Nyms. (Might be a voting group.)
@@ -657,7 +661,7 @@ auto OTAgent::DropServerNoticeToNymbox(
     OTString pstrAttachment,
     identity::Nym* pActualNym) -> bool
 {
-    auto theAgentNymID = identifier::Nym::Factory();
+    auto theAgentNymID = identifier::Nym{};
     bool bNymID = GetNymID(theAgentNymID);
 
     // Not all agents have Nyms. (Might be a voting group.)
@@ -720,8 +724,9 @@ auto OTAgent::VerifyIssuedNumber(
     }
 
     if (nullptr != m_pNym) {
-        auto context = wallet_.Context(
-            identifier::Notary::Factory(strNotaryID), m_pNym->ID());
+        auto context = api_.Wallet().Context(
+            api_.Factory().NotaryIDFromBase58(strNotaryID.Bytes()),
+            m_pNym->ID());
 
         OT_ASSERT(context);
 
@@ -749,8 +754,9 @@ auto OTAgent::VerifyTransactionNumber(
     }
 
     if (nullptr != m_pNym) {
-        auto context = wallet_.Context(
-            identifier::Notary::Factory(strNotaryID), m_pNym->ID());
+        auto context = api_.Wallet().Context(
+            api_.Factory().NotaryIDFromBase58(strNotaryID.Bytes()),
+            m_pNym->ID());
 
         OT_ASSERT(context);
 
@@ -814,8 +820,10 @@ auto OTAgent::RecoverTransactionNumber(
     const PasswordPrompt& reason) -> bool
 {
     if (nullptr != m_pNym) {
-        auto context = wallet_.Internal().mutable_Context(
-            identifier::Notary::Factory(strNotaryID), m_pNym->ID(), reason);
+        auto context = api_.Wallet().Internal().mutable_Context(
+            api_.Factory().NotaryIDFromBase58(strNotaryID.Bytes()),
+            m_pNym->ID(),
+            reason);
 
         return RecoverTransactionNumber(lNumber, context.get());
     } else {
@@ -852,8 +860,10 @@ auto OTAgent::RemoveTransactionNumber(
         return false;
     }
 
-    auto context = wallet_.Internal().mutable_Context(
-        identifier::Notary::Factory(strNotaryID), m_pNym->ID(), reason);
+    auto context = api_.Wallet().Internal().mutable_Context(
+        api_.Factory().NotaryIDFromBase58(strNotaryID.Bytes()),
+        m_pNym->ID(),
+        reason);
 
     if (context.get().ConsumeAvailable(lNumber)) {
         context.get().OpenCronItem(lNumber);
@@ -895,8 +905,10 @@ auto OTAgent::RemoveIssuedNumber(
         return false;
     }
 
-    auto context = wallet_.Internal().mutable_Context(
-        identifier::Notary::Factory(strNotaryID), m_pNym->ID(), reason);
+    auto context = api_.Wallet().Internal().mutable_Context(
+        api_.Factory().NotaryIDFromBase58(strNotaryID.Bytes()),
+        m_pNym->ID(),
+        reason);
 
     if (context.get().ConsumeIssued(lNumber)) {
         context.get().CloseCronItem(lNumber);

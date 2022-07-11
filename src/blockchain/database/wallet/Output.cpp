@@ -55,6 +55,7 @@
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -103,8 +104,8 @@ public:
     }
     auto GetBalance(const crypto::Key& key) const noexcept -> Balance
     {
-        static const auto owner = api_.Factory().NymID();
-        static const auto node = api_.Factory().Identifier();
+        static const auto owner = identifier::Nym{};
+        static const auto node = identifier::Generic{};
 
         return get_balance(*lock_shared(), owner, node, &key);
     }
@@ -141,7 +142,7 @@ public:
     }
     auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& node,
+        const identifier::Generic& node,
         node::TxoState type,
         alloc::Default alloc) const noexcept -> Vector<UTXO>
     {
@@ -212,7 +213,7 @@ public:
     }
     auto GetUnspentOutputs(alloc::Default alloc) const noexcept -> Vector<UTXO>
     {
-        static const auto blank = api_.Factory().Identifier();
+        static const auto blank = identifier::Generic{};
 
         return GetUnspentOutputs(blank, alloc);
     }
@@ -338,7 +339,7 @@ public:
             txoConsumed);
     }
     auto AddOutgoingTransaction(
-        const Identifier& proposalID,
+        const identifier::Generic& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const bitcoin::block::Transaction& transaction) noexcept -> bool
     {
@@ -422,7 +423,8 @@ public:
 
                         const auto& key = keys.at(0);
                         const auto& [nodeID, subchain, index] = key;
-                        auto accountID = api_.Factory().Identifier(nodeID);
+                        auto accountID =
+                            api_.Factory().IdentifierFromBase58(nodeID);
                         auto subchainID =
                             subchain_.GetSubchainID(accountID, subchain, tx);
 
@@ -453,8 +455,8 @@ public:
             }
 
             for (const auto& outpoint : pending) {
-                LogVerbose()(OT_PRETTY_CLASS())("proposal ")(proposalID.str())(
-                    " created outpoint ")(outpoint.str())
+                LogVerbose()(OT_PRETTY_CLASS())("proposal ")(
+                    proposalID)(" created outpoint ")(outpoint)
                     .Flush();
                 auto rc = lmdb_
                               .Store(
@@ -592,7 +594,7 @@ public:
             return false;
         }
     }
-    auto CancelProposal(const Identifier& id) noexcept -> bool
+    auto CancelProposal(const identifier::Generic& id) noexcept -> bool
     {
         auto handle = lock();
         auto& cache = *handle;
@@ -668,7 +670,7 @@ public:
                 }
             } else {
                 LogError()(OT_PRETTY_CLASS())("Warning: spent index for ")(
-                    id.str())(" already removed")
+                    id)(" already removed")
                     .Flush();
             }
 
@@ -681,7 +683,7 @@ public:
                 }
             } else {
                 LogError()(OT_PRETTY_CLASS())("Warning: created index for ")(
-                    id.str())(" already removed")
+                    id)(" already removed")
                     .Flush();
             }
 
@@ -786,7 +788,7 @@ public:
 
     auto ReserveUTXO(
         const identifier::Nym& spender,
-        const Identifier& id,
+        const identifier::Generic& id,
         node::internal::SpendPolicy& policy) noexcept -> std::optional<UTXO>
     {
         auto output = std::optional<UTXO>{std::nullopt};
@@ -840,8 +842,8 @@ public:
                         "Failed to update outpoint proposal index"};
                 }
 
-                LogVerbose()(OT_PRETTY_CLASS())("proposal ")(id.str())(
-                    " consumed outpoint ")(outpoint.str())
+                LogVerbose()(OT_PRETTY_CLASS())("proposal ")(
+                    id)(" consumed outpoint ")(outpoint)
                     .Flush();
 
                 return output;
@@ -1060,7 +1062,7 @@ private:
     [[nodiscard]] auto get_balance(const OutputCache& cache) const noexcept
         -> Balance
     {
-        static const auto blank = api_.Factory().NymID();
+        static const auto blank = identifier::Nym{};
 
         return get_balance(cache, blank);
     }
@@ -1068,7 +1070,7 @@ private:
         const OutputCache& cache,
         const identifier::Nym& owner) const noexcept -> Balance
     {
-        static const auto blank = api_.Factory().Identifier();
+        static const auto blank = identifier::Generic{};
 
         return get_balance(cache, owner, blank, nullptr);
     }
@@ -1413,22 +1415,21 @@ private:
 
                 return change_state(cache, tx, id, existing, newState, blank_);
             } else if (state == newState) {
-                LogVerbose()(OT_PRETTY_CLASS())("Warning: outpoint ")(id.str())(
-                    " already in desired state: ")(print(newState))
+                LogVerbose()(OT_PRETTY_CLASS())("Warning: outpoint ")(
+                    id)(" already in desired state: ")(print(newState))
                     .Flush();
 
                 return true;
             } else {
                 LogError()(OT_PRETTY_CLASS())("incorrect state for outpoint ")(
-                    id.str())(". Expected: ")(print(oldState))(", actual: ")(
+                    id)(". Expected: ")(print(oldState))(", actual: ")(
                     print(state))
                     .Flush();
 
                 return false;
             }
         } else {
-            LogError()(OT_PRETTY_CLASS())("outpoint ")(id.str())(
-                " does not exist")
+            LogError()(OT_PRETTY_CLASS())("outpoint ")(id)(" does not exist")
                 .Flush();
 
             return false;
@@ -1446,8 +1447,7 @@ private:
 
             return change_state(cache, tx, id, output, newState, newPosition);
         } else {
-            LogError()(OT_PRETTY_CLASS())("outpoint ")(id.str())(
-                " does not exist")
+            LogError()(OT_PRETTY_CLASS())("outpoint ")(id)(" does not exist")
                 .Flush();
 
             return false;
@@ -1509,14 +1509,14 @@ private:
         const block::Outpoint& outpoint,
         const block::Position& block,
         const block::Txid& txid,
-        UnallocatedSet<OTIdentifier>& processed) noexcept -> bool
+        UnallocatedSet<identifier::Generic>& processed) noexcept -> bool
     {
         if (-1 == block.height_) { return true; }
 
-        auto oProposalID = std::optional<OTIdentifier>{};
+        auto oProposalID = std::optional<identifier::Generic>{};
 
         lmdb_.Load(output_proposal_, outpoint.Bytes(), [&](const auto bytes) {
-            auto& id = oProposalID.emplace(api_.Factory().Identifier()).get();
+            auto& id = oProposalID.emplace(identifier::Generic{});
             id.Assign(bytes);
 
             if (id.empty()) { oProposalID = std::nullopt; }
@@ -1524,7 +1524,7 @@ private:
 
         if (false == oProposalID.has_value()) { return true; }
 
-        const auto& proposalID = oProposalID.value().get();
+        const auto& proposalID = oProposalID.value();
 
         if (0u < processed.count(proposalID)) { return true; }
 
@@ -1558,12 +1558,12 @@ private:
                     change_state(cache, tx, outpoint, state, block);
 
                 if (changed) {
-                    LogTrace()(OT_PRETTY_CLASS())("Updated ")(outpoint.str())(
-                        " to state ")(print(state))
+                    LogTrace()(OT_PRETTY_CLASS())("Updated ")(
+                        outpoint)(" to state ")(print(state))
                         .Flush();
                 } else {
                     LogError()(OT_PRETTY_CLASS())("Failed to update ")(
-                        outpoint.str())(" to state ")(print(state))
+                        outpoint)(" to state ")(print(state))
                         .Flush();
 
                     return false;
@@ -1575,12 +1575,12 @@ private:
 
             if (rc) {
                 LogTrace()(OT_PRETTY_CLASS())("Deleted index for proposal ")(
-                    proposalID.str())(" to created output ")(newOutpoint.str())
+                    proposalID)(" to created output ")(newOutpoint)
                     .Flush();
             } else {
                 LogError()(OT_PRETTY_CLASS())(
-                    "Failed to delete index for proposal ")(proposalID.str())(
-                    " to created output ")(newOutpoint.str())
+                    "Failed to delete index for proposal ")(
+                    proposalID)(" to created output ")(newOutpoint)
                     .Flush();
 
                 return false;
@@ -1590,13 +1590,13 @@ private:
 
             if (rc) {
                 LogTrace()(OT_PRETTY_CLASS())(
-                    "Deleted index for created outpoint ")(newOutpoint.str())(
-                    " to proposal ")(proposalID.str())
+                    "Deleted index for created outpoint ")(
+                    newOutpoint)(" to proposal ")(proposalID)
                     .Flush();
             } else {
                 LogError()(OT_PRETTY_CLASS())(
                     "Failed to delete index for created outpoint ")(
-                    newOutpoint.str())(" to proposal ")(proposalID.str())
+                    newOutpoint)(" to proposal ")(proposalID)
                     .Flush();
 
                 return false;
@@ -1609,13 +1609,12 @@ private:
 
             if (rc) {
                 LogTrace()(OT_PRETTY_CLASS())("Delete index for proposal ")(
-                    proposalID.str())(" to consumed output ")(
-                    spentOutpoint.str())
+                    proposalID)(" to consumed output ")(spentOutpoint)
                     .Flush();
             } else {
                 LogError()(OT_PRETTY_CLASS())(
-                    "Failed to delete index for proposal ")(proposalID.str())(
-                    " to consumed output ")(spentOutpoint.str())
+                    "Failed to delete index for proposal ")(
+                    proposalID)(" to consumed output ")(spentOutpoint)
                     .Flush();
 
                 return false;
@@ -1626,12 +1625,12 @@ private:
             if (rc) {
                 LogTrace()(OT_PRETTY_CLASS())(
                     "Deleted index for consumed outpoint ")(
-                    spentOutpoint.str())(" to proposal ")(proposalID.str())
+                    spentOutpoint)(" to proposal ")(proposalID)
                     .Flush();
             } else {
                 LogError()(OT_PRETTY_CLASS())(
                     "Failed to delete index for consumed outpoint ")(
-                    spentOutpoint.str())(" to proposal ")(proposalID.str())
+                    spentOutpoint)(" to proposal ")(proposalID)
                     .Flush();
 
                 return false;
@@ -1751,7 +1750,7 @@ private:
         OutputCache& cache,
         storage::lmdb::LMDB::Transaction& tx) noexcept(false) -> void
     {
-        auto proposals = UnallocatedSet<OTIdentifier>{};
+        auto proposals = UnallocatedSet<identifier::Generic>{};
 
         for (const auto& input : inputTx.Inputs()) {
             const auto& outpoint = input.PreviousOutput();
@@ -1922,7 +1921,7 @@ auto Output::AddMempoolTransaction(
 }
 
 auto Output::AddOutgoingTransaction(
-    const Identifier& proposalID,
+    const identifier::Generic& proposalID,
     const proto::BlockchainTransactionProposal& proposal,
     const bitcoin::block::Transaction& transaction) noexcept -> bool
 {
@@ -1934,7 +1933,7 @@ auto Output::AdvanceTo(const block::Position& pos) noexcept -> bool
     return imp_->AdvanceTo(pos);
 }
 
-auto Output::CancelProposal(const Identifier& id) noexcept -> bool
+auto Output::CancelProposal(const identifier::Generic& id) noexcept -> bool
 {
     return imp_->CancelProposal(id);
 }
@@ -2046,7 +2045,7 @@ auto Output::PublishBalance() const noexcept -> void { imp_->PublishBalance(); }
 
 auto Output::ReserveUTXO(
     const identifier::Nym& spender,
-    const Identifier& proposal,
+    const identifier::Generic& proposal,
     node::internal::SpendPolicy& policy) noexcept -> std::optional<UTXO>
 {
     return imp_->ReserveUTXO(spender, proposal, policy);

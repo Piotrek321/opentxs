@@ -88,7 +88,7 @@ Secondary::Secondary(
           version,
           identity::CredentialRole::ChildKey,
           reason,
-          get_master_id(master))
+          get_master_id(api, master))
 {
     {
         Lock lock(lock_);
@@ -109,7 +109,7 @@ Secondary::Secondary(
           owner,
           source,
           serialized,
-          get_master_id(serialized, master))
+          get_master_id(api, serialized, master))
 {
     Lock lock(lock_);
     init_serialized(lock);

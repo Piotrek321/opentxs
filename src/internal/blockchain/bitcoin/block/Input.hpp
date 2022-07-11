@@ -14,8 +14,6 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/bitcoin/block/Input.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -39,6 +37,11 @@ class Script;
 }  // namespace bitcoin
 }  // namespace blockchain
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 class Amount;
 class Log;
 // }  // namespace v1
@@ -55,9 +58,10 @@ public:
     using Signatures = UnallocatedVector<Signature>;
 
     virtual auto AssociatedLocalNyms(
-        UnallocatedVector<OTNymID>& output) const noexcept -> void = 0;
+        UnallocatedVector<identifier::Nym>& output) const noexcept -> void = 0;
     virtual auto AssociatedRemoteContacts(
-        UnallocatedVector<OTIdentifier>& output) const noexcept -> void = 0;
+        UnallocatedVector<identifier::Generic>& output) const noexcept
+        -> void = 0;
     virtual auto CalculateSize(const bool normalized = false) const noexcept
         -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Input> = 0;

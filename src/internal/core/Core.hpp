@@ -18,7 +18,6 @@
 #include "internal/otx/common/NymFile.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -34,12 +33,12 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 class UnitDefinition;
 }  // namespace identifier
 
-class Identifier;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1

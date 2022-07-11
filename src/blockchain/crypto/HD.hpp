@@ -24,7 +24,6 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Container.hpp"
@@ -54,13 +53,17 @@ class HD;
 }  // namespace crypto
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class HDAccount;
 class HDPath;
 }  // namespace proto
 
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -90,12 +93,12 @@ public:
        const proto::HDPath& path,
        const HDProtocol standard,
        const PasswordPrompt& reason,
-       Identifier& id)
+       identifier::Generic& id)
     noexcept(false);
     HD(const api::Session& api,
        const crypto::Account& parent,
        const SerializedType& serialized,
-       Identifier& id)
+       identifier::Generic& id)
     noexcept(false);
     HD(const HD&) = delete;
     HD(HD&&) = delete;

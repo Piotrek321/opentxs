@@ -12,14 +12,24 @@
 namespace opentxs::api::imp
 {
 auto Log::print(
-    const int level,
-    const UnallocatedCString& text,
-    const UnallocatedCString& thread) noexcept -> void
+    const int,
+    const Console console,
+    const std::string_view text,
+    const std::string_view thread) noexcept -> void
 {
-    if (false == text.empty()) {
-        std::cerr << "(" << thread << ") ";
-        std::cerr << text << std::endl;
-        std::cerr.flush();
+    auto& out = [&]() -> auto&
+    {
+        if (Console::err == console) {
+
+            return std::cerr;
+        } else {
+
+            return std::cout;
+        }
     }
+    ();
+    out << "(" << thread << ") ";
+    out << text << '\n';
+    out.flush();
 }
 }  // namespace opentxs::api::imp

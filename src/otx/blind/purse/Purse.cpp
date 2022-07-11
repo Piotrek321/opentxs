@@ -9,7 +9,6 @@
 
 #include <utility>
 
-#include "internal/core/identifier/Factory.hpp"
 #include "internal/crypto/key/Null.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -37,9 +36,9 @@ auto Purse::Imp::at(const std::size_t) -> Token&
 
 auto Purse::Imp::Notary() const -> const identifier::Notary&
 {
-    static const auto id = factory::IdentifierNotary();
+    static const auto id = identifier::Notary{};
 
-    return *id;
+    return id;
 }
 
 auto Purse::Imp::PrimaryKey(PasswordPrompt&) -> crypto::key::Symmetric&
@@ -59,9 +58,9 @@ auto Purse::Imp::SecondaryKey(const identity::Nym&, PasswordPrompt&)
 
 auto Purse::Imp::Unit() const -> const identifier::UnitDefinition&
 {
-    static const auto id = factory::IdentifierUnit();
+    static const auto id = identifier::UnitDefinition{};
 
-    return *id;
+    return id;
 }
 
 auto Purse::Imp::Value() const -> const Amount&

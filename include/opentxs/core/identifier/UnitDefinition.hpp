@@ -7,10 +7,12 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <functional>
+#include <string_view>
 
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Allocated.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -21,8 +23,6 @@ namespace identifier
 {
 class UnitDefinition;
 }  // namespace identifier
-
-using OTUnitID = Pimpl<identifier::UnitDefinition>;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -30,64 +30,34 @@ using OTUnitID = Pimpl<identifier::UnitDefinition>;
 namespace std
 {
 template <>
-struct OPENTXS_EXPORT hash<opentxs::OTUnitID> {
+struct OPENTXS_EXPORT hash<opentxs::identifier::UnitDefinition> {
     auto operator()(const opentxs::identifier::UnitDefinition& data)
         const noexcept -> std::size_t;
 };
 
 template <>
-struct OPENTXS_EXPORT less<opentxs::OTUnitID> {
-    auto operator()(const opentxs::OTUnitID& lhs, const opentxs::OTUnitID& rhs)
-        const -> bool;
+struct OPENTXS_EXPORT less<opentxs::identifier::UnitDefinition> {
+    auto operator()(
+        const opentxs::identifier::UnitDefinition& lhs,
+        const opentxs::identifier::UnitDefinition& rhs) const -> bool;
 };
 }  // namespace std
 
-namespace opentxs
-{
-OPENTXS_EXPORT auto operator==(
-    const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator!=(
-    const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator<(
-    const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator>(
-    const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator<=(
-    const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator>=(
-    const OTUnitID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-}  // namespace opentxs
-
 namespace opentxs::identifier
 {
-class OPENTXS_EXPORT UnitDefinition : virtual public opentxs::Identifier
+class OPENTXS_EXPORT UnitDefinition : virtual public identifier::Generic
 {
 public:
-    static auto Factory() -> OTUnitID;
-    static auto Factory(const UnallocatedCString& rhs) -> OTUnitID;
-    static auto Factory(const String& rhs) -> OTUnitID;
+    OPENTXS_NO_EXPORT UnitDefinition(Imp* imp) noexcept;
+    UnitDefinition(allocator_type alloc = {}) noexcept;
+    UnitDefinition(
+        const UnitDefinition& rhs,
+        allocator_type alloc = {}) noexcept;
+    UnitDefinition(UnitDefinition&& rhs) noexcept;
+    UnitDefinition(UnitDefinition&& rhs, allocator_type alloc) noexcept;
+    auto operator=(const UnitDefinition& rhs) noexcept -> UnitDefinition&;
+    auto operator=(UnitDefinition&& rhs) noexcept -> UnitDefinition&;
 
-    UnitDefinition(const UnitDefinition&) = delete;
-    UnitDefinition(UnitDefinition&&) = delete;
-    auto operator=(const UnitDefinition&) -> UnitDefinition& = delete;
-    auto operator=(UnitDefinition&&) -> UnitDefinition& = delete;
-
-    ~UnitDefinition() override = default;
-
-protected:
-    UnitDefinition() = default;
-
-private:
-    friend OTUnitID;
-
-#ifndef _WIN32
-    auto clone() const -> UnitDefinition* override = 0;
-#endif
+    ~UnitDefinition() override;
 };
 }  // namespace opentxs::identifier

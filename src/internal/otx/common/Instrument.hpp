@@ -52,8 +52,8 @@ public:
     ~Instrument() override;
 
 protected:
-    OTUnitID m_InstrumentDefinitionID;
-    OTNotaryID m_NotaryID;
+    identifier::UnitDefinition m_InstrumentDefinitionID;
+    identifier::Notary m_NotaryID;
     // Expiration Date (valid from/to date)
     // The date, in seconds, when the instrument is valid FROM.
     Time m_VALID_FROM;

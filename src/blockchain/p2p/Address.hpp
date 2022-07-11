@@ -45,7 +45,7 @@ public:
     auto Bytes() const noexcept -> ByteArray final { return bytes_; }
     auto Chain() const noexcept -> blockchain::Type final { return chain_; }
     auto Display() const noexcept -> UnallocatedCString final;
-    auto ID() const noexcept -> const Identifier& final { return id_; }
+    auto ID() const noexcept -> const identifier::Generic& final { return id_; }
     auto Incoming() const noexcept -> bool final { return incoming_; }
     auto LastConnected() const noexcept -> Time final
     {
@@ -107,7 +107,7 @@ public:
 private:
     const api::Session& api_;
     const VersionNumber version_;
-    const OTIdentifier id_;
+    const identifier::Generic id_;
     const Protocol protocol_;
     const Network network_;
     const ByteArray bytes_;
@@ -126,7 +126,7 @@ private:
         const Network network,
         const ReadView bytes,
         const std::uint16_t port,
-        const blockchain::Type chain) noexcept -> OTIdentifier;
+        const blockchain::Type chain) noexcept -> identifier::Generic;
     static auto serialize(
         const VersionNumber version,
         const Protocol protocol,

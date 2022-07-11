@@ -15,7 +15,6 @@
 #include "Proto.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/storage/tree/Node.hpp"
@@ -25,6 +24,21 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class Bip47Channel;
@@ -36,8 +50,6 @@ namespace storage
 class Driver;
 class Nym;
 }  // namespace storage
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -47,18 +59,19 @@ namespace opentxs::storage
 class Bip47Channels final : public Node
 {
 public:
-    using ChannelList = UnallocatedSet<OTIdentifier>;
+    using ChannelList = UnallocatedSet<identifier::Generic>;
 
-    auto Chain(const Identifier& channelID) const -> UnitType;
+    auto Chain(const identifier::Generic& channelID) const -> UnitType;
     auto ChannelsByChain(const UnitType chain) const -> ChannelList;
     auto Load(
-        const Identifier& id,
+        const identifier::Generic& id,
         std::shared_ptr<proto::Bip47Channel>& output,
         const bool checking) const -> bool;
 
     auto Delete(const UnallocatedCString& id) -> bool;
-    auto Store(const Identifier& channelID, const proto::Bip47Channel& data)
-        -> bool;
+    auto Store(
+        const identifier::Generic& channelID,
+        const proto::Bip47Channel& data) -> bool;
 
     Bip47Channels() = delete;
     Bip47Channels(const Bip47Channels&) = delete;
@@ -74,7 +87,7 @@ private:
     /** chain */
     using ChannelData = UnitType;
     /** channel id, channel data */
-    using ChannelIndex = UnallocatedMap<OTIdentifier, ChannelData>;
+    using ChannelIndex = UnallocatedMap<identifier::Generic, ChannelData>;
     using ChainIndex = UnallocatedMap<UnitType, ChannelList>;
 
     mutable std::shared_mutex index_lock_;
@@ -85,17 +98,21 @@ private:
     auto extract_set(const I& id, const V& index) const ->
         typename V::mapped_type;
     template <typename L>
-    auto get_channel_data(const L& lock, const Identifier& id) const
+    auto get_channel_data(const L& lock, const identifier::Generic& id) const
         -> const ChannelData&;
     auto index(
         const eLock& lock,
-        const Identifier& id,
+        const identifier::Generic& id,
         const proto::Bip47Channel& data) -> void;
     auto init(const UnallocatedCString& hash) -> void final;
     auto repair_indices() noexcept -> void;
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageBip47Contexts;
 
-    Bip47Channels(const Driver& storage, const UnallocatedCString& hash);
+    Bip47Channels(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

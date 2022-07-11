@@ -14,8 +14,6 @@
 #include "internal/otx/common/NumList.hpp"
 #include "internal/otx/common/transaction/Helpers.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -27,10 +25,10 @@ namespace opentxs
 // constructors and therefore provide the requisite IDs.
 OTTransactionType::OTTransactionType(const api::Session& api)
     : Contract(api)
-    , m_AcctID(api.Factory().Identifier())
-    , m_NotaryID(api.Factory().ServerID())
-    , m_AcctNotaryID(api.Factory().ServerID())
-    , m_AcctNymID(api.Factory().NymID())
+    , m_AcctID()
+    , m_NotaryID()
+    , m_AcctNotaryID()
+    , m_AcctNymID()
     , m_lTransactionNum(0)
     , m_lInReferenceToTransaction(0)
     , m_lNumberOfOrigin(0)
@@ -48,13 +46,13 @@ OTTransactionType::OTTransactionType(const api::Session& api)
 OTTransactionType::OTTransactionType(
     const api::Session& api,
     const identifier::Nym& theNymID,
-    const Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID,
     originType theOriginType)
     : Contract(api, theAccountID)
-    , m_AcctID(api.Factory().Identifier())
+    , m_AcctID()
     , m_NotaryID(theNotaryID)
-    , m_AcctNotaryID(api.Factory().ServerID())
+    , m_AcctNotaryID()
     , m_AcctNymID(theNymID)
     , m_lTransactionNum(0)
     , m_lInReferenceToTransaction(0)
@@ -71,14 +69,14 @@ OTTransactionType::OTTransactionType(
 OTTransactionType::OTTransactionType(
     const api::Session& api,
     const identifier::Nym& theNymID,
-    const Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID,
     std::int64_t lTransactionNum,
     originType theOriginType)
     : Contract(api, theAccountID)
-    , m_AcctID(api.Factory().Identifier())
+    , m_AcctID()
     , m_NotaryID(theNotaryID)
-    , m_AcctNotaryID(api.Factory().ServerID())
+    , m_AcctNotaryID()
     , m_AcctNymID(theNymID)
     , m_lTransactionNum(lTransactionNum)
     , m_lInReferenceToTransaction(0)
@@ -162,15 +160,15 @@ void OTTransactionType::Release_TransactionType()
     // If there were any dynamically allocated objects, clean them up here.
 
     //  m_ID.Release();
-    m_AcctID->clear();  // Compare m_AcctID to m_ID after loading it from
-                        // string
-                        // or file. They should match, and signature should
-                        // verify.
+    m_AcctID.clear();  // Compare m_AcctID to m_ID after loading it from
+                       // string
+                       // or file. They should match, and signature should
+                       // verify.
 
     //  m_NotaryID->Release(); // Notary ID as used to instantiate the
     //  transaction, based on expected NotaryID.
-    m_AcctNotaryID->clear();  // Actual NotaryID within the signed portion.
-                              // (Compare to m_NotaryID upon loading.)
+    m_AcctNotaryID.clear();  // Actual NotaryID within the signed portion.
+                             // (Compare to m_NotaryID upon loading.)
 
     //  m_AcctNymID->Release();
 

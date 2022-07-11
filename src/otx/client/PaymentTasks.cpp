@@ -13,6 +13,7 @@
 #include <tuple>
 #include <utility>
 
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/Cheque.hpp"
@@ -22,7 +23,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "otx/client/DepositPayment.hpp"
 
 namespace opentxs::otx::client::implementation
@@ -86,9 +86,9 @@ auto PaymentTasks::GetAccountLock(const identifier::UnitDefinition& unit)
 }
 
 auto PaymentTasks::get_payment_id(const OTPayment& payment) const
-    -> OTIdentifier
+    -> identifier::Generic
 {
-    auto output = Identifier::Factory();
+    auto output = identifier::Generic{};
 
     switch (payment.GetType()) {
         case OTPayment::CHEQUE: {
@@ -106,7 +106,7 @@ auto PaymentTasks::get_payment_id(const OTPayment& payment) const
                 return output;
             }
 
-            output = Identifier::Factory(cheque);
+            output = parent_.api().Factory().Internal().Identifier(cheque);
 
             return output;
         }

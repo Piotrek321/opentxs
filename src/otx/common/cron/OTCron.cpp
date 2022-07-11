@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
@@ -30,6 +31,7 @@
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -60,7 +62,7 @@ OTCron::OTCron(const api::Session& server)
     , m_mapMarkets()
     , m_mapCronItems()
     , m_multimapCronItems()
-    , m_NOTARY_ID(api_.Factory().ServerID())
+    , m_NOTARY_ID()
     , m_listTransactionNumbers()
     , m_bIsActivated(false)
     , m_pServerNym(nullptr)  // just here for convenience, not responsible to
@@ -216,7 +218,7 @@ auto OTCron::GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount)
             dynamic_cast<OTDB::MarketData*>(
                 OTDB::CreateObject(OTDB::STORED_OBJ_MARKET_DATA)));
 
-        const auto MARKET_ID = Identifier::Factory(*pMarket);
+        const auto MARKET_ID = api_.Factory().Internal().Identifier(*pMarket);
         const auto str_MARKET_ID = String::Factory(MARKET_ID);
         const auto str_NotaryID = String::Factory(pMarket->GetNotaryID());
         const auto str_INSTRUMENT_DEFINITION_ID =
@@ -396,7 +398,7 @@ auto OTCron::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         const auto strNotaryID =
             String::Factory(xml->getAttributeValue("notaryID"));
 
-        m_NOTARY_ID->SetString(strNotaryID);
+        m_NOTARY_ID = api_.Factory().NotaryIDFromBase58(strNotaryID->Bytes());
 
         LogConsole()(OT_PRETTY_CLASS())("Loading OTCron for NotaryID: ")(
             strNotaryID)(".")
@@ -498,9 +500,10 @@ auto OTCron::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         const std::int64_t lScale =
             String::StringToLong(xml->getAttributeValue("marketScale"));
 
-        const auto INSTRUMENT_DEFINITION_ID =
-                       api_.Factory().UnitID(strInstrumentDefinitionID),
-                   CURRENCY_ID = api_.Factory().UnitID(strCurrencyID);
+        const auto INSTRUMENT_DEFINITION_ID = api_.Factory().UnitIDFromBase58(
+                       strInstrumentDefinitionID->Bytes()),
+                   CURRENCY_ID =
+                       api_.Factory().UnitIDFromBase58(strCurrencyID->Bytes());
 
         LogDetail()(OT_PRETTY_CLASS())("Loaded cron entry for Market: ")(
             strMarketID)(".")
@@ -558,7 +561,7 @@ void OTCron::UpdateContents(const PasswordPrompt& reason)
         auto pMarket = it.second;
         OT_ASSERT(false != bool(pMarket));
 
-        auto MARKET_ID = Identifier::Factory(*pMarket);
+        auto MARKET_ID = api_.Factory().Internal().Identifier(*pMarket);
         auto str_MARKET_ID = String::Factory(MARKET_ID);
 
         auto str_INSTRUMENT_DEFINITION_ID =
@@ -1002,7 +1005,7 @@ auto OTCron::AddMarket(
     theMarket->SetCronPointer(*this);  // This way every Market has a pointer to
                                        // Cron.
 
-    auto MARKET_ID = Identifier::Factory(*theMarket);
+    auto MARKET_ID = api_.Factory().Internal().Identifier(*theMarket);
     auto str_MARKET_ID = String::Factory(MARKET_ID);
     UnallocatedCString std_MARKET_ID = str_MARKET_ID->Get();
 
@@ -1077,7 +1080,7 @@ auto OTCron::GetOrCreateMarket(
 
     OT_ASSERT(false != bool(pMarket));
 
-    auto MARKET_ID = Identifier::Factory(*pMarket);
+    auto MARKET_ID = api_.Factory().Internal().Identifier(*pMarket);
 
     auto pExistingMarket = GetMarket(MARKET_ID);
 
@@ -1104,7 +1107,8 @@ auto OTCron::GetOrCreateMarket(
 
 // Look up a transaction by transaction number and see if it is in the ledger.
 // If it is, return a pointer to it, otherwise return nullptr.
-auto OTCron::GetMarket(const Identifier& MARKET_ID) -> std::shared_ptr<OTMarket>
+auto OTCron::GetMarket(const identifier::Generic& MARKET_ID)
+    -> std::shared_ptr<OTMarket>
 {
     auto str_MARKET_ID = String::Factory(MARKET_ID);
     UnallocatedCString std_MARKET_ID = str_MARKET_ID->Get();
@@ -1122,7 +1126,8 @@ auto OTCron::GetMarket(const Identifier& MARKET_ID) -> std::shared_ptr<OTMarket>
 
         OT_ASSERT(false != bool(pMarket));
 
-        const auto LOOP_MARKET_ID = Identifier::Factory(*pMarket);
+        const auto LOOP_MARKET_ID =
+            api_.Factory().Internal().Identifier(*pMarket);
         const auto str_LOOP_MARKET_ID = String::Factory(LOOP_MARKET_ID);
 
         if (MARKET_ID == LOOP_MARKET_ID) {

@@ -31,7 +31,7 @@ struct Blocks::Imp {
     Bulk& bulk_;
     const int table_;
     mutable std::mutex lock_;
-    mutable UnallocatedMap<pHash, std::shared_mutex> block_locks_;
+    mutable UnallocatedMap<Hash, std::shared_mutex> block_locks_;
 
     auto Exists(const Hash& block) const noexcept -> bool
     {

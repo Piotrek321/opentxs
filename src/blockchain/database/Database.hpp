@@ -115,6 +115,7 @@ class GCS;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -132,7 +133,6 @@ class BlockchainTransactionProposal;
 }  // namespace proto
 
 class Data;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -163,7 +163,7 @@ public:
             account, subchain, outputIndices, transaction, txoCreated);
     }
     auto AddOutgoingTransaction(
-        const Identifier& proposalID,
+        const identifier::Generic& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const bitcoin::block::Transaction& transaction) noexcept -> bool final
     {
@@ -175,7 +175,7 @@ public:
         return common_.AddOrUpdate(std::move(address));
     }
     auto AddProposal(
-        const Identifier& id,
+        const identifier::Generic& id,
         const proto::BlockchainTransactionProposal& tx) noexcept -> bool final
     {
         return wallet_.AddProposal(id, tx);
@@ -213,7 +213,7 @@ public:
         return blocks_.Tip();
     }
     auto CompletedProposals() const noexcept
-        -> UnallocatedSet<OTIdentifier> final
+        -> UnallocatedSet<identifier::Generic> final
     {
         return wallet_.CompletedProposals();
     }
@@ -225,7 +225,7 @@ public:
     {
         return headers_.CurrentCheckpoint();
     }
-    auto CancelProposal(const Identifier& id) noexcept -> bool final
+    auto CancelProposal(const identifier::Generic& id) noexcept -> bool final
     {
         return wallet_.CancelProposal(id);
     }
@@ -245,8 +245,8 @@ public:
     {
         return wallet_.FinalizeReorg(tx, pos);
     }
-    auto ForgetProposals(const UnallocatedSet<OTIdentifier>& ids) noexcept
-        -> bool final
+    auto ForgetProposals(
+        const UnallocatedSet<identifier::Generic>& ids) noexcept -> bool final
     {
         return wallet_.ForgetProposals(ids);
     }
@@ -294,7 +294,7 @@ public:
     }
     auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& node,
+        const identifier::Generic& node,
         node::TxoState type,
         alloc::Default alloc) const noexcept -> Vector<UTXO> final
     {
@@ -322,7 +322,7 @@ public:
         return wallet_.GetPosition();
     }
     auto GetSubchainID(const NodeID& account, const crypto::Subchain subchain)
-        const noexcept -> pSubchainIndex final
+        const noexcept -> SubchainIndex final
     {
         return wallet_.GetSubchainID(account, subchain);
     }
@@ -418,7 +418,7 @@ public:
     {
         return headers_.LoadHeader(hash);
     }
-    auto LoadProposal(const Identifier& id) const noexcept
+    auto LoadProposal(const identifier::Generic& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal> final
     {
         return wallet_.LoadProposal(id);
@@ -433,7 +433,7 @@ public:
         return sync_.Load(height, output);
     }
     auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> UnallocatedSet<OTIdentifier> final
+        -> UnallocatedSet<identifier::Generic> final
     {
         return wallet_.LookupContact(pubkeyHash);
     }
@@ -464,7 +464,7 @@ public:
     }
     auto ReserveUTXO(
         const identifier::Nym& spender,
-        const Identifier& proposal,
+        const identifier::Generic& proposal,
         node::internal::SpendPolicy& policy) noexcept
         -> std::optional<UTXO> final
     {

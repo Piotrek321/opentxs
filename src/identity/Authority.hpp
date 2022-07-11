@@ -101,7 +101,7 @@ public:
     {
         return *master_;
     }
-    auto GetMasterCredID() const -> OTIdentifier final;
+    auto GetMasterCredID() const -> identifier::Generic final;
     auto GetPublicAuthKey(
         crypto::key::asymmetric::Algorithm keytype,
         const String::List* plistRevokedIDs = nullptr) const
@@ -212,15 +212,16 @@ private:
     friend internal::Authority;
 
     using ContactCredentialMap = UnallocatedMap<
-        OTIdentifier,
+        identifier::Generic,
         std::unique_ptr<credential::internal::Contact>>;
     using KeyCredentialMap = UnallocatedMap<
-        OTIdentifier,
+        identifier::Generic,
         std::unique_ptr<credential::internal::Secondary>>;
-    using KeyCredentialItem = std::
-        pair<OTIdentifier, std::unique_ptr<credential::internal::Secondary>>;
+    using KeyCredentialItem = std::pair<
+        identifier::Generic,
+        std::unique_ptr<credential::internal::Secondary>>;
     using VerificationCredentialMap = UnallocatedMap<
-        OTIdentifier,
+        identifier::Generic,
         std::unique_ptr<credential::internal::Verification>>;
     using mapOfCredentials = UnallocatedMap<
         UnallocatedCString,
@@ -293,7 +294,7 @@ private:
         const credential::internal::Base::SerializedType& serialized,
         const proto::KeyMode mode,
         const proto::CredentialRole role,
-        UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>&
+        UnallocatedMap<identifier::Generic, std::unique_ptr<Type>>&
             map) noexcept(false);
     static auto load_master(
         const api::Session& api,
@@ -311,7 +312,7 @@ private:
         const Serialized& serialized,
         const proto::KeyMode mode,
         const proto::CredentialRole role) noexcept(false)
-        -> UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>;
+        -> UnallocatedMap<identifier::Generic, std::unique_ptr<Type>>;
 
     auto get_keypair(
         const crypto::key::asymmetric::Algorithm type,

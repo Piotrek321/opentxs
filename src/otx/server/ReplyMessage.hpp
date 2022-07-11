@@ -30,6 +30,11 @@ class Wallet;
 }  // namespace session
 }  // namespace api
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace identity
 {
 class Nym;
@@ -51,7 +56,6 @@ class UserCommandProcessor;
 
 class Armored;
 class Data;
-class Identifier;
 class PasswordPrompt;
 class String;
 // }  // namespace v1
@@ -79,10 +83,10 @@ public:
     void SetBool(const bool value);
     void SetDepth(const std::int64_t depth);
     void SetEnum(const std::uint8_t value);
-    void SetInboxHash(const Identifier& hash);
+    void SetInboxHash(const identifier::Generic& hash);
     void SetInstrumentDefinitionID(const String& id);
-    void SetNymboxHash(const Identifier& hash);
-    void SetOutboxHash(const Identifier& hash);
+    void SetNymboxHash(const identifier::Generic& hash);
+    void SetOutboxHash(const identifier::Generic& hash);
     auto SetPayload(const String& payload) -> bool;
     auto SetPayload(const Data& payload) -> bool;
     void SetPayload(const Armored& payload);
@@ -117,7 +121,7 @@ private:
     const identity::Nym& signer_;
     const Message& original_;
     const PasswordPrompt& reason_;
-    const OTNotaryID notary_id_;
+    const identifier::Notary notary_id_;
     Message& message_;
     Server& server_;
     bool init_{false};

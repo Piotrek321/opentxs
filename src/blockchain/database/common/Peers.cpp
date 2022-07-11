@@ -23,6 +23,8 @@
 #include "internal/serialization/protobuf/verify/BlockchainPeerAddress.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
@@ -193,7 +195,9 @@ auto Peers::Import(UnallocatedVector<Address_p> peers) noexcept -> bool
     auto newPeers = UnallocatedVector<Address_p>{};
 
     for (auto& peer : peers) {
-        if (false == lmdb_.Exists(Table::PeerDetails, peer->ID().str())) {
+        if (false ==
+            lmdb_.Exists(
+                Table::PeerDetails, peer->ID().asBase58(api_.Crypto()))) {
             newPeers.emplace_back(std::move(peer));
         }
     }
@@ -225,8 +229,8 @@ auto Peers::insert(
             return false;
         }
 
-        const auto& address = *pAddress;
-        const auto id = address.ID().str();
+        auto& address = *pAddress;
+        const auto id = address.ID().asBase58(api_.Crypto());
         auto deleteServices = address.PreviousServices();
 
         for (const auto& service : address.Services()) {

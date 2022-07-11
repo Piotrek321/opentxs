@@ -14,6 +14,9 @@
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Types.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
@@ -79,8 +82,8 @@ Token::Token(
           purse,
           translate(in.state()),
           translate(in.type()),
-          identifier::Notary::Factory(in.notary()),
-          identifier::UnitDefinition::Factory(in.mint()),
+          api.Factory().NotaryIDFromBase58(in.notary()),
+          api.Factory().UnitIDFromBase58(in.mint()),
           in.series(),
           factory::Amount(in.denomination()),
           Clock::from_time_t(in.validfrom()),
@@ -151,8 +154,8 @@ auto Token::Serialize(proto::Token& output) const noexcept -> bool
     output.set_version(version_);
     output.set_type(translate(type_));
     output.set_state(translate(state_));
-    output.set_notary(notary_->str());
-    output.set_mint(unit_->str());
+    output.set_notary(notary_.asBase58(api_.Crypto()));
+    output.set_mint(unit_.asBase58(api_.Crypto()));
     output.set_series(series_);
     denomination_.Serialize(writer(output.mutable_denomination()));
     output.set_validfrom(Clock::to_time_t(valid_from_));

@@ -15,6 +15,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"  // IWYU pragma: keep
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::api::crypto::blockchain
@@ -34,7 +35,7 @@ Wallets::Wallets(
 }
 
 auto Wallets::AccountList(const identifier::Nym& nym) const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     populate();
 
@@ -42,14 +43,15 @@ auto Wallets::AccountList(const identifier::Nym& nym) const noexcept
 }
 
 auto Wallets::AccountList(const opentxs::blockchain::Type chain) const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     populate();
 
     return index_.AccountList(chain);
 }
 
-auto Wallets::AccountList() const noexcept -> UnallocatedSet<OTIdentifier>
+auto Wallets::AccountList() const noexcept
+    -> UnallocatedSet<identifier::Generic>
 {
     populate();
 
@@ -81,7 +83,8 @@ auto Wallets::get(const Lock& lock, const opentxs::blockchain::Type chain)
     return *it2->second;
 }
 
-auto Wallets::LookupAccount(const Identifier& id) const noexcept -> AccountData
+auto Wallets::LookupAccount(const identifier::Generic& id) const noexcept
+    -> AccountData
 {
     populate();
 

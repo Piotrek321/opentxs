@@ -12,9 +12,10 @@
 
 #include "internal/otx/common/Contract.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/blind/mint/Mint.hpp"
 
@@ -30,7 +31,7 @@ Mint::Mint(
     const identifier::UnitDefinition& unit) noexcept
     : Contract(api, [&] {
         auto out = String::Factory();
-        unit.GetString(out);
+        unit.GetString(api.Crypto(), out);
 
         return out;
     }())
@@ -52,17 +53,17 @@ Mint::Imp::Imp(
 {
 }
 
-auto Mint::Imp::AccountID() const -> OTIdentifier
+auto Mint::Imp::AccountID() const -> identifier::Generic
 {
-    return api_.Factory().Identifier();
+    return identifier::Generic{};
 }
 
 auto Mint::Imp::InstrumentDefinitionID() const
     -> const identifier::UnitDefinition&
 {
-    static const auto blank = api_.Factory().UnitID();
+    static const auto blank = identifier::UnitDefinition{};
 
-    return blank.get();
+    return blank;
 }
 
 }  // namespace opentxs::otx::blind
@@ -90,7 +91,10 @@ Mint::Mint(Mint&& rhs) noexcept
 
 Mint::operator bool() const noexcept { return imp_->isValid(); }
 
-auto Mint::AccountID() const -> OTIdentifier { return imp_->AccountID(); }
+auto Mint::AccountID() const -> identifier::Generic
+{
+    return imp_->AccountID();
+}
 
 auto Mint::Expired() const -> bool { return imp_->Expired(); }
 

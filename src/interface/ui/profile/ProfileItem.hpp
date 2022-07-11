@@ -12,6 +12,8 @@
 #include "interface/ui/base/Row.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/Mutex.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
@@ -64,11 +66,13 @@ using ProfileItemRow =
 class ProfileItem final : public ProfileItemRow
 {
 public:
+    const api::session::Client& api_;
+
     auto ClaimID() const noexcept -> UnallocatedCString final
     {
         sLock lock(shared_lock_);
 
-        return row_id_->str();
+        return row_id_.asBase58(api_.Crypto());
     }
     auto Delete() const noexcept -> bool final;
     auto IsActive() const noexcept -> bool final

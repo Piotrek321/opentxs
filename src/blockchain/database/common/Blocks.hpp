@@ -52,7 +52,6 @@ class Blocks
 {
 public:
     using Hash = opentxs::blockchain::block::Hash;
-    using pHash = opentxs::blockchain::block::Hash;
 
     auto Exists(const Hash& block) const noexcept -> bool;
     auto Load(const Hash& block) const noexcept -> BlockReader;

@@ -40,7 +40,7 @@ User::User(
     , seed_id_()
     , index_()
     , nym_()
-    , nym_id_(ot::identifier::Nym::Factory())
+    , nym_id_()
     , payment_code_()
     , lock_()
     , contacts_()
@@ -49,28 +49,28 @@ User::User(
 }
 
 auto User::Account(std::string_view type) const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     ot::Lock lock(lock_);
 
     if (auto i = accounts_.find(type); accounts_.end() != i) {
 
-        return i->second.get();
+        return i->second;
     } else {
         abort();
     }
 }
 
 auto User::Contact(std::string_view contact) const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
-    static const auto blank = api_->Factory().Identifier();
+    static const auto blank = ot::identifier::Generic{};
 
     ot::Lock lock(lock_);
 
     if (auto i = contacts_.find(contact); contacts_.end() != i) {
 
-        return i->second.get();
+        return i->second;
     } else {
 
         return blank;
@@ -188,10 +188,10 @@ auto User::SetAccount(std::string_view type, std::string_view id) const noexcept
 {
     OT_ASSERT(nullptr != api_);
 
-    return SetAccount(type, api_->Factory().Identifier(id));
+    return SetAccount(type, api_->Factory().IdentifierFromBase58(id));
 }
 
-auto User::SetAccount(std::string_view type, const ot::Identifier& id)
+auto User::SetAccount(std::string_view type, const ot::identifier::Generic& id)
     const noexcept -> bool
 {
     OT_ASSERT(nullptr != api_);
@@ -207,11 +207,12 @@ auto User::SetContact(std::string_view contact, std::string_view id)
 {
     OT_ASSERT(nullptr != api_);
 
-    return SetContact(contact, api_->Factory().Identifier(id));
+    return SetContact(contact, api_->Factory().IdentifierFromBase58(id));
 }
 
-auto User::SetContact(std::string_view contact, const ot::Identifier& id)
-    const noexcept -> bool
+auto User::SetContact(
+    std::string_view contact,
+    const ot::identifier::Generic& id) const noexcept -> bool
 {
     OT_ASSERT(nullptr != api_);
 

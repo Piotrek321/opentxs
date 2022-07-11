@@ -73,6 +73,11 @@ class Bip39;
 class Seed;
 }  // namespace crypto
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace network
 {
 namespace zeromq
@@ -87,7 +92,6 @@ class HDPath;
 class Seed;
 }  // namespace proto
 
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -174,7 +178,7 @@ public:
         const UnallocatedCString& seedID,
         Bip32Index& index,
         const PasswordPrompt& reason) const -> OTSecret final;
-    auto GetSeed(const Identifier& id, const PasswordPrompt& reason)
+    auto GetSeed(const identifier::Generic& id, const PasswordPrompt& reason)
         const noexcept -> opentxs::crypto::Seed final;
     auto GetStorageKey(
         const UnallocatedCString& seedID,
@@ -203,9 +207,10 @@ public:
         const PasswordPrompt& reason) const -> UnallocatedCString final;
     auto SeedDescription(UnallocatedCString seedID) const noexcept
         -> UnallocatedCString final;
-    auto SetDefault(const Identifier& id) const noexcept -> bool final;
-    auto SetSeedComment(const Identifier& id, const std::string_view comment)
-        const noexcept -> bool final;
+    auto SetDefault(const identifier::Generic& id) const noexcept -> bool final;
+    auto SetSeedComment(
+        const identifier::Generic& id,
+        const std::string_view comment) const noexcept -> bool final;
     auto UpdateIndex(
         const UnallocatedCString& seedID,
         const Bip32Index index,
@@ -270,7 +275,7 @@ private:
         const Lock& lock,
         const std::string_view comment,
         opentxs::crypto::Seed&& seed) const noexcept -> UnallocatedCString;
-    auto publish(const Identifier& id) const noexcept -> void;
+    auto publish(const identifier::Generic& id) const noexcept -> void;
     auto publish(const UnallocatedCString& id) const noexcept -> void;
 };
 }  // namespace opentxs::api::crypto::imp

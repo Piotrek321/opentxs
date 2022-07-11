@@ -118,8 +118,8 @@ protected:
     const api::Session& api_;
     blind::internal::Purse& purse_;
     blind::TokenState state_;
-    const OTNotaryID notary_;
-    const OTUnitID unit_;
+    const identifier::Notary notary_;
+    const identifier::UnitDefinition unit_;
     const std::uint64_t series_;
     const Denomination denomination_;
     const Time valid_from_;

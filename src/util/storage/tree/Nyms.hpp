@@ -30,6 +30,8 @@ namespace session
 {
 class Factory;
 }  // namespace session
+
+class Crypto;
 }  // namespace api
 
 namespace identifier
@@ -52,19 +54,20 @@ namespace opentxs::storage
 class Nyms final : public Node
 {
 public:
-    auto Default() const -> OTNymID;
-    auto Exists(const UnallocatedCString& id) const -> bool;
-    auto LocalNyms() const -> const UnallocatedSet<UnallocatedCString>;
-    void Map(NymLambda lambda) const;
+    auto Default() const -> identifier::Nym;
+    auto Exists(const identifier::Nym& id) const -> bool;
+    auto LocalNyms() const noexcept -> Set<identifier::Nym>;
+    auto Map(NymLambda lambda) const -> void;
     auto Migrate(const Driver& to) const -> bool final;
-    auto Nym(const UnallocatedCString& id) const -> const storage::Nym&;
+    auto NeedUpgrade() const noexcept -> bool;
+    auto Nym(const identifier::Nym& id) const -> const storage::Nym&;
 
-    auto mutable_Nym(const UnallocatedCString& id) -> Editor<storage::Nym>;
+    auto mutable_Nym(const identifier::Nym& id) -> Editor<storage::Nym>;
     auto RelabelThread(
         const UnallocatedCString& threadID,
         const UnallocatedCString label) -> bool;
     auto SetDefault(const identifier::Nym& id) -> bool;
-    void UpgradeLocalnym();
+    auto Upgrade() noexcept -> void;
 
     Nyms() = delete;
     Nyms(const Nyms&) = delete;
@@ -72,35 +75,33 @@ public:
     auto operator=(const Nyms&) -> Nyms = delete;
     auto operator=(Nyms&&) -> Nyms = delete;
 
-    ~Nyms() final = default;
+    ~Nyms() final;
 
 private:
     friend Tree;
 
     static constexpr auto current_version_ = VersionNumber{5};
 
-    const api::session::Factory& factory_;
-    mutable UnallocatedMap<UnallocatedCString, std::unique_ptr<storage::Nym>>
-        nyms_;
-    UnallocatedSet<UnallocatedCString> local_nyms_;
-    OTNymID default_local_nym_;
+    mutable opentxs::Map<identifier::Nym, std::unique_ptr<storage::Nym>> nyms_;
+    Set<identifier::Nym> local_nyms_;
+    identifier::Nym default_local_nym_;
 
-    auto nym(const UnallocatedCString& id) const -> storage::Nym*;
-    auto nym(const Lock& lock, const UnallocatedCString& id) const
+    auto nym(const identifier::Nym& id) const -> storage::Nym*;
+    auto nym(const Lock& lock, const identifier::Nym& id) const
         -> storage::Nym*;
-    void save(
-        storage::Nym* nym,
-        const Lock& lock,
-        const UnallocatedCString& id);
+    auto save(storage::Nym* nym, const Lock& lock, const identifier::Nym& id)
+        -> void;
 
-    void init(const UnallocatedCString& hash) final;
+    auto init(const UnallocatedCString& hash) -> void final;
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
     auto set_default(const Lock& lock, const identifier::Nym& id) -> void;
+    auto upgrade_create_local_nym_index(const Lock& lock) noexcept -> void;
 
     Nyms(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
         const Driver& storage,
-        const UnallocatedCString& hash,
-        const api::session::Factory& factory);
+        const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

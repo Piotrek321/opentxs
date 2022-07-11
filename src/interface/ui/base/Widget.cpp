@@ -42,11 +42,10 @@ auto verify_empty(const CustomData& custom) noexcept -> bool
 
 Widget::Widget(
     const api::session::Client& api,
-    const Identifier& id,
+    const identifier::Generic& id,
     const SimpleCallback& cb) noexcept
-    : api_(api)
-    , widget_id_(id)
-    , ui_(api_.UI())
+    : widget_id_(id)
+    , ui_(api.UI())
     , callbacks_()
     , listeners_()
 {
@@ -63,8 +62,9 @@ auto Widget::SetCallback(SimpleCallback cb) const noexcept -> void
     ui_.Internal().RegisterUICallback(WidgetID(), cb);
 }
 
-auto Widget::setup_listeners(const ListenerDefinitions& definitions) noexcept
-    -> void
+auto Widget::setup_listeners(
+    const api::session::Client& api,
+    const ListenerDefinitions& definitions) noexcept -> void
 {
     for (const auto& [endpoint, functor] : definitions) {
         const auto* copy{functor};
@@ -74,7 +74,7 @@ auto Widget::setup_listeners(const ListenerDefinitions& definitions) noexcept
                     (*copy)(this, message);
                 }));
         auto& socket =
-            listeners_.emplace_back(api_.Network().ZeroMQ().SubscribeSocket(
+            listeners_.emplace_back(api.Network().ZeroMQ().SubscribeSocket(
                 nextCallback.get(), widgetThreadName));
         const auto listening = socket->Start(endpoint);
 

@@ -21,9 +21,12 @@
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Container.hpp"
@@ -32,10 +35,8 @@
 
 namespace opentxs
 {
-OTParty::OTParty(
-    const api::session::Wallet& wallet,
-    const UnallocatedCString& dataFolder)
-    : wallet_{wallet}
+OTParty::OTParty(const api::Session& api, const UnallocatedCString& dataFolder)
+    : api_(api)
     , data_folder_{dataFolder}
     , m_pstr_party_name(nullptr)
     , m_bPartyIsNym(false)
@@ -50,14 +51,14 @@ OTParty::OTParty(
 }
 
 OTParty::OTParty(
-    const api::session::Wallet& wallet,
+    const api::Session& api,
     const UnallocatedCString& dataFolder,
     const char* szName,
     bool bIsOwnerNym,
     const char* szOwnerID,
     const char* szAuthAgent,
     bool bCreateAgent)
-    : wallet_{wallet}
+    : api_(api)
     , data_folder_{dataFolder}
     , m_pstr_party_name(nullptr)
     , m_bPartyIsNym(bIsOwnerNym)
@@ -78,7 +79,7 @@ OTParty::OTParty(
                    strGroupName = String::Factory("");
 
         auto* pAgent = new OTAgent(
-            wallet_,
+            api_,
             true /*bNymRepresentsSelf*/,
             true /*bIsAnIndividual*/,
             strName,
@@ -98,7 +99,7 @@ OTParty::OTParty(
 }
 
 OTParty::OTParty(
-    const api::session::Wallet& wallet,
+    const api::Session& api,
     const UnallocatedCString& dataFolder,
     UnallocatedCString str_PartyName,
     const identity::Nym& theNym,  // Nym is BOTH owner AND agent, when using
@@ -107,7 +108,7 @@ OTParty::OTParty(
     Account* pAccount,
     const UnallocatedCString* pstr_account_name,
     std::int64_t lClosingTransNo)
-    : wallet_{wallet}
+    : api_(api)
     , data_folder_{dataFolder}
     , m_pstr_party_name(new UnallocatedCString(str_PartyName))
     , m_bPartyIsNym(true)
@@ -131,8 +132,11 @@ OTParty::OTParty(
     m_str_owner_id = strNymID->Get();
 
     auto* pAgent = new OTAgent(
-        wallet_, str_agent_name, theNym);  // (The third arg, bRepresentsSelf,
-                                           // defaults here to true.)
+        api_,
+        str_agent_name,
+        theNym);  // (The third arg,
+                  // bRepresentsSelf,
+                  // defaults here to true.)
     OT_ASSERT(nullptr != pAgent);
 
     if (!AddAgent(*pAgent)) {
@@ -265,7 +269,7 @@ auto OTParty::AddAccount(
     std::int64_t lClosingTransNo) -> bool
 {
     auto* pPartyAccount = new OTPartyAccount(
-        wallet_,
+        api_,
         data_folder_,
         strName,
         strAgentName,
@@ -289,7 +293,7 @@ auto OTParty::AddAccount(
     std::int64_t lClosingTransNo) -> bool
 {
     auto* pPartyAccount = new OTPartyAccount(
-        wallet_,
+        api_,
         data_folder_,
         szAcctName,
         strAgentName,
@@ -668,7 +672,7 @@ auto OTParty::GetAccountByAgent(const UnallocatedCString& str_agent_name)
 // Get PartyAccount pointer by Acct ID.
 //
 // Returns nullptr on failure.
-auto OTParty::GetAccountByID(const Identifier& theAcctID) const
+auto OTParty::GetAccountByID(const identifier::Generic& theAcctID) const
     -> OTPartyAccount*
 {
     for (const auto& it : m_mapPartyAccounts) {
@@ -681,11 +685,12 @@ auto OTParty::GetAccountByID(const Identifier& theAcctID) const
     return nullptr;
 }
 
-// bool OTPartyAccount::IsAccountByID(const Identifier& theAcctID) const
+// bool OTPartyAccount::IsAccountByID(const identifier::Generic& theAcctID)
+// const
 
 // If account is present for Party, return true.
 auto OTParty::HasAccountByID(
-    const Identifier& theAcctID,
+    const identifier::Generic& theAcctID,
     OTPartyAccount** ppPartyAccount) const -> bool
 {
     for (const auto& it : m_mapPartyAccounts) {
@@ -743,8 +748,9 @@ auto OTParty::HasAgent(const identity::Nym& theNym, OTAgent** ppAgent) const
     return false;
 }
 
-auto OTParty::HasAgentByNymID(const Identifier& theNymID, OTAgent** ppAgent)
-    const -> bool
+auto OTParty::HasAgentByNymID(
+    const identifier::Generic& theNymID,
+    OTAgent** ppAgent) const -> bool
 {
     for (const auto& it : m_mapAgents) {
         OTAgent* pAgent = it.second;
@@ -794,7 +800,7 @@ auto OTParty::HasAuthorizingAgent(
 }
 
 auto OTParty::HasAuthorizingAgentByNymID(
-    const Identifier& theNymID,
+    const identifier::Generic& theNymID,
     OTAgent** ppAgent) const -> bool  // ppAgent
                                       // lets you
                                       // get the
@@ -896,18 +902,16 @@ auto OTParty::VerifyOwnershipOfAccount(const Account& theAccount) const -> bool
             return false;
         }
 
-        const auto thePartyNymID = identifier::Nym::Factory(str_nym_id);
+        const auto thePartyNymID = api_.Factory().NymIDFromBase58(str_nym_id);
 
         return theAccount.VerifyOwnerByID(thePartyNymID);
     } else if (IsEntity()) {
-        LogError()(OT_PRETTY_CLASS())("Error: Entities have not "
-                                      "been implemented yet, "
-                                      "but somehow this party is an entity.")
+        LogError()(OT_PRETTY_CLASS())(
+            "Error: Entities have not been implemented yet, but somehow this "
+            "party is an entity.")
             .Flush();
     } else {
-        LogError()(OT_PRETTY_CLASS())("Error: Unknown party "
-                                      "type.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error: Unknown party type.").Flush();
     }
 
     return false;

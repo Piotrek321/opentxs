@@ -18,7 +18,6 @@
 #include "internal/core/Core.hpp"
 #include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
@@ -34,6 +33,7 @@
 #include "opentxs/core/AccountType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/Unit.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -44,7 +44,6 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -88,22 +87,23 @@ auto AccountList::construct_row(
     const AccountListSortKey& index,
     CustomData& custom) const noexcept -> RowPointer
 {
-    return factory::AccountListItem(*this, Widget::api_, id, index, custom);
+    return factory::AccountListItem(*this, api_, id, index, custom);
 }
 
 auto AccountList::load_blockchain() noexcept -> void
 {
-    const auto& blockchain = Widget::api_.Crypto().Blockchain();
+    const auto& blockchain = api_.Crypto().Blockchain();
 
     for (const auto& account : blockchain.AccountList(primary_id_)) {
-        load_blockchain_account(std::move(const_cast<OTIdentifier&>(account)));
+        load_blockchain_account(
+            std::move(const_cast<identifier::Generic&>(account)));
     }
 }
 
-auto AccountList::load_blockchain_account(OTIdentifier&& id) noexcept -> void
+auto AccountList::load_blockchain_account(identifier::Generic&& id) noexcept
+    -> void
 {
-    const auto [chain, owner] =
-        Widget::api_.Crypto().Blockchain().LookupAccount(id);
+    const auto [chain, owner] = api_.Crypto().Blockchain().LookupAccount(id);
 
     OT_ASSERT(blockchain::Type::Unknown != chain);
     OT_ASSERT(owner == primary_id_);
@@ -115,42 +115,40 @@ auto AccountList::load_blockchain_account(blockchain::Type chain) noexcept
     -> void
 {
     load_blockchain_account(
-        OTIdentifier{Widget::api_.Crypto()
-                         .Blockchain()
-                         .Account(primary_id_, chain)
-                         .AccountID()},
+        identifier::Generic{
+            api_.Crypto().Blockchain().Account(primary_id_, chain).AccountID()},
         chain,
         {});
 }
 
 auto AccountList::load_blockchain_account(
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     blockchain::Type chain) noexcept -> void
 {
     load_blockchain_account(std::move(id), chain, {});
 }
 
 auto AccountList::load_blockchain_account(
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     blockchain::Type chain,
     Amount&& balance) noexcept -> void
 {
     LogInsane()(OT_PRETTY_CLASS())("processing blockchain account ")(id)
         .Flush();
     const auto type = BlockchainToUnit(chain);
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     const auto index = AccountListSortKey{type, account_name_blockchain(chain)};
     auto custom = [&] {
         auto out = CustomData{};
         out.reserve(4);
         out.emplace_back(
             std::make_unique<AccountType>(AccountType::Blockchain).release());
-        out.emplace_back(
-            std::make_unique<OTUnitID>(blockchain::UnitID(api, chain))
-                .release());
-        out.emplace_back(
-            std::make_unique<OTNotaryID>(blockchain::NotaryID(api, chain))
-                .release());
+        out.emplace_back(std::make_unique<identifier::UnitDefinition>(
+                             blockchain::UnitID(api, chain))
+                             .release());
+        out.emplace_back(std::make_unique<identifier::Notary>(
+                             blockchain::NotaryID(api, chain))
+                             .release());
         out.emplace_back(
             std::make_unique<Amount>(std::move(balance)).release());
 
@@ -165,52 +163,54 @@ auto AccountList::load_blockchain_account(
 
 auto AccountList::load_custodial() noexcept -> void
 {
-    const auto& storage = Widget::api_.Storage();
+    const auto& storage = api_.Storage();
 
     for (const auto& account : storage.AccountsByOwner(primary_id_)) {
-        load_custodial_account(std::move(const_cast<OTIdentifier&>(account)));
+        load_custodial_account(
+            std::move(const_cast<identifier::Generic&>(account)));
     }
 }
 
-auto AccountList::load_custodial_account(OTIdentifier&& id) noexcept -> void
+auto AccountList::load_custodial_account(identifier::Generic&& id) noexcept
+    -> void
 {
-    const auto& wallet = Widget::api_.Wallet();
+    const auto& wallet = api_.Wallet();
     auto account = wallet.Internal().Account(id);
     const auto& contractID = account.get().GetInstrumentDefinitionID();
     const auto contract = wallet.UnitDefinition(contractID);
     load_custodial_account(
         std::move(id),
-        OTUnitID{contractID},
+        identifier::UnitDefinition{contractID},
         contract->UnitOfAccount(),
         account.get().GetBalance(),
         account.get().Alias());
 }
 
 auto AccountList::load_custodial_account(
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     Amount&& balance) noexcept -> void
 {
-    const auto& wallet = Widget::api_.Wallet();
+    const auto& wallet = api_.Wallet();
     auto account = wallet.Internal().Account(id);
     const auto& contractID = account.get().GetInstrumentDefinitionID();
     const auto contract = wallet.UnitDefinition(contractID);
     load_custodial_account(
         std::move(id),
-        OTUnitID{contractID},
+        identifier::UnitDefinition{contractID},
         contract->UnitOfAccount(),
         std::move(balance),
         account.get().Alias());
 }
 
 auto AccountList::load_custodial_account(
-    OTIdentifier&& id,
-    OTUnitID&& contract,
+    identifier::Generic&& id,
+    identifier::UnitDefinition&& contract,
     UnitType type,
     Amount&& balance,
     UnallocatedCString&& name) noexcept -> void
 {
     LogInsane()(OT_PRETTY_CLASS())("processing custodial account ")(id).Flush();
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     auto notaryID = api.Storage().AccountServer(id);
     const auto index = AccountListSortKey{
         type, account_name_custodial(api, notaryID, contract, std::move(name))};
@@ -220,9 +220,11 @@ auto AccountList::load_custodial_account(
         out.emplace_back(
             std::make_unique<AccountType>(AccountType::Custodial).release());
         out.emplace_back(
-            std::make_unique<OTUnitID>(std::move(contract)).release());
+            std::make_unique<identifier::UnitDefinition>(std::move(contract))
+                .release());
         out.emplace_back(
-            std::make_unique<OTNotaryID>(std::move(notaryID)).release());
+            std::make_unique<identifier::Notary>(std::move(notaryID))
+                .release());
         out.emplace_back(
             std::make_unique<Amount>(std::move(balance)).release());
 
@@ -314,7 +316,7 @@ auto AccountList::process_blockchain(Message&& message) noexcept -> void
 
     OT_ASSERT(4 < body.size());
 
-    const auto nymID = Widget::api_.Factory().NymID(body.at(2));
+    const auto nymID = api_.Factory().NymIDFromHash(body.at(2).Bytes());
 
     if (nymID != primary_id_) {
         LogInsane()(OT_PRETTY_CLASS())("Update does not apply to this widget")
@@ -337,12 +339,10 @@ auto AccountList::process_blockchain_balance(Message&& message) noexcept -> void
     OT_ASSERT(3 < body.size());
 
     const auto chain = body.at(1).as<blockchain::Type>();
-    const auto& accountID = Widget::api_.Crypto()
-                                .Blockchain()
-                                .Account(primary_id_, chain)
-                                .AccountID();
+    const auto& accountID =
+        api_.Crypto().Blockchain().Account(primary_id_, chain).AccountID();
     load_blockchain_account(
-        OTIdentifier{accountID}, chain, factory::Amount(body.at(3)));
+        identifier::Generic{accountID}, chain, factory::Amount(body.at(3)));
 }
 
 auto AccountList::process_custodial(Message&& message) noexcept -> void
@@ -351,8 +351,8 @@ auto AccountList::process_custodial(Message&& message) noexcept -> void
 
     OT_ASSERT(2 < body.size());
 
-    const auto& api = Widget::api_;
-    auto id = api.Factory().Identifier(body.at(1));
+    const auto& api = api_;
+    auto id = api.Factory().IdentifierFromHash(body.at(1).Bytes());
     const auto owner = api.Storage().AccountOwner(id);
 
     if (owner != primary_id_) { return; }

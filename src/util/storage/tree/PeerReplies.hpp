@@ -19,6 +19,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
 namespace proto
 {
 class PeerReply;
@@ -61,6 +71,10 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    PeerReplies(const Driver& storage, const UnallocatedCString& hash);
+    PeerReplies(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

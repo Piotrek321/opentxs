@@ -51,6 +51,7 @@ private:
     PaymentTasks& payment_tasks_;
 
     auto deposit() -> bool;
-    auto get_account_id(const identifier::UnitDefinition& unit) -> OTIdentifier;
+    auto get_account_id(const identifier::UnitDefinition& unit)
+        -> identifier::Generic;
 };
 }  // namespace opentxs::otx::client::implementation

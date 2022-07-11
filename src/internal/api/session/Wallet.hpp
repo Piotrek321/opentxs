@@ -50,7 +50,7 @@ namespace opentxs::api::session::internal
 class Wallet : virtual public api::session::Wallet
 {
 public:
-    virtual auto Account(const Identifier& accountID) const
+    virtual auto Account(const identifier::Generic& accountID) const
         -> SharedAccount = 0;
     virtual auto CreateAccount(
         const identifier::Nym& ownerNymID,
@@ -67,7 +67,7 @@ public:
         const UnallocatedCString& id,
         std::shared_ptr<proto::Credential>& credential) const -> bool = 0;
     virtual auto mutable_Account(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const PasswordPrompt& reason,
         const AccountCallback callback = nullptr) const -> ExclusiveAccount = 0;
     /**   Load an existing Context object
@@ -130,7 +130,7 @@ public:
      */
     virtual auto mutable_ServerContext(
         const identifier::Nym& localNymID,
-        const Identifier& remoteID,
+        const identifier::Generic& remoteID,
         const PasswordPrompt& reason) const -> Editor<otx::context::Server> = 0;
     using session::Wallet::PeerReply;
     /**   Load a peer reply object
@@ -143,7 +143,7 @@ public:
      */
     virtual auto PeerReply(
         const identifier::Nym& nym,
-        const Identifier& reply,
+        const identifier::Generic& reply,
         const otx::client::StorageBox& box,
         proto::PeerReply& serialized) const -> bool = 0;
     /**   Store the recipient's copy of a peer reply
@@ -174,7 +174,7 @@ public:
      */
     virtual auto PeerRequest(
         const identifier::Nym& nym,
-        const Identifier& request,
+        const identifier::Generic& request,
         const otx::client::StorageBox& box,
         std::time_t& time,
         proto::PeerRequest& serialized) const -> bool = 0;

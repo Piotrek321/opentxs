@@ -25,6 +25,7 @@
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Authority.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -102,7 +103,10 @@ auto Verification::VerificationID(
     const api::Session& api,
     const proto::Verification& item) -> UnallocatedCString
 {
-    return api.Factory().InternalSession().Identifier(item)->str();
+    return api.Factory()
+        .InternalSession()
+        .IdentifierFromPreimage(item)
+        .asBase58(api.Crypto());
 }
 }  // namespace opentxs::identity::credential
 
@@ -124,7 +128,7 @@ Verification::Verification(
           version,
           identity::CredentialRole::Verify,
           crypto::key::asymmetric::Mode::Null,
-          get_master_id(master))
+          get_master_id(api, master))
     , data_(
           [&](const crypto::Parameters& params)
               -> const proto::VerificationSet {
@@ -152,7 +156,7 @@ Verification::Verification(
           parent,
           source,
           serialized,
-          get_master_id(serialized, master))
+          get_master_id(api, serialized, master))
     , data_(serialized.verification())
 {
     Lock lock(lock_);

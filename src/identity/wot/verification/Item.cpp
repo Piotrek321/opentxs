@@ -10,12 +10,15 @@
 #include <Signature.pb.h>
 #include <Verification.pb.h>
 #include <stdexcept>
+#include <string>
 
 #include "internal/api/session/FactoryAPI.hpp"
 #include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/ByteArray.hpp"
@@ -23,13 +26,12 @@
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 auto Factory::VerificationItem(
     const identity::wot::verification::internal::Nym& parent,
-    const Identifier& claim,
+    const identifier::Generic& claim,
     const identity::Nym& signer,
     const opentxs::PasswordPrompt& reason,
     const bool value,
@@ -90,7 +92,7 @@ namespace opentxs::identity::wot::verification::implementation
 {
 Item::Item(
     const internal::Nym& parent,
-    const Identifier& claim,
+    const identifier::Generic& claim,
     const identity::Nym& signer,
     const PasswordPrompt& reason,
     const Type value,
@@ -128,12 +130,12 @@ Item::Item(
 Item::Item(const internal::Nym& parent, const SerializedType& in) noexcept(
     false)
     : version_(in.version())
-    , claim_(parent.API().Factory().Identifier(in.claim()))
+    , claim_(parent.API().Factory().IdentifierFromBase58(in.claim()))
     , value_(static_cast<Type>(in.valid()))
     , valid_(static_cast<Validity>(in.retracted()))
     , start_(Clock::from_time_t(in.start()))
     , end_(Clock::from_time_t(in.end()))
-    , id_(parent.API().Factory().Identifier(in.id()))
+    , id_(parent.API().Factory().IdentifierFromBase58(in.id()))
     , sig_(in.sig())
 {
     const auto calculated = calculate_id(
@@ -160,21 +162,19 @@ Item::operator SerializedType() const noexcept
 auto Item::calculate_id(
     const api::Session& api,
     const VersionNumber version,
-    const Identifier& claim,
+    const identifier::Generic& claim,
     const Type value,
     const Time start,
     const Time end,
     const Validity valid,
-    const identifier::Nym& nym) noexcept(false) -> OTIdentifier
+    const identifier::Nym& nym) noexcept(false) -> identifier::Generic
 {
     const auto serialized = id_form(version, claim, value, start, end, valid);
     auto preimage = api.Factory().InternalSession().Data(serialized);
     preimage += nym;
-    auto output = api.Factory().Identifier();
+    auto output = api.Factory().IdentifierFromPreimage(preimage.Bytes());
 
-    if (false == output->CalculateDigest(preimage.Bytes())) {
-        throw std::runtime_error("Unable to calculate ID");
-    }
+    if (output.empty()) { throw std::runtime_error("Unable to calculate ID"); }
 
     return output;
 }
@@ -182,8 +182,8 @@ auto Item::calculate_id(
 auto Item::get_sig(
     const identity::Nym& signer,
     const VersionNumber version,
-    const Identifier& id,
-    const Identifier& claim,
+    const identifier::Generic& id,
+    const identifier::Generic& claim,
     const Type value,
     const Time start,
     const Time end,
@@ -206,7 +206,7 @@ auto Item::get_sig(
 
 auto Item::id_form(
     const VersionNumber version,
-    const Identifier& claim,
+    const identifier::Generic& claim,
     const Type value,
     const Time start,
     const Time end,
@@ -214,7 +214,7 @@ auto Item::id_form(
 {
     auto output = SerializedType{};
     output.set_version(version);
-    output.set_claim(claim.str());
+    output.set_claim(claim.asBase58(Context().Crypto()));
     output.set_valid(static_cast<bool>(value));
     output.set_start(Clock::to_time_t(start));
     output.set_start(Clock::to_time_t(end));
@@ -225,15 +225,15 @@ auto Item::id_form(
 
 auto Item::sig_form(
     const VersionNumber version,
-    const Identifier& id,
-    const Identifier& claim,
+    const identifier::Generic& id,
+    const identifier::Generic& claim,
     const Type value,
     const Time start,
     const Time end,
     const Validity valid) noexcept -> SerializedType
 {
     auto output = id_form(version, claim, value, start, end, valid);
-    output.set_id(id.str());
+    output.set_id(id.asBase58(Context().Crypto()));
 
     return output;
 }

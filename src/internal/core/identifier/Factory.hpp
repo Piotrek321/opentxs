@@ -3,46 +3,30 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/identifier/Algorithm.hpp"
+// IWYU pragma: no_include "opentxs/core/identifier/Type.hpp"
+
 #pragma once
 
 #include <memory>
 
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs  // NOLINT
-{
-// inline namespace v1
-// {
-namespace identifier
-{
-class Nym;
-class Notary;
-class UnitDefinition;
-}  // namespace identifier
-
-namespace proto
-{
-class Identifier;
-}  // namespace proto
-
-class Identifier;
-// }  // namespace v1
-}  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces)
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Types.hpp"
+#include "opentxs/util/Allocated.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::factory
 {
-auto IdentifierGeneric() noexcept -> std::unique_ptr<opentxs::Identifier>;
-auto IdentifierGeneric(const proto::Identifier& in) noexcept
-    -> std::unique_ptr<opentxs::Identifier>;
-auto IdentifierNym() noexcept -> std::unique_ptr<opentxs::identifier::Nym>;
-auto IdentifierNym(const proto::Identifier& in) noexcept
-    -> std::unique_ptr<opentxs::identifier::Nym>;
-auto IdentifierNotary() noexcept
-    -> std::unique_ptr<opentxs::identifier::Notary>;
-auto IdentifierNotary(const proto::Identifier& in) noexcept
-    -> std::unique_ptr<opentxs::identifier::Notary>;
-auto IdentifierUnit() noexcept
-    -> std::unique_ptr<opentxs::identifier::UnitDefinition>;
-auto IdentifierUnit(const proto::Identifier& in) noexcept
-    -> std::unique_ptr<opentxs::identifier::UnitDefinition>;
+auto Identifier(
+    const identifier::Type type,
+    identifier::Generic::allocator_type alloc) noexcept
+    -> identifier::Generic::Imp*;
+auto Identifier(
+    const identifier::Type type,
+    const identifier::Algorithm algorithm,
+    const ReadView hash,
+    identifier::Generic::allocator_type alloc) noexcept
+    -> identifier::Generic::Imp*;
+auto IdentifierInvalid(identifier::Generic::allocator_type alloc) noexcept
+    -> identifier::Generic::Imp*;
 }  // namespace opentxs::factory

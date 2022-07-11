@@ -22,7 +22,6 @@ target_sources(
     "Contact.cpp"
     "Core.cpp"
     "Data.cpp"
-    "Data.hpp"
     "FixedByteArray.cpp"
     "FixedByteArray.tpp"
     "Secret.cpp"

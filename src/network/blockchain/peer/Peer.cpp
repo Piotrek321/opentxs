@@ -27,7 +27,7 @@ Peer::Peer(Peer&& rhs) noexcept
 {
 }
 
-auto Peer::AddressID() const noexcept -> const Identifier&
+auto Peer::AddressID() const noexcept -> const identifier::Generic&
 {
     return imp_->AddressID();
 }

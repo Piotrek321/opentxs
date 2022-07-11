@@ -44,6 +44,7 @@ class Element;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -52,7 +53,6 @@ namespace proto
 class BlockchainTransactionOutput;
 }  // namespace proto
 
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -79,15 +79,15 @@ struct Test_BlockchainActivity : public ::testing::Test {
     const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;
 
-    auto account_1_id() const noexcept -> const ot::Identifier&;
-    auto account_2_id() const noexcept -> const ot::Identifier&;
-    auto contact_1_id() const noexcept -> const ot::Identifier&;
-    auto contact_2_id() const noexcept -> const ot::Identifier&;
-    auto contact_3_id() const noexcept -> const ot::Identifier&;
-    auto contact_4_id() const noexcept -> const ot::Identifier&;
-    auto contact_5_id() const noexcept -> const ot::Identifier&;
-    auto contact_6_id() const noexcept -> const ot::Identifier&;
-    auto contact_7_id() const noexcept -> const ot::Identifier&;
+    auto account_1_id() const noexcept -> const ot::identifier::Generic&;
+    auto account_2_id() const noexcept -> const ot::identifier::Generic&;
+    auto contact_1_id() const noexcept -> const ot::identifier::Generic&;
+    auto contact_2_id() const noexcept -> const ot::identifier::Generic&;
+    auto contact_3_id() const noexcept -> const ot::identifier::Generic&;
+    auto contact_4_id() const noexcept -> const ot::identifier::Generic&;
+    auto contact_5_id() const noexcept -> const ot::identifier::Generic&;
+    auto contact_6_id() const noexcept -> const ot::identifier::Generic&;
+    auto contact_7_id() const noexcept -> const ot::identifier::Generic&;
     auto get_test_transaction(
         const Element& first,
         const Element& second,

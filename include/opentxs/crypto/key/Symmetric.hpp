@@ -9,7 +9,6 @@
 
 #include <cstdint>
 
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -32,6 +31,11 @@ namespace key
 class Symmetric;
 }  // namespace key
 }  // namespace crypto
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 
 namespace proto
 {
@@ -97,7 +101,8 @@ public:
         const opentxs::crypto::key::symmetric::Algorithm mode =
             opentxs::crypto::key::symmetric::Algorithm::Error,
         const ReadView iv = {}) const -> bool = 0;
-    virtual auto ID(const PasswordPrompt& reason) const -> OTIdentifier = 0;
+    virtual auto ID(const PasswordPrompt& reason) const
+        -> identifier::Generic = 0;
     virtual auto RawKey(const PasswordPrompt& reason, Secret& output) const
         -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(proto::SymmetricKey& output) const

@@ -47,7 +47,8 @@ class PasswordPrompt;
 namespace opentxs::implementation
 {
 using dequeOfMail = UnallocatedDeque<std::shared_ptr<Message>>;
-using mapOfIdentifiers = UnallocatedMap<UnallocatedCString, OTIdentifier>;
+using mapOfIdentifiers =
+    UnallocatedMap<UnallocatedCString, identifier::Generic>;
 
 class NymFile final : public opentxs::internal::NymFile, Lockable
 {
@@ -56,10 +57,12 @@ public:
     void DisplayStatistics(opentxs::String& strOutput) const final;
     auto GetInboxHash(
         const UnallocatedCString& acct_id,
-        opentxs::Identifier& theOutput) const -> bool final;  // client-side
+        opentxs::identifier::Generic& theOutput) const
+        -> bool final;  // client-side
     auto GetOutboxHash(
         const UnallocatedCString& acct_id,
-        opentxs::Identifier& theOutput) const -> bool final;  // client-side
+        opentxs::identifier::Generic& theOutput) const
+        -> bool final;  // client-side
     auto GetOutpaymentsByIndex(const std::int32_t nIndex) const
         -> std::shared_ptr<Message> final;
     auto GetOutpaymentsByTransNum(
@@ -99,10 +102,10 @@ public:
     auto SaveSignedNymFile(const identity::Nym& SIGNER_NYM) -> bool;
     auto SetInboxHash(
         const UnallocatedCString& acct_id,
-        const opentxs::Identifier& theInput) -> bool final;  // client-side
+        const identifier::Generic& theInput) -> bool final;  // client-side
     auto SetOutboxHash(
         const UnallocatedCString& acct_id,
-        const opentxs::Identifier& theInput) -> bool final;  // client-side
+        const identifier::Generic& theInput) -> bool final;  // client-side
     void SetUsageCredits(const std::int64_t& lUsage) final
     {
         eLock lock(shared_lock_);
@@ -149,7 +152,7 @@ private:
     auto GetHash(
         const mapOfIdentifiers& the_map,
         const UnallocatedCString& str_id,
-        opentxs::Identifier& theOutput) const -> bool;
+        opentxs::identifier::Generic& theOutput) const -> bool;
 
     void ClearAll();
     auto DeserializeNymFile(
@@ -182,7 +185,7 @@ private:
     auto SetHash(
         mapOfIdentifiers& the_map,
         const UnallocatedCString& str_id,
-        const opentxs::Identifier& theInput) -> bool;
+        const identifier::Generic& theInput) -> bool;
 
     NymFile(const api::Session& api, Nym_p targetNym, Nym_p signerNym);
 };

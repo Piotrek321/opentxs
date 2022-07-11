@@ -8,7 +8,6 @@
 #include <future>
 
 #include "opentxs/Version.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -44,7 +43,8 @@ public:
         -> UnallocatedCString = 0;
     virtual auto IssuerList(
         const identifier::Nym& localNymID,
-        const bool onlyTrusted) const noexcept -> UnallocatedSet<OTNymID> = 0;
+        const bool onlyTrusted) const noexcept
+        -> UnallocatedSet<identifier::Nym> = 0;
     /** For unit tests */
     virtual auto Stop() const noexcept -> std::shared_future<void> = 0;
     /** For unit tests */

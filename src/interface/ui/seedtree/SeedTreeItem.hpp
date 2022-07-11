@@ -17,9 +17,10 @@
 #include "interface/ui/base/RowType.hpp"
 #include "interface/ui/seedtree/SeedTreeItem.hpp"
 #include "internal/interface/ui/UI.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -66,9 +67,12 @@ class SeedTreeItem final
     : public Combined<SeedTreeItemList, SeedTreeItemRow, SeedTreeSortKey>
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto SeedID() const noexcept -> UnallocatedCString final
     {
-        return row_id_->str();
+        return row_id_.asBase58(api_.Crypto());
     }
     auto Debug() const noexcept -> UnallocatedCString final;
     auto Name() const noexcept -> UnallocatedCString final;

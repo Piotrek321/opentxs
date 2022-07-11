@@ -18,10 +18,6 @@
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/display/Definition.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -52,6 +48,7 @@ class Scale;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 class UnitDefinition;
@@ -95,13 +92,9 @@ public:
     auto operator()(const String& in) const noexcept -> const Log&;
     auto operator()(const StringXML& in) const noexcept -> const Log&;
     auto operator()(const Armored& in) const noexcept -> const Log&;
-    auto operator()(const OTIdentifier& in) const noexcept -> const Log&;
-    auto operator()(const Identifier& in) const noexcept -> const Log&;
-    auto operator()(const OTNymID& in) const noexcept -> const Log&;
+    auto operator()(const identifier::Generic& in) const noexcept -> const Log&;
     auto operator()(const identifier::Nym& in) const noexcept -> const Log&;
-    auto operator()(const OTNotaryID& in) const noexcept -> const Log&;
     auto operator()(const identifier::Notary& in) const noexcept -> const Log&;
-    auto operator()(const OTUnitID& in) const noexcept -> const Log&;
     auto operator()(const identifier::UnitDefinition& in) const noexcept
         -> const Log&;
     auto operator()(const Time in) const noexcept -> const Log&;
@@ -145,6 +138,7 @@ private:
     Imp* imp_;
 };
 
+OPENTXS_EXPORT auto LogAbort() noexcept -> Log&;
 OPENTXS_EXPORT auto LogConsole() noexcept -> Log&;
 OPENTXS_EXPORT auto LogDebug() noexcept -> Log&;
 OPENTXS_EXPORT auto LogDetail() noexcept -> Log&;

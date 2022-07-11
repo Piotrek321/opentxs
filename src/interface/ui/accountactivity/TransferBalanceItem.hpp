@@ -29,6 +29,7 @@ class Client;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -48,8 +49,6 @@ namespace proto
 class PaymentEvent;
 class PaymentWorkflow;
 }  // namespace proto
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -77,7 +76,7 @@ public:
         const AccountActivitySortKey& sortKey,
         CustomData& custom,
         const identifier::Nym& nymID,
-        const Identifier& accountID) noexcept;
+        const identifier::Generic& accountID) noexcept;
     TransferBalanceItem() = delete;
     TransferBalanceItem(const TransferBalanceItem&) = delete;
     TransferBalanceItem(TransferBalanceItem&&) = delete;

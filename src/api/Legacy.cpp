@@ -17,6 +17,8 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -33,7 +35,7 @@
 
 namespace opentxs::factory
 {
-auto Legacy(const UnallocatedCString& home) noexcept
+auto Legacy(const std::filesystem::path& home) noexcept
     -> std::unique_ptr<api::Legacy>
 {
     using ReturnType = opentxs::api::imp::Legacy;
@@ -370,9 +372,10 @@ auto Legacy::get_path(const fs::path& fragment, const int instance)
 
 auto Legacy::LedgerFileName(
     const identifier::Notary& server,
-    const Identifier& account) const noexcept -> fs::path
+    const identifier::Generic& account) const noexcept -> fs::path
 {
-    return fs::path{server.str()} / fs::path{account.str()};
+    return fs::path{server.asBase58(opentxs::Context().Crypto())} /
+           fs::path{account.asBase58(opentxs::Context().Crypto())};
 }
 
 auto Legacy::MintFileName(
@@ -380,7 +383,8 @@ auto Legacy::MintFileName(
     const identifier::UnitDefinition& unit,
     std::string_view extension) const noexcept -> fs::path
 {
-    auto out = fs::path{server.str()} / fs::path{unit.str()};
+    auto out = fs::path{server.asBase58(opentxs::Context().Crypto())} /
+               fs::path{unit.asBase58(opentxs::Context().Crypto())};
 
     if (valid(extension)) { out += extension; }
 

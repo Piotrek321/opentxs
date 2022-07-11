@@ -50,6 +50,11 @@ class Symmetric;
 class Parameters;
 }  // namespace crypto
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace identity
 {
 class Authority;
@@ -63,7 +68,6 @@ class HDPath;
 }  // namespace proto
 
 class Data;
-class Identifier;
 class OTSignatureMetadata;
 class PasswordPrompt;
 // }  // namespace v1
@@ -86,14 +90,15 @@ public:
         Secret& password) const noexcept -> bool final;
     auto CalculateTag(
         const key::Asymmetric& dhKey,
-        const Identifier& credential,
+        const identifier::Generic& credential,
         const PasswordPrompt& reason,
         std::uint32_t& tag) const noexcept -> bool final;
     auto CalculateSessionPassword(
         const key::Asymmetric& dhKey,
         const PasswordPrompt& reason,
         Secret& password) const noexcept -> bool final;
-    auto CalculateID(Identifier& theOutput) const noexcept -> bool final;
+    auto CalculateID(identifier::Generic& theOutput) const noexcept
+        -> bool final;
     auto engine() const noexcept -> const crypto::AsymmetricProvider& final
     {
         return provider_;
@@ -111,7 +116,7 @@ public:
         return type_;
     }
     auto NewSignature(
-        const Identifier& credentialID,
+        const identifier::Generic& credentialID,
         const crypto::SignatureRole role,
         const crypto::HashType hash) const -> proto::Signature;
     auto Params() const noexcept -> ReadView override { return {}; }
@@ -133,7 +138,7 @@ public:
         const GetPreimage input,
         const crypto::SignatureRole role,
         proto::Signature& signature,
-        const Identifier& credential,
+        const identifier::Generic& credential,
         const PasswordPrompt& reason,
         const crypto::HashType hash) const noexcept -> bool final;
     auto Sign(
@@ -287,7 +292,7 @@ private:
     auto get_tag(
         const Lock& lock,
         const key::Asymmetric& target,
-        const Identifier& credential,
+        const identifier::Generic& credential,
         const PasswordPrompt& reason,
         std::uint32_t& tag) const noexcept -> bool;
 };

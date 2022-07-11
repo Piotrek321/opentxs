@@ -23,6 +23,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -91,7 +92,7 @@ struct make_blank<ui::implementation::ActivityThreadRowID> {
     static auto value(const api::Session& api)
         -> ui::implementation::ActivityThreadRowID
     {
-        return {api.Factory().Identifier(), {}, api.Factory().Identifier()};
+        return {identifier::Generic{}, {}, identifier::Generic{}};
     }
 };
 
@@ -126,6 +127,7 @@ class ActivityThread final : public ActivityThreadList,
                              public Worker<api::session::Client>
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto CanMessage() const noexcept -> bool final;
     auto ClearCallbacks() const noexcept -> void final;
     auto DisplayName() const noexcept -> UnallocatedCString final;
@@ -133,12 +135,12 @@ public:
     auto Participants() const noexcept -> UnallocatedCString final;
     auto Pay(
         const UnallocatedCString& amount,
-        const Identifier& sourceAccount,
+        const identifier::Generic& sourceAccount,
         const UnallocatedCString& memo,
         const otx::client::PaymentType type) const noexcept -> bool final;
     auto Pay(
         const Amount amount,
-        const Identifier& sourceAccount,
+        const identifier::Generic& sourceAccount,
         const UnallocatedCString& memo,
         const otx::client::PaymentType type) const noexcept -> bool final;
     auto PaymentCode(const UnitType currency) const noexcept
@@ -152,7 +154,7 @@ public:
     ActivityThread(
         const api::session::Client& api,
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const SimpleCallback& cb) noexcept;
     ActivityThread() = delete;
     ActivityThread(const ActivityThread&) = delete;
@@ -181,9 +183,9 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    const OTIdentifier threadID_;
-    const OTIdentifier self_contact_;
-    const UnallocatedSet<OTIdentifier> contacts_;
+    const identifier::Generic threadID_;
+    const identifier::Generic self_contact_;
+    const UnallocatedSet<identifier::Generic> contacts_;
     const UnallocatedCString participants_;
     UnallocatedCString me_;
     UnallocatedCString display_name_;
@@ -205,10 +207,10 @@ private:
     auto from(bool outgoing) const noexcept -> UnallocatedCString;
     auto send_cheque(
         const Amount amount,
-        const Identifier& sourceAccount,
+        const identifier::Generic& sourceAccount,
         const UnallocatedCString& memo) const noexcept -> bool;
-    auto validate_account(const Identifier& sourceAccount) const noexcept
-        -> bool;
+    auto validate_account(
+        const identifier::Generic& sourceAccount) const noexcept -> bool;
 
     auto load_contacts(const proto::StorageThread& thread) noexcept -> void;
     auto load_thread(const proto::StorageThread& thread) noexcept -> void;

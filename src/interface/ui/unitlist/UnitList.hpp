@@ -12,8 +12,8 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/interface/ui/UnitList.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
@@ -36,6 +36,7 @@ class Client;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -51,8 +52,6 @@ class Publish;
 class Message;
 }  // namespace zeromq
 }  // namespace network
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -72,6 +71,10 @@ using UnitListList = List<
 class UnitList final : public UnitListList
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
+
     UnitList(
         const api::session::Client& api,
         const identifier::Nym& nymID,
@@ -95,11 +98,12 @@ private:
         CustomData& custom) const noexcept -> RowPointer final;
 
     auto process_account(const Message& message) noexcept -> void;
-    auto process_account(const Identifier& id) noexcept -> void;
+    auto process_account(const identifier::Generic& id) noexcept -> void;
     auto process_blockchain_balance(const Message& message) noexcept -> void;
     auto process_unit(const UnitListRowID& id) noexcept -> void;
-    auto setup_listeners(const ListenerDefinitions& definitions) noexcept
-        -> void final;
+    auto setup_listeners(
+        const api::session::Client& api,
+        const ListenerDefinitions& definitions) noexcept -> void final;
     auto startup() noexcept -> void;
 };
 }  // namespace opentxs::ui::implementation

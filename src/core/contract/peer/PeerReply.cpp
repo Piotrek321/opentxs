@@ -22,6 +22,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerReply.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -63,13 +64,13 @@ Reply::Reply(
     const identifier::Nym& initiator,
     const identifier::Notary& server,
     const PeerRequestType& type,
-    const Identifier& request,
+    const identifier::Generic& request,
     const UnallocatedCString& conditions)
     : Signable(api, nym, version, conditions, "")
     , initiator_(initiator)
     , recipient_(nym->ID())
     , server_(server)
-    , cookie_(Identifier::Factory(request))
+    , cookie_(request)
     , type_(type)
 {
 }
@@ -86,15 +87,15 @@ Reply::Reply(
           serialized.version(),
           conditions,
           "",
-          api.Factory().Identifier(serialized.id()),
+          api.Factory().IdentifierFromBase58(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
               : Signatures{})
-    , initiator_(identifier::Nym::Factory(serialized.initiator()))
-    , recipient_(identifier::Nym::Factory(serialized.recipient()))
-    , server_(identifier::Notary::Factory(serialized.server()))
-    , cookie_(Identifier::Factory(serialized.cookie()))
+    , initiator_(api_.Factory().NymIDFromBase58(serialized.initiator()))
+    , recipient_(api_.Factory().NymIDFromBase58(serialized.recipient()))
+    , server_(api_.Factory().NotaryIDFromBase58(serialized.server()))
+    , cookie_(api_.Factory().IdentifierFromBase58(serialized.cookie()))
     , type_(translate(serialized.type()))
 {
 }
@@ -172,15 +173,15 @@ auto Reply::Finish(Reply& contract, const PasswordPrompt& reason) -> bool
     }
 }
 
-auto Reply::GetID(const Lock& lock) const -> OTIdentifier
+auto Reply::GetID(const Lock& lock) const -> identifier::Generic
 {
     return GetID(api_, IDVersion(lock));
 }
 
 auto Reply::GetID(const api::Session& api, const SerializedType& contract)
-    -> OTIdentifier
+    -> identifier::Generic
 {
-    return api.Factory().InternalSession().Identifier(contract);
+    return api.Factory().InternalSession().IdentifierFromPreimage(contract);
 }
 
 auto Reply::IDVersion(const Lock& lock) const -> SerializedType
@@ -209,7 +210,7 @@ auto Reply::IDVersion(const Lock& lock) const -> SerializedType
 auto Reply::LoadRequest(
     const api::Session& api,
     const Nym_p& nym,
-    const Identifier& requestID,
+    const identifier::Generic& requestID,
     proto::PeerRequest& output) -> bool
 {
     std::time_t notUsed = 0;
@@ -261,7 +262,7 @@ auto Reply::Serialize(SerializedType& output) const -> bool
 auto Reply::SigVersion(const Lock& lock) const -> SerializedType
 {
     auto contract = IDVersion(lock);
-    contract.set_id(String::Factory(id(lock))->Get());
+    contract.set_id(id(lock).asBase58(api_.Crypto()));
 
     return contract;
 }

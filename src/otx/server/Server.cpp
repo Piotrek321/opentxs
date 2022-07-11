@@ -97,7 +97,7 @@ Server::Server(
     , m_strWalletFilename(String::Factory())
     , m_bReadOnly(false)
     , m_bShutdownFlag(false)
-    , m_notaryID(manager_.Factory().ServerID())
+    , m_notaryID()
     , m_strServerNymID()
     , m_nymServer(nullptr)
     , m_Cron(manager.Factory().InternalSession().Cron())
@@ -369,7 +369,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         if (existing->empty()) {
 
             return wallet.Server(
-                nymID.str(),
+                nymID.asBase58(API().Crypto()),
                 name,
                 terms,
                 endpoints,
@@ -405,7 +405,8 @@ void Server::CreateMainFile(bool& mainFileExists)
     {
         auto nymData = manager_.Wallet().mutable_Nym(nymID, reason_);
 
-        if (false == nymData.SetCommonName(contract->ID()->str(), reason_)) {
+        if (false == nymData.SetCommonName(
+                         contract->ID().asBase58(manager_.Crypto()), reason_)) {
             OT_FAIL;
         }
     }
@@ -453,8 +454,8 @@ void Server::CreateMainFile(bool& mainFileExists)
     OTDB::StorePlainString(
         manager_, json, manager_.DataFolder(), SEED_BACKUP_FILE, "", "", "");
 
-    mainFileExists =
-        mainFile_.CreateMainFile(strBookended->Get(), strNotaryID, nymID.str());
+    mainFileExists = mainFile_.CreateMainFile(
+        strBookended->Get(), strNotaryID, nymID.asBase58(API().Crypto()));
 
     manager_.Config().Save();
 }
@@ -736,8 +737,9 @@ auto Server::DropMessageToNymbox(
         }
         theMsgAngel->m_strNotaryID = String::Factory(m_notaryID);
         theMsgAngel->m_bSuccess = true;
-        SENDER_NYM_ID.GetString(theMsgAngel->m_strNymID);
+        SENDER_NYM_ID.GetString(API().Crypto(), theMsgAngel->m_strNymID);
         RECIPIENT_NYM_ID.GetString(
+            API().Crypto(),
             theMsgAngel->m_strNymID2);  // set the recipient ID
                                         // in theMsgAngel to match our
                                         // recipient ID.
@@ -841,10 +843,9 @@ auto Server::DropMessageToNymbox(
             theLedger->ReleaseSignatures();
             theLedger->SignContract(*m_nymServer, reason_);
             theLedger->SaveContract();
-            theLedger->SaveNymbox(
-                manager_.Factory().Identifier());  // We don't grab the
-                                                   // Nymbox hash here,
-                                                   // since
+            theLedger->SaveNymbox();  // We don't grab the
+                                      // Nymbox hash here,
+                                      // since
             // nothing important changed (just a message
             // was sent.)
 
@@ -919,7 +920,7 @@ auto Server::nymbox_push(
     const OTTransaction& item) const -> network::zeromq::Message
 {
     auto output = zmq::Message{};
-    output.AddFrame(nymID.str());
+    output.AddFrame(nymID.asBase58(API().Crypto()));
     proto::OTXPush push;
     push.set_version(OTX_PUSH_VERSION);
     push.set_type(proto::OTXPUSH_NYMBOX);

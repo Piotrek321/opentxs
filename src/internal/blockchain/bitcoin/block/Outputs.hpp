@@ -13,8 +13,6 @@
 #include "opentxs/blockchain/bitcoin/block/Outputs.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -23,6 +21,11 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainTransaction;
@@ -40,9 +43,10 @@ class Outputs : virtual public block::Outputs
 {
 public:
     virtual auto AssociatedLocalNyms(
-        UnallocatedVector<OTNymID>& output) const noexcept -> void = 0;
+        UnallocatedVector<identifier::Nym>& output) const noexcept -> void = 0;
     virtual auto AssociatedRemoteContacts(
-        UnallocatedVector<OTIdentifier>& output) const noexcept -> void = 0;
+        UnallocatedVector<identifier::Generic>& output) const noexcept
+        -> void = 0;
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Outputs> = 0;
     virtual auto ExtractElements(const cfilter::Type style) const noexcept

@@ -82,10 +82,11 @@ class Input final : public internal::Input
 public:
     static const VersionNumber default_version_;
 
-    auto AssociatedLocalNyms(UnallocatedVector<OTNymID>& output) const noexcept
-        -> void final;
+    auto AssociatedLocalNyms(UnallocatedVector<identifier::Nym>& output)
+        const noexcept -> void final;
     auto AssociatedRemoteContacts(
-        UnallocatedVector<OTIdentifier>& output) const noexcept -> void final;
+        UnallocatedVector<identifier::Generic>& output) const noexcept
+        -> void final;
     auto CalculateSize(const bool normalized) const noexcept
         -> std::size_t final;
     auto Coinbase() const noexcept -> Space final { return coinbase_; }
@@ -117,7 +118,10 @@ public:
         const identifier::Nym& nym,
         const std::size_t index,
         const Log& log) const noexcept -> opentxs::Amount final;
-    auto Payer() const noexcept -> OTIdentifier { return cache_.payer(); }
+    auto Payer() const noexcept -> identifier::Generic
+    {
+        return cache_.payer();
+    }
     auto PreviousOutput() const noexcept
         -> const blockchain::block::Outpoint& final
     {
@@ -235,7 +239,7 @@ private:
             const identifier::Nym& nym,
             const std::size_t index,
             const Log& log) const noexcept -> opentxs::Amount;
-        auto payer() const noexcept -> OTIdentifier;
+        auto payer() const noexcept -> identifier::Generic;
         auto spends() const noexcept(false) -> const internal::Output&;
 
         auto add(crypto::Key&& key) noexcept -> void;
@@ -272,7 +276,7 @@ private:
         std::optional<std::size_t> size_;
         std::optional<std::size_t> normalized_size_;
         boost::container::flat_set<crypto::Key> keys_;
-        OTIdentifier payer_;
+        identifier::Generic payer_;
     };
 
     static const VersionNumber outpoint_version_;

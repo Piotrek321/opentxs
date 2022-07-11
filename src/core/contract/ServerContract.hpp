@@ -17,7 +17,6 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -32,6 +31,11 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace identifier
+{
+class Notary;
+}  // namespace identifier
 
 namespace proto
 {
@@ -83,7 +87,7 @@ public:
         const UnallocatedCString& name,
         UnallocatedList<contract::Server::Endpoint>&& endpoints,
         ByteArray&& key,
-        OTNotaryID&& id,
+        identifier::Notary&& id,
         Signatures&& signatures = {});
     Server(
         const api::Session& api,
@@ -110,7 +114,7 @@ private:
 
     auto clone() const noexcept -> Server* final { return new Server(*this); }
     auto contract(const Lock& lock) const -> proto::ServerContract;
-    auto GetID(const Lock& lock) const -> OTIdentifier final;
+    auto GetID(const Lock& lock) const -> identifier::Generic final;
     auto IDVersion(const Lock& lock) const -> proto::ServerContract;
     auto SigVersion(const Lock& lock) const -> proto::ServerContract;
     auto validate(const Lock& lock) const -> bool final;

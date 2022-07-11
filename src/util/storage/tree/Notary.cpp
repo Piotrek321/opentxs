@@ -21,10 +21,10 @@
 #include "internal/serialization/protobuf/verify/SpentTokenList.hpp"
 #include "internal/serialization/protobuf/verify/StorageNotary.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
@@ -40,10 +40,12 @@ constexpr auto STORAGE_MINT_SPENT_LIST_VERSION = 1;
 namespace opentxs::storage
 {
 Notary::Notary(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
     const Driver& storage,
     const UnallocatedCString& hash,
     const UnallocatedCString& id)
-    : Node(storage, hash)
+    : Node(crypto, factory, storage, hash)
     , id_(id)
     , mint_map_()
 {
@@ -62,7 +64,7 @@ auto Notary::CheckSpent(
     if (key.empty()) { throw std::runtime_error("Invalid token key"); }
 
     Lock lock(write_lock_);
-    const auto list = get_or_create_list(lock, unit.str(), series);
+    const auto list = get_or_create_list(lock, unit.asBase58(crypto_), series);
 
     for (const auto& spent : list.spent()) {
         if (spent == key) {
@@ -163,12 +165,12 @@ auto Notary::MarkSpent(
     }
 
     Lock lock(write_lock_);
-    auto list = get_or_create_list(lock, unit.str(), series);
+    auto list = get_or_create_list(lock, unit.asBase58(crypto_), series);
     list.add_spent(key);
 
     OT_ASSERT(proto::Validate(list, VERBOSE));
 
-    auto& hash = mint_map_[unit.str()][series];
+    auto& hash = mint_map_[unit.asBase58(crypto_)][series];
     LogTrace()(OT_PRETTY_CLASS())("Token ")(key)(" marked as spent.").Flush();
 
     return driver_.StoreProto(list, hash);
@@ -205,7 +207,8 @@ auto Notary::serialize() const -> proto::StorageNotary
             auto& storageHash = *series.add_series();
             const auto seriesString = std::to_string(seriesNumber);
             storageHash.set_version(STORAGE_MINT_SERIES_HASH_VERSION);
-            storageHash.set_itemid(Identifier::Factory(seriesString)->str());
+            storageHash.set_itemid(
+                factory_.IdentifierFromBase58(seriesString).asBase58(crypto_));
             storageHash.set_hash(hash);
             storageHash.set_alias(seriesString);
             storageHash.set_type(proto::STORAGEHASH_PROTO);

@@ -22,6 +22,11 @@ class Wallet;
 }  // namespace session
 }  // namespace api
 
+namespace identifier
+{
+class Notary;
+}  // namespace identifier
+
 class Account;
 class PasswordPrompt;
 // }  // namespace v1
@@ -52,7 +57,7 @@ public:
 
 protected:
     const api::session::Wallet& wallet_;
-    const OTNotaryID notaryID_;
+    const identifier::Notary notaryID_;
     mapOfAccounts* loadedAccounts_;
 
     AccountVisitor(

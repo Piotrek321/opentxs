@@ -19,9 +19,13 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 class Armored;
 class Contract;
-class Identifier;
 class NymFile;
 class Signature;
 // }  // namespace v1
@@ -91,7 +95,7 @@ protected:
     explicit String(const opentxs::Armored& value);
     explicit String(const opentxs::Signature& value);
     explicit String(const opentxs::Contract& value);
-    explicit String(const opentxs::Identifier& value);
+    explicit String(const identifier::Generic& value);
     explicit String(const opentxs::NymFile& value);
     String(const char* value);
     explicit String(const UnallocatedCString& value);

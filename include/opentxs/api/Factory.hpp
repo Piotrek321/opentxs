@@ -7,7 +7,12 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <string_view>
+
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/core/identifier/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -21,6 +26,14 @@ namespace internal
 class Factory;
 }  // namespace internal
 }  // namespace api
+
+namespace identifier
+{
+class Generic;
+class Notary;
+class Nym;
+class UnitDefinition;
+}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -38,13 +51,106 @@ namespace opentxs::api
 class OPENTXS_EXPORT Factory
 {
 public:
+    using allocator_type = alloc::Default;
+
+    virtual auto IdentifierFromBase58(
+        const std::string_view base58,
+        allocator_type alloc = {}) const noexcept -> identifier::Generic = 0;
+    virtual auto IdentifierFromHash(
+        const ReadView bytes,
+        allocator_type alloc = {}) const noexcept -> identifier::Generic = 0;
+    virtual auto IdentifierFromHash(
+        const ReadView bytes,
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept -> identifier::Generic = 0;
+    virtual auto IdentifierFromPreimage(
+        const ReadView preimage,
+        allocator_type alloc = {}) const noexcept -> identifier::Generic = 0;
+    virtual auto IdentifierFromPreimage(
+        const ReadView preimage,
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept -> identifier::Generic = 0;
+    virtual auto IdentifierFromRandom(allocator_type alloc = {}) const noexcept
+        -> identifier::Generic = 0;
+    virtual auto IdentifierFromRandom(
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept -> identifier::Generic = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Factory& = 0;
+    virtual auto NotaryIDFromBase58(
+        const std::string_view base58,
+        allocator_type alloc = {}) const noexcept -> identifier::Notary = 0;
+    virtual auto NotaryIDFromHash(
+        const ReadView bytes,
+        allocator_type alloc = {}) const noexcept -> identifier::Notary = 0;
+    virtual auto NotaryIDFromHash(
+        const ReadView bytes,
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept -> identifier::Notary = 0;
+    virtual auto NotaryIDFromPreimage(
+        const ReadView preimage,
+        allocator_type alloc = {}) const noexcept -> identifier::Notary = 0;
+    virtual auto NotaryIDFromPreimage(
+        const ReadView preimage,
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept -> identifier::Notary = 0;
+    virtual auto NotaryIDFromRandom(allocator_type alloc = {}) const noexcept
+        -> identifier::Notary = 0;
+    virtual auto NotaryIDFromRandom(
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept -> identifier::Notary = 0;
+    virtual auto NymIDFromHash(const ReadView bytes, allocator_type alloc = {})
+        const noexcept -> identifier::Nym = 0;
+    virtual auto NymIDFromHash(
+        const ReadView bytes,
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept -> identifier::Nym = 0;
+    virtual auto NymIDFromBase58(
+        const std::string_view base58,
+        allocator_type alloc = {}) const noexcept -> identifier::Nym = 0;
+    virtual auto NymIDFromPreimage(
+        const ReadView preimage,
+        allocator_type alloc = {}) const noexcept -> identifier::Nym = 0;
+    virtual auto NymIDFromPreimage(
+        const ReadView preimage,
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept -> identifier::Nym = 0;
+    virtual auto NymIDFromRandom(allocator_type alloc = {}) const noexcept
+        -> identifier::Nym = 0;
+    virtual auto NymIDFromRandom(
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept -> identifier::Nym = 0;
     virtual auto Secret(const std::size_t bytes) const noexcept -> OTSecret = 0;
     virtual auto SecretFromBytes(const ReadView bytes) const noexcept
         -> OTSecret = 0;
     virtual auto SecretFromText(const std::string_view text) const noexcept
         -> OTSecret = 0;
+    virtual auto UnitIDFromBase58(
+        const std::string_view base58,
+        allocator_type alloc = {}) const noexcept
+        -> identifier::UnitDefinition = 0;
+    virtual auto UnitIDFromHash(const ReadView bytes, allocator_type alloc = {})
+        const noexcept -> identifier::UnitDefinition = 0;
+    virtual auto UnitIDFromHash(
+        const ReadView bytes,
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept
+        -> identifier::UnitDefinition = 0;
+    virtual auto UnitIDFromPreimage(
+        const ReadView preimage,
+        allocator_type alloc = {}) const noexcept
+        -> identifier::UnitDefinition = 0;
+    virtual auto UnitIDFromPreimage(
+        const ReadView preimage,
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept
+        -> identifier::UnitDefinition = 0;
+    virtual auto UnitIDFromRandom(allocator_type alloc = {}) const noexcept
+        -> identifier::UnitDefinition = 0;
+    virtual auto UnitIDFromRandom(
+        const identifier::Algorithm type,
+        allocator_type alloc = {}) const noexcept
+        -> identifier::UnitDefinition = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Factory& = 0;

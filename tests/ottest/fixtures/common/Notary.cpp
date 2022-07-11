@@ -60,7 +60,7 @@ auto Notary_fixture::IssueUnit(
     const auto& serverID = server.ID();
     const auto reason = api.Factory().PasswordPrompt(__func__);
     const auto contract = api.Wallet().CurrencyContract(
-        nymID.str(),
+        nymID.asBase58(ot_.Crypto()),
         shortname,
         terms,
         unitOfAccount,
@@ -70,8 +70,9 @@ auto Notary_fixture::IssueUnit(
 
     if (0u == contract->Version()) { return {}; }
 
-    const auto& output = created_units_.emplace_back(contract->ID()->str());
-    const auto unitID = api.Factory().UnitID(output);
+    const auto& output =
+        created_units_.emplace_back(contract->ID().asBase58(ot_.Crypto()));
+    const auto unitID = api.Factory().UnitIDFromBase58(output);
     auto [taskID, future] = api.OTX().IssueUnitDefinition(
         nymID, serverID, unitID, unitOfAccount, "issuer account");
 
@@ -81,8 +82,9 @@ auto Notary_fixture::IssueUnit(
 
     if (ot::otx::LastReplyStatus::MessageSuccess != status) { return {}; }
 
-    const auto& accountID = registered_accounts_[nymID.str()].emplace_back(
-        message->m_strAcctID->Get());
+    const auto& accountID =
+        registered_accounts_[nymID.asBase58(ot_.Crypto())].emplace_back(
+            message->m_strAcctID->Get());
     account_index_.emplace(unitOfAccount, accountIndex++);
 
     if (accountID.empty()) { return {}; }
@@ -106,7 +108,7 @@ auto Notary_fixture::RegisterNym(
     const ot::api::session::Notary& server,
     const ot::UnallocatedCString& nymID) const noexcept -> bool
 {
-    return RegisterNym(api, server, api.Factory().NymID(nymID));
+    return RegisterNym(api, server, api.Factory().NymIDFromBase58(nymID));
 }
 
 auto Notary_fixture::RegisterNym(

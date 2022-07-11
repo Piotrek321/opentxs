@@ -265,7 +265,7 @@ auto Primary::translate(const proto::SourceProofType in) noexcept
 auto Primary::Verify(
     const proto::Credential& credential,
     const identity::CredentialRole& role,
-    const Identifier& masterID,
+    const identifier::Generic& masterID,
     const proto::Signature& masterSig) const -> bool
 {
     if (!proto::Validate<proto::Credential>(

@@ -49,8 +49,8 @@ namespace opentxs
 {
 OTAgreement::OTAgreement(const api::Session& api)
     : ot_super(api)
-    , m_RECIPIENT_ACCT_ID(api_.Factory().Identifier())
-    , m_RECIPIENT_NYM_ID(api_.Factory().NymID())
+    , m_RECIPIENT_ACCT_ID()
+    , m_RECIPIENT_NYM_ID()
     , m_strConsideration(String::Factory())
     , m_strMerchantSignedCopy(String::Factory())
     , m_dequeRecipientClosingNumbers()
@@ -63,8 +63,8 @@ OTAgreement::OTAgreement(
     const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
     : ot_super(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
-    , m_RECIPIENT_ACCT_ID(api_.Factory().Identifier())
-    , m_RECIPIENT_NYM_ID(api_.Factory().NymID())
+    , m_RECIPIENT_ACCT_ID()
+    , m_RECIPIENT_NYM_ID()
     , m_strConsideration(String::Factory())
     , m_strMerchantSignedCopy(String::Factory())
     , m_dequeRecipientClosingNumbers()
@@ -76,9 +76,9 @@ OTAgreement::OTAgreement(
     const api::Session& api,
     const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-    const Identifier& SENDER_ACCT_ID,
+    const identifier::Generic& SENDER_ACCT_ID,
     const identifier::Nym& SENDER_NYM_ID,
-    const Identifier& RECIPIENT_ACCT_ID,
+    const identifier::Generic& RECIPIENT_ACCT_ID,
     const identifier::Nym& RECIPIENT_NYM_ID)
     : ot_super(
           api,
@@ -86,8 +86,8 @@ OTAgreement::OTAgreement(
           INSTRUMENT_DEFINITION_ID,
           SENDER_ACCT_ID,
           SENDER_NYM_ID)
-    , m_RECIPIENT_ACCT_ID(api_.Factory().Identifier())
-    , m_RECIPIENT_NYM_ID(api_.Factory().NymID())
+    , m_RECIPIENT_ACCT_ID()
+    , m_RECIPIENT_NYM_ID()
     , m_strConsideration(String::Factory())
     , m_strMerchantSignedCopy(String::Factory())
     , m_dequeRecipientClosingNumbers()
@@ -218,7 +218,7 @@ auto OTAgreement::DropServerNoticeToNymbox(
         // Set up the transaction items (each transaction may have multiple
         // items... but not in this case.)
         auto pItem1{api.Factory().InternalSession().Item(
-            *pTransaction, itemType::notice, api.Factory().Identifier())};
+            *pTransaction, itemType::notice, identifier::Generic{})};
         OT_ASSERT(false != bool(pItem1));  // This may be unnecessary, I'll have
                                            // to check
                                            // CreateItemFromTransaction. I'll
@@ -284,7 +284,7 @@ auto OTAgreement::DropServerNoticeToNymbox(
 
         // TODO: Better rollback capabilities in case of failures here:
 
-        auto theNymboxHash = api.Factory().Identifier();
+        auto theNymboxHash = identifier::Generic{};
 
         // Save nymbox to storage. (File, DB, wherever it goes.)
         (theLedger->SaveNymbox(theNymboxHash));
@@ -397,7 +397,7 @@ void OTAgreement::onFinalReceipt(
     auto strUpdatedCronItem = String::Factory(*this);
     OTString pstrAttachment = strUpdatedCronItem;
     const auto strOrigCronItem = String::Factory(theOrigCronItem);
-    const OTNymID NYM_ID = GetRecipientNymID();
+    const identifier::Nym NYM_ID = GetRecipientNymID();
 
     // First, we are closing the transaction number ITSELF, of this cron item,
     // as an active issued number on the originating nym. (Changing it to
@@ -658,7 +658,7 @@ auto OTAgreement::GetOpeningNumber(const identifier::Nym& theNymID) const
     return ot_super::GetOpeningNumber(theNymID);
 }
 
-auto OTAgreement::GetClosingNumber(const Identifier& theAcctID) const
+auto OTAgreement::GetClosingNumber(const identifier::Generic& theAcctID) const
     -> std::int64_t
 {
     const auto& theRecipientAcctID = GetRecipientAcctID();
@@ -1150,8 +1150,8 @@ void OTAgreement::Release_Agreement()
 {
     // If there were any dynamically allocated objects, clean them up here.
     //
-    m_RECIPIENT_ACCT_ID->clear();
-    m_RECIPIENT_NYM_ID->clear();
+    m_RECIPIENT_ACCT_ID.clear();
+    m_RECIPIENT_NYM_ID.clear();
 
     m_strConsideration->Release();
     m_strMerchantSignedCopy->Release();
@@ -1230,22 +1230,27 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             m_bCanceled = true;
 
             if (strCancelerNymID->Exists()) {
-                m_pCancelerNymID->SetString(strCancelerNymID);
+                m_pCancelerNymID =
+                    api_.Factory().NymIDFromBase58(strCancelerNymID->Bytes());
             }
             // else log
         } else {
             m_bCanceled = false;
-            m_pCancelerNymID->clear();
+            m_pCancelerNymID.clear();
         }
 
-        const auto NOTARY_ID = api_.Factory().ServerID(strNotaryID);
+        const auto NOTARY_ID =
+            api_.Factory().NotaryIDFromBase58(strNotaryID->Bytes());
         const auto INSTRUMENT_DEFINITION_ID =
-            api_.Factory().UnitID(strInstrumentDefinitionID);
-        const auto SENDER_ACCT_ID = api_.Factory().Identifier(strSenderAcctID),
-                   RECIPIENT_ACCT_ID =
-                       api_.Factory().Identifier(strRecipientAcctID);
-        const auto SENDER_NYM_ID = api_.Factory().NymID(strSenderNymID),
-                   RECIPIENT_NYM_ID = api_.Factory().NymID(strRecipientNymID);
+            api_.Factory().UnitIDFromBase58(strInstrumentDefinitionID->Bytes());
+        const auto SENDER_ACCT_ID =
+            api_.Factory().IdentifierFromBase58(strSenderAcctID->Bytes());
+        const auto RECIPIENT_ACCT_ID =
+            api_.Factory().IdentifierFromBase58(strRecipientAcctID->Bytes());
+        const auto SENDER_NYM_ID =
+            api_.Factory().NymIDFromBase58(strSenderNymID->Bytes());
+        const auto RECIPIENT_NYM_ID =
+            api_.Factory().NymIDFromBase58(strRecipientNymID->Bytes());
 
         SetNotaryID(NOTARY_ID);
         SetInstrumentDefinitionID(INSTRUMENT_DEFINITION_ID);

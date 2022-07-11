@@ -97,7 +97,7 @@ namespace opentxs::contract::blank
 {
 struct Signable : virtual public opentxs::contract::Signable {
     auto Alias() const noexcept -> UnallocatedCString final { return {}; }
-    auto ID() const noexcept -> OTIdentifier final { return id_; }
+    auto ID() const noexcept -> identifier::Generic final { return id_; }
     auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto Nym() const noexcept -> Nym_p final { return {}; }
     auto Terms() const noexcept -> const UnallocatedCString& final
@@ -118,7 +118,7 @@ struct Signable : virtual public opentxs::contract::Signable {
 
     Signable(const api::Session& api)
         : api_(api)
-        , id_(api.Factory().Identifier())
+        , id_()
         , terms_()
     {
     }
@@ -127,7 +127,7 @@ struct Signable : virtual public opentxs::contract::Signable {
 
 protected:
     const api::Session& api_;
-    const OTIdentifier id_;
+    const identifier::Generic id_;
     const UnallocatedCString terms_;
 
     Signable(const Signable& rhs)
@@ -145,8 +145,9 @@ struct Unit final : virtual public opentxs::contract::Unit, public Signable {
         return {};
     }
     auto DisplayStatistics(String&) const -> bool final { return {}; }
-    auto EraseAccountRecord(const UnallocatedCString&, const Identifier&) const
-        -> bool final
+    auto EraseAccountRecord(
+        const UnallocatedCString&,
+        const identifier::Generic&) const -> bool final
     {
         return {};
     }
@@ -251,14 +252,14 @@ struct Reply : virtual public opentxs::contract::peer::Reply,
 
     Reply(const api::Session& api)
         : Signable(api)
-        , server_(api.Factory().ServerID())
+        , server_()
     {
     }
 
     ~Reply() override = default;
 
 protected:
-    const identifier::Notary& server_;
+    const identifier::Notary server_;
 
     auto clone() const noexcept -> Reply* override { return new Reply(*this); }
 
@@ -293,16 +294,16 @@ struct Request : virtual public opentxs::contract::peer::Request,
 
     Request(const api::Session& api)
         : Signable(api)
-        , nym_(api.Factory().NymID())
-        , server_(api.Factory().ServerID())
+        , nym_()
+        , server_()
     {
     }
 
     ~Request() override = default;
 
 protected:
-    const identifier::Nym& nym_;
-    const identifier::Notary& server_;
+    const identifier::Nym nym_;
+    const identifier::Notary server_;
 
     auto clone() const noexcept -> Request* override
     {
@@ -426,14 +427,14 @@ struct Bailment final
 
     Bailment(const api::Session& api)
         : Request(api)
-        , unit_(api.Factory().UnitID())
+        , unit_()
     {
     }
 
     ~Bailment() final = default;
 
 private:
-    const OTUnitID unit_;
+    const identifier::UnitDefinition unit_;
 
     auto clone() const noexcept -> Bailment* final
     {

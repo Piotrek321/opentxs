@@ -13,6 +13,7 @@
 #include "interface/qt/DestinationValidator.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/AccountType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::ui
@@ -32,7 +33,7 @@ auto DestinationValidator::Imp::strip_invalid(
 DestinationValidator::DestinationValidator(
     const api::session::Client& api,
     std::int8_t type,
-    const Identifier& account,
+    const identifier::Generic& account,
     implementation::AccountActivity& parent) noexcept
     : imp_(
           (AccountType::Blockchain == static_cast<AccountType>(type))

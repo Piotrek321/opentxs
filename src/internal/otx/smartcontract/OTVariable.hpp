@@ -10,13 +10,20 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 class OTBylaw;
 class OTScript;
 class OTVariable;
 class Tag;
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace opentxs
+{
 class OTVariable
 {
 public:

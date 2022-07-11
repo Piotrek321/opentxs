@@ -39,10 +39,9 @@ class Outpoint;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -62,7 +61,7 @@ public:
         -> Balance = 0;
     virtual auto GetBalance(
         const identifier::Nym& owner,
-        const Identifier& subaccount) const noexcept -> Balance = 0;
+        const identifier::Generic& subaccount) const noexcept -> Balance = 0;
     virtual auto GetBalance(const crypto::Key& key) const noexcept
         -> Balance = 0;
     virtual auto GetOutputs(alloc::Default alloc = {}) const noexcept
@@ -78,11 +77,11 @@ public:
         alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& subaccount,
+        const identifier::Generic& subaccount,
         alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& subaccount,
+        const identifier::Generic& subaccount,
         TxoState type,
         alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(

@@ -8,9 +8,9 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <optional>
+#include <string_view>
 
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -29,6 +29,11 @@ struct Deterministic;
 }  // namespace internal
 }  // namespace crypto
 }  // namespace blockchain
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -55,17 +60,29 @@ public:
     virtual auto PathRoot() const noexcept -> const UnallocatedCString = 0;
     virtual auto Reserve(
         const Subchain type,
+        const identifier::Generic& contact,
         const PasswordPrompt& reason,
-        const Identifier& contact = Identifier::Factory(),
-        const UnallocatedCString& label = {},
+        const std::string_view label = {},
+        const Time time = Clock::now()) const noexcept
+        -> std::optional<Bip32Index> = 0;
+    virtual auto Reserve(
+        const Subchain type,
+        const PasswordPrompt& reason,
+        const std::string_view label = {},
         const Time time = Clock::now()) const noexcept
         -> std::optional<Bip32Index> = 0;
     virtual auto Reserve(
         const Subchain type,
         const std::size_t batch,
+        const identifier::Generic& contact,
         const PasswordPrompt& reason,
-        const Identifier& contact = Identifier::Factory(),
-        const UnallocatedCString& label = {},
+        const std::string_view label = {},
+        const Time time = Clock::now()) const noexcept -> Batch = 0;
+    virtual auto Reserve(
+        const Subchain type,
+        const std::size_t batch,
+        const PasswordPrompt& reason,
+        const std::string_view label = {},
         const Time time = Clock::now()) const noexcept -> Batch = 0;
     virtual auto RootNode(const PasswordPrompt& reason) const noexcept
         -> HDKey = 0;

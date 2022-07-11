@@ -15,6 +15,7 @@
 #include <iosfwd>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <tuple>
 #include <utility>
 
@@ -37,7 +38,6 @@
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/ByteArray.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -56,6 +56,7 @@ class Blockchain;
 }  // namespace crypto
 
 class Crypto;
+class Factory;
 class Session;
 }  // namespace api
 
@@ -84,6 +85,7 @@ class Wallet;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -94,7 +96,6 @@ class HDPath;
 
 class ByteArray;
 class Data;
-class Identifier;
 class PasswordPrompt;
 class PaymentCode;
 // }  // namespace v1
@@ -105,8 +106,9 @@ namespace opentxs
 {
 auto blockchain_thread_item_id(
     const api::Crypto& crypto,
+    const api::Factory& factory,
     const opentxs::blockchain::Type chain,
-    const Data& txid) noexcept -> OTIdentifier;
+    const Data& txid) noexcept -> identifier::Generic;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::crypto
@@ -124,7 +126,7 @@ struct Wallet : virtual public crypto::Wallet {
         const proto::HDPath& path,
         const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
-        Identifier& id) noexcept -> bool = 0;
+        identifier::Generic& id) noexcept -> bool = 0;
 
     ~Wallet() override = default;
 };
@@ -133,7 +135,7 @@ struct Account : virtual public crypto::Account {
     virtual auto AssociateTransaction(
         const UnallocatedVector<Activity>& unspent,
         const UnallocatedVector<Activity>& spent,
-        UnallocatedSet<OTIdentifier>& contacts,
+        UnallocatedSet<identifier::Generic>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
     virtual auto ClaimAccountID(
         const UnallocatedCString& id,
@@ -146,20 +148,20 @@ struct Account : virtual public crypto::Account {
         const proto::HDPath& path,
         const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
-        Identifier& id) noexcept -> bool = 0;
+        identifier::Generic& id) noexcept -> bool = 0;
     virtual auto AddUpdatePaymentCode(
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
         const PasswordPrompt& reason,
-        Identifier& id) noexcept -> bool = 0;
+        identifier::Generic& id) noexcept -> bool = 0;
     virtual auto AddUpdatePaymentCode(
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
         const opentxs::blockchain::block::Txid& notification,
         const PasswordPrompt& reason,
-        Identifier& id) noexcept -> bool = 0;
+        identifier::Generic& id) noexcept -> bool = 0;
     virtual auto Startup() noexcept -> void = 0;
 
     ~Account() override = default;
@@ -179,22 +181,22 @@ struct Element : virtual public crypto::Element {
     };
 
     virtual auto Elements() const noexcept -> UnallocatedSet<ByteArray> = 0;
-    virtual auto ID() const noexcept -> const Identifier& = 0;
+    virtual auto ID() const noexcept -> const identifier::Generic& = 0;
     virtual auto IncomingTransactions() const noexcept
         -> UnallocatedSet<UnallocatedCString> = 0;
     virtual auto IsAvailable(
-        const Identifier& contact,
-        const UnallocatedCString& memo) const noexcept -> Availability = 0;
+        const identifier::Generic& contact,
+        const std::string_view memo) const noexcept -> Availability = 0;
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
     virtual auto Serialize() const noexcept -> SerializedType = 0;
 
     virtual auto Confirm(const Txid& tx) noexcept -> bool = 0;
     virtual auto Reserve(const Time time) noexcept -> bool = 0;
-    virtual auto SetContact(const Identifier& id) noexcept -> void = 0;
-    virtual auto SetLabel(const UnallocatedCString& label) noexcept -> void = 0;
+    virtual auto SetContact(const identifier::Generic& id) noexcept -> void = 0;
+    virtual auto SetLabel(const std::string_view label) noexcept -> void = 0;
     virtual auto SetMetadata(
-        const Identifier& contact,
-        const UnallocatedCString& label) noexcept -> void = 0;
+        const identifier::Generic& contact,
+        const std::string_view label) noexcept -> void = 0;
     virtual auto Unconfirm(const Txid& tx, const Time time) noexcept
         -> bool = 0;
     virtual auto Unreserve() noexcept -> bool = 0;
@@ -204,7 +206,7 @@ struct Subaccount : virtual public crypto::Subaccount {
     virtual auto AssociateTransaction(
         const UnallocatedVector<Activity>& unspent,
         const UnallocatedVector<Activity>& spent,
-        UnallocatedSet<OTIdentifier>& contacts,
+        UnallocatedSet<identifier::Generic>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
     virtual auto IncomingTransactions(const Key& key) const noexcept
         -> UnallocatedSet<UnallocatedCString> = 0;
@@ -220,11 +222,11 @@ struct Subaccount : virtual public crypto::Subaccount {
     virtual auto SetContact(
         const Subchain type,
         const Bip32Index index,
-        const Identifier& id) noexcept(false) -> bool = 0;
+        const identifier::Generic& id) noexcept(false) -> bool = 0;
     virtual auto SetLabel(
         const Subchain type,
         const Bip32Index index,
-        const UnallocatedCString& label) noexcept(false) -> bool = 0;
+        const std::string_view label) noexcept(false) -> bool = 0;
     virtual auto SetScanProgress(
         const block::Position& progress,
         Subchain type) noexcept -> void = 0;
@@ -270,6 +272,6 @@ struct PaymentCode : virtual public crypto::PaymentCode,
         const api::Session& api,
         const Chain chain,
         const opentxs::PaymentCode& local,
-        const opentxs::PaymentCode& remote) noexcept -> OTIdentifier;
+        const opentxs::PaymentCode& remote) noexcept -> identifier::Generic;
 };
 }  // namespace opentxs::blockchain::crypto::internal

@@ -128,11 +128,12 @@ auto Index::Imp::process_key(Message&& in) noexcept -> void
 
     if (chain != parent_.chain_) { return; }
 
-    const auto owner = parent_.api_.Factory().NymID(body.at(2));
+    const auto owner = parent_.api_.Factory().NymIDFromHash(body.at(2).Bytes());
 
     if (owner != parent_.owner_) { return; }
 
-    const auto id = parent_.api_.Factory().Identifier(body.at(3));
+    const auto id =
+        parent_.api_.Factory().IdentifierFromHash(body.at(3).Bytes());
 
     if (id != parent_.id_) { return; }
 

@@ -148,12 +148,6 @@ auto FixedByteArray<N>::clear() noexcept -> void
 }
 
 template <std::size_t N>
-auto FixedByteArray<N>::clone() const -> Data*
-{
-    return std::make_unique<FixedByteArray<N>>(*this).release();
-}
-
-template <std::size_t N>
 auto FixedByteArray<N>::data() const -> const void*
 {
     return data_.data();
@@ -286,12 +280,6 @@ auto FixedByteArray<N>::IsNull() const -> bool
 }
 
 template <std::size_t N>
-auto FixedByteArray<N>::GetPointer() const -> const void*
-{
-    return data_.data();
-}
-
-template <std::size_t N>
 auto FixedByteArray<N>::operator==(const Data& rhs) const noexcept -> bool
 {
     return Bytes() == rhs.Bytes();
@@ -382,18 +370,6 @@ auto FixedByteArray<N>::Randomize(const std::size_t size) -> bool
     ::randombytes_buf(data_.data(), N);
 
     return true;
-}
-
-template <std::size_t N>
-auto FixedByteArray<N>::str() const -> UnallocatedCString
-{
-    return UnallocatedCString{Bytes()};
-}
-
-template <std::size_t N>
-auto FixedByteArray<N>::str(alloc::Default alloc) const -> CString
-{
-    return CString{Bytes(), alloc};
 }
 
 template <std::size_t N>

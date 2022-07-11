@@ -15,8 +15,10 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
@@ -69,6 +71,9 @@ using AccountSummaryList = List<
 class AccountSummary final : public AccountSummaryList
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto Currency() const noexcept -> UnitType final { return currency_; }
     auto NymID() const noexcept -> const identifier::Nym& final
     {
@@ -91,9 +96,9 @@ public:
 private:
     const ListenerDefinitions listeners_;
     const UnitType currency_;
-    UnallocatedSet<OTNymID> issuers_;
-    UnallocatedMap<OTNotaryID, OTNymID> server_issuer_map_;
-    UnallocatedMap<OTNymID, OTNotaryID> nym_server_map_;
+    UnallocatedSet<identifier::Nym> issuers_;
+    UnallocatedMap<identifier::Notary, identifier::Nym> server_issuer_map_;
+    UnallocatedMap<identifier::Nym, identifier::Notary> nym_server_map_;
 
     auto construct_row(
         const AccountSummaryRowID& id,

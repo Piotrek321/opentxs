@@ -33,7 +33,6 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs::blockchain
@@ -52,7 +51,7 @@ auto Chain(const api::Session& api, const identifier::Nym& id) noexcept
     -> blockchain::Type
 {
     static const auto data = [&] {
-        auto out = UnallocatedMap<OTNymID, blockchain::Type>{};
+        auto out = UnallocatedMap<identifier::Nym, blockchain::Type>{};
 
         for (const auto& chain : blockchain::DefinedChains()) {
             out.emplace(IssuerID(api, chain), chain);
@@ -74,7 +73,7 @@ auto Chain(const api::Session& api, const identifier::Notary& id) noexcept
     -> blockchain::Type
 {
     static const auto data = [&] {
-        auto out = UnallocatedMap<OTNotaryID, blockchain::Type>{};
+        auto out = UnallocatedMap<identifier::Notary, blockchain::Type>{};
 
         for (const auto& chain : blockchain::DefinedChains()) {
             out.emplace(NotaryID(api, chain), chain);
@@ -97,7 +96,8 @@ auto Chain(
     const identifier::UnitDefinition& id) noexcept -> blockchain::Type
 {
     static const auto data = [&] {
-        auto out = UnallocatedMap<OTUnitID, blockchain::Type>{};
+        auto out =
+            UnallocatedMap<identifier::UnitDefinition, blockchain::Type>{};
 
         for (const auto& chain : blockchain::DefinedChains()) {
             out.emplace(UnitID(api, chain), chain);
@@ -119,7 +119,7 @@ auto IssuerID(const api::Session& api, const blockchain::Type chain) noexcept
     -> const identifier::Nym&
 {
     static auto mutex = std::mutex{};
-    static auto map = UnallocatedMap<blockchain::Type, OTNymID>{};
+    static auto map = UnallocatedMap<blockchain::Type, identifier::Nym>{};
 
     auto lock = Lock{mutex};
 
@@ -129,14 +129,14 @@ auto IssuerID(const api::Session& api, const blockchain::Type chain) noexcept
         if (map.end() != it) { return it->second; }
     }
 
-    auto [it, notUsed] = map.emplace(chain, api.Factory().NymID());
+    auto [it, notUsed] = map.emplace(chain, identifier::Nym{});
     auto& output = it->second;
 
     try {
         const auto& hex =
             blockchain::params::Chains().at(chain).genesis_hash_hex_;
         const auto genesis = api.Factory().DataFromHex(hex);
-        output->CalculateDigest(genesis.Bytes());
+        output = api.Factory().NymIDFromPreimage(genesis.Bytes());
     } catch (...) {
     }
 
@@ -147,7 +147,7 @@ auto NotaryID(const api::Session& api, const blockchain::Type chain) noexcept
     -> const identifier::Notary&
 {
     static auto mutex = std::mutex{};
-    static auto map = UnallocatedMap<blockchain::Type, OTNotaryID>{};
+    static auto map = UnallocatedMap<blockchain::Type, identifier::Notary>{};
 
     auto lock = Lock{mutex};
 
@@ -157,11 +157,11 @@ auto NotaryID(const api::Session& api, const blockchain::Type chain) noexcept
         if (map.end() != it) { return it->second; }
     }
 
-    auto [it, notUsed] = map.emplace(chain, api.Factory().ServerID());
+    auto [it, notUsed] = map.emplace(chain, identifier::Notary{});
     auto& output = it->second;
     const auto preimage = UnallocatedCString{"blockchain-"} +
                           std::to_string(static_cast<std::uint32_t>(chain));
-    output->CalculateDigest(preimage);
+    output = api.Factory().NotaryIDFromPreimage(preimage);
 
     return output;
 }
@@ -170,7 +170,8 @@ auto UnitID(const api::Session& api, const blockchain::Type chain) noexcept
     -> const identifier::UnitDefinition&
 {
     static auto mutex = std::mutex{};
-    static auto map = UnallocatedMap<blockchain::Type, OTUnitID>{};
+    static auto map =
+        UnallocatedMap<blockchain::Type, identifier::UnitDefinition>{};
 
     auto lock = Lock{mutex};
 
@@ -180,12 +181,12 @@ auto UnitID(const api::Session& api, const blockchain::Type chain) noexcept
         if (map.end() != it) { return it->second; }
     }
 
-    auto [it, notUsed] = map.emplace(chain, api.Factory().UnitID());
+    auto [it, notUsed] = map.emplace(chain, identifier::UnitDefinition{});
     auto& output = it->second;
 
     try {
         const auto preimage = TickerSymbol(chain);
-        output->CalculateDigest(preimage);
+        output = api.Factory().UnitIDFromPreimage(preimage);
     } catch (...) {
     }
 

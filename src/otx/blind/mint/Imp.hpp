@@ -62,7 +62,10 @@ namespace opentxs::otx::blind::mint
 class Mint : public blind::Mint::Imp
 {
 public:
-    auto AccountID() const -> OTIdentifier override { return m_CashAccountID; }
+    auto AccountID() const -> identifier::Generic override
+    {
+        return m_CashAccountID;
+    }
     auto Expired() const -> bool override;
     auto GetDenomination(std::int32_t nIndex) const -> Amount override;
     auto GetDenominationCount() const -> std::int32_t override
@@ -139,16 +142,16 @@ protected:
 
     mapOfArmor m_mapPrivate;
     mapOfArmor m_mapPublic;
-    OTNotaryID m_NotaryID;
-    OTNymID m_ServerNymID;
-    OTUnitID m_InstrumentDefinitionID;
+    identifier::Notary m_NotaryID;
+    identifier::Nym m_ServerNymID;
+    identifier::UnitDefinition m_InstrumentDefinitionID;
     std::int32_t m_nDenominationCount;
     bool m_bSavePrivateKeys;
     std::int32_t m_nSeries;
     Time m_VALID_FROM;
     Time m_VALID_TO;
     Time m_EXPIRATION;
-    OTIdentifier m_CashAccountID;
+    identifier::Generic m_CashAccountID;
 
     Mint(const api::Session& api);
     Mint(

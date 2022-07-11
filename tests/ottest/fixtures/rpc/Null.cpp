@@ -9,7 +9,7 @@ namespace ottest
 {
 auto check_account_activity_rpc(
     const User&,
-    const ot::Identifier&,
+    const ot::identifier::Generic&,
     const AccountActivityData&) noexcept -> bool
 {
     return true;

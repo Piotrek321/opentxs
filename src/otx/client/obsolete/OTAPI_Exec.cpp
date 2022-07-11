@@ -36,7 +36,6 @@
 #include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Language.hpp"
@@ -145,29 +144,29 @@ auto OTAPI_Exec::ProposePaymentPlan(
     OT_VERIFY_MIN_BOUND(PAYMENT_PLAN_LENGTH, 0s);
     OT_VERIFY_MIN_BOUND(PAYMENT_PLAN_MAX_PAYMENTS, 0);
 
-    OTIdentifier angelSenderAcctId = api_.Factory().Identifier();
+    identifier::Generic angelSenderAcctId = identifier::Generic{};
 
     if (!SENDER_ACCT_ID.empty()) {
-        angelSenderAcctId = api_.Factory().Identifier(SENDER_ACCT_ID);
+        angelSenderAcctId = api_.Factory().IdentifierFromBase58(SENDER_ACCT_ID);
     }
 
     std::unique_ptr<OTPaymentPlan> pPlan(ot_api_.ProposePaymentPlan(
-        api_.Factory().ServerID(NOTARY_ID),
+        api_.Factory().NotaryIDFromBase58(NOTARY_ID),
         VALID_FROM,  // Default (0) == NOW
         VALID_TO,    // Default (0) == no expiry / cancel
                      // anytime We're making this acct optional
                      // here.
         // (Customer acct is unknown until confirmation by customer.)
-        angelSenderAcctId.get(),
-        api_.Factory().NymID(SENDER_NYM_ID),
+        angelSenderAcctId,
+        api_.Factory().NymIDFromBase58(SENDER_NYM_ID),
         PLAN_CONSIDERATION.empty()
             ? String::Factory("(Consideration for the agreement between "
                               "the parties is meant to be recorded "
                               "here.)")
             // Like a memo.
             : String::Factory(PLAN_CONSIDERATION),
-        api_.Factory().Identifier(RECIPIENT_ACCT_ID),
-        api_.Factory().NymID(RECIPIENT_NYM_ID),
+        api_.Factory().IdentifierFromBase58(RECIPIENT_ACCT_ID),
+        api_.Factory().NymIDFromBase58(RECIPIENT_NYM_ID),
         static_cast<std::int64_t>(INITIAL_PAYMENT_AMOUNT),
         INITIAL_PAYMENT_DELAY,
         static_cast<std::int64_t>(PAYMENT_PLAN_AMOUNT),
@@ -360,10 +359,12 @@ auto OTAPI_Exec::ConfirmPaymentPlan(
     OT_VERIFY_ID_STR(RECIPIENT_NYM_ID);
     OT_VERIFY_STD_STR(PAYMENT_PLAN);
 
-    const auto theNotaryID = api_.Factory().ServerID(NOTARY_ID);
-    const auto theSenderNymID = api_.Factory().NymID(SENDER_NYM_ID);
-    const auto theSenderAcctID = api_.Factory().Identifier(SENDER_ACCT_ID);
-    const auto theRecipientNymID = api_.Factory().NymID(RECIPIENT_NYM_ID);
+    const auto theNotaryID = api_.Factory().NotaryIDFromBase58(NOTARY_ID);
+    const auto theSenderNymID = api_.Factory().NymIDFromBase58(SENDER_NYM_ID);
+    const auto theSenderAcctID =
+        api_.Factory().IdentifierFromBase58(SENDER_ACCT_ID);
+    const auto theRecipientNymID =
+        api_.Factory().NymIDFromBase58(RECIPIENT_NYM_ID);
 
     auto thePlan{api_.Factory().InternalSession().PaymentPlan()};
 
@@ -424,7 +425,7 @@ auto OTAPI_Exec::Create_SmartContract(
         LogError()(OT_PRETTY_CLASS())("Negative: VALID_TO passed in!").Flush();
         return {};
     }
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bCreated = ot_api_.Create_SmartContract(
@@ -489,7 +490,7 @@ auto OTAPI_Exec::SmartContract_SetDates(
         return {};
     }
     const auto strContract = String::Factory(THE_CONTRACT);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_SetDates(
@@ -531,7 +532,7 @@ auto OTAPI_Exec::SmartContract_AddBylaw(
 
     const auto strContract = String::Factory(THE_CONTRACT),
                strBylawName = String::Factory(BYLAW_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_AddBylaw(
@@ -566,7 +567,7 @@ auto OTAPI_Exec::SmartContract_RemoveBylaw(
 
     const auto strContract = String::Factory(THE_CONTRACT),
                strBylawName = String::Factory(BYLAW_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_RemoveBylaw(
@@ -608,7 +609,7 @@ auto OTAPI_Exec::SmartContract_AddClause(
                strBylawName = String::Factory(BYLAW_NAME),
                strClauseName = String::Factory(CLAUSE_NAME),
                strSourceCode = String::Factory(SOURCE_CODE);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_AddClause(
@@ -655,7 +656,7 @@ auto OTAPI_Exec::SmartContract_UpdateClause(
                strBylawName = String::Factory(BYLAW_NAME),
                strClauseName = String::Factory(CLAUSE_NAME),
                strSourceCode = String::Factory(SOURCE_CODE);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_UpdateClause(
@@ -695,7 +696,7 @@ auto OTAPI_Exec::SmartContract_RemoveClause(
     const auto strContract = String::Factory(THE_CONTRACT),
                strBylawName = String::Factory(BYLAW_NAME),
                strClauseName = String::Factory(CLAUSE_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_RemoveClause(
@@ -752,7 +753,7 @@ auto OTAPI_Exec::SmartContract_AddVariable(
                strVarAccess = String::Factory(VAR_ACCESS),
                strVarType = String::Factory(VAR_TYPE),
                strVarValue = String::Factory(VAR_VALUE);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_AddVariable(
@@ -801,7 +802,7 @@ auto OTAPI_Exec::SmartContract_RemoveVariable(
     const auto strContract = String::Factory(THE_CONTRACT),
                strBylawName = String::Factory(BYLAW_NAME),
                strVarName = String::Factory(VAR_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_RemoveVariable(
@@ -848,7 +849,7 @@ auto OTAPI_Exec::SmartContract_AddCallback(
                strBylawName = String::Factory(BYLAW_NAME),
                strCallbackName = String::Factory(CALLBACK_NAME),
                strClauseName = String::Factory(CLAUSE_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_AddCallback(
@@ -892,7 +893,7 @@ auto OTAPI_Exec::SmartContract_RemoveCallback(
     const auto strContract = String::Factory(THE_CONTRACT),
                strBylawName = String::Factory(BYLAW_NAME),
                strCallbackName = String::Factory(CALLBACK_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_RemoveCallback(
@@ -940,7 +941,7 @@ auto OTAPI_Exec::SmartContract_AddHook(
                strBylawName = String::Factory(BYLAW_NAME),
                strHookName = String::Factory(HOOK_NAME),
                strClauseName = String::Factory(CLAUSE_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_AddHook(
@@ -991,7 +992,7 @@ auto OTAPI_Exec::SmartContract_RemoveHook(
                strBylawName = String::Factory(BYLAW_NAME),
                strHookName = String::Factory(HOOK_NAME),
                strClauseName = String::Factory(CLAUSE_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_RemoveHook(
@@ -1045,7 +1046,7 @@ auto OTAPI_Exec::SmartContract_AddParty(
                strPartyName = String::Factory(PARTY_NAME),
                strAgentName = String::Factory(AGENT_NAME),
                strPartyNymID = String::Factory(PARTY_NYM_ID);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_AddParty(
@@ -1083,7 +1084,7 @@ auto OTAPI_Exec::SmartContract_RemoveParty(
 
     const auto strContract = String::Factory(THE_CONTRACT),
                strPartyName = String::Factory(PARTY_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_RemoveParty(
@@ -1129,7 +1130,7 @@ auto OTAPI_Exec::SmartContract_AddAccount(
                strAcctName = String::Factory(ACCT_NAME),
                strInstrumentDefinitionID =
                    String::Factory(INSTRUMENT_DEFINITION_ID);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_AddAccount(
@@ -1170,7 +1171,7 @@ auto OTAPI_Exec::SmartContract_RemoveAccount(
     const auto strContract = String::Factory(THE_CONTRACT),
                strPartyName = String::Factory(PARTY_NAME),
                strAcctName = String::Factory(ACCT_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
     auto strOutput = String::Factory();
 
     const bool bAdded = ot_api_.SmartContract_RemoveAccount(
@@ -1245,8 +1246,9 @@ auto OTAPI_Exec::SmartContract_ConfirmAccount(
     const auto strAccountID = String::Factory(ACCT_ID),
                strAcctName = String::Factory(ACCT_NAME),
                strAgentName = String::Factory(AGENT_NAME);
-    const auto theSignerNymID = api_.Factory().NymID(SIGNER_NYM_ID);
-    const auto theAcctID = api_.Factory().Identifier(strAccountID);
+    const auto theSignerNymID = api_.Factory().NymIDFromBase58(SIGNER_NYM_ID);
+    const auto theAcctID =
+        api_.Factory().IdentifierFromBase58(strAccountID->Bytes());
     auto strOutput = String::Factory();
 
     const bool bConfirmed = ot_api_.SmartContract_ConfirmAccount(
@@ -1281,7 +1283,7 @@ auto OTAPI_Exec::SmartContract_ConfirmParty(
     OT_VERIFY_ID_STR(NYM_ID);
     OT_VERIFY_ID_STR(NOTARY_ID);
 
-    const auto theNymID = api_.Factory().NymID(NYM_ID);
+    const auto theNymID = api_.Factory().NymIDFromBase58(NYM_ID);
     const auto strContract = String::Factory(THE_CONTRACT),
                strPartyName = String::Factory(PARTY_NAME);
     auto strOutput = String::Factory();
@@ -1292,7 +1294,7 @@ auto OTAPI_Exec::SmartContract_ConfirmParty(
         strPartyName,  // Should already be on the contract. This way we can
                        // find it.
         theNymID,      // Nym ID for the party, the actual owner,
-        api_.Factory().ServerID(NOTARY_ID),
+        api_.Factory().NotaryIDFromBase58(NOTARY_ID),
         strOutput);
     if (!bConfirmed || !strOutput->Exists()) { return {}; }
     // Success!
@@ -2499,9 +2501,9 @@ auto OTAPI_Exec::Party_GetAgentID(
                     .Flush();
             } else  // We found the agent...
             {
-                auto theAgentID = api_.Factory().NymID();
+                auto theAgentID = identifier::Nym{};
                 if (pAgent->IsAnIndividual() && pAgent->GetNymID(theAgentID)) {
-                    return theAgentID->str();
+                    return theAgentID.asBase58(api_.Crypto());
                 }
             }
         }
@@ -2522,7 +2524,7 @@ auto OTAPI_Exec::IsBasketCurrency(
     OT_VERIFY_ID_STR(INSTRUMENT_DEFINITION_ID);
 
     const auto theInstrumentDefinitionID =
-        api_.Factory().UnitID(INSTRUMENT_DEFINITION_ID);
+        api_.Factory().UnitIDFromBase58(INSTRUMENT_DEFINITION_ID);
 
     if (ot_api_.IsBasketCurrency(theInstrumentDefinitionID)) {
         return true;
@@ -2542,7 +2544,7 @@ auto OTAPI_Exec::Basket_GetMemberCount(
     OT_VERIFY_ID_STR(INSTRUMENT_DEFINITION_ID);
 
     const auto theInstrumentDefinitionID =
-        api_.Factory().UnitID(INSTRUMENT_DEFINITION_ID);
+        api_.Factory().UnitIDFromBase58(INSTRUMENT_DEFINITION_ID);
 
     return ot_api_.GetBasketMemberCount(theInstrumentDefinitionID);
 }
@@ -2559,15 +2561,15 @@ auto OTAPI_Exec::Basket_GetMemberType(
     OT_VERIFY_MIN_BOUND(nIndex, 0);
 
     const auto theInstrumentDefinitionID =
-        api_.Factory().UnitID(BASKET_INSTRUMENT_DEFINITION_ID);
+        api_.Factory().UnitIDFromBase58(BASKET_INSTRUMENT_DEFINITION_ID);
 
-    auto theOutputMemberType = api_.Factory().UnitID();
+    auto theOutputMemberType = identifier::UnitDefinition{};
 
     bool bGotType = ot_api_.GetBasketMemberType(
         theInstrumentDefinitionID, nIndex, theOutputMemberType);
     if (!bGotType) { return {}; }
 
-    return theOutputMemberType->str();
+    return theOutputMemberType.asBase58(api_.Crypto());
 }
 
 // GET BASKET MINIMUM TRANSFER AMOUNT
@@ -2588,7 +2590,7 @@ auto OTAPI_Exec::Basket_GetMinimumTransferAmount(
     OT_VERIFY_ID_STR(BASKET_INSTRUMENT_DEFINITION_ID);
 
     const auto theInstrumentDefinitionID =
-        api_.Factory().UnitID(BASKET_INSTRUMENT_DEFINITION_ID);
+        api_.Factory().UnitIDFromBase58(BASKET_INSTRUMENT_DEFINITION_ID);
 
     const Amount lMinTransAmount =
         ot_api_.GetBasketMinimumTransferAmount(theInstrumentDefinitionID);
@@ -2626,7 +2628,7 @@ auto OTAPI_Exec::Basket_GetMemberMinimumTransferAmount(
     OT_VERIFY_MIN_BOUND(nIndex, 0);
 
     const auto theInstrumentDefinitionID =
-        api_.Factory().UnitID(BASKET_INSTRUMENT_DEFINITION_ID);
+        api_.Factory().UnitIDFromBase58(BASKET_INSTRUMENT_DEFINITION_ID);
 
     Amount lMinTransAmount = ot_api_.GetBasketMemberMinimumTransferAmount(
         theInstrumentDefinitionID, nIndex);
@@ -2661,7 +2663,7 @@ auto OTAPI_Exec::GenerateBasketCreation(
 {
     try {
         const auto serverContract =
-            api_.Wallet().Server(api_.Factory().ServerID(serverID));
+            api_.Wallet().Server(api_.Factory().NotaryIDFromBase58(serverID));
         const auto basketTemplate = api_.Factory().BasketContract(
             serverContract->Nym(),
             shortname,
@@ -2748,12 +2750,12 @@ auto OTAPI_Exec::GenerateBasketExchange(
     OT_VERIFY_ID_STR(BASKET_INSTRUMENT_DEFINITION_ID);
     OT_VERIFY_ID_STR(BASKET_ASSET_ACCT_ID);
 
-    const auto theNymID = api_.Factory().NymID(NYM_ID);
-    const auto theNotaryID = api_.Factory().ServerID(NOTARY_ID);
+    const auto theNymID = api_.Factory().NymIDFromBase58(NYM_ID);
+    const auto theNotaryID = api_.Factory().NotaryIDFromBase58(NOTARY_ID);
     const auto theBasketInstrumentDefinitionID =
-        api_.Factory().UnitID(BASKET_INSTRUMENT_DEFINITION_ID);
+        api_.Factory().UnitIDFromBase58(BASKET_INSTRUMENT_DEFINITION_ID);
     const auto theBasketAssetAcctID =
-        api_.Factory().Identifier(BASKET_ASSET_ACCT_ID);
+        api_.Factory().IdentifierFromBase58(BASKET_ASSET_ACCT_ID);
     std::int32_t nTransferMultiple = 1;  // Just a default value.
 
     if (TRANSFER_MULTIPLE > 0) { nTransferMultiple = TRANSFER_MULTIPLE; }
@@ -2799,11 +2801,12 @@ auto OTAPI_Exec::AddBasketExchangeItem(
     OT_VERIFY_ID_STR(ASSET_ACCT_ID);
 
     auto strBasket = String::Factory(THE_BASKET);
-    const auto theNotaryID = api_.Factory().ServerID(NOTARY_ID);
-    const auto theNymID = api_.Factory().NymID(NYM_ID);
+    const auto theNotaryID = api_.Factory().NotaryIDFromBase58(NOTARY_ID);
+    const auto theNymID = api_.Factory().NymIDFromBase58(NYM_ID);
     const auto theInstrumentDefinitionID =
-        api_.Factory().UnitID(INSTRUMENT_DEFINITION_ID);
-    const auto theAssetAcctID = api_.Factory().Identifier(ASSET_ACCT_ID);
+        api_.Factory().UnitIDFromBase58(INSTRUMENT_DEFINITION_ID);
+    const auto theAssetAcctID =
+        api_.Factory().IdentifierFromBase58(ASSET_ACCT_ID);
     auto theBasket{api_.Factory().InternalSession().Basket()};
 
     OT_ASSERT(false != bool(theBasket));

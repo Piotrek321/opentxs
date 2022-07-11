@@ -13,10 +13,7 @@
 
 #include "interface/ui/base/List.hpp"
 #include "interface/ui/base/Widget.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/interface/ui/SeedTreeNym.hpp"
 
 namespace opentxs::factory
@@ -45,12 +42,13 @@ SeedTreeItem::SeedTreeItem(
     CustomData& custom) noexcept
     : Combined(
           api,
-          api.Factory().Identifier(),
+          identifier::Generic{},
           parent.WidgetID(),
           parent,
           rowID,
           key,
           false)
+    , api_(api)
     , seed_type_(extract_custom<crypto::SeedStyle>(custom, 0))
     , seed_name_(key.second)
 {
@@ -61,7 +59,7 @@ auto SeedTreeItem::construct_row(
     const SeedTreeItemSortKey& index,
     CustomData& custom) const noexcept -> RowPointer
 {
-    return factory::SeedTreeNym(*this, Widget::api_, id, index, custom);
+    return factory::SeedTreeNym(*this, api_, id, index, custom);
 }
 
 auto SeedTreeItem::Debug() const noexcept -> UnallocatedCString

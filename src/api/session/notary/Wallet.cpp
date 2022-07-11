@@ -17,6 +17,7 @@
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/Lockable.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
@@ -89,7 +90,7 @@ void Wallet::instantiate_client_context(
 }
 
 auto Wallet::load_legacy_account(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const eLock& lock,
     Wallet::AccountLock& row) const -> bool
 {
@@ -118,8 +119,7 @@ auto Wallet::load_legacy_account(
         return false;
     }
 
-    LogError()(OT_PRETTY_CLASS())("Legacy account ")(accountID.str())(
-        " exists.")
+    LogError()(OT_PRETTY_CLASS())("Legacy account ")(accountID)(" exists.")
         .Flush();
 
     auto serialized = String::Factory();
@@ -141,7 +141,7 @@ auto Wallet::load_legacy_account(
     OT_ASSERT(server_.ID() == serverID);
 
     saved = api_.Storage().Store(
-        accountID.str(),
+        accountID.asBase58(api_.Crypto()),
         serialized->Get(),
         "",
         ownerID,
@@ -182,7 +182,9 @@ auto Wallet::mutable_ClientContext(
         OT_ASSERT_MSG(remote, "Remote nym does not exist in the wallet.");
 
         // Create a new Context
-        const ContextID contextID = {serverNymID.str(), remoteNymID.str()};
+        const ContextID contextID = {
+            serverNymID.asBase58(api_.Crypto()),
+            remoteNymID.asBase58(api_.Crypto())};
         auto& entry = context_map_[contextID];
         entry.reset(factory::ClientContext(api_, local, remote, serverID));
         base = entry;

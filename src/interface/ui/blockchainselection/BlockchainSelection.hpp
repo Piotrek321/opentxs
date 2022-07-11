@@ -20,10 +20,10 @@
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/interface/ui/BlockchainSelection.hpp"
 #include "opentxs/interface/ui/Blockchains.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
@@ -84,6 +84,7 @@ class BlockchainSelection final : public BlockchainSelectionList,
                                   public Worker<api::session::Client>
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto Disable(const blockchain::Type type) const noexcept -> bool final;
     auto Enable(const blockchain::Type type) const noexcept -> bool final;
     auto EnabledCount() const noexcept -> std::size_t final;

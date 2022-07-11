@@ -22,6 +22,7 @@
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -48,6 +49,7 @@ ProfileItem::ProfileItem(
     const ProfileSubsectionSortKey& sortKey,
     CustomData& custom) noexcept
     : ProfileItemRow(parent, api, rowID, true)
+    , api_(api)
     , item_{new identity::wot::claim::Item(
           extract_custom<identity::wot::claim::Item>(custom))}
 {

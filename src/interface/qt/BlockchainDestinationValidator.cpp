@@ -23,6 +23,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::ui
@@ -160,7 +161,7 @@ private:
 auto DestinationValidator::Imp::Blockchain(
     const api::session::Client& api,
     DestinationValidator& main,
-    const Identifier& account,
+    const identifier::Generic& account,
     Parent& parent) noexcept -> std::unique_ptr<Imp>
 {
 #if OT_BLOCKCHAIN

@@ -14,15 +14,14 @@
 
 #include "interface/ui/base/Combined.hpp"
 #include "interface/ui/base/Widget.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/identity/wot/claim/Group.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -50,11 +49,12 @@ ContactSubsection::ContactSubsection(
     CustomData& custom) noexcept
     : Combined(
           api,
-          Identifier::Factory(parent.ContactID()),
+          api.Factory().IdentifierFromBase58(parent.ContactID()),
           parent.WidgetID(),
           parent,
           rowID,
           key)
+    , api_(api)
     , sequence_(-1)
 {
     startup_ = std::make_unique<std::thread>(

@@ -19,7 +19,11 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-class Identifier;
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 class Message;
 // }  // namespace v1
 }  // namespace opentxs
@@ -103,5 +107,5 @@ enum class ThreadStatus : std::uint8_t {
 
 using NetworkOperationStatus = std::int32_t;
 using NetworkReplyMessage = std::pair<SendResult, std::shared_ptr<Message>>;
-using SetID = std::function<void(const Identifier&)>;
+using SetID = std::function<void(const identifier::Generic&)>;
 }  // namespace opentxs::otx::client

@@ -106,7 +106,7 @@ private:
     const api::network::ZMQ& zmq_;
     const api::Session& api_;
     const zeromq::socket::Publish& updates_;
-    const OTNotaryID server_id_;
+    const identifier::Notary server_id_;
     AddressType address_type_{AddressType::Error};
     OTServerContract remote_contract_;
     std::thread thread_;
@@ -119,7 +119,7 @@ private:
     OTFlag status_;
     OTFlag use_proxy_;
     mutable std::mutex registration_lock_;
-    UnallocatedMap<OTNymID, bool> registered_for_push_;
+    UnallocatedMap<identifier::Nym, bool> registered_for_push_;
 
     auto async_socket(const Lock& lock) const -> OTZMQDealerSocket;
     auto endpoint() const -> UnallocatedCString;

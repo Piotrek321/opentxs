@@ -31,7 +31,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -81,6 +80,11 @@ struct SigHash;
 }  // namespace bitcoin
 }  // namespace blockchain
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainTransactionOutput;
@@ -99,11 +103,11 @@ public:
     static const VersionNumber default_version_;
 
     auto AssociatedLocalNyms() const noexcept
-        -> UnallocatedVector<OTNymID> final;
+        -> UnallocatedVector<identifier::Nym> final;
     auto AssociatedRemoteContacts(
         const api::session::Contacts& contacts,
         const identifier::Nym& nym) const noexcept
-        -> UnallocatedVector<OTIdentifier> final;
+        -> UnallocatedVector<identifier::Generic> final;
     auto BlockPosition() const noexcept -> std::optional<std::size_t> final
     {
         return position_;
@@ -140,7 +144,7 @@ public:
     {
         return txid_;
     }
-    auto IDNormalized() const noexcept -> const Identifier& final;
+    auto IDNormalized() const noexcept -> const identifier::Generic& final;
     auto Inputs() const noexcept -> const block::Inputs& final
     {
         return *inputs_;
@@ -247,7 +251,7 @@ private:
         auto merge(const internal::Transaction& rhs, const Log& log) noexcept
             -> void;
         template <typename F>
-        auto normalized(F cb) noexcept -> const Identifier&
+        auto normalized(F cb) noexcept -> const identifier::Generic&
         {
             auto lock = rLock{lock_};
             auto& output = normalized_id_;
@@ -283,7 +287,7 @@ private:
 
     private:
         mutable std::recursive_mutex lock_;
-        std::optional<OTIdentifier> normalized_id_;
+        std::optional<identifier::Generic> normalized_id_;
         std::optional<std::size_t> size_;
         std::optional<std::size_t> normalized_size_;
         UnallocatedCString memo_;

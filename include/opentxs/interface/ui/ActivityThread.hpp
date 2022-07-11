@@ -68,13 +68,13 @@ public:
     */
     virtual auto Pay(
         const UnallocatedCString& amount,
-        const Identifier& sourceAccount,
+        const identifier::Generic& sourceAccount,
         const UnallocatedCString& memo = "",
         const otx::client::PaymentType type =
             otx::client::PaymentType::Cheque) const noexcept -> bool = 0;
     virtual auto Pay(
         const Amount amount,
-        const Identifier& sourceAccount,
+        const identifier::Generic& sourceAccount,
         const UnallocatedCString& memo = "",
         const otx::client::PaymentType type =
             otx::client::PaymentType::Cheque) const noexcept -> bool = 0;

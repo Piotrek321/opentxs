@@ -38,13 +38,13 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 class UnitDefinition;
 }  // namespace identifier
 
 class Amount;
 class Armored;
-class Identifier;
 class OTCronItem;
 class OTMarket;
 class PasswordPrompt;
@@ -129,7 +129,8 @@ public:
         std::shared_ptr<OTMarket> theMarket,
         bool bSaveMarketFile = true) -> bool;
 
-    auto GetMarket(const Identifier& MARKET_ID) -> std::shared_ptr<OTMarket>;
+    auto GetMarket(const identifier::Generic& MARKET_ID)
+        -> std::shared_ptr<OTMarket>;
     auto GetOrCreateMarket(
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
@@ -212,7 +213,7 @@ private:
     mapOfCronItems m_mapCronItems;
     multimapOfCronItems m_multimapCronItems;
     // Always store this in any object that's associated with a specific server.
-    OTNotaryID m_NOTARY_ID;
+    identifier::Notary m_NOTARY_ID;
     // I can't put receipts in people's inboxes without a supply of these.
     listOfLongNumbers m_listTransactionNumbers;
     // I don't want to start Cron processing until everything else is all loaded

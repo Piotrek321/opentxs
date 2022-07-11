@@ -19,6 +19,7 @@
 #include "internal/interface/ui/UI.hpp"
 #include "internal/otx/client/Issuer.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/UnitType.hpp"
@@ -73,7 +74,7 @@ struct make_blank<ui::implementation::IssuerItemRowID> {
     static auto value(const api::Session& api)
         -> ui::implementation::IssuerItemRowID
     {
-        return {api.Factory().Identifier(), UnitType::Error};
+        return {identifier::Generic{}, UnitType::Error};
     }
 };
 }  // namespace opentxs
@@ -98,6 +99,9 @@ class IssuerItem final
     : public Combined<IssuerItemList, IssuerItemRow, AccountSummarySortKey>
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto ConnectionState() const noexcept -> bool final
     {
         return connection_.load();
@@ -135,7 +139,7 @@ private:
     auto qt_data(const int column, const int role, QVariant& out) const noexcept
         -> void final;
 
-    auto process_account(const Identifier& accountID) noexcept -> void;
+    auto process_account(const identifier::Generic& accountID) noexcept -> void;
     auto process_account(const Message& message) noexcept -> void;
     auto refresh_accounts() noexcept -> void;
     auto reindex(const AccountSummarySortKey& key, CustomData& custom) noexcept

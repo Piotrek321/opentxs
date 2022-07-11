@@ -16,6 +16,8 @@
 #include "Proto.tpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
@@ -59,7 +61,7 @@ struct Item::Imp {
     const std::time_t start_;
     const std::time_t end_;
     const UnallocatedSet<claim::Attribute> attributes_;
-    const OTIdentifier id_;
+    const identifier::Generic id_;
     const UnallocatedCString subtype_;
 
     static auto check_version(
@@ -92,7 +94,7 @@ struct Item::Imp {
         , start_(start)
         , end_(end)
         , attributes_(attributes)
-        , id_(Identifier::Factory(
+        , id_(api_.Factory().IdentifierFromBase58(
               identity::credential::Contact::
                   ClaimID(api, nym, section, type, start, end, value, subtype)))
         , subtype_(subtype)
@@ -117,7 +119,7 @@ struct Item::Imp {
         , end_(rhs.end_)
         , attributes_(std::move(
               const_cast<UnallocatedSet<claim::Attribute>&>(rhs.attributes_)))
-        , id_(std::move(const_cast<OTIdentifier&>(rhs.id_)))
+        , id_(std::move(const_cast<identifier::Generic&>(rhs.id_)))
         , subtype_(std::move(const_cast<UnallocatedCString&>(rhs.subtype_)))
     {
     }
@@ -274,7 +276,7 @@ auto Item::operator==(const Item& rhs) const -> bool
 
 auto Item::End() const -> const std::time_t& { return imp_->end_; }
 
-auto Item::ID() const -> const Identifier& { return imp_->id_; }
+auto Item::ID() const -> const identifier::Generic& { return imp_->id_; }
 
 auto Item::isActive() const -> bool
 {

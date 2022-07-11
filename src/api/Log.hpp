@@ -5,8 +5,10 @@
 
 #pragma once
 
-#include "internal/api/Log.hpp"
+#include <string_view>
 
+#include "internal/api/Log.hpp"
+#include "internal/util/Log.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
@@ -53,7 +55,8 @@ private:
     auto callback(opentxs::network::zeromq::Message&& message) noexcept -> void;
     auto print(
         const int level,
-        const UnallocatedCString& text,
-        const UnallocatedCString& thread) noexcept -> void;
+        const Console console,
+        const std::string_view text,
+        const std::string_view thread) noexcept -> void;
 };
 }  // namespace opentxs::api::imp

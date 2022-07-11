@@ -57,7 +57,7 @@ public:
      */
     virtual auto Mail(
         const identifier::Nym& nym,
-        const Identifier& id,
+        const identifier::Generic& id,
         const otx::client::StorageBox& box) const noexcept
         -> std::unique_ptr<Message> = 0;
     /**   Store a mail object

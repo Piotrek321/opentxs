@@ -199,11 +199,11 @@ public:
     void GetAttachment(Data& output) const;
     void SetAttachment(const String& theStr);
     void SetAttachment(const Data& input);
-    inline auto GetDestinationAcctID() const -> const Identifier&
+    inline auto GetDestinationAcctID() const -> const identifier::Generic&
     {
         return m_AcctToID;
     }
-    inline void SetDestinationAcctID(const Identifier& theID)
+    inline void SetDestinationAcctID(const identifier::Generic& theID)
     {
         m_AcctToID = theID;
     }
@@ -220,7 +220,7 @@ public:
 
 protected:
     // DESTINATION ACCOUNT for transfers. NOT the account holder.
-    OTIdentifier m_AcctToID;
+    identifier::Generic m_AcctToID;
     // For balance, or fee, etc. Only an item can actually have an amount. (Or a
     // "TO" account.)
     Amount m_lAmount{0};
@@ -280,6 +280,6 @@ private:  // Private prevents erroneous use by other classes.
         const identifier::Nym& theNymID,
         const OTTransaction& theOwner,
         itemType theType,
-        const Identifier& pDestinationAcctID);
+        const identifier::Generic& pDestinationAcctID);
 };
 }  // namespace opentxs

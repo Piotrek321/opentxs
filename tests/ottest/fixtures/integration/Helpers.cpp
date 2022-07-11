@@ -55,8 +55,11 @@ auto test_future(std::future<bool>& future, const unsigned int seconds) noexcept
     return false;
 }
 
-Callbacks::Callbacks(const ot::UnallocatedCString& name) noexcept
-    : callback_lock_()
+Callbacks::Callbacks(
+    const ot::api::Context& api,
+    const ot::UnallocatedCString& name) noexcept
+    : api_(api)
+    , callback_lock_()
     , callback_(ot::network::zeromq::ListenCallback::Factory(
           [this](auto&& incoming) -> void { callback(std::move(incoming)); }))
     , map_lock_()
@@ -70,10 +73,10 @@ auto Callbacks::callback(ot::network::zeromq::Message&& incoming) noexcept
     -> void
 {
     ot::Lock lock(callback_lock_);
-    const auto widgetID = ot::Identifier::Factory(
-        ot::UnallocatedCString{incoming.Body().at(0).Bytes()});
+    const auto widgetID =
+        api_.Factory().IdentifierFromBase58(incoming.Body().at(0).Bytes());
 
-    ASSERT_NE("", widgetID->str().c_str());
+    ASSERT_FALSE(widgetID.asBase58(ot::Context().Crypto()).empty());
 
     auto& [type, counter, callbackData] = widget_map_.at(widgetID);
     auto& [limit, callback, future] = callbackData;
@@ -107,7 +110,7 @@ auto Callbacks::Count() const noexcept -> std::size_t
 auto Callbacks::RegisterWidget(
     const ot::Lock& callbackLock,
     const Widget type,
-    const ot::Identifier& id,
+    const ot::identifier::Generic& id,
     int counter,
     WidgetCallback callback) noexcept -> std::future<bool>
 {
@@ -169,7 +172,7 @@ auto Server::init(const ot::api::session::Notary& api) noexcept -> void
     if (init_) { return; }
 
     api_ = &api;
-    const_cast<ot::OTNotaryID&>(id_) = api.ID();
+    const_cast<ot::identifier::Notary&>(id_) = api.ID();
 
     {
         const auto section = ot::String::Factory("permissions");
@@ -183,7 +186,7 @@ auto Server::init(const ot::api::session::Notary& api) noexcept -> void
         const_cast<ot::UnallocatedCString&>(password_) = value->Get();
     }
 
-    OT_ASSERT(false == id_->empty());
+    OT_ASSERT(false == id_.empty());
     OT_ASSERT(false == password_.empty());
 
     init_ = true;

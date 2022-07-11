@@ -31,7 +31,7 @@ std::unique_ptr<ScanListener> Regtest_fixture_hd::listener_p_{};
 namespace ottest
 {
 Regtest_fixture_hd::Regtest_fixture_hd()
-    : Regtest_fixture_normal(1)
+    : Regtest_fixture_normal(ot_, 1)
     , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
     , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
     , expected_display_unit_(u8"UNITTEST")
@@ -130,7 +130,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
     if (false == init_) {
         auto cb = [](User& user) {
             const auto& api = *user.api_;
-            const auto& nymID = user.nym_id_.get();
+            const auto& nymID = user.nym_id_;
             const auto reason = api.Factory().PasswordPrompt(__func__);
             api.Crypto().Blockchain().NewHDSubaccount(
                 nymID,

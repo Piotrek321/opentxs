@@ -41,7 +41,7 @@ using namespace std::literals;
 OTOffer::OTOffer(const api::Session& api)
     : Instrument(api)
     , m_pTrade(nullptr)
-    , m_CURRENCY_TYPE_ID(api_.Factory().Identifier())
+    , m_CURRENCY_TYPE_ID()
     , m_bSelling(false)
     , m_lPriceLimit(0)
     , m_lTransactionNum(0)
@@ -129,12 +129,12 @@ auto OTOffer::isPowerOfTen(const std::int64_t& x) -> bool
 
  void blah (OTOffer& theOffer)
  {
-    OTIdentifier MARKET_ID(theOffer); // the magic happens right here.
+    identifier::Generic MARKET_ID(theOffer); // the magic happens right here.
 
     // (Done.)
  }
  */
-void OTOffer::GetIdentifier(Identifier& theIdentifier) const
+void OTOffer::GetIdentifier(identifier::Generic& theIdentifier) const
 {
     // In this way we generate a unique ID that will always be consistent for
     // the same instrument definition id, currency ID, and market scale.
@@ -152,7 +152,7 @@ void OTOffer::GetIdentifier(Identifier& theIdentifier) const
 
         return out;
     }();
-    theIdentifier.CalculateDigest(preimage->Bytes());
+    theIdentifier = api_.Factory().IdentifierFromPreimage(preimage->Bytes());
 }
 auto OTOffer::IsMarketOrder() const -> bool { return (0 == GetPriceLimit()); }
 
@@ -194,10 +194,12 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                    strCurrencyTypeID = String::Factory(
                        xml->getAttributeValue("currencyTypeID"));
 
-        const auto NOTARY_ID = api_.Factory().ServerID(strNotaryID);
-        const auto INSTRUMENT_DEFINITION_ID =
-                       api_.Factory().UnitID(strInstrumentDefinitionID),
-                   CURRENCY_TYPE_ID = api_.Factory().UnitID(strCurrencyTypeID);
+        const auto NOTARY_ID =
+            api_.Factory().NotaryIDFromBase58(strNotaryID->Bytes());
+        const auto INSTRUMENT_DEFINITION_ID = api_.Factory().UnitIDFromBase58(
+                       strInstrumentDefinitionID->Bytes()),
+                   CURRENCY_TYPE_ID = api_.Factory().UnitIDFromBase58(
+                       strCurrencyTypeID->Bytes());
 
         SetNotaryID(NOTARY_ID);
         SetInstrumentDefinitionID(INSTRUMENT_DEFINITION_ID);
@@ -480,7 +482,7 @@ void OTOffer::SetDateAddedToMarket(const Time tDate)  // Used in OTCron when
 void OTOffer::Release_Offer()
 {
     // If there were any dynamically allocated objects, clean them up here.
-    m_CURRENCY_TYPE_ID->clear();
+    m_CURRENCY_TYPE_ID.clear();
 }
 
 void OTOffer::Release()

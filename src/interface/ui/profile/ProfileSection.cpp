@@ -157,6 +157,7 @@ ProfileSection::ProfileSection(
     const ProfileSortKey& key,
     CustomData& custom) noexcept
     : Combined(api, parent.NymID(), parent.WidgetID(), parent, rowID, key)
+    , api_(api)
 {
     startup_ = std::make_unique<std::thread>(
         &ProfileSection::startup,

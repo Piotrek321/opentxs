@@ -46,6 +46,8 @@ namespace session
 {
 class Client;
 }  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -115,7 +117,7 @@ public:
         const identifier::Nym& issuerNymID) const noexcept
         -> UnallocatedCString final;
     auto IssuerList(const identifier::Nym& localNymID, const bool onlyTrusted)
-        const noexcept -> UnallocatedSet<OTNymID> final
+        const noexcept -> UnallocatedSet<identifier::Nym> final
     {
         return state_.IssuerList(localNymID, onlyTrusted);
     }
@@ -141,7 +143,7 @@ public:
 
 private:
     /// local nym id, issuer nym id
-    using IssuerID = std::pair<OTNymID, OTNymID>;
+    using IssuerID = std::pair<identifier::Nym, identifier::Nym>;
     enum class Status : std::uint8_t {
         Error = 0,
         Started = 1,
@@ -153,13 +155,15 @@ private:
         using RegisteredAccounts = std::size_t;
         using UnusedBailments = std::size_t;
         using NeedRename = bool;
-        using AccountDetails =
-            std::tuple<OTUnitID, OTIdentifier, UnusedBailments>;
+        using AccountDetails = std::tuple<
+            identifier::UnitDefinition,
+            identifier::Generic,
+            UnusedBailments>;
         using Trusted = bool;
         using Details = std::tuple<
             std::unique_ptr<std::mutex>,
-            OTNotaryID,
-            OTNymID,
+            identifier::Notary,
+            identifier::Nym,
             Status,
             Trusted,
             OfferedCurrencies,
@@ -173,10 +177,12 @@ private:
             const UnallocatedVector<AccountDetails>& in) noexcept
             -> std::size_t;
         static auto count_currencies(
+            const api::Session& api,
             const identity::wot::claim::Section& in) noexcept -> std::size_t;
         static auto get_account(
+            const api::session::Client& client,
             const identifier::UnitDefinition& unit,
-            const Identifier& account,
+            const identifier::Generic& account,
             UnallocatedVector<AccountDetails>& details) noexcept
             -> AccountDetails&;
 
@@ -202,15 +208,15 @@ private:
 
         auto IssuerList(
             const identifier::Nym& localNymID,
-            const bool onlyTrusted) const noexcept -> UnallocatedSet<OTNymID>;
+            const bool onlyTrusted) const noexcept
+            -> UnallocatedSet<identifier::Nym>;
 
-        State(std::mutex& lock, const api::session::Client& client) noexcept;
+        State(std::mutex& lock) noexcept;
 
     private:
         std::mutex& lock_;
-        const api::session::Client& client_;
         mutable StateMap state_;
-        UnallocatedSet<OTNymID> issuers_;
+        UnallocatedSet<identifier::Nym> issuers_;
     };
 
     const Flag& running_;
@@ -252,13 +258,13 @@ private:
         const identifier::Nym& issuerNymID,
         const identifier::Notary& serverID,
         const contract::peer::ConnectionInfoType type) const
-        -> std::pair<bool, OTIdentifier>;
+        -> std::pair<bool, identifier::Generic>;
     auto initiate_bailment(
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
         const identifier::Nym& issuerID,
         const identifier::UnitDefinition& unitID) const
-        -> std::pair<bool, OTIdentifier>;
+        -> std::pair<bool, identifier::Generic>;
     auto process_connection_info(
         const Lock& lock,
         const identifier::Nym& nymID,
@@ -303,7 +309,7 @@ private:
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID) const
-        -> std::pair<bool, OTIdentifier>;
+        -> std::pair<bool, identifier::Generic>;
     auto need_registration(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID) const -> bool;
@@ -312,7 +318,7 @@ private:
         const identifier::Nym& localNymID,
         const identifier::Nym& issuerNymID,
         const identifier::Notary& serverID) const
-        -> std::pair<bool, OTIdentifier>;
+        -> std::pair<bool, identifier::Generic>;
 
     void callback_nym(const zmq::Message& in) noexcept;
     void callback_peer_reply(const zmq::Message& in) noexcept;

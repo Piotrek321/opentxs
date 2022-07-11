@@ -24,12 +24,14 @@
 #include "blockchain/crypto/Deterministic.hpp"
 #include "blockchain/crypto/Element.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/crypto/Seed.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -41,7 +43,6 @@
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
@@ -58,7 +59,7 @@ auto BlockchainHDSubaccount(
     const proto::HDPath& path,
     const blockchain::crypto::HDProtocol standard,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>
+    identifier::Generic& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>
 {
     using ReturnType = blockchain::crypto::implementation::HD;
 
@@ -76,7 +77,7 @@ auto BlockchainHDSubaccount(
     const api::Session& api,
     const blockchain::crypto::Account& parent,
     const proto::HDAccount& serialized,
-    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>
+    identifier::Generic& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>
 {
     using ReturnType = blockchain::crypto::implementation::HD;
 
@@ -98,12 +99,12 @@ HD::HD(
     const proto::HDPath& path,
     const HDProtocol standard,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept(false)
+    identifier::Generic& id) noexcept(false)
     : Deterministic(
           api,
           parent,
           SubaccountType::HD,
-          Identifier::Factory(
+          api.Factory().Internal().Identifier(
               UnitToClaim(BlockchainToUnit(parent.Chain())),
               path),
           path,
@@ -122,7 +123,7 @@ HD::HD(
     const api::Session& api,
     const crypto::Account& parent,
     const SerializedType& serialized,
-    Identifier& id) noexcept(false)
+    identifier::Generic& id) noexcept(false)
     : Deterministic(
           api,
           parent,
@@ -206,9 +207,9 @@ HD::HD(
 auto HD::account_already_exists(const rLock&) const noexcept -> bool
 {
     const auto existing = api_.Storage().BlockchainAccountList(
-        parent_.NymID().str(), BlockchainToUnit(chain_));
+        parent_.NymID(), BlockchainToUnit(chain_));
 
-    return 0 < existing.count(id_->str());
+    return 0 < existing.count(id_.asBase58(api_.Crypto()));
 }
 
 auto HD::Name() const noexcept -> UnallocatedCString
@@ -298,8 +299,8 @@ auto HD::save(const rLock& lock) const noexcept -> bool
         hd.set_standard(static_cast<std::uint16_t>(standard_));
     }
 
-    const bool saved = api_.Storage().Store(
-        parent_.NymID().str(), UnitToClaim(type), serialized);
+    const bool saved =
+        api_.Storage().Store(parent_.NymID(), UnitToClaim(type), serialized);
 
     if (false == saved) {
         LogError()(OT_PRETTY_CLASS())("Failed to save HD account.").Flush();

@@ -20,16 +20,12 @@ namespace opentxs  // NOLINT
 // {
 namespace api
 {
-namespace session
-{
-class Wallet;
-}  // namespace session
-
 class Session;
 }  // namespace api
 
 namespace identifier
 {
+class Generic;
 class Notary;
 }  // namespace identifier
 
@@ -48,7 +44,6 @@ class Server;
 }  // namespace otx
 
 class Contract;
-class Identifier;
 class OTParty;
 class OTPartyAccount;
 class OTSmartContract;
@@ -75,7 +70,7 @@ namespace opentxs
 class OTAgent
 {
 private:
-    const api::session::Wallet& wallet_;
+    const api::Session& api_;
     bool m_bNymRepresentsSelf;  // Whether this agent represents himself (a nym)
                                 // or whether he represents an entity of some
                                 // sort.
@@ -118,9 +113,9 @@ private:
                               // is group's Name (inside Entity.)
 
 public:
-    OTAgent(const api::session::Wallet& wallet);
+    OTAgent(const api::Session& api);
     OTAgent(
-        const api::session::Wallet& wallet,
+        const api::Session& api,
         const UnallocatedCString& str_agent_name,
         const identity::Nym& theNym,
         const bool bNymRepresentsSelf = true);
@@ -130,7 +125,7 @@ public:
     // instantiating with an Entity/Group instead of with a Nym.
 
     OTAgent(
-        const api::session::Wallet& wallet,
+        const api::Session& api,
         bool bNymRepresentsSelf,
         bool bIsAnIndividual,
         const String& strName,
@@ -190,7 +185,7 @@ public:
                                             // added to the party.
 
     auto IsValidSigner(const identity::Nym& theNym) -> bool;
-    auto IsValidSignerID(const Identifier& theNymID) -> bool;
+    auto IsValidSignerID(const identifier::Generic& theNymID) -> bool;
 
     auto IsAuthorizingAgentForParty()
         -> bool;  // true/false whether THIS agent is the
@@ -251,13 +246,14 @@ public:
 
     // For when the agent is an individual:
     //
-    auto GetNymID(Identifier& theOutput) const -> bool;  // If IsIndividual(),
-                                                         // then this is his
-                                                         // own personal NymID,
+    auto GetNymID(identifier::Generic& theOutput) const
+        -> bool;  // If IsIndividual(),
+                  // then this is his
+                  // own personal NymID,
     // (whether he DoesRepresentHimself() or DoesRepresentAnEntity()
     // -- either way). Otherwise if IsGroup(), this returns false.
 
-    auto GetRoleID(Identifier& theOutput) const
+    auto GetRoleID(identifier::Generic& theOutput) const
         -> bool;  // IF IsIndividual() AND
                   // DoesRepresentAnEntity(),
                   // then this is his RoleID
@@ -279,7 +275,7 @@ public:
     // anything needing it as part of the
     // script would also therefore be impossible.
     //
-    auto GetSignerID(Identifier& theOutput) const -> bool;
+    auto GetSignerID(identifier::Generic& theOutput) const -> bool;
     // If IsIndividual() and DoesRepresentAnEntity() then this returns
     // GetRoleID().
     // else if Individual() and DoesRepresentHimself() then this returns
@@ -299,7 +295,7 @@ public:
     // I'm debating making this function private along with DoesRepresentHimself
     // / DoesRepresentAnEntity().
     //
-    auto GetEntityID(Identifier& theOutput) const
+    auto GetEntityID(identifier::Generic& theOutput) const
         -> bool;  // IF represents an
                   // entity, this is its ID.
                   // Else fail.
@@ -329,7 +325,7 @@ public:
     // If DoesRepresentHimself() then return GetNymID()
     // else (thus DoesRepresentAnEntity()) so return GetEntityID()
     //
-    auto GetPartyID(Identifier& theOutput) const -> bool;
+    auto GetPartyID(identifier::Generic& theOutput) const -> bool;
 
     auto GetParty() const -> OTParty* { return m_pForParty; }
 
@@ -353,7 +349,7 @@ public:
     auto DropFinalReceiptToInbox(
         const String& strNotaryID,
         OTSmartContract& theSmartContract,
-        const Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const std::int64_t& lNewTransactionNumber,
         const std::int64_t& lClosingNumber,
         const String& strOrigCronItem,

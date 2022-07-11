@@ -16,12 +16,12 @@ namespace opentxs  // NOLINT
 // {
 namespace identifier
 {
+class Generic;
 class Nym;
 class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
-class Identifier;
 class OTPayment;
 template <class T>
 class UniqueQueue;
@@ -35,15 +35,16 @@ class OTX : virtual public api::session::OTX
 {
 public:
     virtual void associate_message_id(
-        const Identifier& messageID,
+        const identifier::Generic& messageID,
         const TaskID taskID) const = 0;
     virtual auto can_deposit(
         const OTPayment& payment,
         const identifier::Nym& recipient,
-        const Identifier& accountIDHint,
+        const identifier::Generic& accountIDHint,
         identifier::Notary& depositServer,
         identifier::UnitDefinition& unitID,
-        Identifier& depositAccount) const -> otx::client::Depositability = 0;
+        identifier::Generic& depositAccount) const
+        -> otx::client::Depositability = 0;
     virtual auto finish_task(
         const TaskID taskID,
         const bool success,
@@ -53,7 +54,7 @@ public:
         return *this;
     }
     virtual auto get_nym_fetch(const identifier::Notary& serverID) const
-        -> UniqueQueue<OTNymID>& = 0;
+        -> UniqueQueue<identifier::Nym>& = 0;
     virtual auto start_task(const TaskID taskID, bool success) const
         -> BackgroundTask = 0;
 

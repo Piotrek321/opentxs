@@ -14,8 +14,8 @@
 #include "internal/util/Flag.hpp"
 #include "internal/util/Lockable.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/interface/ui/ActivitySummary.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -36,6 +36,7 @@ class Client;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -59,7 +60,6 @@ class StorageThreadItem;
 }  // namespace proto
 
 class Flag;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -79,6 +79,10 @@ using ActivitySummaryList = List<
 class ActivitySummary final : public ActivitySummaryList
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
+
     ActivitySummary(
         const api::session::Client& api,
         const Flag& running,
@@ -97,7 +101,7 @@ private:
     const Flag& running_;
 
     static auto newest_item(
-        const Identifier& id,
+        const identifier::Generic& id,
         const proto::StorageThread& thread,
         CustomData& custom) noexcept -> const proto::StorageThreadItem&;
 

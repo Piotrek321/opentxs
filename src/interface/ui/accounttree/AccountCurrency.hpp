@@ -14,12 +14,11 @@
 #include "interface/ui/base/RowType.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -69,6 +68,9 @@ class AccountCurrency final : public Combined<
                                   AccountTreeSortKey>
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto Currency() const noexcept -> UnitType final { return row_id_; }
     auto Debug() const noexcept -> UnallocatedCString final;
     auto Name() const noexcept -> UnallocatedCString final

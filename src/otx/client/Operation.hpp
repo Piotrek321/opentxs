@@ -57,6 +57,8 @@ namespace session
 {
 class Client;
 }  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace otx
@@ -109,13 +111,15 @@ public:
     auto ConveyPayment(
         const identifier::Nym& recipient,
         const std::shared_ptr<const OTPayment> payment) -> bool override;
-    auto DepositCash(const Identifier& depositAccountID, blind::Purse&& purse)
-        -> bool override;
+    auto DepositCash(
+        const identifier::Generic& depositAccountID,
+        blind::Purse&& purse) -> bool override;
     auto DepositCheque(
-        const Identifier& depositAccountID,
+        const identifier::Generic& depositAccountID,
         const std::shared_ptr<Cheque> cheque) -> bool override;
-    auto DownloadContract(const Identifier& ID, const contract::Type type)
-        -> bool override;
+    auto DownloadContract(
+        const identifier::Generic& ID,
+        const contract::Type type) -> bool override;
     auto GetFuture() -> Future override;
     auto IssueUnitDefinition(
         const std::shared_ptr<const proto::UnitDefinition> unitDefinition,
@@ -130,7 +134,7 @@ public:
     auto RequestAdmin(const String& password) -> bool override;
     auto SendCash(
         const identifier::Nym& recipient,
-        const Identifier& workflowID) -> bool override;
+        const identifier::Generic& workflowID) -> bool override;
     auto SendMessage(
         const identifier::Nym& recipient,
         const String& message,
@@ -143,8 +147,8 @@ public:
         const identifier::Nym& targetNymID,
         const OTPeerRequest peerrequest) -> bool override;
     auto SendTransfer(
-        const Identifier& sourceAccountID,
-        const Identifier& destinationAccountID,
+        const identifier::Generic& sourceAccountID,
+        const identifier::Generic& destinationAccountID,
         const Amount& amount,
         const String& memo) -> bool override;
     void SetPush(const bool on) override { enable_otx_push_.store(on); }
@@ -160,9 +164,10 @@ public:
         const otx::OperationType type,
         const identifier::Nym& targetNymID,
         const otx::context::Server::ExtraArgs& args) -> bool override;
-    auto UpdateAccount(const Identifier& accountID) -> bool override;
-    auto WithdrawCash(const Identifier& accountID, const Amount& amount)
-        -> bool override;
+    auto UpdateAccount(const identifier::Generic& accountID) -> bool override;
+    auto WithdrawCash(
+        const identifier::Generic& accountID,
+        const Amount& amount) -> bool override;
 
     Operation() = delete;
     Operation(const Operation&) = delete;
@@ -207,8 +212,8 @@ private:
 
     const api::session::Client& api_;
     const OTPasswordPrompt reason_;
-    const OTNymID nym_id_;
-    const OTNotaryID server_id_;
+    const identifier::Nym nym_id_;
+    const identifier::Notary server_id_;
     std::atomic<otx::OperationType> type_;
     std::atomic<State> state_;
     std::atomic<bool> refresh_account_;
@@ -218,13 +223,13 @@ private:
     std::atomic<bool> result_set_;
     std::atomic<bool> enable_otx_push_;
     Promise result_;
-    OTNymID target_nym_id_;
-    OTNotaryID target_server_id_;
-    OTUnitID target_unit_id_;
+    identifier::Nym target_nym_id_;
+    identifier::Notary target_server_id_;
+    identifier::UnitDefinition target_unit_id_;
     contract::Type contract_type_;
     std::shared_ptr<const proto::UnitDefinition> unit_definition_;
-    OTIdentifier account_id_;
-    OTIdentifier generic_id_;
+    identifier::Generic account_id_;
+    identifier::Generic generic_id_;
     Amount amount_;
     OTString memo_;
     bool bool_;
@@ -235,8 +240,8 @@ private:
     std::shared_ptr<Ledger> inbox_;
     std::shared_ptr<Ledger> outbox_;
     std::optional<blind::Purse> purse_;
-    UnallocatedSet<OTIdentifier> affected_accounts_;
-    UnallocatedSet<OTIdentifier> redownload_accounts_;
+    UnallocatedSet<identifier::Generic> affected_accounts_;
+    UnallocatedSet<identifier::Generic> redownload_accounts_;
     UnallocatedSet<otx::context::ManagedNumber> numbers_;
     std::atomic<std::size_t> error_count_;
     OTPeerReply peer_reply_;
@@ -245,6 +250,7 @@ private:
 
     static auto check_future(otx::context::Server::SendFuture& future) -> bool;
     static void set_consensus_hash(
+        const api::Session& api,
         OTTransaction& transaction,
         const otx::context::Base& context,
         const Account& account,
@@ -252,7 +258,7 @@ private:
 
     auto context() const -> Editor<otx::context::Server>;
     auto evaluate_transaction_reply(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const Message& reply) const -> bool;
     auto hasContext() const -> bool;
     void update_workflow(
@@ -275,12 +281,12 @@ private:
     auto construct_deposit_cheque() -> std::shared_ptr<Message>;
     auto construct_download_contract() -> std::shared_ptr<Message>;
     auto construct_download_mint() -> std::shared_ptr<Message>;
-    auto construct_get_account_data(const Identifier& accountID)
+    auto construct_get_account_data(const identifier::Generic& accountID)
         -> std::shared_ptr<Message>;
     auto construct_get_transaction_numbers() -> std::shared_ptr<Message>;
     auto construct_issue_unit_definition() -> std::shared_ptr<Message>;
     auto construct_process_inbox(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const Ledger& payload,
         otx::context::Server& context) -> std::shared_ptr<Message>;
     auto construct_publish_nym() -> std::shared_ptr<Message>;
@@ -307,36 +313,36 @@ private:
     auto construct_send_transfer() -> std::shared_ptr<Message>;
     auto construct_withdraw_cash() -> std::shared_ptr<Message>;
     auto download_account(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         otx::context::Server::DeliveryResult& lastResult) -> std::size_t;
     auto download_accounts(
         const State successState,
         const State failState,
         otx::context::Server::DeliveryResult& lastResult) -> bool;
     auto download_box_receipt(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const BoxType box,
         const TransactionNumber number) -> bool;
     void evaluate_transaction_reply(
         otx::context::Server::DeliveryResult&& result);
     void execute();
     auto get_account_data(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         std::shared_ptr<Ledger> inbox,
         std::shared_ptr<Ledger> outbox,
         otx::context::Server::DeliveryResult& lastResult) -> bool;
     auto get_receipts(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         std::shared_ptr<Ledger> inbox,
         std::shared_ptr<Ledger> outbox) -> bool;
     auto get_receipts(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const BoxType type,
         Ledger& box) -> bool;
     void nymbox_post();
     void nymbox_pre();
     auto process_inbox(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         std::shared_ptr<Ledger> inbox,
         std::shared_ptr<Ledger> outbox,
         otx::context::Server::DeliveryResult& lastResult) -> bool;

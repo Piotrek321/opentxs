@@ -13,13 +13,12 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/interface/ui/AccountList.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -42,7 +41,9 @@ class Client;
 
 namespace identifier
 {
+class Generic;
 class Nym;
+class UnitDefinition;
 }  // namespace identifier
 
 namespace network
@@ -59,7 +60,6 @@ class Message;
 }  // namespace network
 
 class Amount;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -80,6 +80,8 @@ class AccountList final : public AccountListList,
                           public Worker<api::session::Client>
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
+
     AccountList(
         const api::session::Client& api,
         const identifier::Nym& nymID,
@@ -120,22 +122,23 @@ private:
     auto subscribe(const blockchain::Type chain) const noexcept -> void;
 
     auto load_blockchain() noexcept -> void;
-    auto load_blockchain_account(OTIdentifier&& id) noexcept -> void;
+    auto load_blockchain_account(identifier::Generic&& id) noexcept -> void;
     auto load_blockchain_account(blockchain::Type chain) noexcept -> void;
     auto load_blockchain_account(
-        OTIdentifier&& id,
+        identifier::Generic&& id,
         blockchain::Type chain) noexcept -> void;
     auto load_blockchain_account(
-        OTIdentifier&& id,
+        identifier::Generic&& id,
         blockchain::Type chain,
         Amount&& balance) noexcept -> void;
     auto load_custodial() noexcept -> void;
-    auto load_custodial_account(OTIdentifier&& id) noexcept -> void;
-    auto load_custodial_account(OTIdentifier&& id, Amount&& balance) noexcept
-        -> void;
+    auto load_custodial_account(identifier::Generic&& id) noexcept -> void;
     auto load_custodial_account(
-        OTIdentifier&& id,
-        OTUnitID&& contract,
+        identifier::Generic&& id,
+        Amount&& balance) noexcept -> void;
+    auto load_custodial_account(
+        identifier::Generic&& id,
+        identifier::UnitDefinition&& contract,
         UnitType type,
         Amount&& balance,
         UnallocatedCString&& name) noexcept -> void;

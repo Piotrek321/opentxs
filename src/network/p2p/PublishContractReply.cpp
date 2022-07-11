@@ -37,12 +37,13 @@ auto BlockchainSyncPublishContractReply() noexcept
 }
 
 auto BlockchainSyncPublishContractReply(
-    const Identifier& id,
+    const identifier::Generic& id,
     const bool success) noexcept -> network::p2p::PublishContractReply
 {
     using ReturnType = network::p2p::PublishContractReply;
 
-    return std::make_unique<ReturnType::Imp>(id, success).release();
+    return std::make_unique<ReturnType::Imp>(identifier::Generic{id}, success)
+        .release();
 }
 
 auto BlockchainSyncPublishContractReply_p(
@@ -66,7 +67,7 @@ public:
     static constexpr auto success_byte_ = std::byte{0x00};
     static constexpr auto fail_byte_ = std::byte{0x01};
 
-    const OTIdentifier contract_id_;
+    const identifier::Generic contract_id_;
     const bool success_;
     PublishContractReply* parent_;
 
@@ -105,7 +106,7 @@ public:
         out.AddFrame(Buffer{static_cast<std::uint32_t>(type)});
         out.Internal().AddFrame([&] {
             auto out = proto::Identifier{};
-            contract_id_->Serialize(out);
+            contract_id_.Serialize(out);
 
             return out;
         }());
@@ -124,12 +125,12 @@ public:
 
     Imp() noexcept
         : Base::Imp()
-        , contract_id_(Identifier::Factory())
+        , contract_id_()
         , success_(false)
         , parent_(nullptr)
     {
     }
-    Imp(OTIdentifier&& id, bool success) noexcept
+    Imp(identifier::Generic&& id, bool success) noexcept
         : Base::Imp(MessageType::publish_ack)
         , contract_id_(std::move(id))
         , success_(success)
@@ -162,7 +163,7 @@ PublishContractReply::PublishContractReply(Imp* imp) noexcept
     imp_->parent_ = this;
 }
 
-auto PublishContractReply::ID() const noexcept -> const Identifier&
+auto PublishContractReply::ID() const noexcept -> const identifier::Generic&
 {
     return Imp::get(imp_).contract_id_;
 }

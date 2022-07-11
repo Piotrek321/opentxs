@@ -24,6 +24,7 @@
 #include "internal/serialization/protobuf/verify/ServerRequest.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -59,7 +60,7 @@ auto Request::Factory(
     Lock lock(output->lock_);
     output->update_signature(lock, reason);
 
-    OT_ASSERT(false == output->id(lock)->empty());
+    OT_ASSERT(false == output->id(lock).empty());
 
     return Request{output.release()};
 }
@@ -117,7 +118,7 @@ auto Request::Alias() const noexcept -> UnallocatedCString
     return imp_->Alias();
 }
 
-auto Request::ID() const noexcept -> OTIdentifier { return imp_->ID(); }
+auto Request::ID() const noexcept -> identifier::Generic { return imp_->ID(); }
 
 auto Request::Nym() const noexcept -> Nym_p { return imp_->Nym(); }
 
@@ -208,13 +209,13 @@ Request::Imp::Imp(
           serialized.version(),
           "",
           "",
-          api.Factory().Identifier(serialized.id()),
+          api.Factory().IdentifierFromBase58(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
               : Signatures{})
-    , initiator_((nym_) ? nym_->ID() : api.Factory().NymID().get())
-    , server_(api.Factory().ServerID(serialized.server()))
+    , initiator_((nym_) ? nym_->ID() : identifier::Nym())
+    , server_(api.Factory().NotaryIDFromBase58(serialized.server()))
     , type_(translate(serialized.type()))
     , number_(serialized.request())
     , include_nym_(Flag::Factory(false))
@@ -243,7 +244,8 @@ auto Request::Imp::extract_nym(
         return api.Wallet().Internal().Nym(serialized.credentials());
     } else if (false == serialized.nym().empty()) {
 
-        return api.Wallet().Nym(api.Factory().NymID(serialized.nym()));
+        return api.Wallet().Nym(
+            api.Factory().NymIDFromBase58(serialized.nym()));
     }
 
     return nullptr;
@@ -266,9 +268,10 @@ auto Request::Imp::full_version(const Lock& lock) const -> proto::ServerRequest
     return contract;
 }
 
-auto Request::Imp::GetID(const Lock& lock) const -> OTIdentifier
+auto Request::Imp::GetID(const Lock& lock) const -> identifier::Generic
 {
-    return api_.Factory().InternalSession().Identifier(id_version(lock));
+    return api_.Factory().InternalSession().IdentifierFromPreimage(
+        id_version(lock));
 }
 
 auto Request::Imp::id_version(const Lock& lock) const -> proto::ServerRequest
@@ -277,8 +280,8 @@ auto Request::Imp::id_version(const Lock& lock) const -> proto::ServerRequest
     output.set_version(version_);
     output.clear_id();  // Must be blank
     output.set_type(translate(type_));
-    output.set_nym(initiator_->str());
-    output.set_server(server_->str());
+    output.set_nym(initiator_.asBase58(api_.Crypto()));
+    output.set_server(server_.asBase58(api_.Crypto()));
     output.set_request(number_);
     output.clear_signature();  // Must be blank
 
@@ -343,7 +346,7 @@ auto Request::Imp::signature_version(const Lock& lock) const
     -> proto::ServerRequest
 {
     auto contract = id_version(lock);
-    contract.set_id(id_->str());
+    contract.set_id(id_.asBase58(api_.Crypto()));
 
     return contract;
 }

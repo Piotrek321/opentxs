@@ -18,7 +18,10 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-class Identifier;
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -31,7 +34,7 @@ public:
     class Imp;
 
     auto ContractType() const noexcept -> contract::Type;
-    auto ID() const noexcept -> const Identifier&;
+    auto ID() const noexcept -> const identifier::Generic&;
     auto Payload() const noexcept -> ReadView;
 
     OPENTXS_NO_EXPORT QueryContractReply(Imp* imp) noexcept;

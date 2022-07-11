@@ -86,17 +86,21 @@ namespace opentxs::api::session::imp
 class Contacts final : public session::internal::Contacts
 {
 public:
-    auto Contact(const Identifier& id) const
+    auto Contact(const identifier::Generic& id) const
         -> std::shared_ptr<const opentxs::Contact> final;
-    auto ContactID(const identifier::Nym& nymID) const -> OTIdentifier final;
+    auto ContactID(const identifier::Nym& nymID) const
+        -> identifier::Generic final;
     auto ContactList() const -> ObjectList final;
-    auto ContactName(const Identifier& contactID) const
+    auto ContactName(const identifier::Generic& contactID) const
         -> UnallocatedCString final;
-    auto ContactName(const Identifier& contactID, UnitType currencyHint) const
-        -> UnallocatedCString final;
-    auto Merge(const Identifier& parent, const Identifier& child) const
+    auto ContactName(
+        const identifier::Generic& contactID,
+        UnitType currencyHint) const -> UnallocatedCString final;
+    auto Merge(
+        const identifier::Generic& parent,
+        const identifier::Generic& child) const
         -> std::shared_ptr<const opentxs::Contact> final;
-    auto mutable_Contact(const Identifier& id) const
+    auto mutable_Contact(const identifier::Generic& id) const
         -> std::unique_ptr<Editor<opentxs::Contact>> final;
     auto NewContact(const UnallocatedCString& label) const
         -> std::shared_ptr<const opentxs::Contact> final;
@@ -110,13 +114,16 @@ public:
         const UnallocatedCString& label,
         const opentxs::blockchain::Type currency) const
         -> std::shared_ptr<const opentxs::Contact> final;
-    auto NymToContact(const identifier::Nym& nymID) const -> OTIdentifier final;
+    auto NymToContact(const identifier::Nym& nymID) const
+        -> identifier::Generic final;
     auto PaymentCodeToContact(
         const PaymentCode& code,
-        const opentxs::blockchain::Type currency) const -> OTIdentifier final;
+        const opentxs::blockchain::Type currency) const
+        -> identifier::Generic final;
     auto PaymentCodeToContact(
         const UnallocatedCString& code,
-        const opentxs::blockchain::Type currency) const -> OTIdentifier final;
+        const opentxs::blockchain::Type currency) const
+        -> identifier::Generic final;
 
     Contacts(const api::session::Client& api);
     Contacts() = delete;
@@ -139,8 +146,9 @@ private:
         std::pair<std::mutex, std::shared_ptr<opentxs::Contact>>;
     using Address =
         std::pair<identity::wot::claim::ClaimType, UnallocatedCString>;
-    using ContactMap = UnallocatedMap<OTIdentifier, ContactLock>;
-    using ContactNameMap = UnallocatedMap<OTIdentifier, UnallocatedCString>;
+    using ContactMap = UnallocatedMap<identifier::Generic, ContactLock>;
+    using ContactNameMap =
+        UnallocatedMap<identifier::Generic, UnallocatedCString>;
 
     const api::session::Client& api_;
     mutable std::recursive_mutex lock_{};
@@ -152,7 +160,7 @@ private:
     Timer timer_;
 
     void check_identifiers(
-        const Identifier& inputNymID,
+        const identifier::Generic& inputNymID,
         const PaymentCode& paymentCode,
         bool& haveNymID,
         bool& havePaymentCode,
@@ -166,17 +174,17 @@ private:
         -> ContactMap::iterator;
     auto contact(const rLock& lock, const UnallocatedCString& label) const
         -> std::shared_ptr<const opentxs::Contact>;
-    auto contact(const rLock& lock, const Identifier& id) const
+    auto contact(const rLock& lock, const identifier::Generic& id) const
         -> std::shared_ptr<const opentxs::Contact>;
     void import_contacts(const rLock& lock);
     auto init(const std::shared_ptr<const crypto::Blockchain>& blockchain)
         -> void final;
     void init_nym_map(const rLock& lock);
-    auto load_contact(const rLock& lock, const Identifier& id) const
+    auto load_contact(const rLock& lock, const identifier::Generic& id) const
         -> ContactMap::iterator;
-    auto mutable_contact(const rLock& lock, const Identifier& id) const
+    auto mutable_contact(const rLock& lock, const identifier::Generic& id) const
         -> std::unique_ptr<Editor<opentxs::Contact>>;
-    auto obtain_contact(const rLock& lock, const Identifier& id) const
+    auto obtain_contact(const rLock& lock, const identifier::Generic& id) const
         -> ContactMap::iterator;
     auto new_contact(
         const rLock& lock,
@@ -196,7 +204,7 @@ private:
         const rLock& lock,
         const UnallocatedCString& label,
         const PaymentCode& code,
-        const Identifier& contactID) const
+        const identifier::Generic& contactID) const
         -> std::shared_ptr<const opentxs::Contact>;
     void update_nym_map(
         const rLock& lock,

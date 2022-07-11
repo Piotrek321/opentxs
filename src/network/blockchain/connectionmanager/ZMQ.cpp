@@ -119,7 +119,7 @@ struct ZMQConnectionManager : virtual public ConnectionManager {
         : api_(api)
         , log_(log)
         , id_(id)
-        , endpoint_(address.Bytes().str(), address.Port())
+        , endpoint_(UnallocatedCString{address.Bytes().Bytes()}, address.Port())
         , zmq_(endpoint_.first + ':' + std::to_string(endpoint_.second))
         , header_bytes_(headerSize)
         , init_promise_()

@@ -76,7 +76,11 @@ class PeerObject;
 namespace opentxs
 {
 /** AccountInfo: accountID, nymID, serverID, unitID*/
-using AccountInfo = std::tuple<OTIdentifier, OTNymID, OTNotaryID, OTUnitID>;
+using AccountInfo = std::tuple<
+    identifier::Generic,
+    identifier::Nym,
+    identifier::Notary,
+    identifier::UnitDefinition>;
 }  // namespace opentxs
 
 namespace opentxs::api::session
@@ -97,15 +101,16 @@ public:
     using AccountCallback = std::function<void(const Account&)>;
 
     virtual auto AccountPartialMatch(const UnallocatedCString& hint) const
-        -> OTIdentifier = 0;
-    virtual auto DeleteAccount(const Identifier& accountID) const -> bool = 0;
+        -> identifier::Generic = 0;
+    virtual auto DeleteAccount(const identifier::Generic& accountID) const
+        -> bool = 0;
     virtual auto UpdateAccount(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const otx::context::Server&,
         const String& serialized,
         const PasswordPrompt& reason) const -> bool = 0;
     virtual auto UpdateAccount(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const otx::context::Server&,
         const String& serialized,
         const UnallocatedCString& label,
@@ -140,7 +145,7 @@ public:
         -> std::shared_ptr<const otx::context::Client> = 0;
 
     virtual auto DefaultNym() const noexcept
-        -> std::pair<OTNymID, std::size_t> = 0;
+        -> std::pair<identifier::Nym, std::size_t> = 0;
 
     /**   Load a read-only copy of a ServerContext object
      *
@@ -152,19 +157,19 @@ public:
      */
     virtual auto ServerContext(
         const identifier::Nym& localNymID,
-        const Identifier& remoteID) const
+        const identifier::Generic& remoteID) const
         -> std::shared_ptr<const otx::context::Server> = 0;
 
     /**   Returns a list of all issuers associated with a local nym */
     virtual auto IssuerList(const identifier::Nym& nymID) const
-        -> UnallocatedSet<OTNymID> = 0;
+        -> UnallocatedSet<identifier::Nym> = 0;
 
-    virtual auto IsLocalNym(const UnallocatedCString& id) const -> bool = 0;
+    virtual auto IsLocalNym(const std::string_view id) const -> bool = 0;
     virtual auto IsLocalNym(const identifier::Nym& id) const -> bool = 0;
 
     virtual auto LocalNymCount() const -> std::size_t = 0;
 
-    virtual auto LocalNyms() const -> UnallocatedSet<OTNymID> = 0;
+    virtual auto LocalNyms() const -> Set<identifier::Nym> = 0;
 
     /**   Obtain a smart pointer to an instantiated nym.
      *
@@ -244,7 +249,7 @@ public:
      */
     virtual auto PeerReply(
         const identifier::Nym& nym,
-        const Identifier& reply,
+        const identifier::Generic& reply,
         const otx::client::StorageBox& box,
         AllocateOutput destination) const -> bool = 0;
 
@@ -260,7 +265,7 @@ public:
      */
     virtual auto PeerReplyComplete(
         const identifier::Nym& nym,
-        const Identifier& replyOrRequest) const -> bool = 0;
+        const identifier::Generic& replyOrRequest) const -> bool = 0;
 
     /**   Rollback a PeerReplyCreate call
      *
@@ -273,8 +278,8 @@ public:
      */
     virtual auto PeerReplyCreateRollback(
         const identifier::Nym& nym,
-        const Identifier& request,
-        const Identifier& reply) const -> bool = 0;
+        const identifier::Generic& request,
+        const identifier::Generic& reply) const -> bool = 0;
 
     /**   Obtain a list of sent peer replies
      *
@@ -330,7 +335,7 @@ public:
      */
     virtual auto PeerRequest(
         const identifier::Nym& nym,
-        const Identifier& request,
+        const identifier::Generic& request,
         const otx::client::StorageBox& box,
         std::time_t& time,
         AllocateOutput destination) const -> bool = 0;
@@ -346,7 +351,7 @@ public:
      */
     virtual auto PeerRequestComplete(
         const identifier::Nym& nym,
-        const Identifier& reply) const -> bool = 0;
+        const identifier::Generic& reply) const -> bool = 0;
 
     /**   Rollback a PeerRequestCreate call
      *
@@ -358,7 +363,7 @@ public:
      */
     virtual auto PeerRequestCreateRollback(
         const identifier::Nym& nym,
-        const Identifier& request) const -> bool = 0;
+        const identifier::Generic& request) const -> bool = 0;
 
     /**   Delete a peer reply object
      *
@@ -368,7 +373,7 @@ public:
      */
     virtual auto PeerRequestDelete(
         const identifier::Nym& nym,
-        const Identifier& request,
+        const identifier::Generic& request,
         const otx::client::StorageBox& box) const -> bool = 0;
 
     /**   Obtain a list of sent peer requests
@@ -420,7 +425,7 @@ public:
      */
     virtual auto PeerRequestUpdate(
         const identifier::Nym& nym,
-        const Identifier& request,
+        const identifier::Generic& request,
         const otx::client::StorageBox& box) const -> bool = 0;
 
     virtual auto Purse(

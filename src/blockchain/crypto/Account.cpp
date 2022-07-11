@@ -22,6 +22,7 @@
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -55,9 +56,9 @@ auto BlockchainAccountKeys(
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
-    const UnallocatedSet<OTIdentifier>& hd,
-    const UnallocatedSet<OTIdentifier>& imported,
-    const UnallocatedSet<OTIdentifier>& pc) noexcept
+    const UnallocatedSet<identifier::Generic>& hd,
+    const UnallocatedSet<identifier::Generic>& imported,
+    const UnallocatedSet<identifier::Generic>& pc) noexcept
     -> std::unique_ptr<blockchain::crypto::Account>
 {
     using ReturnType = blockchain::crypto::implementation::Account;
@@ -85,13 +86,15 @@ Account::Account(
     , chain_(parent.Chain())
     , nym_id_(nym)
     , account_id_([&] {
-        auto out = api_.Factory().Identifier();
-        auto preimage = api_.Factory().DataFromBytes(nym_id_->Bytes());
-        const auto chain = parent.Chain();
-        preimage.Concatenate(&chain, sizeof(chain));
-        out->CalculateDigest(preimage.Bytes());
+        const auto preimage = [&] {
+            auto out = api_.Factory().DataFromBytes(nym_id_.Bytes());
+            const auto chain = parent.Chain();
+            out.Concatenate(&chain, sizeof(chain));
 
-        return out;
+            return out;
+        }();
+
+        return api_.Factory().IdentifierFromPreimage(preimage.Bytes());
     }())
     , hd_(api_, SubaccountType::HD, *this)
     , imported_(api_, SubaccountType::Imported, *this)
@@ -143,7 +146,7 @@ auto Account::AddHDNode(
     const proto::HDPath& path,
     const crypto::HDProtocol standard,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept -> bool
+    identifier::Generic& id) noexcept -> bool
 {
     init_notification();
 
@@ -153,7 +156,7 @@ auto Account::AddHDNode(
 auto Account::AssociateTransaction(
     const UnallocatedVector<Activity>& unspent,
     const UnallocatedVector<Activity>& spent,
-    UnallocatedSet<OTIdentifier>& contacts,
+    UnallocatedSet<identifier::Generic>& contacts,
     const PasswordPrompt& reason) const noexcept -> bool
 {
     using ActivityVector = UnallocatedVector<Activity>;
@@ -234,7 +237,7 @@ auto Account::ClaimAccountID(
 
 auto Account::find_next_element(
     Subchain subchain,
-    const Identifier& contact,
+    const identifier::Generic& contact,
     const UnallocatedCString& label,
     const PasswordPrompt& reason) const noexcept(false) -> const Element&
 {
@@ -246,7 +249,7 @@ auto Account::find_next_element(
     for (const auto& account : hd_) {
         if (HDProtocol::BIP_44 != account.Standard()) { continue; }
 
-        const auto index = account.Reserve(subchain, reason, contact, label);
+        const auto index = account.Reserve(subchain, contact, reason, label);
 
         if (index.has_value()) {
 
@@ -256,7 +259,7 @@ auto Account::find_next_element(
 
     // If no BIP-44 account exists, then use whatever else may exist
     for (const auto& account : hd_) {
-        const auto index = account.Reserve(subchain, reason, contact, label);
+        const auto index = account.Reserve(subchain, contact, reason, label);
 
         if (index.has_value()) {
 
@@ -277,7 +280,7 @@ auto Account::FindNym(const identifier::Nym& id) const noexcept -> void
 auto Account::GetNextChangeKey(const PasswordPrompt& reason) const
     noexcept(false) -> const Element&
 {
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
 
     return find_next_element(Subchain::Internal, blank, "", reason);
 }
@@ -285,7 +288,7 @@ auto Account::GetNextChangeKey(const PasswordPrompt& reason) const
 auto Account::GetNextDepositKey(const PasswordPrompt& reason) const
     noexcept(false) -> const Element&
 {
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
 
     return find_next_element(Subchain::External, blank, "", reason);
 }
@@ -295,14 +298,14 @@ auto Account::GetDepositAddress(
     const PasswordPrompt& reason,
     const UnallocatedCString& memo) const noexcept -> UnallocatedCString
 {
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
 
     return GetDepositAddress(style, blank, reason, memo);
 }
 
 auto Account::GetDepositAddress(
     const blockchain::crypto::AddressStyle style,
-    const Identifier& contact,
+    const identifier::Generic& contact,
     const PasswordPrompt& reason,
     const UnallocatedCString& memo) const noexcept -> UnallocatedCString
 {
@@ -317,12 +320,12 @@ auto Account::init_hd(const Accounts& accounts) noexcept -> void
     for (const auto& accountID : accounts) {
         init_notification();
         auto account = proto::HDAccount{};
-        const auto loaded =
-            api_.Storage().Load(nym_id_->str(), accountID->str(), account);
+        const auto loaded = api_.Storage().Load(
+            nym_id_, accountID.asBase58(api_.Crypto()), account);
 
         if (false == loaded) { continue; }
 
-        auto notUsed = Identifier::Factory();
+        auto notUsed = identifier::Generic{};
         hd_.Construct(notUsed, account);
     }
 }
@@ -335,7 +338,7 @@ auto Account::init_notification() noexcept -> void
 
     if (auto code = api_.Factory().PaymentCode(nym->PaymentCode());
         0 < code.Version()) {
-        auto notUsed = Identifier::Factory();
+        auto notUsed = identifier::Generic{};
         notification_.Construct(notUsed, code, *nym);
     }
 }
@@ -348,7 +351,7 @@ auto Account::init_payment_code(const Accounts& accounts) noexcept -> void
 
         if (false == loaded) { continue; }
 
-        auto notUsed = Identifier::Factory();
+        auto notUsed = identifier::Generic{};
         payment_code_.Construct(notUsed, contacts_, account);
     }
 }
@@ -367,10 +370,10 @@ auto Account::LookupUTXO(const Coin& coin) const noexcept
     }
 }
 
-auto Account::Subaccount(const Identifier& id) const noexcept(false)
+auto Account::Subaccount(const identifier::Generic& id) const noexcept(false)
     -> const crypto::Subaccount&
 {
-    auto* output = node_index_.Find(id.str());
+    auto* output = node_index_.Find(id.asBase58(api_.Crypto()));
 
     if (nullptr == output) { throw std::out_of_range("Account not found"); }
 

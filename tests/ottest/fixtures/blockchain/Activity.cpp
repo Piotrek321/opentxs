@@ -54,7 +54,7 @@ Test_BlockchainActivity::Test_BlockchainActivity()
 }
 
 auto Test_BlockchainActivity::account_1_id() const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     static const auto output = api_.Crypto().Blockchain().NewHDSubaccount(
         nym_1_id(),
@@ -66,7 +66,7 @@ auto Test_BlockchainActivity::account_1_id() const noexcept
 }
 
 auto Test_BlockchainActivity::account_2_id() const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     static const auto output = api_.Crypto().Blockchain().NewHDSubaccount(
         nym_2_id(),
@@ -78,7 +78,7 @@ auto Test_BlockchainActivity::account_2_id() const noexcept
 }
 
 auto Test_BlockchainActivity::contact_1_id() const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     static const auto output = api_.Contacts().NymToContact(nym_1_id());
 
@@ -86,7 +86,7 @@ auto Test_BlockchainActivity::contact_1_id() const noexcept
 }
 
 auto Test_BlockchainActivity::contact_2_id() const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     static const auto output = api_.Contacts().NymToContact(nym_2_id());
 
@@ -94,7 +94,7 @@ auto Test_BlockchainActivity::contact_2_id() const noexcept
 }
 
 auto Test_BlockchainActivity::contact_3_id() const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     static const auto output = api_.Contacts().NewContactFromAddress(
         "1ANeKBrinuG86jw3rEvhFG6SYP1DCCzd4q",
@@ -105,7 +105,7 @@ auto Test_BlockchainActivity::contact_3_id() const noexcept
 }
 
 auto Test_BlockchainActivity::contact_4_id() const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     static const auto output = api_.Contacts().NewContactFromAddress(
         "16C1f7wLAh44YgZ8oWJXaY9WoTPJzvfdqj",
@@ -116,7 +116,7 @@ auto Test_BlockchainActivity::contact_4_id() const noexcept
 }
 
 auto Test_BlockchainActivity::contact_5_id() const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     static const auto output = api_.Contacts().NewContact(contact_5_name_);
 
@@ -124,7 +124,7 @@ auto Test_BlockchainActivity::contact_5_id() const noexcept
 }
 
 auto Test_BlockchainActivity::contact_6_id() const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     static const auto output = api_.Contacts().NewContact(contact_6_name_);
 
@@ -132,7 +132,7 @@ auto Test_BlockchainActivity::contact_6_id() const noexcept
 }
 
 auto Test_BlockchainActivity::contact_7_id() const noexcept
-    -> const ot::Identifier&
+    -> const ot::identifier::Generic&
 {
     static const auto output = api_.Contacts().NewContactFromAddress(
         "17VZNX1SN5NtKa8UQFxwQbFeFc3iqRYhem",

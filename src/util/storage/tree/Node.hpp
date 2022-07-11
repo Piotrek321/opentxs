@@ -31,6 +31,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
 namespace proto
 {
 class Contact;
@@ -206,6 +216,8 @@ protected:
 
     static const UnallocatedCString BLANK_HASH;
 
+    const api::Crypto& crypto_;
+    const api::session::Factory& factory_;
     const Driver& driver_;
     VersionNumber version_;
     VersionNumber original_version_;
@@ -276,6 +288,10 @@ protected:
 
     virtual void init(const UnallocatedCString& hash) = 0;
 
-    Node(const Driver& storage, const UnallocatedCString& key);
+    Node(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& key);
 };
 }  // namespace opentxs::storage

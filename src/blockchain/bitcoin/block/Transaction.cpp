@@ -46,13 +46,12 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Algorithm.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 namespace be = boost::endian;
@@ -421,9 +420,9 @@ Transaction::Transaction(const Transaction& rhs) noexcept
 }
 
 auto Transaction::AssociatedLocalNyms() const noexcept
-    -> UnallocatedVector<OTNymID>
+    -> UnallocatedVector<identifier::Nym>
 {
-    auto output = UnallocatedVector<OTNymID>{};
+    auto output = UnallocatedVector<identifier::Nym>{};
     inputs_->AssociatedLocalNyms(output);
     outputs_->AssociatedLocalNyms(output);
     dedup(output);
@@ -434,9 +433,9 @@ auto Transaction::AssociatedLocalNyms() const noexcept
 auto Transaction::AssociatedRemoteContacts(
     const api::session::Contacts& contacts,
     const identifier::Nym& nym) const noexcept
-    -> UnallocatedVector<OTIdentifier>
+    -> UnallocatedVector<identifier::Generic>
 {
-    auto output = UnallocatedVector<OTIdentifier>{};
+    auto output = UnallocatedVector<identifier::Generic>{};
     inputs_->AssociatedRemoteContacts(output);
     outputs_->AssociatedRemoteContacts(output);
     dedup(output);
@@ -498,7 +497,7 @@ auto Transaction::calculate_witness_size() const noexcept -> std::size_t
         });
 }
 
-auto Transaction::IDNormalized() const noexcept -> const Identifier&
+auto Transaction::IDNormalized() const noexcept -> const identifier::Generic&
 {
     return cache_.normalized([&] {
         auto preimage = Space{};
@@ -506,11 +505,8 @@ auto Transaction::IDNormalized() const noexcept -> const Identifier&
 
         OT_ASSERT(serialized);
 
-        auto output = api_.Factory().Identifier();
-        output->CalculateDigest(
+        return api_.Factory().IdentifierFromPreimage(
             reader(preimage), identifier::Algorithm::sha256);
-
-        return output;
     });
 }
 
@@ -878,7 +874,7 @@ auto Transaction::Serialize() const noexcept -> std::optional<SerializeType>
         output.add_chain(translate(UnitToClaim(BlockchainToUnit(chain))));
     }
 
-    output.set_txid(txid_.str());
+    output.set_txid(UnallocatedCString{txid_.Bytes()});
     output.set_txversion(version_);
     output.set_locktime(lock_time_);
 
@@ -898,13 +894,13 @@ auto Transaction::Serialize() const noexcept -> std::optional<SerializeType>
     // TODO repeated string conflicts = 14;
     output.set_memo(cache_.memo());
     output.set_segwit_flag(std::to_integer<std::uint32_t>(segwit_flag_));
-    output.set_wtxid(wtxid_.str());
+    output.set_wtxid(UnallocatedCString{wtxid_.Bytes()});
     output.set_is_generation(is_generation_);
     const auto& [height, hash] = cache_.position();
 
     if ((0 <= height) && (false == hash.IsNull())) {
         output.set_mined_height(height);
-        output.set_mined_block(hash.str());
+        output.set_mined_block(UnallocatedCString{hash.Bytes()});
     }
 
     return std::move(output);

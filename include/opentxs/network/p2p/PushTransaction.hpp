@@ -19,7 +19,10 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-class Identifier;
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)

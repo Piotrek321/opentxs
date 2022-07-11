@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "interface/qt/SendMonitor.hpp"
-#include "interface/ui/base/Widget.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -22,7 +21,6 @@
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/interface/ui/AccountActivity.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::ui::implementation
 {
@@ -34,15 +32,14 @@ auto BlockchainAccountActivity::Send(
     SendMonitor::Callback cb) const noexcept -> int
 {
     try {
-        const auto handle =
-            Widget::api_.Network().Blockchain().GetChain(chain_);
+        const auto handle = api_.Network().Blockchain().GetChain(chain_);
 
         if (false == handle.IsValid()) {
             throw std::runtime_error{"invalid chain"};
         }
 
         const auto& network = handle.get();
-        const auto recipient = Widget::api_.Factory().PaymentCode(address);
+        const auto recipient = api_.Factory().PaymentCode(address);
         const auto& definition =
             display::GetDefinition(BlockchainToUnit(chain_));
         const auto amount = definition.Import(input, scale);

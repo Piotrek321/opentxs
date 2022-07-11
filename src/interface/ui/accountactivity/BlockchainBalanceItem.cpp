@@ -16,13 +16,13 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::ui::implementation
 {
@@ -33,7 +33,7 @@ BlockchainBalanceItem::BlockchainBalanceItem(
     const AccountActivitySortKey& sortKey,
     CustomData& custom,
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     [[maybe_unused]] const blockchain::Type chain,
     const ByteArray txid,
     const opentxs::Amount amount,
@@ -57,7 +57,7 @@ auto BlockchainBalanceItem::Contacts() const noexcept
     auto output = UnallocatedVector<UnallocatedCString>{};
 
     for (const auto& id : api_.Storage().BlockchainThreadMap(nym_id_, txid_)) {
-        if (0 < id->size()) { output.emplace_back(id->str()); }
+        if (0 < id.size()) { output.emplace_back(id.asBase58(api_.Crypto())); }
     }
 
     return output;

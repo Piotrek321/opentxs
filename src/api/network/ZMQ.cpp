@@ -19,11 +19,12 @@
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Notary.hpp"  // IWYU pragma: keep
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -187,7 +188,7 @@ auto ZMQ::Server(const UnallocatedCString& id) const noexcept(false)
 
     if (server_connections_.end() != existing) { return existing->second; }
 
-    auto contract = api_.Wallet().Server(identifier::Notary::Factory(id));
+    auto contract = api_.Wallet().Server(api_.Factory().NotaryIDFromBase58(id));
     auto [it, created] = server_connections_.emplace(
         id,
         opentxs::network::ServerConnection::Factory(

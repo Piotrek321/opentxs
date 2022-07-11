@@ -17,7 +17,6 @@
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/UniqueQueue.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/ui/ActivitySummaryItem.hpp"
 #include "opentxs/otx/client/Types.hpp"
@@ -39,6 +38,11 @@ namespace session
 class Client;
 }  // namespace session
 }  // namespace api
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 
 namespace network
 {
@@ -77,6 +81,8 @@ using ActivitySummaryItemRow =
 class ActivitySummaryItem final : public ActivitySummaryItemRow
 {
 public:
+    const api::session::Client& api_;
+
     static auto LoadItemText(
         const api::session::Client& api,
         const identifier::Nym& nym,
@@ -111,10 +117,10 @@ private:
         UnallocatedCString,
         otx::client::StorageBox,
         UnallocatedCString,
-        OTIdentifier>;
+        identifier::Generic>;
 
     const Flag& running_;
-    const OTNymID nym_id_;
+    const identifier::Nym nym_id_;
     ActivitySummarySortKey key_;
     UnallocatedCString& display_name_;
     UnallocatedCString text_;

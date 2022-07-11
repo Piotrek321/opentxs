@@ -16,8 +16,8 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 
 namespace opentxs::ui::implementation
 {
@@ -29,6 +29,7 @@ ActivityThreadItem::ActivityThreadItem(
     const ActivityThreadSortKey& sortKey,
     CustomData& custom) noexcept
     : ActivityThreadItemRow(parent, api, rowID, true)
+    , api_(api)
     , nym_id_(nymID)
     , time_(std::get<0>(sortKey))
     , item_id_(std::get<0>(row_id_))
@@ -53,7 +54,9 @@ auto ActivityThreadItem::From() const noexcept -> UnallocatedCString
 auto ActivityThreadItem::MarkRead() const noexcept -> bool
 {
     return api_.Activity().MarkRead(
-        nym_id_, Identifier::Factory(parent_.ThreadID()), item_id_);
+        nym_id_,
+        api_.Factory().IdentifierFromBase58(parent_.ThreadID()),
+        item_id_);
 }
 
 auto ActivityThreadItem::reindex(

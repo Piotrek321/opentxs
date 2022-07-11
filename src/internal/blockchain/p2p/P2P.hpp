@@ -12,7 +12,6 @@
 #include "core/StateMachine.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Peer.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -47,7 +46,7 @@ struct Address : virtual public p2p::Address {
 };
 
 struct Peer : virtual public p2p::Peer {
-    virtual auto AddressID() const noexcept -> OTIdentifier = 0;
+    virtual auto AddressID() const noexcept -> identifier::Generic = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
     ~Peer() override = default;

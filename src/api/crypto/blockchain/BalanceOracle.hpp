@@ -83,7 +83,7 @@ protected:
 private:
     using Subscribers = Set<ByteArray>;
     using Data = std::pair<Balance, Subscribers>;
-    using NymData = Map<OTNymID, Data>;
+    using NymData = Map<identifier::Nym, Data>;
     using ChainData = std::pair<Data, NymData>;
 
     const api::Session& api_;

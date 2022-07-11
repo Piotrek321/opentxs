@@ -24,6 +24,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
 namespace storage
 {
 class Driver;
@@ -45,7 +55,7 @@ class Threads final : public Node
 
 public:
     auto BlockchainThreadMap(const Data& txid) const noexcept
-        -> UnallocatedVector<OTIdentifier>;
+        -> UnallocatedVector<identifier::Generic>;
     auto BlockchainTransactionList() const noexcept
         -> UnallocatedVector<ByteArray>;
     auto Exists(const UnallocatedCString& id) const -> bool;
@@ -54,7 +64,8 @@ public:
     auto Migrate(const Driver& to) const -> bool final;
     auto Thread(const UnallocatedCString& id) const -> const storage::Thread&;
 
-    auto AddIndex(const Data& txid, const Identifier& thread) noexcept -> bool;
+    auto AddIndex(const Data& txid, const identifier::Generic& thread) noexcept
+        -> bool;
     auto Create(
         const UnallocatedCString& id,
         const UnallocatedSet<UnallocatedCString>& participants)
@@ -62,8 +73,9 @@ public:
     auto FindAndDeleteItem(const UnallocatedCString& itemID) -> bool;
     auto mutable_Thread(const UnallocatedCString& id)
         -> Editor<storage::Thread>;
-    auto RemoveIndex(const Data& txid, const Identifier& thread) noexcept
-        -> void;
+    auto RemoveIndex(
+        const Data& txid,
+        const identifier::Generic& thread) noexcept -> void;
     auto Rename(
         const UnallocatedCString& existingID,
         const UnallocatedCString& newID) -> bool;
@@ -81,7 +93,7 @@ private:
 
     struct BlockchainThreadIndex {
         using Txid = ByteArray;
-        using ThreadID = OTIdentifier;
+        using ThreadID = identifier::Generic;
 
         mutable std::mutex lock_{};
         UnallocatedMap<Txid, UnallocatedSet<ThreadID>> map_{};
@@ -112,6 +124,8 @@ private:
         const UnallocatedCString& id);
 
     Threads(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
         const Driver& storage,
         const UnallocatedCString& hash,
         Mailbox& mailInbox,

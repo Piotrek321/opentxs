@@ -18,11 +18,12 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/Unit.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/interface/ui/AccountActivity.hpp"
 #include "opentxs/util/Container.hpp"
@@ -48,6 +49,7 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -69,8 +71,6 @@ namespace proto
 class PaymentEvent;
 class PaymentWorkflow;
 }  // namespace proto
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -80,6 +80,7 @@ namespace opentxs::ui::implementation
 class CustodialAccountActivity final : public AccountActivity
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto ContractID() const noexcept -> UnallocatedCString final;
     auto DisplayUnit() const noexcept -> UnallocatedCString final;
     auto Name() const noexcept -> UnallocatedCString final;
@@ -90,7 +91,7 @@ public:
     CustodialAccountActivity(
         const api::session::Client& api,
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback& cb) noexcept;
     CustodialAccountActivity() = delete;
     CustodialAccountActivity(const CustodialAccountActivity&) = delete;
@@ -140,7 +141,7 @@ private:
     auto process_contact(const Message& message) noexcept -> void;
     auto process_notary(const Message& message) noexcept -> void;
     auto process_workflow(
-        const Identifier& workflowID,
+        const identifier::Generic& workflowID,
         UnallocatedSet<AccountActivityRowID>& active) noexcept -> void;
     auto process_workflow(const Message& message) noexcept -> void;
     auto process_unit(const Message& message) noexcept -> void;

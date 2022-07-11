@@ -24,6 +24,8 @@
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs

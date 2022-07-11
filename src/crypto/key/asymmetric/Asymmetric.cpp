@@ -268,7 +268,7 @@ auto Asymmetric::CalculateHash(
     return output;
 }
 
-auto Asymmetric::CalculateID(Identifier& output) const noexcept -> bool
+auto Asymmetric::CalculateID(identifier::Generic& output) const noexcept -> bool
 {
     if (false == HasPublic()) {
         LogError()(OT_PRETTY_CLASS())("Missing public key").Flush();
@@ -276,7 +276,9 @@ auto Asymmetric::CalculateID(Identifier& output) const noexcept -> bool
         return false;
     }
 
-    return output.CalculateDigest(PublicKey());
+    output = api_.Factory().IdentifierFromPreimage(PublicKey());
+
+    return false == output.empty();
 }
 
 auto Asymmetric::CalculateTag(
@@ -325,7 +327,7 @@ auto Asymmetric::CalculateTag(
 
 auto Asymmetric::CalculateTag(
     const key::Asymmetric& dhKey,
-    const Identifier& credential,
+    const identifier::Generic& credential,
     const PasswordPrompt& reason,
     std::uint32_t& tag) const noexcept -> bool
 {
@@ -504,7 +506,7 @@ auto Asymmetric::get_private_key(const Lock&, const PasswordPrompt& reason)
 auto Asymmetric::get_tag(
     const Lock& lock,
     const key::Asymmetric& target,
-    const Identifier& credential,
+    const identifier::Generic& credential,
     const PasswordPrompt& reason,
     std::uint32_t& tag) const noexcept -> bool
 {
@@ -589,13 +591,13 @@ auto Asymmetric::hashtype_map() noexcept -> const HashTypeMap&
 }
 
 auto Asymmetric::NewSignature(
-    const Identifier& credentialID,
+    const identifier::Generic& credentialID,
     const crypto::SignatureRole role,
     const crypto::HashType hash) const -> proto::Signature
 {
     proto::Signature output{};
     output.set_version(sig_version_.at(role));
-    output.set_credentialid(credentialID.str());
+    output.set_credentialid(credentialID.asBase58(api_.Crypto()));
     output.set_role(translate(role));
     output.set_hashtype(
         (crypto::HashType::Error == hash) ? translate(SigHashType())
@@ -678,7 +680,7 @@ auto Asymmetric::Sign(
     const GetPreimage input,
     const crypto::SignatureRole role,
     proto::Signature& signature,
-    const Identifier& credential,
+    const identifier::Generic& credential,
     const PasswordPrompt& reason,
     const crypto::HashType hash) const noexcept -> bool
 {

@@ -23,8 +23,6 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
@@ -46,6 +44,17 @@ class Client;
 
 class Session;
 }  // namespace api
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
+namespace identifier
+{
+class Generic;
+class Nym;
+}  // namespace identifier
 
 namespace identity
 {
@@ -70,7 +79,6 @@ class Nym;
 
 class ByteArray;
 class Data;
-class Identifier;
 class PaymentCode;
 // }  // namespace v1
 }  // namespace opentxs
@@ -107,11 +115,11 @@ public:
         blockchain::Type>>;
     auto Data() const -> std::shared_ptr<identity::wot::claim::Data>;
     auto EmailAddresses(bool active = true) const -> UnallocatedCString;
-    auto ID() const -> const Identifier&;
+    auto ID() const -> const identifier::Generic&;
     auto Label() const -> const UnallocatedCString&;
     auto LastUpdated() const -> std::time_t;
     auto Nyms(const bool includeInactive = false) const
-        -> UnallocatedVector<OTNymID>;
+        -> UnallocatedVector<identifier::Nym>;
     auto PaymentCode(const UnitType currency = UnitType::Btc) const
         -> UnallocatedCString;
     auto PaymentCodes(const UnitType currency = UnitType::Btc) const

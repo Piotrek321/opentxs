@@ -46,6 +46,7 @@ namespace opentxs  // NOLINT
 // {
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 class UnitDefinition;
@@ -89,8 +90,6 @@ class SeedValidator;
 class UnitList;
 class UnitListQt;
 }  // namespace ui
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -104,12 +103,12 @@ public:
 
     auto AccountActivity(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback updateCB) const noexcept
         -> const opentxs::ui::AccountActivity& final;
     auto AccountActivityQt(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::AccountActivityQt* final;
     auto AccountList(const identifier::Nym& nym, const SimpleCallback updateCB)
@@ -134,7 +133,7 @@ public:
         const identifier::Nym& nym,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::AccountTreeQt* final;
-    auto ActivateUICallback(const Identifier& widget) const noexcept
+    auto ActivateUICallback(const identifier::Generic& widget) const noexcept
         -> void final;
     auto ActivitySummary(
         const identifier::Nym& nymID,
@@ -146,12 +145,12 @@ public:
         -> opentxs::ui::ActivitySummaryQt* final;
     auto ActivityThread(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const SimpleCallback updateCB) const noexcept
         -> const opentxs::ui::ActivityThread& final;
     auto ActivityThreadQt(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::ActivityThreadQt* final;
     auto BlankModel(const std::size_t columns) const noexcept
@@ -184,12 +183,16 @@ public:
         -> opentxs::ui::BlockchainStatisticsQt* final;
     auto BlockchainUnitID(const opentxs::blockchain::Type chain) const noexcept
         -> const identifier::UnitDefinition& final;
-    auto ClearUICallbacks(const Identifier& widget) const noexcept
+    auto ClearUICallbacks(const identifier::Generic& widget) const noexcept
         -> void final;
-    auto Contact(const Identifier& contactID, const SimpleCallback updateCB)
-        const noexcept -> const opentxs::ui::Contact& final;
-    auto ContactQt(const Identifier& contactID, const SimpleCallback updateCB)
-        const noexcept -> opentxs::ui::ContactQt* final;
+    auto Contact(
+        const identifier::Generic& contactID,
+        const SimpleCallback updateCB) const noexcept
+        -> const opentxs::ui::Contact& final;
+    auto ContactQt(
+        const identifier::Generic& contactID,
+        const SimpleCallback updateCB) const noexcept
+        -> opentxs::ui::ContactQt* final;
     auto ContactList(
         const identifier::Nym& nymID,
         const SimpleCallback updateCB) const noexcept
@@ -226,8 +229,9 @@ public:
         const noexcept -> const opentxs::ui::Profile& final;
     auto ProfileQt(const identifier::Nym& nymID, const SimpleCallback updateCB)
         const noexcept -> opentxs::ui::ProfileQt* final;
-    auto RegisterUICallback(const Identifier& widget, const SimpleCallback& cb)
-        const noexcept -> void final;
+    auto RegisterUICallback(
+        const identifier::Generic& widget,
+        const SimpleCallback& cb) const noexcept -> void final;
     auto SeedTree(const SimpleCallback updateCB) const noexcept
         -> const opentxs::ui::SeedTree& final;
     auto SeedTreeQt(const SimpleCallback updateCB) const noexcept

@@ -68,7 +68,7 @@ public:
     auto Name() const noexcept -> UnallocatedCString final;
     auto NymboxHashMatch() const -> bool final;
     auto LegacyDataFolder() const -> UnallocatedCString final;
-    auto LocalNymboxHash() const -> OTIdentifier final;
+    auto LocalNymboxHash() const -> identifier::Generic final;
     auto Notary() const -> const identifier::Notary& final
     {
         return server_id_;
@@ -76,7 +76,7 @@ public:
     auto Nymfile(const PasswordPrompt& reason) const
         -> std::unique_ptr<const opentxs::NymFile> final;
     auto RemoteNym() const -> const identity::Nym& final;
-    auto RemoteNymboxHash() const -> OTIdentifier final;
+    auto RemoteNymboxHash() const -> identifier::Generic final;
     auto Request() const -> RequestNumber final;
     auto Serialize() const noexcept -> ByteArray final;
     auto Serialize(proto::Context& out) const -> bool final;
@@ -107,8 +107,8 @@ public:
     auto RemoveAcknowledgedNumber(const UnallocatedSet<RequestNumber>& req)
         -> bool final;
     auto Reset() -> void final;
-    auto SetLocalNymboxHash(const Identifier& hash) -> void final;
-    auto SetRemoteNymboxHash(const Identifier& hash) -> void final;
+    auto SetLocalNymboxHash(const identifier::Generic& hash) -> void final;
+    auto SetRemoteNymboxHash(const identifier::Generic& hash) -> void final;
     auto SetRequest(const RequestNumber req) -> void final;
 
     Base() = delete;
@@ -120,17 +120,17 @@ public:
     ~Base() override = default;
 
 protected:
-    const OTNotaryID server_id_;
+    const identifier::Notary server_id_;
     Nym_p remote_nym_;
     UnallocatedSet<TransactionNumber> available_transaction_numbers_;
     UnallocatedSet<TransactionNumber> issued_transaction_numbers_;
     std::atomic<RequestNumber> request_number_;
     UnallocatedSet<RequestNumber> acknowledged_request_numbers_;
-    OTIdentifier local_nymbox_hash_;
-    OTIdentifier remote_nymbox_hash_;
+    identifier::Generic local_nymbox_hash_;
+    identifier::Generic remote_nymbox_hash_;
 
     auto contract(const Lock& lock) const -> proto::Context;
-    auto GetID(const Lock& lock) const -> OTIdentifier final;
+    auto GetID(const Lock& lock) const -> identifier::Generic final;
     auto serialize(const Lock& lock, const otx::ConsensusType type) const
         -> proto::Context;
     virtual auto serialize(const Lock& lock) const -> proto::Context = 0;
@@ -155,10 +155,12 @@ protected:
         const Lock& lock,
         const UnallocatedSet<RequestNumber>& req) -> bool;
     auto save(const Lock& lock, const PasswordPrompt& reason) -> bool;
-    auto set_local_nymbox_hash(const Lock& lock, const Identifier& hash)
-        -> void;
-    auto set_remote_nymbox_hash(const Lock& lock, const Identifier& hash)
-        -> void;
+    auto set_local_nymbox_hash(
+        const Lock& lock,
+        const identifier::Generic& hash) -> void;
+    auto set_remote_nymbox_hash(
+        const Lock& lock,
+        const identifier::Generic& hash) -> void;
     auto update_signature(const Lock& lock, const PasswordPrompt& reason)
         -> bool final;
     auto verify_available_number(const Lock& lock, const TransactionNumber& req)
@@ -190,7 +192,7 @@ private:
     static auto calculate_id(
         const api::Session& api,
         const Nym_p& client,
-        const Nym_p& server) noexcept(false) -> OTIdentifier;
+        const Nym_p& server) noexcept(false) -> identifier::Generic;
 
     virtual auto client_nym_id(const Lock& lock) const
         -> const identifier::Nym& = 0;

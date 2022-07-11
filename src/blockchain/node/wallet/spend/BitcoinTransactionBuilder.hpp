@@ -39,8 +39,6 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -82,10 +80,10 @@ class Wallet;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -117,7 +115,7 @@ public:
     BitcoinTransactionBuilder(
         const api::Session& api,
         database::Wallet& db,
-        const Identifier& id,
+        const identifier::Generic& id,
         const Proposal& proposal,
         const Type chain,
         const Amount& feeRate) noexcept;

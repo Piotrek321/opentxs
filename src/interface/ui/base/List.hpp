@@ -18,7 +18,6 @@
 #include "internal/util/Flag.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -62,7 +61,6 @@ public:
             add_items(extract_custom<ChildDefinitions>(data, 0));
         }
     }
-    auto API() const noexcept -> const api::Session& final { return api_; }
     auto First() const noexcept -> SharedPimpl<RowInterface> override
     {
         auto lock = rLock{recursive_lock_};
@@ -169,7 +167,8 @@ protected:
     }
     virtual auto default_id() const noexcept -> RowID
     {
-        return make_blank<RowID>::value(api_);
+        return make_blank<RowID>::value(
+            static_cast<const InternalInterface&>(*this).API());
     }
     virtual auto find_index(const RowID& id) const noexcept
         -> std::optional<std::size_t>
@@ -286,8 +285,8 @@ protected:
     // NOTE lists that are also rows call this constructor
     List(
         const api::session::Client& api,
-        const typename PrimaryID::interface_type& primaryID,
-        const Identifier& widgetID,
+        const PrimaryID& primaryID,
+        const identifier::Generic& widgetID,
         const bool reverseSort,
         const bool subnode,
         const SimpleCallback& cb,
@@ -315,18 +314,13 @@ protected:
     // NOTE basic lists (not subnodes) call this constructor
     List(
         const api::session::Client& api,
-        const typename PrimaryID::interface_type& primaryID,
+        const PrimaryID& primaryID,
         const SimpleCallback& cb,
         const bool reverseSort) noexcept
         : List(
               api,
               primaryID,
-              [&] {
-                  auto out = api.Factory().Identifier();
-                  out->Randomize();
-
-                  return out;
-              }(),
+              api.Factory().IdentifierFromRandom(),
               reverseSort,
               false,
               cb,

@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <string_view>
@@ -84,9 +85,6 @@ public:
     /// Bytes are interpreted as big endian
     virtual auto Extract(std::uint64_t& output, const std::size_t pos = 0) const
         -> bool = 0;
-    [[deprecated]] virtual auto GetPointer() const -> const void* = 0;
-    [[deprecated]] virtual auto GetSize() const -> std::size_t = 0;
-    [[deprecated]] virtual auto IsEmpty() const -> bool = 0;
     virtual auto IsNull() const -> bool = 0;
     virtual auto operator==(const Data& rhs) const noexcept -> bool = 0;
     virtual auto operator!=(const Data& rhs) const noexcept -> bool = 0;
@@ -95,8 +93,6 @@ public:
     virtual auto operator<=(const Data& rhs) const noexcept -> bool = 0;
     virtual auto operator>=(const Data& rhs) const noexcept -> bool = 0;
     virtual auto size() const -> std::size_t = 0;
-    virtual auto str() const -> UnallocatedCString = 0;
-    virtual auto str(alloc::Default alloc) const -> CString = 0;
 
     virtual auto Assign(const Data& source) noexcept -> bool = 0;
     virtual auto Assign(const ReadView source) noexcept -> bool = 0;
@@ -139,11 +135,5 @@ public:
 
 protected:
     Data() = default;
-
-private:
-#ifdef _WIN32
-public:
-#endif
-    virtual auto clone() const -> Data* = 0;
 };
 }  // namespace opentxs

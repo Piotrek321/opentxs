@@ -60,7 +60,7 @@ public:
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         const UnallocatedCString& txid,
         const Amount& amount);
     BailmentNotice() = delete;
@@ -76,9 +76,9 @@ private:
 
     static constexpr auto current_version_ = VersionNumber{6};
 
-    const OTUnitID unit_;
-    const OTNotaryID server_;
-    const OTIdentifier requestID_;
+    const identifier::UnitDefinition unit_;
+    const identifier::Notary server_;
+    const identifier::Generic requestID_;
     const UnallocatedCString txid_;
     const Amount amount_;
 

@@ -75,8 +75,8 @@ using WidgetCallback = std::function<bool()>;
 using WidgetCallbackData = std::tuple<int, WidgetCallback, std::promise<bool>>;
 // name, counter
 using WidgetData = std::tuple<Widget, int, WidgetCallbackData>;
-using WidgetMap = ot::UnallocatedMap<ot::OTIdentifier, WidgetData>;
-using WidgetTypeMap = ot::UnallocatedMap<Widget, ot::OTIdentifier>;
+using WidgetMap = ot::UnallocatedMap<ot::identifier::Generic, WidgetData>;
+using WidgetTypeMap = ot::UnallocatedMap<Widget, ot::identifier::Generic>;
 using StateMap = std::map<
     ot::UnallocatedCString,
     ot::UnallocatedMap<Widget, ot::UnallocatedMap<int, WidgetCallback>>>;
@@ -84,7 +84,7 @@ using StateMap = std::map<
 struct Server {
     const ot::api::session::Notary* api_{nullptr};
     bool init_{false};
-    const ot::OTNotaryID id_{ot::identifier::Notary::Factory()};
+    const ot::identifier::Notary id_{};
     const ot::UnallocatedCString password_;
 
     auto Contract() const noexcept -> ot::OTServerContract;
@@ -94,6 +94,7 @@ struct Server {
 };
 
 struct Callbacks {
+    const ot::api::Context& api_;
     mutable std::mutex callback_lock_;
     ot::OTZMQListenCallback callback_;
 
@@ -102,7 +103,7 @@ struct Callbacks {
     auto RegisterWidget(
         const ot::Lock& callbackLock,
         const Widget type,
-        const ot::Identifier& id,
+        const ot::identifier::Generic& id,
         int counter = 0,
         WidgetCallback callback = {}) noexcept -> std::future<bool>;
 
@@ -111,7 +112,9 @@ struct Callbacks {
         int limit,
         WidgetCallback callback) noexcept -> std::future<bool>;
 
-    Callbacks(const ot::UnallocatedCString& name) noexcept;
+    Callbacks(
+        const ot::api::Context& api,
+        const ot::UnallocatedCString& name) noexcept;
     Callbacks() = delete;
 
 private:

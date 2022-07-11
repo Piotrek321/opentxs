@@ -26,13 +26,17 @@ class Address;
 }  // namespace p2p
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainPeerAddress;
 }  // namespace proto
 
 class ByteArray;
-class Identifier;
 
 using OTBlockchainAddress = Pimpl<blockchain::p2p::Address>;
 // }  // namespace v1
@@ -49,7 +53,7 @@ public:
     virtual auto Bytes() const noexcept -> ByteArray = 0;
     virtual auto Chain() const noexcept -> blockchain::Type = 0;
     virtual auto Display() const noexcept -> UnallocatedCString = 0;
-    virtual auto ID() const noexcept -> const Identifier& = 0;
+    virtual auto ID() const noexcept -> const identifier::Generic& = 0;
     virtual auto LastConnected() const noexcept -> Time = 0;
     virtual auto Port() const noexcept -> std::uint16_t = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(SerializedType& out) const noexcept

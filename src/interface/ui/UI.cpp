@@ -20,7 +20,6 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::ui::internal
 {
@@ -53,7 +52,8 @@ auto BlockchainSubaccountSource::NymID() const noexcept
     return blank_nym();
 }
 
-auto BlockchainSubaccountSource::SourceID() const noexcept -> const Identifier&
+auto BlockchainSubaccountSource::SourceID() const noexcept
+    -> const identifier::Generic&
 {
     return blank_nym();
 }
@@ -69,7 +69,8 @@ auto BlockchainSubaccount::NymID() const noexcept -> const identifier::Nym&
     return blank_nym();
 }
 
-auto BlockchainSubaccount::SubaccountID() const noexcept -> const Identifier&
+auto BlockchainSubaccount::SubaccountID() const noexcept
+    -> const identifier::Generic&
 {
     return blank_nym();
 }
@@ -81,7 +82,7 @@ auto BlockchainSubchain::Type() const noexcept -> blockchain::crypto::Subchain
 
 auto blank_nym() noexcept -> const identifier::Nym&
 {
-    static const auto data = identifier::Nym::Factory("");
+    static const auto data = identifier::Nym{};
 
     return data;
 }

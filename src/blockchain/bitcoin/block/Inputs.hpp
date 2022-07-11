@@ -24,8 +24,6 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -48,6 +46,12 @@ class Output;
 }  // namespace bitcoin
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+class Nym;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainTransaction;
@@ -66,10 +70,11 @@ class Inputs final : public internal::Inputs
 public:
     using InputList = UnallocatedVector<std::unique_ptr<internal::Input>>;
 
-    auto AssociatedLocalNyms(UnallocatedVector<OTNymID>& output) const noexcept
-        -> void final;
+    auto AssociatedLocalNyms(UnallocatedVector<identifier::Nym>& output)
+        const noexcept -> void final;
     auto AssociatedRemoteContacts(
-        UnallocatedVector<OTIdentifier>& output) const noexcept -> void final;
+        UnallocatedVector<identifier::Generic>& output) const noexcept
+        -> void final;
     auto at(const std::size_t position) const noexcept(false)
         -> const value_type& final
     {

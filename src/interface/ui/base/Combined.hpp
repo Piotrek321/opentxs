@@ -48,8 +48,8 @@ protected:
 
     Combined(
         const api::session::Client& api,
-        const typename ListTemplate::ListPrimaryID::interface_type& primaryID,
-        const Identifier& widgetID,
+        const typename ListTemplate::ListPrimaryID& primaryID,
+        const identifier::Generic& widgetID,
         const typename RowTemplate::RowParentType& parent,
         const typename RowTemplate::RowIdentifierType id,
         const SortKey key,

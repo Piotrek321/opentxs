@@ -7,13 +7,11 @@
 #include "1_Internal.hpp"                             // IWYU pragma: associated
 #include "internal/otx/common/basket/BasketItem.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/identifier/Generic.hpp"
-
 namespace opentxs
 {
 BasketItem::BasketItem()
-    : SUB_CONTRACT_ID(Identifier::Factory())
-    , SUB_ACCOUNT_ID(Identifier::Factory())
+    : SUB_CONTRACT_ID()
+    , SUB_ACCOUNT_ID()
     , lMinimumTransferAmount(0)
     , lClosingTransactionNo(0)
 {

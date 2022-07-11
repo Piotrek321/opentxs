@@ -20,6 +20,7 @@
 #include "internal/otx/common/cron/OTCron.hpp"
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -53,8 +54,11 @@ auto MainFile::SaveMainFileToString(String& strMainFile) -> bool
     Tag tag("notaryServer");
 
     tag.add_attribute("version", "3.0");
-    tag.add_attribute("notaryID", server_.GetServerID().str());
-    tag.add_attribute("serverNymID", server_.GetServerNym().ID().str());
+    tag.add_attribute(
+        "notaryID", server_.GetServerID().asBase58(server_.API().Crypto()));
+    tag.add_attribute(
+        "serverNymID",
+        server_.GetServerNym().ID().asBase58(server_.API().Crypto()));
     tag.add_attribute(
         "transactionNum",
         std::to_string(server_.GetTransactor().transactionNumber()));
@@ -66,8 +70,9 @@ auto MainFile::SaveMainFileToString(String& strMainFile) -> bool
         auto strBasketAcctID = String::Factory(it.second.c_str());
 
         const auto BASKET_ACCOUNT_ID =
-            server_.API().Factory().Identifier(strBasketAcctID);
-        auto BASKET_CONTRACT_ID = server_.API().Factory().UnitID();
+            server_.API().Factory().IdentifierFromBase58(
+                strBasketAcctID->Bytes());
+        auto BASKET_CONTRACT_ID = identifier::UnitDefinition{};
 
         bool bContractID =
             server_.GetTransactor().lookupBasketContractIDByAccountID(
@@ -205,8 +210,8 @@ auto MainFile::CreateMainFile(
     // notaryServer.xml file
     // is saved. All we have left is the Nymfile, which we'll create.
 
-    auto loaded =
-        server_.LoadServerNym(server_.API().Factory().NymID(strNymID));
+    auto loaded = server_.LoadServerNym(
+        server_.API().Factory().NymIDFromBase58(strNymID));
     if (false == loaded) {
         LogConsole()(OT_PRETTY_CLASS())("Error loading server nym.").Flush();
     } else {
@@ -286,8 +291,8 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
                     if (strNodeName->Compare("notaryServer")) {
                         version_ = xml->getAttributeValue("version");
                         server_.SetNotaryID(
-                            server_.API().Factory().ServerID(String::Factory(
-                                xml->getAttributeValue("notaryID"))));
+                            server_.API().Factory().NotaryIDFromBase58(
+                                xml->getAttributeValue("notaryID")));
                         server_.SetServerNymID(
                             xml->getAttributeValue("serverNymID"));
 
@@ -306,8 +311,7 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
                         LogConsole()("* Last Issued Transaction Number: ")(
                             server_.GetTransactor().transactionNumber())
                             .Flush();
-                        LogConsole()("* Notary ID: ")(
-                            server_.GetServerID().str())
+                        LogConsole()("* Notary ID: ")(server_.GetServerID())
                             .Flush();
                         LogConsole()("* Server Nym ID: ")(server_.ServerNymID())
                             .Flush();
@@ -333,11 +337,14 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
                         auto strBasketContractID = String::Factory(
                             xml->getAttributeValue("basketContractID"));
                         const auto BASKET_ID =
-                            server_.API().Factory().Identifier(strBasketID);
+                            server_.API().Factory().IdentifierFromBase58(
+                                strBasketID->Bytes());
                         const auto BASKET_ACCT_ID =
-                            server_.API().Factory().Identifier(strBasketAcctID);
+                            server_.API().Factory().IdentifierFromBase58(
+                                strBasketAcctID->Bytes());
                         const auto BASKET_CONTRACT_ID =
-                            server_.API().Factory().UnitID(strBasketContractID);
+                            server_.API().Factory().UnitIDFromBase58(
+                                strBasketContractID->Bytes());
 
                         if (server_.GetTransactor().addBasketAccountID(
                                 BASKET_ID,
@@ -381,7 +388,7 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
 
     if (false == bFailure) {
         const auto loaded = server_.LoadServerNym(
-            server_.API().Factory().NymID(server_.ServerNymID()));
+            server_.API().Factory().NymIDFromBase58(server_.ServerNymID()));
 
         if (false == loaded) {
             LogError()(OT_PRETTY_CLASS())("Failed to load server nym.").Flush();
@@ -411,11 +418,11 @@ auto MainFile::LoadServerUserAndContract() -> bool
     auto& serverNym = server_.m_nymServer;
 
     OT_ASSERT(!version_.empty());
-    OT_ASSERT(!server_.GetServerID().str().empty());
+    OT_ASSERT(!server_.GetServerID().empty());
     OT_ASSERT(!server_.ServerNymID().empty());
 
     serverNym = server_.API().Wallet().Nym(
-        server_.API().Factory().NymID(server_.ServerNymID()));
+        server_.API().Factory().NymIDFromBase58(server_.ServerNymID()));
 
     if (serverNym->HasCapability(identity::NymCapability::SIGN_MESSAGE)) {
         LogTrace()(OT_PRETTY_CLASS())("Server nym is viable.").Flush();

@@ -95,7 +95,7 @@ public:
     virtual auto InitializeServerCommand(
         const MessageType type,
         const Armored& payload,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const RequestNumber provided,
         const bool withAcknowledgments = true,
         const bool withNymboxHash = true)

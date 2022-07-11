@@ -12,7 +12,10 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-class Identifier;
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -22,16 +25,16 @@ namespace opentxs::api::session::internal
 class UI : virtual public opentxs::api::session::UI
 {
 public:
-    virtual auto ActivateUICallback(const Identifier& widget) const noexcept
-        -> void = 0;
-    virtual auto ClearUICallbacks(const Identifier& widget) const noexcept
-        -> void = 0;
+    virtual auto ActivateUICallback(
+        const identifier::Generic& widget) const noexcept -> void = 0;
+    virtual auto ClearUICallbacks(
+        const identifier::Generic& widget) const noexcept -> void = 0;
     auto Internal() const noexcept -> const internal::UI& final
     {
         return *this;
     }
     virtual auto RegisterUICallback(
-        const Identifier& widget,
+        const identifier::Generic& widget,
         const SimpleCallback& cb) const noexcept -> void = 0;
 
     virtual auto Init() noexcept -> void = 0;

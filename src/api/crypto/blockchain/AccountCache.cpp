@@ -22,8 +22,8 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::api::crypto::blockchain
 {
@@ -68,7 +68,7 @@ auto AccountCache::get_account_map(
 auto AccountCache::List(
     const identifier::Nym& nymID,
     const opentxs::blockchain::Type chain) const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     Lock lock(lock_);
     const auto& map = get_account_map(lock, chain);
@@ -84,11 +84,11 @@ auto AccountCache::load_nym(
     const identifier::Nym& nym,
     NymAccountMap& output) const noexcept -> void
 {
-    const auto hd = api_.Storage().BlockchainAccountList(
-        nym.str(), BlockchainToUnit(chain));
+    const auto hd =
+        api_.Storage().BlockchainAccountList(nym, BlockchainToUnit(chain));
     std::for_each(std::begin(hd), std::end(hd), [&](const auto& account) {
         auto& set = output[nym];
-        auto accountID = api_.Factory().Identifier(account);
+        auto accountID = api_.Factory().IdentifierFromBase58(account);
         account_index_.emplace(accountID, nym);
         account_type_.emplace(
             accountID, opentxs::blockchain::crypto::SubaccountType::HD);
@@ -109,7 +109,7 @@ auto AccountCache::load_nym(
 auto AccountCache::New(
     const opentxs::blockchain::crypto::SubaccountType type,
     const opentxs::blockchain::Type chain,
-    const Identifier& account,
+    const identifier::Generic& account,
     const identifier::Nym& owner) const noexcept -> void
 {
     Lock lock(lock_);
@@ -118,10 +118,10 @@ auto AccountCache::New(
     account_type_.emplace(account, type);
 }
 
-auto AccountCache::Owner(const Identifier& accountID) const noexcept
+auto AccountCache::Owner(const identifier::Generic& accountID) const noexcept
     -> const identifier::Nym&
 {
-    static const auto blank = api_.Factory().NymID();
+    static const auto blank = identifier::Nym{};
 
     try {
 
@@ -142,10 +142,10 @@ auto AccountCache::Populate() noexcept -> void
     }
 }
 
-auto AccountCache::Type(const Identifier& accountID) const noexcept
+auto AccountCache::Type(const identifier::Generic& accountID) const noexcept
     -> opentxs::blockchain::crypto::SubaccountType
 {
-    static const auto blank = api_.Factory().NymID();
+    static const auto blank = identifier::Nym{};
 
     try {
 

@@ -37,6 +37,7 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 class UnitDefinition;
@@ -55,7 +56,6 @@ class Client;
 }  // namespace context
 }  // namespace otx
 
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -284,9 +284,9 @@ private:
         const api::Session& api,
         const identifier::Notary& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-        const Identifier& SENDER_ACCT_ID,
+        const identifier::Generic& SENDER_ACCT_ID,
         const identifier::Nym& SENDER_NYM_ID,
-        const Identifier& RECIPIENT_ACCT_ID,
+        const identifier::Generic& RECIPIENT_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID);
 
 protected:

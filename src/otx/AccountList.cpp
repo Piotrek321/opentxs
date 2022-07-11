@@ -20,10 +20,13 @@
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -180,19 +183,20 @@ auto AccountList::GetOrRegisterAccount(
     // requested instrument definition ID.
     auto acctTypeString = String::Factory();
     TranslateAccountTypeToString(acctType_, acctTypeString);
-    auto acctIDsIt = mapAcctIDs_.find(instrumentDefinitionID.str());
+    auto acctIDsIt =
+        mapAcctIDs_.find(instrumentDefinitionID.asBase58(api_.Crypto()));
 
     // Account ID *IS* already there for this instrument definition
     if (mapAcctIDs_.end() != acctIDsIt) {
         const auto& accountID = acctIDsIt->second;
         account = api_.Wallet().Internal().mutable_Account(
-            Identifier::Factory(accountID), reason);
+            api_.Factory().IdentifierFromBase58(accountID), reason);
 
         if (account) {
 
             LogDebug()(OT_PRETTY_CLASS())("Successfully loaded ")(
                 acctTypeString)(" account ID: ")(accountID)("Unit Type ID:: ")(
-                instrumentDefinitionID.str())
+                instrumentDefinitionID.asBase58(api_.Crypto()))
                 .Flush();
 
             return account;
@@ -222,9 +226,10 @@ auto AccountList::GetOrRegisterAccount(
         LogConsole()(OT_PRETTY_CLASS())("Successfully created ")(
             acctTypeString)(" account ID: ")(
             acctIDString)(" Instrument Definition ID: ")(
-            instrumentDefinitionID.str())
+            instrumentDefinitionID.asBase58(api_.Crypto()))
             .Flush();
-        mapAcctIDs_[instrumentDefinitionID.str()] = acctIDString->Get();
+        mapAcctIDs_[instrumentDefinitionID.asBase58(api_.Crypto())] =
+            acctIDString->Get();
 
         wasAcctCreated = true;
     }

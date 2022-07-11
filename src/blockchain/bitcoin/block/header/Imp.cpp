@@ -580,8 +580,8 @@ auto Header::Serialize(SerializedType& out) const noexcept -> bool
     auto& bitcoin = *out.mutable_bitcoin();
     bitcoin.set_version(subversion_);
     bitcoin.set_block_version(block_version_);
-    bitcoin.set_previous_header(parent_hash_.str());
-    bitcoin.set_merkle_hash(merkle_root_.str());
+    bitcoin.set_previous_header(UnallocatedCString{parent_hash_.Bytes()});
+    bitcoin.set_merkle_hash(UnallocatedCString{merkle_root_.Bytes()});
     bitcoin.set_timestamp(static_cast<std::uint32_t>(time));
     bitcoin.set_nbits(nbits_);
     bitcoin.set_nonce(nonce_);
@@ -596,8 +596,8 @@ auto Header::Serialize(
     if (bitcoinformat) {
         const auto raw = BitcoinFormat{
             block_version_,
-            parent_hash_.str(),
-            merkle_root_.str(),
+            UnallocatedCString{parent_hash_.Bytes()},
+            UnallocatedCString{merkle_root_.Bytes()},
             static_cast<std::uint32_t>(Clock::to_time_t(timestamp_)),
             nbits_,
             nonce_};

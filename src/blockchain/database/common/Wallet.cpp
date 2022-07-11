@@ -185,7 +185,7 @@ auto Wallet::LoadTransaction(  // TODO : MT-83 Add unit test
 }
 
 auto Wallet::LookupContact(const Data& pubkeyHash) const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     Lock lock(lock_);
 
@@ -290,7 +290,8 @@ auto Wallet::update_contact(
     const Lock& lock,
     const UnallocatedSet<ByteArray>& existing,
     const UnallocatedSet<ByteArray>& incoming,
-    const Identifier& contactID) const noexcept -> UnallocatedVector<pTxid>
+    const identifier::Generic& contactID) const noexcept
+    -> UnallocatedVector<pTxid>
 {
     auto newAddresses = UnallocatedVector<ByteArray>{};
     auto removedAddresses = UnallocatedVector<ByteArray>{};

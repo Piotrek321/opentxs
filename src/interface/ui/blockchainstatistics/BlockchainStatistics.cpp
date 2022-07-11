@@ -30,7 +30,6 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
@@ -68,7 +67,7 @@ namespace opentxs::ui::implementation
 BlockchainStatistics::BlockchainStatistics(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
-    : BlockchainStatisticsList(api, api.Factory().Identifier(), cb, false)
+    : BlockchainStatisticsList(api, identifier::Generic{}, cb, false)
     , Worker(api, {})
     , blockchain_(api.Network().Blockchain())
     , cache_()
@@ -91,8 +90,7 @@ auto BlockchainStatistics::construct_row(
     const BlockchainStatisticsSortKey& index,
     CustomData& custom) const noexcept -> RowPointer
 {
-    return factory::BlockchainStatisticsItem(
-        *this, Widget::api_, id, index, custom);
+    return factory::BlockchainStatisticsItem(*this, api_, id, index, custom);
 }
 
 auto BlockchainStatistics::custom(
@@ -400,7 +398,7 @@ auto BlockchainStatistics::process_work(const Message& in) noexcept -> void
 
 auto BlockchainStatistics::reset_timer() noexcept -> void
 {
-    if (Widget::api_.GetOptions().TestMode()) { return; }
+    if (api_.GetOptions().TestMode()) { return; }
 
     using namespace std::literals;
     timer_.SetRelative(60s);

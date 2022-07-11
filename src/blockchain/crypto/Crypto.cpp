@@ -18,6 +18,7 @@
 #include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
@@ -25,8 +26,8 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/HashType.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::crypto
 {
@@ -133,8 +134,9 @@ namespace opentxs
 {
 auto blockchain_thread_item_id(
     const api::Crypto& crypto,
+    const api::Factory& factory,
     const opentxs::blockchain::Type chain,
-    const Data& txid) noexcept -> OTIdentifier
+    const Data& txid) noexcept -> identifier::Generic
 {
     auto preimage = UnallocatedCString{};
     const auto hashed = crypto.Hash().HMAC(
@@ -145,10 +147,7 @@ auto blockchain_thread_item_id(
 
     OT_ASSERT(hashed);
 
-    auto id = Identifier::Factory();
-    id->CalculateDigest(preimage);
-
-    return id;
+    return factory.IdentifierFromPreimage(preimage);
 }
 
 auto operator==(

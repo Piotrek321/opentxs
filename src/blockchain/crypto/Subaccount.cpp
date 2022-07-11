@@ -24,6 +24,7 @@
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
@@ -41,17 +42,17 @@ Subaccount::Subaccount(
     const api::Session& api,
     const crypto::Account& parent,
     const SubaccountType type,
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     const Revision revision,
     const UnallocatedVector<Activity>& unspent,
     const UnallocatedVector<Activity>& spent,
-    Identifier& out) noexcept
+    identifier::Generic& out) noexcept
     : api_(api)
     , parent_(parent)
     , chain_(parent_.Chain())
     , type_(type)
     , id_(std::move(id))
-    , description_(describe(chain_, type_, id_))
+    , description_(describe(api_, chain_, type_, id_))
     , lock_()
     , revision_(revision)
     , unspent_(convert(unspent))
@@ -64,8 +65,8 @@ Subaccount::Subaccount(
     const api::Session& api,
     const crypto::Account& parent,
     const SubaccountType type,
-    OTIdentifier&& id,
-    Identifier& out) noexcept
+    identifier::Generic&& id,
+    identifier::Generic& out) noexcept
     : Subaccount(api, parent, type, std::move(id), 0, {}, {}, out)
 {
 }
@@ -75,12 +76,12 @@ Subaccount::Subaccount(
     const crypto::Account& parent,
     const SubaccountType type,
     const SerializedType& serialized,
-    Identifier& out) noexcept(false)
+    identifier::Generic& out) noexcept(false)
     : Subaccount(
           api,
           parent,
           type,
-          api.Factory().Identifier(serialized.id()),
+          api.Factory().IdentifierFromBase58(serialized.id()),
           serialized.revision(),
           convert(serialized.unspent()),
           convert(serialized.spent()),
@@ -123,7 +124,7 @@ auto Subaccount::AddressData::check_keys() const noexcept -> bool
 auto Subaccount::AssociateTransaction(
     const UnallocatedVector<Activity>& unspent,
     const UnallocatedVector<Activity>& spent,
-    UnallocatedSet<OTIdentifier>& contacts,
+    UnallocatedSet<identifier::Generic>& contacts,
     const PasswordPrompt& reason) const noexcept -> bool
 {
     auto lock = rLock{lock_};
@@ -229,16 +230,17 @@ auto Subaccount::convert(const UnallocatedVector<Activity>& in) noexcept
 }
 
 auto Subaccount::describe(
+    const api::Session& api,
     const opentxs::blockchain::Type chain,
     const SubaccountType type,
-    const Identifier& id) noexcept -> CString
+    const identifier::Generic& id) noexcept -> CString
 {
     // TODO c++20 use allocator
     auto out = std::stringstream{};
     out << print(chain) << ' ';
     out << print(type);
     out << " account ";
-    out << id.str();
+    out << id.asBase58(api.Crypto());
 
     return CString{} + out.str().c_str();
 }
@@ -266,7 +268,7 @@ auto Subaccount::IncomingTransactions(const Key& element) const noexcept
 
 void Subaccount::init() noexcept
 {
-    parent_.Internal().ClaimAccountID(id_->str(), this);
+    parent_.Internal().ClaimAccountID(id_.asBase58(api_.Crypto()), this);
 }
 
 // Due to asynchronous blockchain scanning, spends may be discovered out of
@@ -323,7 +325,7 @@ auto Subaccount::serialize_common(
     proto::BlockchainAccountData& out) const noexcept -> void
 {
     out.set_version(BlockchainAccountDataVersion);
-    out.set_id(id_->str());
+    out.set_id(id_.asBase58(api_.Crypto()));
     out.set_revision(revision_.load());
     out.set_chain(translate(UnitToClaim(BlockchainToUnit(chain_))));
 
@@ -341,7 +343,7 @@ auto Subaccount::serialize_common(
 auto Subaccount::SetContact(
     const Subchain type,
     const Bip32Index index,
-    const Identifier& id) noexcept(false) -> bool
+    const identifier::Generic& id) noexcept(false) -> bool
 {
     auto lock = rLock{lock_};
 
@@ -358,7 +360,7 @@ auto Subaccount::SetContact(
 auto Subaccount::SetLabel(
     const Subchain type,
     const Bip32Index index,
-    const UnallocatedCString& label) noexcept(false) -> bool
+    const std::string_view label) noexcept(false) -> bool
 {
     auto lock = rLock{lock_};
 

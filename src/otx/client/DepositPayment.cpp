@@ -22,10 +22,10 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "otx/client/PaymentTasks.hpp"
 
 namespace opentxs::otx::client::implementation
@@ -61,7 +61,7 @@ auto DepositPayment::deposit() -> bool
 
     switch (state_) {
         case Depositability::UNKNOWN: {
-            if (accountID->empty()) {
+            if (accountID.empty()) {
                 state_ = Depositability::NO_ACCOUNT;
             } else {
                 state_ = Depositability::READY;
@@ -70,7 +70,7 @@ auto DepositPayment::deposit() -> bool
         case Depositability::NO_ACCOUNT: {
             accountID = get_account_id(unitID);
 
-            if (accountID->empty()) {
+            if (accountID.empty()) {
                 error = true;
                 repeat = true;
 
@@ -132,7 +132,7 @@ exit:
 }
 
 auto DepositPayment::get_account_id(const identifier::UnitDefinition& unit)
-    -> OTIdentifier
+    -> identifier::Generic
 {
     Lock lock(payment_tasks_.GetAccountLock(unit));
     const auto accounts = parent_.api().Storage().AccountsByContract(unit);
@@ -142,7 +142,7 @@ auto DepositPayment::get_account_id(const identifier::UnitDefinition& unit)
             "Too many accounts to automatically deposit payment")
             .Flush();
 
-        return parent_.api().Factory().Identifier();
+        return {};
     }
 
     if (1 == accounts.size()) { return *accounts.begin(); }
@@ -153,7 +153,7 @@ auto DepositPayment::get_account_id(const identifier::UnitDefinition& unit)
         LogTrace()(OT_PRETTY_CLASS())("Downloading unit definition").Flush();
         parent_.DownloadUnitDefinition(unit);
 
-        return parent_.api().Factory().Identifier();
+        return {};
     }
 
     LogVerbose()(OT_PRETTY_CLASS())("Registering account for deposit").Flush();
@@ -164,7 +164,7 @@ auto DepositPayment::get_account_id(const identifier::UnitDefinition& unit)
         LogError()(OT_PRETTY_CLASS())("Failed to schedule register account")
             .Flush();
 
-        return parent_.api().Factory().Identifier();
+        return {};
     }
 
     result_ = future.get();
@@ -174,20 +174,20 @@ auto DepositPayment::get_account_id(const identifier::UnitDefinition& unit)
         LogError()(OT_PRETTY_CLASS())("Failed to send register account message")
             .Flush();
 
-        return parent_.api().Factory().Identifier();
+        return {};
     }
 
     if (false == bool(pMessage)) {
         LogError()(OT_PRETTY_CLASS())("Invalid register account reply").Flush();
 
-        return parent_.api().Factory().Identifier();
+        return {};
     }
 
     const auto& message = *pMessage;
-    const auto accountID =
-        parent_.api().Factory().Identifier(message.m_strAcctID);
+    const auto accountID = parent_.api().Factory().IdentifierFromBase58(
+        message.m_strAcctID->Bytes());
 
-    if (accountID->empty()) {
+    if (accountID.empty()) {
         LogError()(OT_PRETTY_CLASS())("Failed to get account id").Flush();
     } else {
         LogVerbose()(OT_PRETTY_CLASS())("Registered new account ")(accountID)

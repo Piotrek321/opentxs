@@ -92,15 +92,15 @@ OTAPI_Func::OTAPI_Func(
     const OTAPI_Func_Type type)
     : type_(type)
     , api_lock_(apiLock)
-    , accountID_(Identifier::Factory())
-    , basketID_(Identifier::Factory())
-    , currencyAccountID_(Identifier::Factory())
-    , instrumentDefinitionID_(Identifier::Factory())
-    , marketID_(Identifier::Factory())
-    , recipientID_(Identifier::Factory())
-    , requestID_(Identifier::Factory())
-    , targetID_(Identifier::Factory())
-    , message_id_(Identifier::Factory())
+    , accountID_()
+    , basketID_()
+    , currencyAccountID_()
+    , instrumentDefinitionID_()
+    , marketID_()
+    , recipientID_()
+    , requestID_()
+    , targetID_()
+    , message_id_()
     , request_(nullptr)
     , contract_(nullptr)
     , paymentPlan_(nullptr)
@@ -224,7 +224,7 @@ OTAPI_Func::OTAPI_Func(
     const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Notary& serverID,
-    const Identifier& recipientID,
+    const identifier::Generic& recipientID,
     std::unique_ptr<OTPaymentPlan>& paymentPlan)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
@@ -333,7 +333,7 @@ OTAPI_Func::OTAPI_Func(
     const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Notary& serverID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const UnallocatedCString& agentName,
     std::unique_ptr<OTSmartContract>& contract)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
@@ -377,7 +377,7 @@ OTAPI_Func::OTAPI_Func(
     const identifier::Nym& nymID,
     const identifier::Notary& serverID,
     const identifier::Nym& nymID2,
-    const Identifier& targetID,
+    const identifier::Generic& targetID,
     const Amount& amount,
     const UnallocatedCString& message)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
@@ -413,8 +413,8 @@ OTAPI_Func::OTAPI_Func(
     const identifier::Nym& nymID,
     const identifier::Notary& serverID,
     const identifier::UnitDefinition& instrumentDefinitionID,
-    const Identifier& basketID,
-    const Identifier& accountID,
+    const identifier::Generic& basketID,
+    const identifier::Generic& accountID,
     bool direction,
     std::int32_t nTransNumsNeeded)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
@@ -438,8 +438,8 @@ OTAPI_Func::OTAPI_Func(
     const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Notary& serverID,
-    const Identifier& assetAccountID,
-    const Identifier& currencyAccountID,
+    const identifier::Generic& assetAccountID,
+    const identifier::Generic& currencyAccountID,
     const Amount& scale,
     const Amount& increment,
     const std::int64_t& quantity,
@@ -562,8 +562,8 @@ void OTAPI_Func::run()
                 last_attempt_ =
                     api_.InternalClient().OTAPI().getMarketRecentTrades(context_,
        marketID_); } break; case CREATE_MARKET_OFFER: { const auto ASSET_ACCT_ID
-       = Identifier::Factory(accountID_); const auto CURRENCY_ACCT_ID =
-                    Identifier::Factory(currencyAccountID_);
+       = identifier::Generic::Factory(accountID_); const auto CURRENCY_ACCT_ID =
+                    identifier::Generic::Factory(currencyAccountID_);
                 const std::int64_t MARKET_SCALE = scale_;
                 const std::int64_t MINIMUM_INCREMENT = increment_;
                 const std::int64_t TOTAL_ASSETS_ON_OFFER = quantity_;

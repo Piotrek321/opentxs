@@ -12,7 +12,6 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs::factory

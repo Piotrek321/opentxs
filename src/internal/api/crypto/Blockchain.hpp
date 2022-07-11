@@ -27,6 +27,7 @@ class Contacts;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -37,7 +38,6 @@ class HDPath;
 
 class ByteArray;
 class Contact;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -52,7 +52,7 @@ public:
     virtual auto KeyGenerated(
         const Chain chain,
         const identifier::Nym& account,
-        const Identifier& subaccount,
+        const identifier::Generic& subaccount,
         const opentxs::blockchain::crypto::SubaccountType type,
         const opentxs::blockchain::crypto::Subchain subchain) const noexcept
         -> void = 0;
@@ -65,7 +65,7 @@ public:
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
         const Chain chain,
-        const PasswordPrompt& reason) const noexcept -> OTIdentifier = 0;
+        const PasswordPrompt& reason) const noexcept -> identifier::Generic = 0;
     using crypto::Blockchain::PaymentCodeSubaccount;
     virtual auto PaymentCodeSubaccount(
         const identifier::Nym& nymID,
@@ -93,7 +93,7 @@ public:
         const Chain chain,
         const identifier::Nym& owner,
         const opentxs::blockchain::crypto::SubaccountType type,
-        const Identifier& account,
+        const identifier::Generic& account,
         const opentxs::blockchain::crypto::Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void = 0;

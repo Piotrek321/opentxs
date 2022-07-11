@@ -137,11 +137,11 @@ auto PeerManager::Peers::add_peer(const int id, Endpoint endpoint) noexcept
 {
     OT_ASSERT(endpoint);
 
-    const auto address = OTIdentifier{endpoint->ID()};
+    const auto address = identifier::Generic{endpoint->ID()};
     auto& count = active_[address];
 
     if (0 == count) {
-        auto addressID = OTIdentifier{endpoint->ID()};
+        auto addressID = identifier::Generic{endpoint->ID()};
         const auto [it, added] =
             peers_.emplace(id, peer_factory(std::move(endpoint), id));
 
@@ -265,7 +265,7 @@ auto PeerManager::Peers::Disconnect(const int id) noexcept -> void
         if (incoming_tcp_) { incoming_tcp_->Disconnect(id); }
 
         auto& peer = it->second;
-        auto address = OTIdentifier{peer.AddressID()};
+        auto address = identifier::Generic{peer.AddressID()};
         peer.Stop();
         peers_.erase(it);
 
@@ -600,7 +600,7 @@ auto PeerManager::Peers::peer_factory(Endpoint endpoint, const int id) noexcept
 }
 
 auto PeerManager::Peers::previous_failure_timeout(
-    const Identifier& addressID) const noexcept -> bool
+    const identifier::Generic& addressID) const noexcept -> bool
 {
     static constexpr auto timeout = std::chrono::minutes{10};
 

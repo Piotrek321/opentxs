@@ -11,7 +11,7 @@
 
 #include <QAbstractItemModel>
 #include <memory>
-#include <type_traits>
+#include <string>
 #include <utility>
 
 #include "interface/qt/identitymanager/NymType.hpp"
@@ -22,7 +22,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/qt/AccountActivity.hpp"
 #include "opentxs/interface/qt/AccountList.hpp"
@@ -32,7 +31,6 @@
 #include "opentxs/interface/qt/ContactList.hpp"
 #include "opentxs/interface/qt/NymList.hpp"
 #include "opentxs/interface/qt/Profile.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -50,7 +48,7 @@ namespace opentxs::ui
 IdentityManagerQt::Imp::Imp(const api::session::Client& api) noexcept
     : api_(api)
     , parent_(nullptr)
-    , active_nym_(api_.Factory().NymID())
+    , active_nym_()
 {
 }
 
@@ -58,7 +56,7 @@ auto IdentityManagerQt::Imp::getAccountActivity(
     const QString& accountID) const noexcept -> AccountActivityQt*
 {
     auto handle = active_nym_.lock_shared();
-    const auto& id = handle->get();
+    const auto& id = *handle;
 
     if (id.empty()) {
         parent_->needNym();
@@ -67,13 +65,13 @@ auto IdentityManagerQt::Imp::getAccountActivity(
     }
 
     return api_.UI().AccountActivityQt(
-        id, api_.Factory().Identifier(accountID.toStdString()));
+        id, api_.Factory().IdentifierFromBase58(accountID.toStdString()));
 }
 
 auto IdentityManagerQt::Imp::getAccountList() const noexcept -> AccountListQt*
 {
     auto handle = active_nym_.lock_shared();
-    const auto& id = handle->get();
+    const auto& id = *handle;
 
     if (id.empty()) {
         parent_->needNym();
@@ -87,7 +85,8 @@ auto IdentityManagerQt::Imp::getAccountList() const noexcept -> AccountListQt*
 auto IdentityManagerQt::Imp::getAccountStatus(
     const QString& accountID) const noexcept -> BlockchainAccountStatusQt*
 {
-    const auto id = api_.Factory().Identifier(accountID.toStdString());
+    const auto id =
+        api_.Factory().IdentifierFromBase58(accountID.toStdString());
     const auto [chain, nymID] = api_.Crypto().Blockchain().LookupAccount(id);
 
     if (blockchain::Type::Unknown == chain) { return nullptr; }
@@ -98,7 +97,7 @@ auto IdentityManagerQt::Imp::getAccountStatus(
 auto IdentityManagerQt::Imp::getAccountTree() const noexcept -> AccountTreeQt*
 {
     auto handle = active_nym_.lock_shared();
-    const auto& id = handle->get();
+    const auto& id = *handle;
 
     if (id.empty()) {
         parent_->needNym();
@@ -112,16 +111,16 @@ auto IdentityManagerQt::Imp::getAccountTree() const noexcept -> AccountTreeQt*
 auto IdentityManagerQt::Imp::getActiveNym() const noexcept -> QString
 {
     auto handle = active_nym_.lock_shared();
-    const auto& id = handle->get();
+    const auto& id = *handle;
 
-    return QString::fromStdString(id.str());
+    return QString::fromStdString(id.asBase58(api_.Crypto()));
 }
 
 auto IdentityManagerQt::Imp::getActivityThread(
     const QString& contactID) const noexcept -> ActivityThreadQt*
 {
     auto handle = active_nym_.lock_shared();
-    const auto& id = handle->get();
+    const auto& id = *handle;
 
     if (id.empty()) {
         parent_->needNym();
@@ -130,13 +129,13 @@ auto IdentityManagerQt::Imp::getActivityThread(
     }
 
     return api_.UI().ActivityThreadQt(
-        id, api_.Factory().Identifier(contactID.toStdString()));
+        id, api_.Factory().IdentifierFromBase58(contactID.toStdString()));
 }
 
 auto IdentityManagerQt::Imp::getContactList() const noexcept -> ContactListQt*
 {
     auto handle = active_nym_.lock_shared();
-    const auto& id = handle->get();
+    const auto& id = *handle;
 
     if (id.empty()) {
         parent_->needNym();
@@ -162,7 +161,7 @@ auto IdentityManagerQt::Imp::getNymType() const noexcept -> QAbstractListModel*
 auto IdentityManagerQt::Imp::getProfile() const noexcept -> ProfileQt*
 {
     auto handle = active_nym_.lock_shared();
-    const auto& id = handle->get();
+    const auto& id = *handle;
 
     if (id.empty()) {
         parent_->needNym();
@@ -180,12 +179,12 @@ auto IdentityManagerQt::Imp::init(IdentityManagerQt* parent) noexcept -> void
 
 auto IdentityManagerQt::Imp::setActiveNym(QString id) noexcept -> void
 {
-    auto newID = api_.Factory().NymID(id.toStdString());
+    auto newID = api_.Factory().NymIDFromBase58(id.toStdString());
     auto changed{false};
     active_nym_.modify([&](auto& value) {
         changed = (newID != value);
         value = std::move(newID);
-        id = QString::fromStdString(value->str());
+        id = QString::fromStdString(value.asBase58(api_.Crypto()));
     });
 
     if (changed) { parent_->activeNymChanged(std::move(id)); }

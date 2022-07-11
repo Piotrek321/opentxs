@@ -16,8 +16,6 @@
 #include <utility>
 
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -32,6 +30,12 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace identifier
+{
+class Generic;
+class Notary;
+}  // namespace identifier
 
 namespace identity
 {
@@ -107,8 +111,8 @@ public:
         const UnallocatedCString& value,
         const bool primary,
         const bool active) const -> Data;
-    auto AddPreferredOTServer(const Identifier& id, const bool primary) const
-        -> Data;
+    auto AddPreferredOTServer(const identifier::Generic& id, const bool primary)
+        const -> Data;
     auto AddSocialMediaProfile(
         const UnallocatedCString& value,
         const claim::ClaimType type,
@@ -119,22 +123,22 @@ public:
     auto BestPhoneNumber() const -> UnallocatedCString;
     auto BestSocialMediaProfile(const claim::ClaimType type) const
         -> UnallocatedCString;
-    auto Claim(const Identifier& item) const -> std::shared_ptr<Item>;
+    auto Claim(const identifier::Generic& item) const -> std::shared_ptr<Item>;
     auto Contracts(const UnitType currency, const bool onlyActive) const
-        -> UnallocatedSet<OTIdentifier>;
-    auto Delete(const Identifier& id) const -> Data;
+        -> UnallocatedSet<identifier::Generic>;
+    auto Delete(const identifier::Generic& id) const -> Data;
     auto EmailAddresses(bool active = true) const -> UnallocatedCString;
     auto end() const -> SectionMap::const_iterator;
     auto Group(const claim::SectionType section, const claim::ClaimType type)
         const -> std::shared_ptr<Group>;
-    auto HaveClaim(const Identifier& item) const -> bool;
+    auto HaveClaim(const identifier::Generic& item) const -> bool;
     auto HaveClaim(
         const claim::SectionType section,
         const claim::ClaimType type,
         const UnallocatedCString& value) const -> bool;
     auto Name() const -> UnallocatedCString;
     auto PhoneNumbers(bool active = true) const -> UnallocatedCString;
-    auto PreferredOTServer() const -> OTNotaryID;
+    auto PreferredOTServer() const -> identifier::Notary;
     auto Section(const claim::SectionType section) const
         -> std::shared_ptr<Section>;
     auto Serialize(AllocateOutput destination, const bool withID = false) const

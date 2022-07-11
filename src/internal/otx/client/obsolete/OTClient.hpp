@@ -25,6 +25,11 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace contract
 {
 class Unit;
@@ -39,7 +44,6 @@ class Server;
 }  // namespace otx
 
 class Account;
-class Identifier;
 class Message;
 class PasswordPrompt;
 // }  // namespace v1
@@ -55,8 +59,8 @@ public:
         const MessageType requestedCommand,
         otx::context::Server& context,
         Message& theMessage,
-        const Identifier& pHisNymID,
-        const Identifier& pHisAcctID,
+        const identifier::Generic& pHisNymID,
+        const identifier::Generic& pHisAcctID,
         const PasswordPrompt& reason,
         const Amount& lTransactionAmount = 0,
         const Account* pAccount = nullptr,

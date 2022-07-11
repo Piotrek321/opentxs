@@ -154,7 +154,7 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
-        const Identifier& recipientID,
+        const identifier::Generic& recipientID,
         std::unique_ptr<OTPaymentPlan>& paymentPlan);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
@@ -173,7 +173,7 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const UnallocatedCString& agentName,
         std::unique_ptr<OTSmartContract>& contract);
     explicit OTAPI_Func(
@@ -183,8 +183,8 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
-        const Identifier& recipientID,
-        const Identifier& requestID,
+        const identifier::Generic& recipientID,
+        const identifier::Generic& requestID,
         const bool ack);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
@@ -194,7 +194,7 @@ public:
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
         const identifier::Nym& nymID2,
-        const Identifier& targetID,
+        const identifier::Generic& targetID,
         const Amount& amount,
         const UnallocatedCString& message);
     explicit OTAPI_Func(
@@ -204,7 +204,7 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
-        const Identifier& targetID,
+        const identifier::Generic& targetID,
         const UnallocatedCString& primary,
         const UnallocatedCString& secondary,
         const contract::peer::SecretType& secretType);
@@ -215,8 +215,8 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
-        const Identifier& recipientID,
-        const Identifier& requestID,
+        const identifier::Generic& recipientID,
+        const identifier::Generic& requestID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const UnallocatedCString& txid,
         const Amount& amount);
@@ -228,8 +228,8 @@ public:
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const Identifier& basketID,
-        const Identifier& accountID,
+        const identifier::Generic& basketID,
+        const identifier::Generic& accountID,
         bool direction,
         std::int32_t nTransNumsNeeded);
     explicit OTAPI_Func(
@@ -239,8 +239,8 @@ public:
         const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
-        const Identifier& assetAccountID,
-        const Identifier& currencyAccountID,
+        const identifier::Generic& assetAccountID,
+        const identifier::Generic& currencyAccountID,
         const Amount& scale,
         const Amount& increment,
         const std::int64_t& quantity,
@@ -259,15 +259,15 @@ private:
 
     OTAPI_Func_Type type_{NO_FUNC};
     rLock api_lock_;
-    OTIdentifier accountID_;
-    OTIdentifier basketID_;
-    OTIdentifier currencyAccountID_;
-    OTIdentifier instrumentDefinitionID_;
-    OTIdentifier marketID_;
-    OTIdentifier recipientID_;
-    OTIdentifier requestID_;
-    OTIdentifier targetID_;
-    OTIdentifier message_id_;
+    identifier::Generic accountID_;
+    identifier::Generic basketID_;
+    identifier::Generic currencyAccountID_;
+    identifier::Generic instrumentDefinitionID_;
+    identifier::Generic marketID_;
+    identifier::Generic recipientID_;
+    identifier::Generic requestID_;
+    identifier::Generic targetID_;
+    identifier::Generic message_id_;
     std::unique_ptr<Message> request_;
     std::unique_ptr<OTSmartContract> contract_;
     std::unique_ptr<OTPaymentPlan> paymentPlan_;

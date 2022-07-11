@@ -14,6 +14,7 @@
 #include <iosfwd>
 #include <mutex>
 #include <optional>
+#include <string_view>
 #include <utility>
 
 #include "Proto.hpp"
@@ -97,16 +98,27 @@ public:
     }
     auto Reserve(
         const Subchain type,
+        const identifier::Generic& contact,
         const PasswordPrompt& reason,
-        const Identifier& contact,
-        const UnallocatedCString& label,
+        const std::string_view label,
+        const Time time) const noexcept -> std::optional<Bip32Index> final;
+    auto Reserve(
+        const Subchain type,
+        const PasswordPrompt& reason,
+        const std::string_view label,
         const Time time) const noexcept -> std::optional<Bip32Index> final;
     auto Reserve(
         const Subchain type,
         const std::size_t batch,
+        const identifier::Generic& contact,
         const PasswordPrompt& reason,
-        const Identifier& contact,
-        const UnallocatedCString& label,
+        const std::string_view label,
+        const Time time) const noexcept -> Batch override;
+    auto Reserve(
+        const Subchain type,
+        const std::size_t batch,
+        const PasswordPrompt& reason,
+        const std::string_view label,
         const Time time) const noexcept -> Batch override;
     auto RootNode(const PasswordPrompt& reason) const noexcept
         -> blockchain::crypto::HDKey override;
@@ -168,7 +180,7 @@ protected:
     {
         return const_cast<Deterministic*>(this)->element(lock, type, index);
     }
-    virtual auto get_contact() const noexcept -> OTIdentifier;
+    virtual auto get_contact() const noexcept -> identifier::Generic;
     auto is_generated(const rLock&, const Subchain type, Bip32Index index)
         const noexcept
     {
@@ -182,8 +194,8 @@ protected:
         const rLock& lock,
         const Subchain type,
         const PasswordPrompt& reason,
-        const Identifier& contact,
-        const UnallocatedCString& label,
+        const identifier::Generic& contact,
+        const std::string_view label,
         const Time time,
         Batch& generated) const noexcept -> std::optional<Bip32Index>;
 
@@ -198,10 +210,10 @@ protected:
         const api::Session& api,
         const crypto::Account& parent,
         const SubaccountType type,
-        OTIdentifier&& id,
+        identifier::Generic&& id,
         const proto::HDPath path,
         ChainData&& data,
-        Identifier& out) noexcept;
+        identifier::Generic& out) noexcept;
     Deterministic(
         const api::Session& api,
         const crypto::Account& parent,
@@ -210,7 +222,7 @@ protected:
         const Bip32Index internal,
         const Bip32Index external,
         ChainData&& data,
-        Identifier& out) noexcept(false);
+        identifier::Generic& out) noexcept(false);
 
 private:
     using Status = internal::Element::Availability;
@@ -225,13 +237,13 @@ private:
     static auto extract_contacts(
         const Bip32Index index,
         const AddressMap& map,
-        UnallocatedSet<OTIdentifier>& contacts) noexcept -> void;
+        UnallocatedSet<identifier::Generic>& contacts) noexcept -> void;
 
     auto accept(
         const rLock& lock,
         const Subchain type,
-        const Identifier& contact,
-        const UnallocatedCString& label,
+        const identifier::Generic& contact,
+        const std::string_view label,
         const Time time,
         const Bip32Index index,
         Batch& generated,
@@ -240,8 +252,8 @@ private:
     auto check(
         const rLock& lock,
         const Subchain type,
-        const Identifier& contact,
-        const UnallocatedCString& label,
+        const identifier::Generic& contact,
+        const std::string_view label,
         const Time time,
         const Bip32Index index,
         const PasswordPrompt& reason,
@@ -251,7 +263,7 @@ private:
     auto check_activity(
         const rLock& lock,
         const UnallocatedVector<Activity>& unspent,
-        UnallocatedSet<OTIdentifier>& contacts,
+        UnallocatedSet<identifier::Generic>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto check_lookahead(
         const rLock& lock,
@@ -284,15 +296,15 @@ private:
         const Subchain type,
         const Bip32Index index) noexcept(false) -> Element& final;
     virtual auto set_deterministic_contact(
-        UnallocatedSet<OTIdentifier>&) const noexcept -> void
+        UnallocatedSet<identifier::Generic>&) const noexcept -> void
     {
     }
     auto set_metadata(
         const rLock& lock,
         const Subchain subchain,
         const Bip32Index index,
-        const Identifier& contact,
-        const UnallocatedCString& label) const noexcept -> void;
+        const identifier::Generic& contact,
+        const std::string_view label) const noexcept -> void;
     auto unconfirm(
         const rLock& lock,
         const Subchain type,

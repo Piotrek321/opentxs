@@ -45,6 +45,8 @@ class Storage;
 
 class Factory;
 }  // namespace session
+
+class Crypto;
 }  // namespace api
 
 namespace storage
@@ -115,6 +117,7 @@ private:
         auto Start(bool fromBucket) noexcept -> bool;
 
         GC(const api::network::Asio& asio,
+           const api::Crypto& crypto,
            const api::session::Factory& factory,
            const Driver& driver,
            const std::int64_t interval)
@@ -124,6 +127,7 @@ private:
 
     private:
         const api::network::Asio& asio_;
+        const api::Crypto& crypto_;
         const api::session::Factory& factory_;
         const Driver& driver_;
         const std::uint64_t interval_;
@@ -143,7 +147,6 @@ private:
 
     static constexpr auto current_version_ = VersionNumber{2};
 
-    const api::session::Factory& factory_;
     Flag& current_bucket_;
     mutable std::atomic<std::uint64_t> sequence_;
     mutable GC gc_;
@@ -163,6 +166,7 @@ private:
 
     Root(
         const api::network::Asio& asio,
+        const api::Crypto& crypto,
         const api::session::Factory& factory,
         const Driver& storage,
         const UnallocatedCString& hash,

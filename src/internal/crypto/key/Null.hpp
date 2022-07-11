@@ -10,6 +10,7 @@
 
 #include "internal/crypto/library/Null.hpp"
 #include "opentxs/core/ByteArray.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/key/Ed25519.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
@@ -72,7 +73,10 @@ public:
     {
         return ByteArray{};
     }
-    auto CalculateID(Identifier&) const noexcept -> bool final { return false; }
+    auto CalculateID(identifier::Generic&) const noexcept -> bool final
+    {
+        return false;
+    }
     auto CalculateTag(
         const identity::Authority&,
         const crypto::key::asymmetric::Algorithm,
@@ -84,7 +88,7 @@ public:
     }
     auto CalculateTag(
         const key::Asymmetric&,
-        const Identifier&,
+        const identifier::Generic&,
         const PasswordPrompt&,
         std::uint32_t&) const noexcept -> bool final
     {
@@ -145,7 +149,7 @@ public:
         const GetPreimage,
         const crypto::SignatureRole,
         proto::Signature&,
-        const Identifier&,
+        const identifier::Generic&,
         const PasswordPrompt&,
         const crypto::HashType) const noexcept -> bool final
     {
@@ -332,9 +336,9 @@ public:
     {
         return false;
     }
-    auto ID(const PasswordPrompt&) const -> OTIdentifier final
+    auto ID(const PasswordPrompt&) const -> identifier::Generic final
     {
-        return Identifier::Factory();
+        return {};
     }
     auto RawKey(const PasswordPrompt&, Secret&) const -> bool final
     {

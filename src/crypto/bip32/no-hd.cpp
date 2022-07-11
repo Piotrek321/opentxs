@@ -12,7 +12,7 @@ namespace opentxs::crypto
 auto Bip32::Imp::DeriveKey(const EcdsaCurve&, const Secret&, const Path&) const
     -> Key
 {
-    return blank_.value();
+    return blank_.get();
 }
 
 auto Bip32::Imp::DerivePrivateKey(
@@ -20,7 +20,7 @@ auto Bip32::Imp::DerivePrivateKey(
     const Path&,
     const PasswordPrompt&) const noexcept(false) -> Key
 {
-    return blank_.value();
+    return blank_.get();
 }
 
 auto Bip32::Imp::DerivePublicKey(
@@ -28,7 +28,7 @@ auto Bip32::Imp::DerivePublicKey(
     const Path&,
     const PasswordPrompt&) const noexcept(false) -> Key
 {
-    return blank_.value();
+    return blank_.get();
 }
 
 auto Bip32::Imp::root_node(

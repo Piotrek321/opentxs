@@ -16,7 +16,6 @@
 #include <mutex>
 #include <optional>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -45,7 +44,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/Types.hpp"
 #include "util/ScopeGuard.hpp"
@@ -58,7 +56,7 @@ public:
         const noexcept -> void
     {
         auto lock = Lock{lock_};
-        auto id = api_.Factory().Identifier(tx.id());
+        auto id = api_.Factory().IdentifierFromBase58(tx.id());
 
         if (!db_.AddProposal(id, tx)) {
             LogError()(OT_PRETTY_CLASS())("Database error").Flush();
@@ -91,7 +89,7 @@ public:
         , confirming_()
     {
         for (const auto& serialized : db_.LoadProposals()) {
-            auto id = api_.Factory().Identifier(serialized.id());
+            auto id = api_.Factory().IdentifierFromBase58(serialized.id());
 
             if (serialized.has_finished()) {
                 confirming_.emplace(std::move(id), Time{});
@@ -109,14 +107,14 @@ private:
     };
 
     using Builder = std::function<BuildResult(
-        const Identifier& id,
+        const identifier::Generic& id,
         Proposal&,
         std::promise<SendOutcome>&)>;
     using Promise = std::promise<SendOutcome>;
-    using Data = std::pair<OTIdentifier, Promise>;
+    using Data = std::pair<identifier::Generic, Promise>;
 
     struct Pending {
-        auto Exists(const Identifier& id) const noexcept -> bool
+        auto Exists(const identifier::Generic& id) const noexcept -> bool
         {
             auto lock = Lock{lock_};
 
@@ -130,7 +128,7 @@ private:
         }
 
         auto Add(
-            OTIdentifier&& id,
+            identifier::Generic&& id,
             std::promise<SendOutcome>&& promise) noexcept -> void
         {
             auto lock = Lock{lock_};
@@ -155,10 +153,10 @@ private:
             ids_.emplace(id);
             data_.emplace_back(std::move(job));
         }
-        auto Delete(const Identifier& id) noexcept -> void
+        auto Delete(const identifier::Generic& id) noexcept -> void
         {
             auto lock = Lock{lock_};
-            auto copy = OTIdentifier{id};
+            auto copy = identifier::Generic{id};
 
             if (0 < ids_.count(copy)) {
                 ids_.erase(copy);
@@ -192,7 +190,7 @@ private:
         const api::Session& api_;
         mutable std::mutex lock_;
         UnallocatedDeque<Data> data_;
-        UnallocatedSet<OTIdentifier> ids_;
+        UnallocatedSet<identifier::Generic> ids_;
     };
 
     const api::Session& api_;
@@ -201,7 +199,7 @@ private:
     const Type chain_;
     mutable std::mutex lock_;
     mutable Pending pending_;
-    mutable UnallocatedMap<OTIdentifier, Time> confirming_;
+    mutable UnallocatedMap<identifier::Generic, Time> confirming_;
 
     static auto is_expired(const Proposal& tx) noexcept -> bool
     {
@@ -209,7 +207,7 @@ private:
     }
 
     auto build_transaction_bitcoin(
-        const Identifier& id,
+        const identifier::Generic& id,
         Proposal& proposal,
         std::promise<SendOutcome>& promise) const noexcept -> BuildResult
     {
@@ -356,11 +354,11 @@ private:
                     api_.Factory().InternalSession().PaymentCode(
                         notif.recipient()));
 
-                auto nymID = api_.Factory().NymID();
+                auto nymID = identifier::Nym{};
                 const auto& bytes = proposal.initiator();
-                nymID->Assign(bytes.data(), bytes.size());
+                nymID.Assign(bytes.data(), bytes.size());
 
-                OT_ASSERT(!nymID->empty());
+                OT_ASSERT(!nymID.empty());
 
                 const auto& account =
                     api_.Crypto().Blockchain().PaymentCodeSubaccount(

@@ -28,6 +28,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/StateMachine.hpp"
@@ -37,8 +38,6 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "2_Factory.hpp"
-#include "internal/core/Factory.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Mint.hpp"
@@ -60,7 +59,9 @@
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -254,7 +255,7 @@
                                                                                \
     auto& inbox = *inbox_;                                                     \
     auto& outbox = *outbox_;                                                   \
-    set_consensus_hash(transaction, context, account.get(), reason_)
+    set_consensus_hash(api_, transaction, context, account.get(), reason_)
 
 #define ADD_BALANCE_ITEM(AMOUNT)                                               \
     std::shared_ptr<Item> pBalanceItem{inbox.GenerateBalanceStatement(         \
@@ -382,13 +383,13 @@ Operation::Operation(
     , result_set_(false)
     , enable_otx_push_(true)
     , result_()
-    , target_nym_id_(identifier::Nym::Factory())
-    , target_server_id_(identifier::Notary::Factory())
-    , target_unit_id_(identifier::UnitDefinition::Factory())
+    , target_nym_id_()
+    , target_server_id_()
+    , target_unit_id_()
     , contract_type_(contract::Type::invalid)
     , unit_definition_()
-    , account_id_(Identifier::Factory())
-    , generic_id_(Identifier::Factory())
+    , account_id_()
+    , generic_id_()
     , amount_(0)
     , memo_(String::Factory())
     , bool_(false)
@@ -659,7 +660,7 @@ auto Operation::construct_deposit_cash() -> std::shared_ptr<Message>
         transactionType::deposit,
         originType::not_applicable,
         itemType::deposit,
-        Identifier::Factory(),
+        {},
         amount);
 
     const auto& unitID = account.get().GetInstrumentDefinitionID();
@@ -695,7 +696,7 @@ auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
         transactionType::deposit,
         originType::not_applicable,
         itemType::depositCheque,
-        Identifier::Factory(),
+        {},
         amount);
 
     if (cheque.GetNotaryID() != serverID) {
@@ -811,7 +812,7 @@ auto Operation::construct_download_contract() -> std::shared_ptr<Message>
 
         try {
 
-            return map.at(generic_id_->Type());
+            return map.at(generic_id_.Type());
         } catch (...) {
 
             return contract::Type::invalid;
@@ -839,7 +840,7 @@ auto Operation::construct_download_mint() -> std::shared_ptr<Message>
     FINISH_MESSAGE(getMint);
 }
 
-auto Operation::construct_get_account_data(const Identifier& accountID)
+auto Operation::construct_get_account_data(const identifier::Generic& accountID)
     -> std::shared_ptr<Message>
 {
     PREPARE_CONTEXT();
@@ -871,7 +872,7 @@ auto Operation::construct_issue_unit_definition() -> std::shared_ptr<Message>
         CREATE_MESSAGE(registerInstrumentDefinition, -1, true, true);
 
         auto id = contract->ID();
-        id->GetString(message.m_strInstrumentDefinitionID);
+        id.GetString(api_.Crypto(), message.m_strInstrumentDefinitionID);
         auto serialized = proto::UnitDefinition{};
         if (false == contract->Serialize(serialized, true)) {
             LogError()(OT_PRETTY_CLASS())("Failed to serialize unit definition")
@@ -977,7 +978,7 @@ auto Operation::construct_publish_unit() -> std::shared_ptr<Message>
 }
 
 auto Operation::construct_process_inbox(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const Ledger& payload,
     otx::context::Server& context) -> std::shared_ptr<Message>
 {
@@ -1359,7 +1360,7 @@ auto Operation::construct_send_transfer() -> std::shared_ptr<Message>
     account.Release();
     const auto workflowID = api_.Workflow().CreateTransfer(item, message);
 
-    if (workflowID->empty()) {
+    if (workflowID.empty()) {
         LogError()(OT_PRETTY_CLASS())("Failed to create transfer workflow")
             .Flush();
     } else {
@@ -1380,7 +1381,7 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
         transactionType::withdrawal,
         originType::not_applicable,
         itemType::withdrawal,
-        Identifier::Factory(),
+        {},
         totalAmount * (-1));
 
     const auto& unitID = account.get().GetInstrumentDefinitionID();
@@ -1388,8 +1389,8 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
         api_,
         api_.DataFolder(),
         api_.Internal().Legacy().Mint(),
-        serverID.str(),
-        unitID.str(),
+        serverID.asBase58(api_.Crypto()),
+        unitID.asBase58(api_.Crypto()),
         "");
 
     if (false == exists) {
@@ -1456,7 +1457,7 @@ auto Operation::ConveyPayment(
 }
 
 auto Operation::DepositCash(
-    const Identifier& depositAccountID,
+    const identifier::Generic& depositAccountID,
     blind::Purse&& purse) -> bool
 {
     if (false == bool(purse)) {
@@ -1500,7 +1501,7 @@ auto Operation::DepositCash(
 }
 
 auto Operation::DepositCheque(
-    const Identifier& depositAccountID,
+    const identifier::Generic& depositAccountID,
     const std::shared_ptr<Cheque> cheque) -> bool
 {
     START_OPERATION();
@@ -1546,7 +1547,7 @@ auto Operation::download_accounts(
 }
 
 auto Operation::download_account(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     otx::context::Server::DeliveryResult& lastResult) -> std::size_t
 {
     std::shared_ptr<Ledger> inbox{api_.Factory().InternalSession().Ledger(
@@ -1600,7 +1601,7 @@ auto Operation::download_account(
 }
 
 auto Operation::download_box_receipt(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const BoxType box,
     const TransactionNumber number) -> bool
 {
@@ -1650,7 +1651,7 @@ auto Operation::download_box_receipt(
 }
 
 auto Operation::DownloadContract(
-    const Identifier& ID,
+    const identifier::Generic& ID,
     const contract::Type type) -> bool
 {
     START_OPERATION();
@@ -1669,7 +1670,8 @@ void Operation::evaluate_transaction_reply(
     OT_ASSERT(pMessage);
 
     auto& message = *pMessage;
-    auto accountID = Identifier::Factory(message.m_strAcctID);
+    auto accountID =
+        api_.Factory().IdentifierFromBase58(message.m_strAcctID->Bytes());
     const auto success = evaluate_transaction_reply(accountID, message);
 
     if (false == success) {
@@ -1682,7 +1684,7 @@ void Operation::evaluate_transaction_reply(
 }
 
 auto Operation::evaluate_transaction_reply(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const Message& reply) const -> bool
 {
     if (false == reply.m_bSuccess) {
@@ -1829,7 +1831,8 @@ void Operation::execute()
                 OT_ASSERT(finished.second);
 
                 auto& reply = finished.second;
-                const auto accountID = Identifier::Factory(reply->m_strAcctID);
+                const auto accountID = api_.Factory().IdentifierFromBase58(
+                    reply->m_strAcctID->Bytes());
                 affected_accounts_.emplace(std::move(accountID));
                 set_result(std::move(finished));
                 state_.store(State::AccountPost);
@@ -1843,7 +1846,9 @@ void Operation::execute()
                         otx::client::StorageBox::MAILOUTBOX,
                         memo_->Get());
 
-                    if (set_id_) { set_id_(Identifier::Factory(messageID)); }
+                    if (set_id_) {
+                        set_id_(api_.Factory().IdentifierFromBase58(messageID));
+                    }
 
                     set_result(std::move(finished));
                 } else {
@@ -1864,7 +1869,7 @@ void Operation::execute()
 }
 
 auto Operation::get_account_data(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     std::shared_ptr<Ledger> inbox,
     std::shared_ptr<Ledger> outbox,
     otx::context::Server::DeliveryResult& lastResult) -> bool
@@ -1898,7 +1903,7 @@ auto Operation::get_account_data(
 }
 
 auto Operation::get_receipts(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     std::shared_ptr<Ledger> inbox,
     std::shared_ptr<Ledger> outbox) -> bool
 {
@@ -1914,7 +1919,7 @@ auto Operation::get_receipts(
 }
 
 auto Operation::get_receipts(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const BoxType type,
     Ledger& box) -> bool
 {
@@ -2122,7 +2127,7 @@ void Operation::nymbox_pre()
 }
 
 auto Operation::process_inbox(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     std::shared_ptr<Ledger> inbox,
     std::shared_ptr<Ledger> outbox,
     otx::context::Server::DeliveryResult& lastResult) -> bool
@@ -2351,13 +2356,13 @@ void Operation::reset()
     outmail_message_.reset();
     result_set_.store(false);
     result_ = Promise{};
-    target_nym_id_ = identifier::Nym::Factory();
-    target_server_id_ = identifier::Notary::Factory();
-    target_unit_id_ = identifier::UnitDefinition::Factory();
+    target_nym_id_ = identifier::Nym{};
+    target_server_id_ = identifier::Notary{};
+    target_unit_id_ = identifier::UnitDefinition{};
     contract_type_ = contract::Type::invalid;
     unit_definition_.reset();
-    account_id_ = Identifier::Factory();
-    generic_id_ = Identifier::Factory();
+    account_id_ = identifier::Generic{};
+    generic_id_ = identifier::Generic{};
     amount_ = 0;
     memo_ = String::Factory();
     bool_ = false;
@@ -2379,7 +2384,7 @@ void Operation::reset()
 
 auto Operation::SendCash(
     const identifier::Nym& recipientID,
-    const Identifier& workflowID) -> bool
+    const identifier::Generic& workflowID) -> bool
 {
     const auto pSender = api_.Wallet().Nym(nym_id_);
     const auto pRecipient = api_.Wallet().Nym(recipientID);
@@ -2494,8 +2499,8 @@ auto Operation::SendPeerRequest(
 }
 
 auto Operation::SendTransfer(
-    const Identifier& sourceAccountID,
-    const Identifier& destinationAccountID,
+    const identifier::Generic& sourceAccountID,
+    const identifier::Generic& destinationAccountID,
     const Amount& amount,
     const String& memo) -> bool
 {
@@ -2511,20 +2516,21 @@ auto Operation::SendTransfer(
 }
 
 void Operation::set_consensus_hash(
+    const api::Session& api,
     OTTransaction& transaction,
     const otx::context::Base& context,
     const Account& account,
     const opentxs::PasswordPrompt& reason)
 {
-    auto accountHash{Identifier::Factory()};
-    auto accountid{Identifier::Factory()};
-    auto inboxHash{Identifier::Factory()};
-    auto outboxHash{Identifier::Factory()};
+    auto accountHash = identifier::Generic{};
+    auto accountid = identifier::Generic{};
+    auto inboxHash = identifier::Generic{};
+    auto outboxHash = identifier::Generic{};
     account.GetIdentifier(accountid);
     account.ConsensusHash(context, accountHash, reason);
     auto nymfile = context.Internal().Nymfile(reason);
-    nymfile->GetInboxHash(accountid->str(), inboxHash);
-    nymfile->GetOutboxHash(accountid->str(), outboxHash);
+    nymfile->GetInboxHash(accountid.asBase58(api.Crypto()), inboxHash);
+    nymfile->GetOutboxHash(accountid.asBase58(api.Crypto()), outboxHash);
     transaction.SetAccountHash(accountHash);
     transaction.SetInboxHash(inboxHash);
     transaction.SetOutboxHash(outboxHash);
@@ -2798,7 +2804,7 @@ void Operation::update_workflow_send_cash(
         nym_id_, target_nym_id_, generic_id_, request, result.second.get());
 }
 
-auto Operation::UpdateAccount(const Identifier& accountID) -> bool
+auto Operation::UpdateAccount(const identifier::Generic& accountID) -> bool
 {
     START_OPERATION();
 
@@ -2808,8 +2814,9 @@ auto Operation::UpdateAccount(const Identifier& accountID) -> bool
     return start(lock, otx::OperationType::RefreshAccount, {});
 }
 
-auto Operation::WithdrawCash(const Identifier& accountID, const Amount& amount)
-    -> bool
+auto Operation::WithdrawCash(
+    const identifier::Generic& accountID,
+    const Amount& amount) -> bool
 {
     START_OPERATION();
 

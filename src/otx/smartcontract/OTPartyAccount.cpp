@@ -18,13 +18,14 @@
 #include "internal/otx/smartcontract/OTScript.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 // IDEA: Put a Nym in the Nyms folder for each entity. While it may
 // not have a public key in the pubkey folder, or embedded within it,
@@ -36,9 +37,9 @@
 namespace opentxs
 {
 OTPartyAccount::OTPartyAccount(
-    const api::session::Wallet& wallet,
+    const api::Session& api,
     const UnallocatedCString& dataFolder)
-    : wallet_(wallet)
+    : api_(api)
     , data_folder_{dataFolder}
     , m_pForParty(nullptr)
     , m_lClosingTransNo(0)
@@ -53,13 +54,13 @@ OTPartyAccount::OTPartyAccount(
 // For an account to be party to an agreement, there must be a closing
 // transaction # provided, for the finalReceipt for that account.
 OTPartyAccount::OTPartyAccount(
-    const api::session::Wallet& wallet,
+    const api::Session& api,
     const UnallocatedCString& dataFolder,
     const UnallocatedCString& str_account_name,
     const String& strAgentName,
     Account& theAccount,
     std::int64_t lClosingTransNo)
-    : wallet_(wallet)
+    : api_(api)
     , data_folder_{dataFolder}
     , m_pForParty(nullptr)
     // This gets set when this partyaccount is added to its party.
@@ -73,14 +74,14 @@ OTPartyAccount::OTPartyAccount(
 }
 
 OTPartyAccount::OTPartyAccount(
-    const api::session::Wallet& wallet,
+    const api::Session& api,
     const UnallocatedCString& dataFolder,
     const String& strName,
     const String& strAgentName,
     const String& strAcctID,
     const String& strInstrumentDefinitionID,
     std::int64_t lClosingTransNo)
-    : wallet_(wallet)
+    : api_(api)
     , data_folder_{dataFolder}
     , m_pForParty(nullptr)
     // This gets set when this partyaccount is added to its party.
@@ -96,7 +97,8 @@ auto OTPartyAccount::get_account() const -> SharedAccount
 {
     if (!m_strAcctID->Exists()) { return {}; }
 
-    return wallet_.Internal().Account(Identifier::Factory(m_strAcctID));
+    return api_.Wallet().Internal().Account(
+        api_.Factory().IdentifierFromBase58(m_strAcctID->Bytes()));
 }
 
 // Every partyaccount has its own authorized agent's name.
@@ -128,13 +130,15 @@ void OTPartyAccount::SetParty(OTParty& theOwnerParty)
     m_pForParty = &theOwnerParty;
 }
 
-auto OTPartyAccount::IsAccountByID(const Identifier& theAcctID) const -> bool
+auto OTPartyAccount::IsAccountByID(const identifier::Generic& theAcctID) const
+    -> bool
 {
     if (!m_strAcctID->Exists()) { return false; }
 
     if (!m_strInstrumentDefinitionID->Exists()) { return false; }
 
-    const auto theMemberAcctID = Identifier::Factory(m_strAcctID);
+    const auto theMemberAcctID =
+        api_.Factory().IdentifierFromBase58(m_strAcctID->Bytes());
     if (!(theAcctID == theMemberAcctID)) {
         LogTrace()(OT_PRETTY_CLASS())("Account IDs don't match: ")(
             m_strAcctID)(" / ")(theAcctID)
@@ -163,7 +167,8 @@ auto OTPartyAccount::IsAccount(const Account& theAccount) -> bool
         bCheckAssetId = false;
     }
 
-    const auto theAcctID = Identifier::Factory(m_strAcctID);
+    const auto theAcctID =
+        api_.Factory().IdentifierFromBase58(m_strAcctID->Bytes());
     if (!(theAccount.GetRealAccountID() == theAcctID)) {
         LogTrace()(OT_PRETTY_CLASS())("Account IDs don't match: ")(
             m_strAcctID)(" / ")(theAccount.GetRealAccountID())
@@ -173,8 +178,8 @@ auto OTPartyAccount::IsAccount(const Account& theAccount) -> bool
     }
 
     if (bCheckAssetId) {
-        const auto theInstrumentDefinitionID =
-            Identifier::Factory(m_strInstrumentDefinitionID);
+        const auto theInstrumentDefinitionID = api_.Factory().UnitIDFromBase58(
+            m_strInstrumentDefinitionID->Bytes());
         if (!(theAccount.GetInstrumentDefinitionID() ==
               theInstrumentDefinitionID)) {
             auto strRHS =
@@ -300,7 +305,8 @@ auto OTPartyAccount::DropFinalReceiptToInbox(
         LogError()(OT_PRETTY_CLASS())("Named agent wasn't found on party.")
             .Flush();
     } else {
-        const auto theAccountID = Identifier::Factory(m_strAcctID);
+        const auto theAccountID =
+            api_.Factory().IdentifierFromBase58(m_strAcctID->Bytes());
 
         return pAgent->DropFinalReceiptToInbox(
             strNotaryID,
@@ -333,7 +339,8 @@ auto OTPartyAccount::LoadAccount() -> SharedAccount
         return {};
     }
 
-    auto account = wallet_.Internal().Account(Identifier::Factory(m_strAcctID));
+    auto account = api_.Wallet().Internal().Account(
+        api_.Factory().IdentifierFromBase58(m_strAcctID->Bytes()));
 
     if (false == bool(account)) {
         {

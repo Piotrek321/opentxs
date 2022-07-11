@@ -101,6 +101,11 @@ class Scan;
 }  // namespace node
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace network
 {
 namespace zeromq
@@ -112,7 +117,6 @@ class Push;
 }  // namespace zeromq
 }  // namespace network
 
-class Identifier;
 class Log;
 // }  // namespace v1
 }  // namespace opentxs

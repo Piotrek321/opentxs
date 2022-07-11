@@ -11,7 +11,10 @@
 #include <utility>
 
 #include "internal/api/session/Factory.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -240,7 +243,8 @@ auto Endpoints::BlockchainTransactions(
         return it->second;
     } else {
         static constexpr auto prefix{"blockchain/transactions"};
-        const auto path = CString{prefix} + "by_nym/" + nym.str().c_str();
+        const auto path = CString{prefix} + "by_nym/" +
+                          nym.asBase58(opentxs::Context().Crypto()).c_str();
         auto [out, added] =
             handle->try_emplace(nym, build_inproc_path(path, version_1_));
 

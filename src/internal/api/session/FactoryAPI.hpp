@@ -9,10 +9,7 @@
 
 #include "internal/otx/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace google
@@ -38,6 +35,7 @@ class Symmetric;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 class Notary;
 class Unit;
@@ -47,7 +45,7 @@ namespace proto
 {
 class AsymmetricKey;
 class BlockchainBlockHeader;
-class Identifier;
+class HDPath;
 class PaymentCode;
 class PeerObject;
 class PeerReply;
@@ -62,7 +60,6 @@ class Basket;
 class ByteArray;
 class Cheque;
 class Contract;
-class Identifier;
 class Item;
 class Ledger;
 class Message;
@@ -160,11 +157,6 @@ public:
     using session::Factory::Data;
     virtual auto Data(const google::protobuf::MessageLite& input) const
         -> ByteArray = 0;
-    using session::Factory::Identifier;
-    virtual auto Identifier(const google::protobuf::MessageLite& proto) const
-        -> OTIdentifier = 0;
-    virtual auto Identifier(const proto::Identifier& in) const noexcept
-        -> OTIdentifier = 0;
     auto InternalSession() const noexcept -> const Factory& final
     {
         return *this;
@@ -185,7 +177,7 @@ public:
         const identifier::Nym& theNymID,
         const OTTransaction& theOwner,
         itemType theType,
-        const opentxs::Identifier& pDestinationAcctID) const
+        const identifier::Generic& pDestinationAcctID) const
         -> std::unique_ptr<opentxs::Item> = 0;
     virtual auto Item(
         const String& strItem,
@@ -195,7 +187,7 @@ public:
     virtual auto Item(
         const OTTransaction& theOwner,
         itemType theType,
-        const opentxs::Identifier& pDestinationAcctID) const
+        const identifier::Generic& pDestinationAcctID) const
         -> std::unique_ptr<opentxs::Item> = 0;
     using session::Factory::Keypair;
     virtual auto Keypair(
@@ -204,17 +196,17 @@ public:
     virtual auto Keypair(const proto::AsymmetricKey& serializedPubkey) const
         -> OTKeypair = 0;
     virtual auto Ledger(
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID) const
         -> std::unique_ptr<opentxs::Ledger> = 0;
     virtual auto Ledger(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID) const
         -> std::unique_ptr<opentxs::Ledger> = 0;
     virtual auto Ledger(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAcctID,
+        const identifier::Generic& theAcctID,
         const identifier::Notary& theNotaryID,
         ledgerType theType,
         bool bCreateFile = false) const -> std::unique_ptr<opentxs::Ledger> = 0;
@@ -237,11 +229,6 @@ public:
         const Nym_p& nym,
         const proto::PeerRequest& serialized) const noexcept(false)
         -> OTOutbailmentRequest = 0;
-    using session::Factory::NymID;
-    virtual auto NymID(const opentxs::Identifier& in) const noexcept
-        -> OTNymID = 0;
-    virtual auto NymID(const proto::Identifier& in) const noexcept
-        -> OTNymID = 0;
     virtual auto Offer() const
         -> std::unique_ptr<OTOffer> = 0;  // The constructor
                                           // contains the 3
@@ -270,9 +257,9 @@ public:
     virtual auto PaymentPlan(
         const identifier::Notary& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-        const opentxs::Identifier& SENDER_ACCT_ID,
+        const identifier::Generic& SENDER_ACCT_ID,
         const identifier::Nym& SENDER_NYM_ID,
-        const opentxs::Identifier& RECIPIENT_ACCT_ID,
+        const identifier::Generic& RECIPIENT_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID) const
         -> std::unique_ptr<OTPaymentPlan> = 0;
     using session::Factory::PeerObject;
@@ -301,13 +288,6 @@ public:
         const Nym_p& nym,
         const proto::UnitDefinition serialized) const noexcept(false)
         -> OTSecurityContract = 0;
-    using session::Factory::ServerID;
-    virtual auto ServerID(const opentxs::Identifier& in) const noexcept
-        -> OTNotaryID = 0;
-    virtual auto ServerID(const proto::Identifier& in) const noexcept
-        -> OTNotaryID = 0;
-    virtual auto ServerID(const google::protobuf::MessageLite& proto) const
-        -> OTIdentifier = 0;
     virtual auto Scriptable(const String& strCronItem) const
         -> std::unique_ptr<OTScriptable> = 0;
     virtual auto SignedFile() const -> std::unique_ptr<OTSignedFile> = 0;
@@ -340,10 +320,10 @@ public:
     virtual auto Trade(
         const identifier::Notary& notaryID,
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const opentxs::Identifier& assetAcctId,
+        const identifier::Generic& assetAcctId,
         const identifier::Nym& nymID,
         const identifier::UnitDefinition& currencyId,
-        const opentxs::Identifier& currencyAcctId) const
+        const identifier::Generic& currencyAcctId) const
         -> std::unique_ptr<OTTrade> = 0;
     virtual auto Transaction(const String& strCronItem) const
         -> std::unique_ptr<OTTransactionType> = 0;
@@ -351,13 +331,13 @@ public:
         -> std::unique_ptr<OTTransaction> = 0;
     virtual auto Transaction(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         originType theOriginType = originType::not_applicable) const
         -> std::unique_ptr<OTTransaction> = 0;
     virtual auto Transaction(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         std::int64_t lTransactionNum,
         originType theOriginType = originType::not_applicable) const
@@ -367,7 +347,7 @@ public:
     // abbreviated ones are loaded, and verified against them.
     virtual auto Transaction(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         const std::int64_t& lNumberOfOrigin,
         originType theOriginType,
@@ -386,7 +366,7 @@ public:
         -> std::unique_ptr<OTTransaction> = 0;
     virtual auto Transaction(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         transactionType theType,
         originType theOriginType = originType::not_applicable,
@@ -403,13 +383,6 @@ public:
         const Nym_p& nym,
         const proto::UnitDefinition serialized) const noexcept(false)
         -> OTUnitDefinition = 0;
-    using session::Factory::UnitID;
-    virtual auto UnitID(const opentxs::Identifier& in) const noexcept
-        -> OTUnitID = 0;
-    virtual auto UnitID(const proto::Identifier& in) const noexcept
-        -> OTUnitID = 0;
-    virtual auto UnitID(const google::protobuf::MessageLite& proto) const
-        -> OTIdentifier = 0;
 
     auto InternalSession() noexcept -> Factory& final { return *this; }
 

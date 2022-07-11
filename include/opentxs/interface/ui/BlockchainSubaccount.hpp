@@ -34,7 +34,8 @@ public:
     virtual auto First() const noexcept -> SharedPimpl<BlockchainSubchain> = 0;
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Next() const noexcept -> SharedPimpl<BlockchainSubchain> = 0;
-    virtual auto SubaccountID() const noexcept -> const Identifier& = 0;
+    virtual auto SubaccountID() const noexcept
+        -> const identifier::Generic& = 0;
 
     BlockchainSubaccount(const BlockchainSubaccount&) = delete;
     BlockchainSubaccount(BlockchainSubaccount&&) = delete;

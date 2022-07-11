@@ -121,7 +121,7 @@ namespace ottest
 {
 auto check_account_activity_qt(
     const User& user,
-    const ot::Identifier& account,
+    const ot::identifier::Generic& account,
     const AccountActivityData& expected) noexcept -> bool
 {
     const auto* pModel =
@@ -273,7 +273,7 @@ auto check_account_tree_qt(
 
 auto check_activity_thread_qt(
     const User& user,
-    const ot::Identifier& contact,
+    const ot::identifier::Generic& contact,
     const ActivityThreadData& expected) noexcept -> bool
 {
     const auto* pModel =
@@ -1242,10 +1242,11 @@ auto check_row(
         const auto section = model.data(index, Model::SectionRole);
         const auto display = model.data(index, Qt::DisplayRole);
 
-        if (auto required = user.Contact(cIndex).str(); required.empty()) {
+        if (auto required = user.Contact(cIndex).asBase58(user.api_->Crypto());
+            required.empty()) {
             const auto set =
                 user.SetContact(cIndex, id.toString().toStdString());
-            required = user.Contact(cIndex).str();
+            required = user.Contact(cIndex).asBase58(user.api_->Crypto());
             output &= set;
             output &= (false == required.empty());
 

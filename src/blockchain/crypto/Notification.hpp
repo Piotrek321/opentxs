@@ -31,7 +31,6 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/PaymentCode.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Container.hpp"
@@ -62,12 +61,16 @@ class Notification;
 }  // namespace crypto
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class HDPath;
 }  // namespace proto
 
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -102,7 +105,7 @@ public:
         const crypto::Account& parent,
         const opentxs::PaymentCode& code,
         proto::HDPath&& path,
-        Identifier& out) noexcept;
+        identifier::Generic& out) noexcept;
     Notification(const Notification&) = delete;
     Notification(Notification&&) = delete;
     auto operator=(const Notification&) -> Notification& = delete;
@@ -122,7 +125,7 @@ private:
     static auto calculate_id(
         const api::Session& api,
         const blockchain::Type chain,
-        const opentxs::PaymentCode& code) noexcept -> OTIdentifier;
+        const opentxs::PaymentCode& code) noexcept -> identifier::Generic;
 
     auto account_already_exists(const rLock&) const noexcept -> bool final
     {
@@ -131,7 +134,7 @@ private:
     auto check_activity(
         const rLock&,
         const UnallocatedVector<Activity>&,
-        UnallocatedSet<OTIdentifier>&,
+        UnallocatedSet<identifier::Generic>&,
         const PasswordPrompt&) const noexcept -> bool final
     {
         return false;

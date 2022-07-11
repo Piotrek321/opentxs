@@ -25,6 +25,7 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/session/Factory.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Types.hpp"
@@ -41,6 +42,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Contacts.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -279,11 +281,15 @@ auto Workflow::InstantiatePurse(
         case PaymentWorkflowType::OutgoingCash:
         case PaymentWorkflowType::IncomingCash: {
             try {
-                proto::Purse serialized{};
+                const auto serialized = [&] {
+                    auto out = proto::Purse{};
 
-                if (false == ExtractPurse(workflow, serialized)) {
-                    throw std::runtime_error{"Missing purse"};
-                }
+                    if (false == ExtractPurse(workflow, out)) {
+                        throw std::runtime_error{"Missing purse"};
+                    }
+
+                    return out;
+                }();
 
                 purse = api.Factory().InternalSession().Purse(serialized);
 
@@ -363,10 +369,10 @@ auto Workflow::InstantiateTransfer(
 
 auto Workflow::UUID(
     const api::Session& api,
-    const proto::PaymentWorkflow& workflow) -> OTIdentifier
+    const proto::PaymentWorkflow& workflow) -> identifier::Generic
 {
-    auto output = Identifier::Factory();
-    auto notaryID = Identifier::Factory();
+    auto output = identifier::Generic{};
+    auto notaryID = identifier::Generic{};
     TransactionNumber number{0};
 
     switch (translate(workflow.type())) {
@@ -418,19 +424,16 @@ auto Workflow::UUID(
 
 auto Workflow::UUID(
     const api::Session& api,
-    const Identifier& notary,
-    const TransactionNumber& number) -> OTIdentifier
+    const identifier::Generic& notary,
+    const TransactionNumber& number) -> identifier::Generic
 {
     LogTrace()(OT_PRETTY_STATIC(Workflow))("UUID for notary ")(
         notary)(" and transaction number ")(number)(" is ");
     auto preimage = api.Factory().Data();
     preimage.Assign(notary);
     preimage.Concatenate(&number, sizeof(number));
-    auto output = Identifier::Factory();
-    output->CalculateDigest(preimage.Bytes());
-    LogTrace()(output).Flush();
 
-    return output;
+    return api.Factory().IdentifierFromPreimage(preimage.Bytes());
 }
 }  // namespace opentxs::api::session
 
@@ -488,7 +491,7 @@ auto Workflow::AbortTransfer(
         isInternal ? PaymentWorkflowType::InternalTransfer
                    : PaymentWorkflowType::OutgoingTransfer};
     Lock global(lock_);
-    const auto workflow = get_workflow(global, type, nymID.str(), transfer);
+    const auto workflow = get_workflow(global, type, nymID, transfer);
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -504,8 +507,8 @@ auto Workflow::AbortTransfer(
 
     return add_transfer_event(
         lock,
-        nymID.str(),
-        "",
+        nymID,
+        {},
         *workflow,
         PaymentWorkflowState::Aborted,
         proto::PAYMENTEVENTTYPE_ABORT,
@@ -532,8 +535,8 @@ auto Workflow::AcceptTransfer(
         return false;
     }
 
-    const auto senderNymID = transfer->GetNymID().str();
-    const auto recipientNymID = pending.GetNymID().str();
+    const auto& senderNymID = transfer->GetNymID();
+    const auto& recipientNymID = pending.GetNymID();
     const auto& accountID = pending.GetPurportedAccountID();
 
     if (pending.GetNymID() != nymID) {
@@ -542,7 +545,7 @@ auto Workflow::AcceptTransfer(
         return false;
     }
 
-    const bool isInternal = (0 == senderNymID.compare(recipientNymID));
+    const bool isInternal = (senderNymID == recipientNymID);
 
     // Ignore this event for internal transfers.
     if (isInternal) { return true; }
@@ -550,7 +553,7 @@ auto Workflow::AcceptTransfer(
     const UnallocatedSet<PaymentWorkflowType> type{
         PaymentWorkflowType::IncomingTransfer};
     Lock global(lock_);
-    const auto workflow = get_workflow(global, type, nymID.str(), *transfer);
+    const auto workflow = get_workflow(global, type, nymID, *transfer);
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -566,7 +569,7 @@ auto Workflow::AcceptTransfer(
 
     return add_transfer_event(
         lock,
-        nymID.str(),
+        nymID,
         senderNymID,
         *workflow,
         PaymentWorkflowState::Completed,
@@ -590,7 +593,7 @@ auto Workflow::AcknowledgeTransfer(
         isInternal ? PaymentWorkflowType::InternalTransfer
                    : PaymentWorkflowType::OutgoingTransfer};
     Lock global(lock_);
-    const auto workflow = get_workflow(global, type, nymID.str(), transfer);
+    const auto workflow = get_workflow(global, type, nymID, transfer);
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -616,8 +619,8 @@ auto Workflow::AcknowledgeTransfer(
 
     return add_transfer_event(
         lock,
-        nymID.str(),
-        "",
+        nymID,
+        {},
         *workflow,
         state,
         proto::PAYMENTEVENTTYPE_ACKNOWLEDGE,
@@ -631,39 +634,40 @@ auto Workflow::AcknowledgeTransfer(
 
 auto Workflow::AllocateCash(
     const identifier::Nym& id,
-    const otx::blind::Purse& purse) const -> OTIdentifier
+    const otx::blind::Purse& purse) const -> identifier::Generic
 {
     Lock global(lock_);
-    auto workflowID = Identifier::Random();
+    auto workflowID = api_.Factory().IdentifierFromRandom();
     proto::PaymentWorkflow workflow{};
     workflow.set_version(
         versions_.at(otx::client::PaymentWorkflowType::OutgoingCash).workflow_);
-    workflow.set_id(workflowID->str());
+    workflow.set_id(workflowID.asBase58(api_.Crypto()));
     workflow.set_type(translate(PaymentWorkflowType::OutgoingCash));
     workflow.set_state(translate(PaymentWorkflowState::Unsent));
     auto& source = *(workflow.add_source());
     source.set_version(versions_.at(PaymentWorkflowType::OutgoingCash).source_);
-    source.set_id(workflowID->str());
+    source.set_id(workflowID.asBase58(api_.Crypto()));
     source.set_revision(1);
+    source.set_item([&] {
+        auto proto = proto::Purse{};
+        purse.Internal().Serialize(proto);
 
-    proto::Purse proto{};
-    purse.Internal().Serialize(proto);
-    source.set_item(proto::ToString(proto));
-
-    workflow.set_notary(purse.Notary().str());
+        return proto::ToString(proto);
+    }());
+    workflow.set_notary(purse.Notary().asBase58(api_.Crypto()));
     auto& event = *workflow.add_event();
     event.set_version(versions_.at(PaymentWorkflowType::OutgoingCash).event_);
     event.set_time(Clock::to_time_t(Clock::now()));
     event.set_type(proto::PAYMENTEVENTTYPE_CREATE);
     event.set_method(proto::TRANSPORTMETHOD_NONE);
     event.set_success(true);
-    workflow.add_unit(purse.Unit().str());
-    const auto saved = save_workflow(id.str(), workflow);
+    workflow.add_unit(purse.Unit().asBase58(api_.Crypto()));
+    const auto saved = save_workflow(id, workflow);
 
     if (false == saved) {
         LogError()(OT_PRETTY_CLASS())("Failed to save workflow").Flush();
 
-        return Identifier::Factory();
+        return {};
     }
 
     return workflowID;
@@ -671,15 +675,15 @@ auto Workflow::AllocateCash(
 
 auto Workflow::add_cheque_event(
     const eLock& lock,
-    const UnallocatedCString& nymID,
-    const UnallocatedCString&,
+    const identifier::Nym& nymID,
+    const identifier::Nym&,
     proto::PaymentWorkflow& workflow,
     const PaymentWorkflowState newState,
     const proto::PaymentEventType newEventType,
     const VersionNumber version,
     const Message& request,
     const Message* reply,
-    const Identifier& account) const -> bool
+    const identifier::Generic& account) const -> bool
 {
     const bool haveReply = (nullptr != reply);
     const bool success = cheque_deposit_success(reply);
@@ -688,7 +692,7 @@ auto Workflow::add_cheque_event(
         workflow.set_state(translate(newState));
 
         if ((false == account.empty()) && (0 == workflow.account_size())) {
-            workflow.add_account(account.str());
+            workflow.add_account(account.asBase58(api_.Crypto()));
         }
     }
 
@@ -725,7 +729,7 @@ auto Workflow::add_cheque_event(
 
     if (false == account.empty()) {
         workflow.set_notary(
-            api_.Storage().AccountServer(Identifier::Factory(account))->str());
+            api_.Storage().AccountServer(account).asBase58(api_.Crypto()));
     }
 
     return save_workflow(nymID, account, workflow);
@@ -734,8 +738,8 @@ auto Workflow::add_cheque_event(
 // Only used for ClearCheque
 auto Workflow::add_cheque_event(
     const eLock& lock,
-    const UnallocatedCString& nymID,
-    const Identifier& accountID,
+    const identifier::Nym& nymID,
+    const identifier::Generic& accountID,
     proto::PaymentWorkflow& workflow,
     const PaymentWorkflowState newState,
     const proto::PaymentEventType newEventType,
@@ -753,12 +757,12 @@ auto Workflow::add_cheque_event(
     event.add_item(message->Get());
     event.set_time(Clock::to_time_t(time));
     event.set_method(proto::TRANSPORTMETHOD_OT);
-    event.set_transport(receipt.GetRealNotaryID().str());
-    event.set_nym(recipientNymID.str());
+    event.set_transport(receipt.GetRealNotaryID().asBase58(api_.Crypto()));
+    event.set_nym(recipientNymID.asBase58(api_.Crypto()));
     event.set_success(true);
 
     if (0 == workflow.party_size()) {
-        workflow.add_party(recipientNymID.str());
+        workflow.add_party(recipientNymID.asBase58(api_.Crypto()));
     }
 
     return save_workflow(nymID, accountID, workflow);
@@ -766,14 +770,14 @@ auto Workflow::add_cheque_event(
 
 auto Workflow::add_transfer_event(
     const eLock& lock,
-    const UnallocatedCString& nymID,
-    const UnallocatedCString& eventNym,
+    const identifier::Nym& nymID,
+    const identifier::Nym& eventNym,
     proto::PaymentWorkflow& workflow,
     const PaymentWorkflowState newState,
     const proto::PaymentEventType newEventType,
     const VersionNumber version,
     const Message& message,
-    const Identifier& account,
+    const identifier::Generic& account,
     const bool success) const -> bool
 {
     if (success) { workflow.set_state(translate(newState)); }
@@ -805,7 +809,7 @@ auto Workflow::add_transfer_event(
     event.set_time(message.m_lTime);
 
     if (0 == workflow.party_size() && (false == eventNym.empty())) {
-        workflow.add_party(eventNym);
+        workflow.add_party(eventNym.asBase58(api_.Crypto()));
     }
 
     return save_workflow(nymID, account, workflow);
@@ -813,15 +817,15 @@ auto Workflow::add_transfer_event(
 
 auto Workflow::add_transfer_event(
     const eLock& lock,
-    const UnallocatedCString& nymID,
+    const identifier::Nym& nymID,
     const UnallocatedCString& notaryID,
-    const UnallocatedCString& eventNym,
+    const identifier::Nym& eventNym,
     proto::PaymentWorkflow& workflow,
     const otx::client::PaymentWorkflowState newState,
     const proto::PaymentEventType newEventType,
     const VersionNumber version,
     const OTTransaction& receipt,
-    const Identifier& account,
+    const identifier::Generic& account,
     const bool success) const -> bool
 {
     if (success) { workflow.set_state(translate(newState)); }
@@ -853,7 +857,7 @@ auto Workflow::add_transfer_event(
     event.set_time(Clock::to_time_t(Clock::now()));
 
     if (0 == workflow.party_size() && (false == eventNym.empty())) {
-        workflow.add_party(eventNym);
+        workflow.add_party(eventNym.asBase58(api_.Crypto()));
     }
 
     return save_workflow(nymID, account, workflow);
@@ -1143,7 +1147,7 @@ auto Workflow::CancelCheque(
 {
     if (false == isCheque(cheque)) { return false; }
 
-    const auto nymID = cheque.GetSenderNymID().str();
+    const auto& nymID = cheque.GetSenderNymID();
     Lock global(lock_);
     const auto workflow = get_workflow(
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, cheque);
@@ -1160,12 +1164,12 @@ auto Workflow::CancelCheque(
 
     if (false == can_cancel_cheque(*workflow)) { return false; }
 
-    static const auto accountID = api_.Factory().Identifier();
+    static const auto accountID = identifier::Generic{};
 
     return add_cheque_event(
         lock,
         nymID,
-        "",
+        {},
         *workflow,
         PaymentWorkflowState::Cancelled,
         proto::PAYMENTEVENTTYPE_CANCEL,
@@ -1205,7 +1209,7 @@ auto Workflow::ClearCheque(
 
     if (false == isCheque(*cheque)) { return false; }
 
-    const auto nymID = cheque->GetSenderNymID().str();
+    const auto& nymID = cheque->GetSenderNymID();
     Lock global(lock_);
     const auto workflow = get_workflow(
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, *cheque);
@@ -1229,7 +1233,7 @@ auto Workflow::ClearCheque(
     const auto output = add_cheque_event(
         lock,
         nymID,
-        api_.Factory().Identifier(workflow->account(0)),
+        api_.Factory().IdentifierFromBase58(workflow->account(0)),
         *workflow,
         PaymentWorkflowState::Accepted,
         proto::PAYMENTEVENTTYPE_ACCEPT,
@@ -1242,17 +1246,16 @@ auto Workflow::ClearCheque(
         update_activity(
             cheque->GetSenderNymID(),
             recipientNymID,
-            Identifier::Factory(*cheque),
-            Identifier::Factory(workflow->id()),
+            api_.Factory().Internal().Identifier(*cheque),
+            api_.Factory().IdentifierFromBase58(workflow->id()),
             otx::client::StorageBox::OUTGOINGCHEQUE,
             extract_conveyed_time(*workflow));
     }
 
     update_rpc(
-
         nymID,
-        cheque->GetRecipientNymID().str(),
-        cheque->SourceAccountID().str(),
+        cheque->GetRecipientNymID(),
+        cheque->SourceAccountID().asBase58(api_.Crypto()),
         proto::ACCOUNTEVENT_OUTGOINGCHEQUE,
         workflow->id(),
         -1 * cheque->GetAmount(),
@@ -1268,7 +1271,7 @@ auto Workflow::ClearTransfer(
     const identifier::Notary& notaryID,
     const OTTransaction& receipt) const -> bool
 {
-    auto depositorNymID = identifier::Nym::Factory();
+    auto depositorNymID = identifier::Nym{};
     const auto transfer =
         extract_transfer_from_receipt(receipt, depositorNymID);
 
@@ -1278,7 +1281,7 @@ auto Workflow::ClearTransfer(
         return false;
     }
 
-    if (depositorNymID->empty()) {
+    if (depositorNymID.empty()) {
         LogError()(OT_PRETTY_CLASS())("Missing recipient").Flush();
 
         return false;
@@ -1310,7 +1313,7 @@ auto Workflow::ClearTransfer(
         isInternal ? PaymentWorkflowType::InternalTransfer
                    : PaymentWorkflowType::OutgoingTransfer};
     Lock global(lock_);
-    const auto workflow = get_workflow(global, type, nymID.str(), *transfer);
+    const auto workflow = get_workflow(global, type, nymID, *transfer);
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1326,9 +1329,9 @@ auto Workflow::ClearTransfer(
 
     const auto output = add_transfer_event(
         lock,
-        nymID.str(),
-        notaryID.str(),
-        (isInternal ? UnallocatedCString{""} : depositorNymID->str()),
+        nymID,
+        notaryID.asBase58(api_.Crypto()),
+        (isInternal ? identifier::Nym{} : depositorNymID),
         *workflow,
         PaymentWorkflowState::Accepted,
         proto::PAYMENTEVENTTYPE_ACCEPT,
@@ -1346,15 +1349,14 @@ auto Workflow::ClearTransfer(
         update_activity(
             nymID,
             depositorNymID,
-            Identifier::Factory(*transfer),
-            Identifier::Factory(workflow->id()),
+            api_.Factory().Internal().Identifier(*transfer),
+            api_.Factory().IdentifierFromBase58(workflow->id()),
             otx::client::StorageBox::OUTGOINGTRANSFER,
             time);
         update_rpc(
-
-            nymID.str(),
-            depositorNymID->str(),
-            accountID.str(),
+            nymID,
+            depositorNymID,
+            accountID.asBase58(api_.Crypto()),
             proto::ACCOUNTEVENT_OUTGOINGTRANSFER,
             workflow->id(),
             transfer->GetAmount(),
@@ -1373,7 +1375,7 @@ auto Workflow::CompleteTransfer(
     const OTTransaction& receipt,
     const Message& reply) const -> bool
 {
-    auto depositorNymID = Identifier::Factory();
+    auto depositorNymID = identifier::Nym{};
     const auto transfer =
         extract_transfer_from_receipt(receipt, depositorNymID);
 
@@ -1408,7 +1410,7 @@ auto Workflow::CompleteTransfer(
         isInternal ? PaymentWorkflowType::InternalTransfer
                    : PaymentWorkflowType::OutgoingTransfer};
     Lock global(lock_);
-    const auto workflow = get_workflow(global, type, nymID.str(), *transfer);
+    const auto workflow = get_workflow(global, type, nymID, *transfer);
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1424,9 +1426,9 @@ auto Workflow::CompleteTransfer(
 
     return add_transfer_event(
         lock,
-        nymID.str(),
-        notaryID.str(),
-        (isInternal ? UnallocatedCString{""} : depositorNymID->str()),
+        nymID,
+        notaryID.asBase58(api_.Crypto()),
+        (isInternal ? identifier::Nym{} : depositorNymID),
         *workflow,
         PaymentWorkflowState::Completed,
         proto::PAYMENTEVENTTYPE_COMPLETE,
@@ -1448,26 +1450,26 @@ auto Workflow::convey_incoming_transfer(
     const identifier::Nym& nymID,
     const identifier::Notary& notaryID,
     const OTTransaction& pending,
-    const UnallocatedCString& senderNymID,
-    const UnallocatedCString& recipientNymID,
-    const Item& transfer) const -> OTIdentifier
+    const identifier::Nym& senderNymID,
+    const identifier::Nym& recipientNymID,
+    const Item& transfer) const -> identifier::Generic
 {
     Lock global(lock_);
     const auto existing = get_workflow(
-        global, {PaymentWorkflowType::IncomingTransfer}, nymID.str(), transfer);
+        global, {PaymentWorkflowType::IncomingTransfer}, nymID, transfer);
 
     if (existing) {
         LogError()(OT_PRETTY_CLASS())(
             "Workflow for this transfer already exist.")
             .Flush();
 
-        return Identifier::Factory(existing->id());
+        return api_.Factory().IdentifierFromBase58(existing->id());
     }
 
     const auto& accountID = pending.GetPurportedAccountID();
     const auto [workflowID, workflow] = create_transfer(
         global,
-        nymID.str(),
+        nymID,
         transfer,
         PaymentWorkflowType::IncomingTransfer,
         PaymentWorkflowState::Conveyed,
@@ -1476,27 +1478,26 @@ auto Workflow::convey_incoming_transfer(
         versions_.at(PaymentWorkflowType::IncomingTransfer).event_,
         senderNymID,
         accountID,
-        notaryID.str(),
+        notaryID.asBase58(api_.Crypto()),
         "");
 
-    if (false == workflowID->empty()) {
+    if (false == workflowID.empty()) {
         const auto time = extract_conveyed_time(workflow);
         auto note = String::Factory();
         transfer.GetNote(note);
         update_activity(
             nymID,
             transfer.GetNymID(),
-            Identifier::Factory(transfer),
+            api_.Factory().Internal().Identifier(transfer),
             workflowID,
             otx::client::StorageBox::INCOMINGTRANSFER,
             time);
         update_rpc(
-
             recipientNymID,
             senderNymID,
-            accountID.str(),
+            accountID.asBase58(api_.Crypto()),
             proto::ACCOUNTEVENT_INCOMINGTRANSFER,
-            workflowID->str(),
+            workflowID.asBase58(api_.Crypto()),
             transfer.GetAmount(),
             0,
             time,
@@ -1515,32 +1516,30 @@ auto Workflow::convey_internal_transfer(
     const identifier::Nym& nymID,
     const identifier::Notary& notaryID,
     const OTTransaction& pending,
-    const UnallocatedCString& senderNymID,
-    const Item& transfer) const -> OTIdentifier
+    const identifier::Nym& senderNymID,
+    const Item& transfer) const -> identifier::Generic
 {
     Lock global(lock_);
     const auto workflow = get_workflow(
-        global, {PaymentWorkflowType::InternalTransfer}, nymID.str(), transfer);
+        global, {PaymentWorkflowType::InternalTransfer}, nymID, transfer);
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
             "Workflow for this transfer does not exist.")
             .Flush();
 
-        return Identifier::Factory();
+        return {};
     }
 
     auto lock = get_workflow_lock(global, workflow->id());
 
-    if (false == can_convey_transfer(*workflow)) {
-        return Identifier::Factory();
-    }
+    if (false == can_convey_transfer(*workflow)) { return {}; }
 
     const auto output = add_transfer_event(
         lock,
-        nymID.str(),
-        notaryID.str(),
-        "",
+        nymID,
+        notaryID.asBase58(api_.Crypto()),
+        {},
         *workflow,
         PaymentWorkflowState::Conveyed,
         proto::PAYMENTEVENTTYPE_CONVEY,
@@ -1550,36 +1549,36 @@ auto Workflow::convey_internal_transfer(
         true);
 
     if (output) {
-        return Identifier::Factory(workflow->id());
+        return api_.Factory().IdentifierFromBase58(workflow->id());
     } else {
-        return Identifier::Factory();
+        return {};
     }
 }
 
 auto Workflow::ConveyTransfer(
     const identifier::Nym& nymID,
     const identifier::Notary& notaryID,
-    const OTTransaction& pending) const -> OTIdentifier
+    const OTTransaction& pending) const -> identifier::Generic
 {
     const auto transfer = extract_transfer_from_pending(pending);
 
     if (false == bool(transfer)) {
         LogError()(OT_PRETTY_CLASS())("Invalid transaction").Flush();
 
-        return Identifier::Factory();
+        return {};
     }
 
-    const auto senderNymID = transfer->GetNymID().str();
+    const auto& senderNymID = transfer->GetNymID();
     contact_.NymToContact(transfer->GetNymID());
-    const auto recipientNymID = pending.GetNymID().str();
+    const auto& recipientNymID = pending.GetNymID();
 
     if (pending.GetNymID() != nymID) {
         LogError()(OT_PRETTY_CLASS())("Invalid recipient").Flush();
 
-        return Identifier::Factory();
+        return {};
     }
 
-    const bool isInternal = (0 == senderNymID.compare(recipientNymID));
+    const bool isInternal = (senderNymID == recipientNymID);
 
     if (isInternal) {
         return convey_internal_transfer(
@@ -1593,39 +1592,38 @@ auto Workflow::ConveyTransfer(
 
 auto Workflow::create_cheque(
     const Lock& lock,
-    const UnallocatedCString& nymID,
+    const identifier::Nym& nymID,
     const opentxs::Cheque& cheque,
     const PaymentWorkflowType workflowType,
     const PaymentWorkflowState workflowState,
     const VersionNumber workflowVersion,
     const VersionNumber sourceVersion,
     const VersionNumber eventVersion,
-    const UnallocatedCString& party,
-    const Identifier& account,
+    const identifier::Nym& party,
+    const identifier::Generic& account,
     const Message* message) const
-    -> std::pair<OTIdentifier, proto::PaymentWorkflow>
+    -> std::pair<identifier::Generic, proto::PaymentWorkflow>
 {
     OT_ASSERT(verify_lock(lock));
 
-    std::pair<OTIdentifier, proto::PaymentWorkflow> output{
-        Identifier::Factory(), {}};
+    auto output = std::pair<identifier::Generic, proto::PaymentWorkflow>{};
     auto& [workflowID, workflow] = output;
-    const auto chequeID = Identifier::Factory(cheque);
+    const auto chequeID = api_.Factory().Internal().Identifier(cheque);
     const UnallocatedCString serialized = String::Factory(cheque)->Get();
-    workflowID = Identifier::Random();
+    workflowID = api_.Factory().IdentifierFromRandom();
     workflow.set_version(workflowVersion);
-    workflow.set_id(workflowID->str());
+    workflow.set_id(workflowID.asBase58(api_.Crypto()));
     workflow.set_type(translate(workflowType));
     workflow.set_state(translate(workflowState));
     auto& source = *(workflow.add_source());
     source.set_version(sourceVersion);
-    source.set_id(chequeID->str());
+    source.set_id(chequeID.asBase58(api_.Crypto()));
     source.set_revision(1);
     source.set_item(serialized);
 
     // add party if it was passed in and is not already present
     if ((false == party.empty()) && (0 == workflow.party_size())) {
-        workflow.add_party(party);
+        workflow.add_party(party.asBase58(api_.Crypto()));
     }
 
     auto& event = *workflow.add_event();
@@ -1651,19 +1649,22 @@ auto Workflow::create_cheque(
         }
     }
 
-    if (false == party.empty()) { event.set_nym(party); }
+    if (false == party.empty()) {
+        event.set_nym(party.asBase58(api_.Crypto()));
+    }
 
     event.set_success(true);
-    workflow.add_unit(cheque.GetInstrumentDefinitionID().str());
+    workflow.add_unit(
+        cheque.GetInstrumentDefinitionID().asBase58(api_.Crypto()));
 
     // add account if it was passed in and is not already present
     if ((false == account.empty()) && (0 == workflow.account_size())) {
-        workflow.add_account(account.str());
+        workflow.add_account(account.asBase58(api_.Crypto()));
     }
 
     if ((false == account.empty()) && (workflow.notary().empty())) {
         workflow.set_notary(
-            api_.Storage().AccountServer(Identifier::Factory(account))->str());
+            api_.Storage().AccountServer(account).asBase58(api_.Crypto()));
     }
 
     if (workflow.notary().empty() && (nullptr != message)) {
@@ -1675,28 +1676,27 @@ auto Workflow::create_cheque(
 
 auto Workflow::create_transfer(
     const Lock& global,
-    const UnallocatedCString& nymID,
+    const identifier::Nym& nymID,
     const Item& transfer,
     const PaymentWorkflowType workflowType,
     const PaymentWorkflowState workflowState,
     const VersionNumber workflowVersion,
     const VersionNumber sourceVersion,
     const VersionNumber eventVersion,
-    const UnallocatedCString& party,
-    const Identifier& account,
+    const identifier::Nym& party,
+    const identifier::Generic& account,
     const UnallocatedCString& notaryID,
     const UnallocatedCString& destinationAccountID) const
-    -> std::pair<OTIdentifier, proto::PaymentWorkflow>
+    -> std::pair<identifier::Generic, proto::PaymentWorkflow>
 {
     OT_ASSERT(verify_lock(global));
     OT_ASSERT(false == nymID.empty());
     OT_ASSERT(false == account.empty());
     OT_ASSERT(false == notaryID.empty());
 
-    std::pair<OTIdentifier, proto::PaymentWorkflow> output{
-        Identifier::Factory(), {}};
+    auto output = std::pair<identifier::Generic, proto::PaymentWorkflow>{};
     auto& [workflowID, workflow] = output;
-    const auto transferID = Identifier::Factory(transfer);
+    const auto transferID = api_.Factory().Internal().Identifier(transfer);
     LogVerbose()(OT_PRETTY_CLASS())("Transfer ID: ")(transferID).Flush();
     const UnallocatedCString serialized = String::Factory(transfer)->Get();
     const auto existing = get_workflow(global, {workflowType}, nymID, transfer);
@@ -1705,26 +1705,26 @@ auto Workflow::create_transfer(
         LogError()(OT_PRETTY_CLASS())(
             "Workflow for this transfer already exists.")
             .Flush();
-        workflowID = Identifier::Factory(existing->id());
+        workflowID = api_.Factory().IdentifierFromBase58(existing->id());
 
         return output;
     }
 
-    workflowID = Identifier::Random();
+    workflowID = api_.Factory().IdentifierFromRandom();
     workflow.set_version(workflowVersion);
-    workflow.set_id(workflowID->str());
+    workflow.set_id(workflowID.asBase58(api_.Crypto()));
     workflow.set_type(translate(workflowType));
     workflow.set_state(translate(workflowState));
     auto& source = *(workflow.add_source());
     source.set_version(sourceVersion);
-    source.set_id(transferID->str());
+    source.set_id(transferID.asBase58(api_.Crypto()));
     source.set_revision(1);
     source.set_item(serialized);
     workflow.set_notary(notaryID);
 
     // add party if it was passed in and is not already present
     if ((false == party.empty()) && (0 == workflow.party_size())) {
-        workflow.add_party(party);
+        workflow.add_party(party.asBase58(api_.Crypto()));
     }
 
     auto& event = *workflow.add_event();
@@ -1743,15 +1743,17 @@ auto Workflow::create_transfer(
 
     event.set_transport(notaryID);
 
-    if (false == party.empty()) { event.set_nym(party); }
+    if (false == party.empty()) {
+        event.set_nym(party.asBase58(api_.Crypto()));
+    }
 
     event.set_success(true);
     workflow.add_unit(
-        api_.Storage().AccountContract(Identifier::Factory(account))->str());
+        api_.Storage().AccountContract(account).asBase58(api_.Crypto()));
 
     // add account if it is not already present
     if (0 == workflow.account_size()) {
-        workflow.add_account(account.str());
+        workflow.add_account(account.asBase58(api_.Crypto()));
 
         if (false == destinationAccountID.empty()) {
             workflow.add_account(destinationAccountID);
@@ -1763,15 +1765,16 @@ auto Workflow::create_transfer(
 
 // Creates outgoing and internal transfer workflows.
 auto Workflow::CreateTransfer(const Item& transfer, const Message& request)
-    const -> OTIdentifier
+    const -> identifier::Generic
 {
     if (false == isTransfer(transfer)) {
         LogError()(OT_PRETTY_CLASS())("Invalid item type on object").Flush();
 
-        return Identifier::Factory();
+        return {};
     }
 
-    const String& senderNymID = request.m_strNymID;
+    const auto senderNymID =
+        api_.Factory().NymIDFromBase58(request.m_strNymID->Bytes());
     const auto& accountID = transfer.GetRealAccountID();
     const bool isInternal =
         isInternalTransfer(accountID, transfer.GetDestinationAcctID());
@@ -1780,7 +1783,7 @@ auto Workflow::CreateTransfer(const Item& transfer, const Message& request)
         global,
         {isInternal ? PaymentWorkflowType::InternalTransfer
                     : PaymentWorkflowType::OutgoingTransfer},
-        senderNymID.Get(),
+        senderNymID,
         transfer);
 
     if (existing) {
@@ -1788,12 +1791,12 @@ auto Workflow::CreateTransfer(const Item& transfer, const Message& request)
             "Workflow for this transfer already exist.")
             .Flush();
 
-        return Identifier::Factory(existing->id());
+        return api_.Factory().IdentifierFromBase58(existing->id());
     }
 
     const auto [workflowID, workflow] = create_transfer(
         global,
-        senderNymID.Get(),
+        senderNymID,
         transfer,
         (isInternal ? PaymentWorkflowType::InternalTransfer
                     : PaymentWorkflowType::OutgoingTransfer),
@@ -1807,22 +1810,22 @@ auto Workflow::CreateTransfer(const Item& transfer, const Message& request)
         (isInternal
              ? versions_.at(PaymentWorkflowType::InternalTransfer).event_
              : versions_.at(PaymentWorkflowType::OutgoingTransfer).event_),
-        "",
+        {},
         accountID,
         request.m_strNotaryID->Get(),
-        (isInternal ? transfer.GetDestinationAcctID().str() : ""));
+        (isInternal ? transfer.GetDestinationAcctID().asBase58(api_.Crypto())
+                    : ""));
 
-    if (false == workflowID->empty()) {
+    if (false == workflowID.empty()) {
         const auto time = extract_conveyed_time(workflow);
         auto note = String::Factory();
         transfer.GetNote(note);
         update_rpc(
-
-            senderNymID.Get(),
-            "",
-            accountID.str(),
+            senderNymID,
+            {},
+            accountID.asBase58(api_.Crypto()),
             proto::ACCOUNTEVENT_OUTGOINGTRANSFER,
-            workflowID->str(),
+            workflowID.asBase58(api_.Crypto()),
             transfer.GetAmount(),
             0,
             time,
@@ -1834,17 +1837,16 @@ auto Workflow::CreateTransfer(const Item& transfer, const Message& request)
 
 auto Workflow::DepositCheque(
     const identifier::Nym& receiver,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const opentxs::Cheque& cheque,
     const Message& request,
     const Message* reply) const -> bool
 {
     if (false == isCheque(cheque)) { return false; }
 
-    const auto nymID = receiver.str();
     Lock global(lock_);
     const auto workflow = get_workflow(
-        global, {PaymentWorkflowType::IncomingCheque}, nymID, cheque);
+        global, {PaymentWorkflowType::IncomingCheque}, receiver, cheque);
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1860,8 +1862,8 @@ auto Workflow::DepositCheque(
 
     const auto output = add_cheque_event(
         lock,
-        nymID,
-        cheque.GetSenderNymID().str(),
+        receiver,
+        cheque.GetSenderNymID(),
         *workflow,
         PaymentWorkflowState::Completed,
         proto::PAYMENTEVENTTYPE_ACCEPT,
@@ -1872,10 +1874,9 @@ auto Workflow::DepositCheque(
 
     if (output && cheque_deposit_success(reply)) {
         update_rpc(
-
-            receiver.str(),
-            cheque.GetSenderNymID().str(),
-            accountID.str(),
+            receiver,
+            cheque.GetSenderNymID(),
+            accountID.asBase58(api_.Crypto()),
             proto::ACCOUNTEVENT_INCOMINGCHEQUE,
             workflow->id(),
             cheque.GetAmount(),
@@ -1893,13 +1894,12 @@ auto Workflow::ExpireCheque(
 {
     if (false == isCheque(cheque)) { return false; }
 
-    const auto nymID = nym.str();
     Lock global(lock_);
     const auto workflow = get_workflow(
         global,
         {PaymentWorkflowType::OutgoingCheque,
          PaymentWorkflowType::IncomingCheque},
-        nymID,
+        nym,
         cheque);
 
     if (false == bool(workflow)) {
@@ -1916,14 +1916,14 @@ auto Workflow::ExpireCheque(
 
     workflow->set_state(translate(PaymentWorkflowState::Expired));
 
-    return save_workflow(nymID, cheque.GetSenderAcctID(), *workflow);
+    return save_workflow(nym, cheque.GetSenderAcctID(), *workflow);
 }
 
 auto Workflow::ExportCheque(const opentxs::Cheque& cheque) const -> bool
 {
     if (false == isCheque(cheque)) { return false; }
 
-    const auto nymID = cheque.GetSenderNymID().str();
+    const auto& nymID = cheque.GetSenderNymID();
     Lock global(lock_);
     const auto workflow = get_workflow(global, {}, nymID, cheque);
 
@@ -2003,7 +2003,7 @@ auto Workflow::extract_transfer_from_pending(const OTTransaction& receipt) const
 
 auto Workflow::extract_transfer_from_receipt(
     const OTTransaction& receipt,
-    Identifier& depositorNymID) const -> std::unique_ptr<Item>
+    identifier::Nym& depositorNymID) const -> std::unique_ptr<Item>
 {
     if (transactionType::transferReceipt != receipt.GetType()) {
         if (transactionType::pending == receipt.GetType()) {
@@ -2045,7 +2045,7 @@ auto Workflow::extract_transfer_from_receipt(
         return nullptr;
     }
 
-    depositorNymID.Assign(acceptPending->GetNymID());
+    depositorNymID = acceptPending->GetNymID();
     auto serializedPending = String::Factory();
     acceptPending->GetAttachment(serializedPending);
 
@@ -2121,7 +2121,7 @@ auto Workflow::FinishCheque(
 {
     if (false == isCheque(cheque)) { return false; }
 
-    const auto nymID = cheque.GetSenderNymID().str();
+    const auto& nymID = cheque.GetSenderNymID();
     Lock global(lock_);
     const auto workflow = get_workflow(
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, cheque);
@@ -2138,12 +2138,12 @@ auto Workflow::FinishCheque(
 
     if (false == can_finish_cheque(*workflow)) { return false; }
 
-    static const auto accountID = api_.Factory().Identifier();
+    static const auto accountID = identifier::Generic{};
 
     return add_cheque_event(
         lock,
         nymID,
-        "",
+        {},
         *workflow,
         PaymentWorkflowState::Completed,
         proto::PAYMENTEVENTTYPE_COMPLETE,
@@ -2157,19 +2157,20 @@ template <typename T>
 auto Workflow::get_workflow(
     const Lock& global,
     const UnallocatedSet<PaymentWorkflowType>& types,
-    const UnallocatedCString& nymID,
+    const identifier::Nym& nymID,
     const T& source) const -> std::shared_ptr<proto::PaymentWorkflow>
 {
     OT_ASSERT(verify_lock(global));
 
-    const auto itemID = Identifier::Factory(source)->str();
+    const auto itemID =
+        api_.Factory().Internal().Identifier(source).asBase58(api_.Crypto());
     LogVerbose()(OT_PRETTY_CLASS())("Item ID: ")(itemID).Flush();
 
     return get_workflow_by_source(types, nymID, itemID);
 }
 
 auto Workflow::get_workflow_by_id(
-    const UnallocatedCString& nymID,
+    const identifier::Nym& nymID,
     const UnallocatedCString& workflowID) const
     -> std::shared_ptr<proto::PaymentWorkflow>
 {
@@ -2190,7 +2191,7 @@ auto Workflow::get_workflow_by_id(
 
 auto Workflow::get_workflow_by_id(
     const UnallocatedSet<PaymentWorkflowType>& types,
-    const UnallocatedCString& nymID,
+    const identifier::Nym& nymID,
     const UnallocatedCString& workflowID) const
     -> std::shared_ptr<proto::PaymentWorkflow>
 {
@@ -2209,7 +2210,7 @@ auto Workflow::get_workflow_by_id(
 
 auto Workflow::get_workflow_by_source(
     const UnallocatedSet<PaymentWorkflowType>& types,
-    const UnallocatedCString& nymID,
+    const identifier::Nym& nymID,
     const UnallocatedCString& sourceID) const
     -> std::shared_ptr<proto::PaymentWorkflow>
 {
@@ -2234,34 +2235,34 @@ auto Workflow::get_workflow_lock(Lock& global, const UnallocatedCString& id)
 
 auto Workflow::ImportCheque(
     const identifier::Nym& nymID,
-    const opentxs::Cheque& cheque) const -> OTIdentifier
+    const opentxs::Cheque& cheque) const -> identifier::Generic
 {
-    if (false == isCheque(cheque)) { return Identifier::Factory(); }
+    if (false == isCheque(cheque)) { return {}; }
 
     if (false == validate_recipient(nymID, cheque)) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(
             nymID)(" can not deposit this cheque.")
             .Flush();
 
-        return Identifier::Factory();
+        return {};
     }
 
     Lock global(lock_);
     const auto existing = get_workflow(
-        global, {PaymentWorkflowType::IncomingCheque}, nymID.str(), cheque);
+        global, {PaymentWorkflowType::IncomingCheque}, nymID, cheque);
 
     if (existing) {
         LogError()(OT_PRETTY_CLASS())("Workflow for this cheque already exist.")
             .Flush();
 
-        return Identifier::Factory(existing->id());
+        return api_.Factory().IdentifierFromBase58(existing->id());
     }
 
-    const UnallocatedCString party = cheque.GetSenderNymID().str();
-    static const auto accountID = api_.Factory().Identifier();
+    const auto& party = cheque.GetSenderNymID();
+    static const auto accountID = identifier::Generic{};
     const auto [workflowID, workflow] = create_cheque(
         global,
-        nymID.str(),
+        nymID,
         cheque,
         PaymentWorkflowType::IncomingCheque,
         PaymentWorkflowState::Conveyed,
@@ -2271,22 +2272,21 @@ auto Workflow::ImportCheque(
         party,
         accountID);
 
-    if (false == workflowID->empty()) {
+    if (false == workflowID.empty()) {
         const auto time = extract_conveyed_time(workflow);
         update_activity(
             nymID,
             cheque.GetSenderNymID(),
-            Identifier::Factory(cheque),
+            api_.Factory().Internal().Identifier(cheque),
             workflowID,
             otx::client::StorageBox::INCOMINGCHEQUE,
             time);
         update_rpc(
-
-            nymID.str(),
-            cheque.GetSenderNymID().str(),
-            "",
+            nymID,
+            cheque.GetSenderNymID(),
+            {},
             proto::ACCOUNTEVENT_INCOMINGCHEQUE,
-            workflowID->str(),
+            workflowID.asBase58(api_.Crypto()),
             0,
             cheque.GetAmount(),
             time,
@@ -2298,19 +2298,25 @@ auto Workflow::ImportCheque(
 
 auto Workflow::InstantiateCheque(
     const identifier::Nym& nym,
-    const Identifier& id) const -> Cheque
+    const identifier::Generic& id) const -> Cheque
 {
     try {
-        proto::PaymentWorkflow workflow{};
+        const auto workflow = [&] {
+            auto out = proto::PaymentWorkflow{};
 
-        if (false == LoadWorkflow(nym, id, workflow)) {
-            throw std::runtime_error{
-                UnallocatedCString{"Workflow "} + id.str() + " not found"};
-        }
+            if (false == LoadWorkflow(nym, id, out)) {
+                throw std::runtime_error{
+                    UnallocatedCString{"Workflow "} +
+                    id.asBase58(api_.Crypto()) + " not found"};
+            }
+
+            return out;
+        }();
+
         if (false == ContainsCheque(workflow)) {
 
             throw std::runtime_error{
-                UnallocatedCString{"Workflow "} + id.str() +
+                UnallocatedCString{"Workflow "} + id.asBase58(api_.Crypto()) +
                 " does not contain a cheque"};
         }
 
@@ -2324,15 +2330,20 @@ auto Workflow::InstantiateCheque(
 
 auto Workflow::InstantiatePurse(
     const identifier::Nym& nym,
-    const Identifier& id) const -> Purse
+    const identifier::Generic& id) const -> Purse
 {
     try {
-        proto::PaymentWorkflow workflow{};
+        const auto workflow = [&] {
+            auto out = proto::PaymentWorkflow{};
 
-        if (false == LoadWorkflow(nym, id, workflow)) {
-            throw std::runtime_error{
-                UnallocatedCString{"Workflow "} + id.str() + " not found"};
-        }
+            if (false == LoadWorkflow(nym, id, out)) {
+                throw std::runtime_error{
+                    UnallocatedCString{"Workflow "} +
+                    id.asBase58(api_.Crypto()) + " not found"};
+            }
+
+            return out;
+        }();
 
         return session::Workflow::InstantiatePurse(api_, workflow);
     } catch (const std::exception& e) {
@@ -2372,16 +2383,16 @@ auto Workflow::isCheque(const opentxs::Cheque& cheque) -> bool
 }
 
 auto Workflow::isInternalTransfer(
-    const Identifier& sourceAccount,
-    const Identifier& destinationAccount) const -> bool
+    const identifier::Generic& sourceAccount,
+    const identifier::Generic& destinationAccount) const -> bool
 {
     const auto ownerNymID = api_.Storage().AccountOwner(sourceAccount);
 
-    OT_ASSERT(false == ownerNymID->empty());
+    OT_ASSERT(false == ownerNymID.empty());
 
     const auto recipientNymID = api_.Storage().AccountOwner(destinationAccount);
 
-    if (recipientNymID->empty()) { return false; }
+    if (recipientNymID.empty()) { return false; }
 
     return ownerNymID == recipientNymID;
 }
@@ -2394,17 +2405,18 @@ auto Workflow::isTransfer(const Item& item) -> bool
 auto Workflow::List(
     const identifier::Nym& nymID,
     const PaymentWorkflowType type,
-    const PaymentWorkflowState state) const -> UnallocatedSet<OTIdentifier>
+    const PaymentWorkflowState state) const
+    -> UnallocatedSet<identifier::Generic>
 {
     const auto input =
-        api_.Storage().PaymentWorkflowsByState(nymID.str(), type, state);
-    UnallocatedSet<OTIdentifier> output{};
+        api_.Storage().PaymentWorkflowsByState(nymID, type, state);
+    UnallocatedSet<identifier::Generic> output{};
     std::transform(
         input.begin(),
         input.end(),
         std::inserter(output, output.end()),
-        [](const UnallocatedCString& id) -> OTIdentifier {
-            return Identifier::Factory(id);
+        [this](const auto& id) {
+            return api_.Factory().IdentifierFromBase58(id);
         });
 
     return output;
@@ -2412,13 +2424,13 @@ auto Workflow::List(
 
 auto Workflow::LoadCheque(
     const identifier::Nym& nymID,
-    const Identifier& chequeID) const -> Workflow::Cheque
+    const identifier::Generic& chequeID) const -> Workflow::Cheque
 {
     auto workflow = get_workflow_by_source(
         {PaymentWorkflowType::OutgoingCheque,
          PaymentWorkflowType::IncomingCheque},
-        nymID.str(),
-        chequeID.str());
+        nymID,
+        chequeID.asBase58(api_.Crypto()));
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -2433,13 +2445,13 @@ auto Workflow::LoadCheque(
 
 auto Workflow::LoadChequeByWorkflow(
     const identifier::Nym& nymID,
-    const Identifier& workflowID) const -> Workflow::Cheque
+    const identifier::Generic& workflowID) const -> Workflow::Cheque
 {
     auto workflow = get_workflow_by_id(
         {PaymentWorkflowType::OutgoingCheque,
          PaymentWorkflowType::IncomingCheque},
-        nymID.str(),
-        workflowID.str());
+        nymID,
+        workflowID.asBase58(api_.Crypto()));
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -2454,14 +2466,14 @@ auto Workflow::LoadChequeByWorkflow(
 
 auto Workflow::LoadTransfer(
     const identifier::Nym& nymID,
-    const Identifier& transferID) const -> Workflow::Transfer
+    const identifier::Generic& transferID) const -> Workflow::Transfer
 {
     auto workflow = get_workflow_by_source(
         {PaymentWorkflowType::OutgoingTransfer,
          PaymentWorkflowType::IncomingTransfer,
          PaymentWorkflowType::InternalTransfer},
-        nymID.str(),
-        transferID.str());
+        nymID,
+        transferID.asBase58(api_.Crypto()));
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -2476,14 +2488,14 @@ auto Workflow::LoadTransfer(
 
 auto Workflow::LoadTransferByWorkflow(
     const identifier::Nym& nymID,
-    const Identifier& workflowID) const -> Workflow::Transfer
+    const identifier::Generic& workflowID) const -> Workflow::Transfer
 {
     auto workflow = get_workflow_by_id(
         {PaymentWorkflowType::OutgoingTransfer,
          PaymentWorkflowType::IncomingTransfer,
          PaymentWorkflowType::InternalTransfer},
-        nymID.str(),
-        workflowID.str());
+        nymID,
+        workflowID.asBase58(api_.Crypto()));
 
     if (false == bool(workflow)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -2498,10 +2510,11 @@ auto Workflow::LoadTransferByWorkflow(
 
 auto Workflow::LoadWorkflow(
     const identifier::Nym& nymID,
-    const Identifier& workflowID,
+    const identifier::Generic& workflowID,
     proto::PaymentWorkflow& out) const -> bool
 {
-    auto pWorkflow = get_workflow_by_id(nymID.str(), workflowID.str());
+    auto pWorkflow =
+        get_workflow_by_id(nymID, workflowID.asBase58(api_.Crypto()));
 
     if (pWorkflow) {
         out = *pWorkflow;
@@ -2516,45 +2529,46 @@ auto Workflow::LoadWorkflow(
 auto Workflow::ReceiveCash(
     const identifier::Nym& receiver,
     const otx::blind::Purse& purse,
-    const Message& message) const -> OTIdentifier
+    const Message& message) const -> identifier::Generic
 {
     Lock global(lock_);
-    const UnallocatedCString serialized = String::Factory(message)->Get();
-    const UnallocatedCString party = message.m_strNymID->Get();
-    auto workflowID = Identifier::Random();
+    const auto serialized = String::Factory(message);
+    const auto* party = message.m_strNymID->Get();
+    auto workflowID = api_.Factory().IdentifierFromRandom();
     proto::PaymentWorkflow workflow{};
     workflow.set_version(
         versions_.at(PaymentWorkflowType::IncomingCash).workflow_);
-    workflow.set_id(workflowID->str());
+    workflow.set_id(workflowID.asBase58(api_.Crypto()));
     workflow.set_type(translate(PaymentWorkflowType::IncomingCash));
     workflow.set_state(translate(PaymentWorkflowState::Conveyed));
     auto& source = *(workflow.add_source());
     source.set_version(versions_.at(PaymentWorkflowType::IncomingCash).source_);
-    source.set_id(workflowID->str());
+    source.set_id(workflowID.asBase58(api_.Crypto()));
     source.set_revision(1);
+    source.set_item([&] {
+        auto proto = proto::Purse{};
+        purse.Internal().Serialize(proto);
 
-    proto::Purse proto{};
-    purse.Internal().Serialize(proto);
-    source.set_item(proto::ToString(proto));
-
-    workflow.set_notary(purse.Notary().str());
+        return proto::ToString(proto);
+    }());
+    workflow.set_notary(purse.Notary().asBase58(api_.Crypto()));
     auto& event = *workflow.add_event();
     event.set_version(versions_.at(PaymentWorkflowType::IncomingCash).event_);
     event.set_time(message.m_lTime);
     event.set_type(proto::PAYMENTEVENTTYPE_CONVEY);
     event.set_method(proto::TRANSPORTMETHOD_OT);
     event.set_transport(message.m_strNotaryID->Get());
-    event.add_item(serialized);
+    event.add_item(serialized->Get());
     event.set_nym(party);
     event.set_success(true);
-    workflow.add_unit(purse.Unit().str());
+    workflow.add_unit(purse.Unit().asBase58(api_.Crypto()));
     workflow.add_party(party);
-    const auto saved = save_workflow(receiver.str(), workflow);
+    const auto saved = save_workflow(receiver, workflow);
 
     if (false == saved) {
         LogError()(OT_PRETTY_CLASS())("Failed to save workflow").Flush();
 
-        return Identifier::Factory();
+        return {};
     }
 
     return workflowID;
@@ -2563,34 +2577,34 @@ auto Workflow::ReceiveCash(
 auto Workflow::ReceiveCheque(
     const identifier::Nym& nymID,
     const opentxs::Cheque& cheque,
-    const Message& message) const -> OTIdentifier
+    const Message& message) const -> identifier::Generic
 {
-    if (false == isCheque(cheque)) { return Identifier::Factory(); }
+    if (false == isCheque(cheque)) { return {}; }
 
     if (false == validate_recipient(nymID, cheque)) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(
             nymID)(" can not deposit this cheque.")
             .Flush();
 
-        return Identifier::Factory();
+        return {};
     }
 
     Lock global(lock_);
     const auto existing = get_workflow(
-        global, {PaymentWorkflowType::IncomingCheque}, nymID.str(), cheque);
+        global, {PaymentWorkflowType::IncomingCheque}, nymID, cheque);
 
     if (existing) {
         LogError()(OT_PRETTY_CLASS())("Workflow for this cheque already exist.")
             .Flush();
 
-        return Identifier::Factory(existing->id());
+        return api_.Factory().IdentifierFromBase58(existing->id());
     }
 
-    const UnallocatedCString party = cheque.GetSenderNymID().str();
-    static const auto accountID = api_.Factory().Identifier();
+    const auto& party = cheque.GetSenderNymID();
+    static const auto accountID = identifier::Generic{};
     const auto [workflowID, workflow] = create_cheque(
         global,
-        nymID.str(),
+        nymID,
         cheque,
         PaymentWorkflowType::IncomingCheque,
         PaymentWorkflowState::Conveyed,
@@ -2601,22 +2615,21 @@ auto Workflow::ReceiveCheque(
         accountID,
         &message);
 
-    if (false == workflowID->empty()) {
+    if (false == workflowID.empty()) {
         const auto time = extract_conveyed_time(workflow);
         update_activity(
             nymID,
             cheque.GetSenderNymID(),
-            Identifier::Factory(cheque),
+            api_.Factory().Internal().Identifier(cheque),
             workflowID,
             otx::client::StorageBox::INCOMINGCHEQUE,
             time);
         update_rpc(
-
-            nymID.str(),
-            cheque.GetSenderNymID().str(),
-            "",
+            nymID,
+            cheque.GetSenderNymID(),
+            {},
             proto::ACCOUNTEVENT_INCOMINGCHEQUE,
-            workflowID->str(),
+            workflowID.asBase58(api_.Crypto()),
             0,
             cheque.GetAmount(),
             time,
@@ -2627,17 +2640,17 @@ auto Workflow::ReceiveCheque(
 }
 
 auto Workflow::save_workflow(
-    const UnallocatedCString& nymID,
+    const identifier::Nym& nymID,
     const proto::PaymentWorkflow& workflow) const -> bool
 {
-    static const auto id = api_.Factory().Identifier();
+    static const auto id = identifier::Generic{};
 
     return save_workflow(nymID, id, workflow);
 }
 
 auto Workflow::save_workflow(
-    const UnallocatedCString& nymID,
-    const Identifier& accountID,
+    const identifier::Nym& nymID,
+    const identifier::Generic& accountID,
     const proto::PaymentWorkflow& workflow) const -> bool
 {
     const bool valid = proto::Validate(workflow, VERBOSE);
@@ -2649,48 +2662,51 @@ auto Workflow::save_workflow(
     OT_ASSERT(saved);
 
     if (false == accountID.empty()) {
-        auto work = opentxs::network::zeromq::tagged_message(
-            WorkType::WorkflowAccountUpdate);
-        work.AddFrame(accountID);
+        account_publisher_->Send([&] {
+            auto work = opentxs::network::zeromq::tagged_message(
+                WorkType::WorkflowAccountUpdate);
+            work.AddFrame(accountID);
 
-        account_publisher_->Send(std::move(work));
+            return work;
+        }());
     }
 
     return valid && saved;
 }
 
 auto Workflow::save_workflow(
-    OTIdentifier&& output,
-    const UnallocatedCString& nymID,
-    const Identifier& accountID,
-    const proto::PaymentWorkflow& workflow) const -> OTIdentifier
+    identifier::Generic&& output,
+    const identifier::Nym& nymID,
+    const identifier::Generic& accountID,
+    const proto::PaymentWorkflow& workflow) const -> identifier::Generic
 {
     if (save_workflow(nymID, accountID, workflow)) { return std::move(output); }
 
-    return Identifier::Factory();
+    return {};
 }
 
 auto Workflow::save_workflow(
-    std::pair<OTIdentifier, proto::PaymentWorkflow>&& output,
-    const UnallocatedCString& nymID,
-    const Identifier& accountID,
+    std::pair<identifier::Generic, proto::PaymentWorkflow>&& output,
+    const identifier::Nym& nymID,
+    const identifier::Generic& accountID,
     const proto::PaymentWorkflow& workflow) const
-    -> std::pair<OTIdentifier, proto::PaymentWorkflow>
+    -> std::pair<identifier::Generic, proto::PaymentWorkflow>
 {
     if (save_workflow(nymID, accountID, workflow)) { return std::move(output); }
 
-    return {Identifier::Factory(), {}};
+    return {};
 }
 
 auto Workflow::SendCash(
     const identifier::Nym& sender,
     const identifier::Nym& recipient,
-    const Identifier& workflowID,
+    const identifier::Generic& workflowID,
     const Message& request,
     const Message* reply) const -> bool
 {
     Lock global(lock_);
-    const auto pWorkflow = get_workflow_by_id(sender.str(), workflowID.str());
+    const auto pWorkflow =
+        get_workflow_by_id(sender, workflowID.asBase58(api_.Crypto()));
 
     if (false == bool(pWorkflow)) {
         LogError()(OT_PRETTY_CLASS())("Workflow ")(
@@ -2701,7 +2717,7 @@ auto Workflow::SendCash(
     }
 
     auto& workflow = *pWorkflow;
-    auto lock = get_workflow_lock(global, workflowID.str());
+    auto lock = get_workflow_lock(global, workflowID.asBase58(api_.Crypto()));
 
     if (false == can_convey_cash(workflow)) { return false; }
 
@@ -2728,9 +2744,11 @@ auto Workflow::SendCash(
         event.set_success(false);
     }
 
-    if (0 == workflow.party_size()) { workflow.add_party(recipient.str()); }
+    if (0 == workflow.party_size()) {
+        workflow.add_party(recipient.asBase58(api_.Crypto()));
+    }
 
-    return save_workflow(sender.str(), workflow);
+    return save_workflow(sender, workflow);
 }
 
 auto Workflow::SendCheque(
@@ -2740,7 +2758,7 @@ auto Workflow::SendCheque(
 {
     if (false == isCheque(cheque)) { return false; }
 
-    const auto nymID = cheque.GetSenderNymID().str();
+    const auto& nymID = cheque.GetSenderNymID();
     Lock global(lock_);
     const auto workflow = get_workflow(
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, cheque);
@@ -2757,12 +2775,12 @@ auto Workflow::SendCheque(
 
     if (false == can_convey_cheque(*workflow)) { return false; }
 
-    static const auto accountID = api_.Factory().Identifier();
+    static const auto accountID = identifier::Generic{};
 
     return add_cheque_event(
         lock,
         nymID,
-        request.m_strNymID2->Get(),
+        api_.Factory().NymIDFromBase58(request.m_strNymID2->Bytes()),
         *workflow,
         PaymentWorkflowState::Conveyed,
         proto::PAYMENTEVENTTYPE_CONVEY,
@@ -2774,10 +2792,11 @@ auto Workflow::SendCheque(
 
 auto Workflow::WorkflowParty(
     const identifier::Nym& nymID,
-    const Identifier& workflowID,
+    const identifier::Generic& workflowID,
     const int index) const -> const UnallocatedCString
 {
-    auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
+    auto workflow =
+        get_workflow_by_id(nymID, workflowID.asBase58(api_.Crypto()));
 
     if (false == bool{workflow}) { return {}; }
 
@@ -2786,10 +2805,11 @@ auto Workflow::WorkflowParty(
 
 auto Workflow::WorkflowPartySize(
     const identifier::Nym& nymID,
-    const Identifier& workflowID,
+    const identifier::Generic& workflowID,
     int& partysize) const -> bool
 {
-    auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
+    auto workflow =
+        get_workflow_by_id(nymID, workflowID.asBase58(api_.Crypto()));
 
     if (false == bool{workflow}) { return false; }
 
@@ -2800,9 +2820,10 @@ auto Workflow::WorkflowPartySize(
 
 auto Workflow::WorkflowState(
     const identifier::Nym& nymID,
-    const Identifier& workflowID) const -> PaymentWorkflowState
+    const identifier::Generic& workflowID) const -> PaymentWorkflowState
 {
-    auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
+    auto workflow =
+        get_workflow_by_id(nymID, workflowID.asBase58(api_.Crypto()));
 
     if (false == bool{workflow}) { return PaymentWorkflowState::Error; }
 
@@ -2811,9 +2832,10 @@ auto Workflow::WorkflowState(
 
 auto Workflow::WorkflowType(
     const identifier::Nym& nymID,
-    const Identifier& workflowID) const -> PaymentWorkflowType
+    const identifier::Generic& workflowID) const -> PaymentWorkflowType
 {
-    auto workflow = get_workflow_by_id(nymID.str(), workflowID.str());
+    auto workflow =
+        get_workflow_by_id(nymID, workflowID.asBase58(api_.Crypto()));
 
     if (false == bool{workflow}) { return PaymentWorkflowType::Error; }
 
@@ -2823,14 +2845,14 @@ auto Workflow::WorkflowType(
 auto Workflow::update_activity(
     const identifier::Nym& localNymID,
     const identifier::Nym& remoteNymID,
-    const Identifier& sourceID,
-    const Identifier& workflowID,
+    const identifier::Generic& sourceID,
+    const identifier::Generic& workflowID,
     const otx::client::StorageBox type,
     Time time) const -> bool
 {
     const auto contactID = contact_.ContactID(remoteNymID);
 
-    if (contactID->empty()) {
+    if (contactID.empty()) {
         LogError()(OT_PRETTY_CLASS())("Contact for nym ")(
             remoteNymID)(" does not exist")
             .Flush();
@@ -2843,13 +2865,14 @@ auto Workflow::update_activity(
 
     if (added) {
         LogDetail()(OT_PRETTY_CLASS())(
-            "Success adding payment event to thread ")(contactID->str())
+            "Success adding payment event to thread ")(
+            contactID.asBase58(api_.Crypto()))
             .Flush();
 
         return true;
     } else {
         LogError()(OT_PRETTY_CLASS())("Failed to add payment event to thread ")(
-            contactID->str())
+            contactID.asBase58(api_.Crypto()))
             .Flush();
 
         return false;
@@ -2857,8 +2880,8 @@ auto Workflow::update_activity(
 }
 
 void Workflow::update_rpc(
-    const UnallocatedCString& localNymID,
-    const UnallocatedCString& remoteNymID,
+    const identifier::Nym& localNymID,
+    const identifier::Nym& remoteNymID,
     const UnallocatedCString& accountID,
     const proto::AccountEventType type,
     const UnallocatedCString& workflowID,
@@ -2870,7 +2893,7 @@ void Workflow::update_rpc(
     proto::RPCPush push{};
     push.set_version(RPC_PUSH_VERSION);
     push.set_type(proto::RPCPUSH_ACCOUNT);
-    push.set_id(localNymID);
+    push.set_id(localNymID.asBase58(api_.Crypto()));
     auto& event = *push.mutable_accountevent();
     event.set_version(RPC_ACCOUNT_EVENT_VERSION);
     event.set_id(accountID);
@@ -2878,8 +2901,7 @@ void Workflow::update_rpc(
 
     if (false == remoteNymID.empty()) {
         event.set_contact(
-            contact_.NymToContact(identifier::Nym::Factory(remoteNymID))
-                ->str());
+            contact_.NymToContact(remoteNymID).asBase58(api_.Crypto()));
     }
 
     event.set_workflow(workflowID);
@@ -2909,33 +2931,35 @@ auto Workflow::validate_recipient(
 
 auto Workflow::WorkflowsByAccount(
     const identifier::Nym& nymID,
-    const Identifier& accountID) const -> UnallocatedVector<OTIdentifier>
+    const identifier::Generic& accountID) const
+    -> UnallocatedVector<identifier::Generic>
 {
-    UnallocatedVector<OTIdentifier> output{};
-    const auto workflows =
-        api_.Storage().PaymentWorkflowsByAccount(nymID.str(), accountID.str());
+    UnallocatedVector<identifier::Generic> output{};
+    const auto workflows = api_.Storage().PaymentWorkflowsByAccount(
+        nymID, accountID.asBase58(api_.Crypto()));
     std::transform(
         workflows.begin(),
         workflows.end(),
         std::inserter(output, output.end()),
-        [](const UnallocatedCString& id) -> OTIdentifier {
-            return Identifier::Factory(id);
+        [this](const UnallocatedCString& id) {
+            return api_.Factory().IdentifierFromBase58(id);
         });
 
     return output;
 }
 
-auto Workflow::WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier
+auto Workflow::WriteCheque(const opentxs::Cheque& cheque) const
+    -> identifier::Generic
 {
     if (false == isCheque(cheque)) {
         LogError()(OT_PRETTY_STATIC(Workflow))(
             "Invalid item type on cheque object")
             .Flush();
 
-        return Identifier::Factory();
+        return {};
     }
 
-    const auto nymID = cheque.GetSenderNymID().str();
+    const auto& nymID = cheque.GetSenderNymID();
     Lock global(lock_);
     const auto existing = get_workflow(
         global, {PaymentWorkflowType::OutgoingCheque}, nymID, cheque);
@@ -2945,24 +2969,24 @@ auto Workflow::WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier
             "Workflow for this cheque already exist.")
             .Flush();
 
-        return Identifier::Factory(existing->id());
+        return api_.Factory().IdentifierFromBase58(existing->id());
     }
 
     if (cheque.HasRecipient()) {
         const auto& recipient = cheque.GetRecipientNymID();
         const auto contactID = contact_.ContactID(recipient);
 
-        if (contactID->empty()) {
+        if (contactID.empty()) {
             LogError()(OT_PRETTY_CLASS())(
                 "No contact exists for recipient nym ")(recipient)
                 .Flush();
 
-            return Identifier::Factory();
+            return {};
         }
     }
 
-    const UnallocatedCString party =
-        cheque.HasRecipient() ? cheque.GetRecipientNymID().str() : "";
+    const auto party =
+        cheque.HasRecipient() ? cheque.GetRecipientNymID() : identifier::Nym{};
     const auto [workflowID, workflow] = create_cheque(
         global,
         nymID,
@@ -2975,27 +2999,26 @@ auto Workflow::WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier
         party,
         cheque.GetSenderAcctID());
     global.unlock();
-    const bool haveWorkflow = (false == workflowID->empty());
+    const bool haveWorkflow = (false == workflowID.empty());
     const auto time{Clock::from_time_t(workflow.event(0).time())};
 
     if (haveWorkflow && cheque.HasRecipient()) {
         update_activity(
             cheque.GetSenderNymID(),
             cheque.GetRecipientNymID(),
-            Identifier::Factory(cheque),
+            api_.Factory().Internal().Identifier(cheque),
             workflowID,
             otx::client::StorageBox::OUTGOINGCHEQUE,
             time);
     }
 
-    if (false == workflowID->empty()) {
+    if (false == workflowID.empty()) {
         update_rpc(
-
             nymID,
-            cheque.GetRecipientNymID().str(),
-            cheque.SourceAccountID().str(),
+            cheque.GetRecipientNymID(),
+            cheque.SourceAccountID().asBase58(api_.Crypto()),
             proto::ACCOUNTEVENT_OUTGOINGCHEQUE,
-            workflowID->str(),
+            workflowID.asBase58(api_.Crypto()),
             0,
             -1 * cheque.GetAmount(),
             time,

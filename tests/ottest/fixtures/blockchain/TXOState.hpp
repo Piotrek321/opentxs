@@ -24,13 +24,13 @@ struct TXOState {
 
     struct NymData {
         Data nym_;
-        ot::UnallocatedMap<ot::OTIdentifier, Data> accounts_;
+        ot::UnallocatedMap<ot::identifier::Generic, Data> accounts_;
 
         NymData() noexcept;
     };
 
     Data wallet_;
-    ot::UnallocatedMap<ot::OTNymID, NymData> nyms_;
+    ot::UnallocatedMap<ot::identifier::Nym, NymData> nyms_;
 
     TXOState() noexcept;
 };

@@ -41,6 +41,7 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 }  // namespace identifier
@@ -59,7 +60,6 @@ class Server;
 }  // namespace otx
 
 class Account;
-class Identifier;
 class Item;
 class PasswordPrompt;
 // }  // namespace v1
@@ -185,16 +185,16 @@ public:
 
     // If you pass the identifier in, the hash is recorded there
     auto SaveInbox() -> bool;
-    auto SaveInbox(Identifier& pInboxHash) -> bool;
+    auto SaveInbox(identifier::Generic& pInboxHash) -> bool;
     auto SaveNymbox() -> bool;
-    auto SaveNymbox(Identifier& pNymboxHash) -> bool;
+    auto SaveNymbox(identifier::Generic& pNymboxHash) -> bool;
     auto SaveOutbox() -> bool;
-    auto SaveOutbox(Identifier& pOutboxHash) -> bool;
+    auto SaveOutbox(identifier::Generic& pOutboxHash) -> bool;
 
-    auto CalculateHash(Identifier& theOutput) const -> bool;
-    auto CalculateInboxHash(Identifier& theOutput) const -> bool;
-    auto CalculateOutboxHash(Identifier& theOutput) const -> bool;
-    auto CalculateNymboxHash(Identifier& theOutput) const -> bool;
+    auto CalculateHash(identifier::Generic& theOutput) const -> bool;
+    auto CalculateInboxHash(identifier::Generic& theOutput) const -> bool;
+    auto CalculateOutboxHash(identifier::Generic& theOutput) const -> bool;
+    auto CalculateNymboxHash(identifier::Generic& theOutput) const -> bool;
     auto SavePaymentInbox() -> bool;
     auto LoadPaymentInbox() -> bool;
 
@@ -241,13 +241,13 @@ public:
     void InitLedger();
 
     [[deprecated]] auto GenerateLedger(
-        const Identifier& theAcctID,
+        const identifier::Generic& theAcctID,
         const identifier::Notary& theNotaryID,
         ledgerType theType,
         bool bCreateFile = false) -> bool;
     auto CreateLedger(
         const identifier::Nym& theNymID,
-        const Identifier& theAcctID,
+        const identifier::Generic& theAcctID,
         const identifier::Notary& theNotaryID,
         ledgerType theType,
         bool bCreateFile = false) -> bool;
@@ -284,24 +284,24 @@ private:  // Private prevents erroneous use by other classes.
 
     auto generate_ledger(
         const identifier::Nym& theNymID,
-        const Identifier& theAcctID,
+        const identifier::Generic& theAcctID,
         const identifier::Notary& theNotaryID,
         ledgerType theType,
         bool bCreateFile) -> bool;
     auto save_box(
         const ledgerType type,
-        Identifier& hash,
-        bool (Ledger::*calc)(Identifier&) const) -> bool;
+        identifier::Generic& hash,
+        bool (Ledger::*calc)(identifier::Generic&) const) -> bool;
 
     Ledger(const api::Session& api);
     Ledger(
         const api::Session& api,
-        const Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID);
     Ledger(
         const api::Session& api,
         const identifier::Nym& theNymID,
-        const Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID);
 };
 }  // namespace opentxs

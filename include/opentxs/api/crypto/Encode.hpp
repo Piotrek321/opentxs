@@ -8,8 +8,10 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <string_view>
 
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -48,9 +50,9 @@ public:
     virtual auto DataEncode(const Data& input) const -> UnallocatedCString = 0;
     virtual auto DataDecode(const UnallocatedCString& input) const
         -> UnallocatedCString = 0;
-    virtual auto IdentifierEncode(const Data& input) const
+    virtual auto IdentifierEncode(const ReadView input) const
         -> UnallocatedCString = 0;
-    virtual auto IdentifierDecode(const UnallocatedCString& input) const
+    virtual auto IdentifierDecode(const ReadView input) const
         -> UnallocatedCString = 0;
     OPENTXS_NO_EXPORT virtual auto InternalEncode() const noexcept
         -> const internal::Encode& = 0;
@@ -59,7 +61,7 @@ public:
     virtual auto Nonce(const std::uint32_t size, Data& rawOutput) const
         -> OTString = 0;
     virtual auto RandomFilename() const -> UnallocatedCString = 0;
-    virtual auto SanatizeBase58(const UnallocatedCString& input) const
+    virtual auto SanatizeBase58(std::string_view input) const
         -> UnallocatedCString = 0;
     virtual auto SanatizeBase64(const UnallocatedCString& input) const
         -> UnallocatedCString = 0;

@@ -8,7 +8,6 @@
 #include "opentxs/core/ByteArray.hpp"  // IWYU pragma: associated
 
 #include <boost/endian/buffers.hpp>
-#include <memory>
 #include <stdexcept>
 #include <utility>
 
@@ -228,11 +227,6 @@ auto ByteArray::cend() const -> const_iterator { return imp_->cend(); }
 
 auto ByteArray::clear() noexcept -> void { imp_->clear(); }
 
-auto ByteArray::clone() const -> ByteArray*
-{
-    return std::make_unique<ByteArray>(*this).release();
-}
-
 auto ByteArray::Concatenate(const ReadView in) noexcept -> bool
 {
     return imp_->Concatenate(in);
@@ -295,12 +289,6 @@ auto ByteArray::get_allocator() const noexcept -> allocator_type
 {
     return imp_->get_allocator();
 }
-
-auto ByteArray::GetPointer() const -> const void* { return imp_->GetPointer(); }
-
-auto ByteArray::GetSize() const -> std::size_t { return imp_->GetSize(); }
-
-auto ByteArray::IsEmpty() const -> bool { return imp_->IsEmpty(); }
 
 auto ByteArray::IsNull() const -> bool { return imp_->IsNull(); }
 
@@ -383,13 +371,6 @@ auto ByteArray::SetSize(const std::size_t size) -> bool
 }
 
 auto ByteArray::size() const -> std::size_t { return imp_->size(); }
-
-auto ByteArray::str() const -> UnallocatedCString { return imp_->str(); }
-
-auto ByteArray::str(alloc::Default alloc) const -> CString
-{
-    return imp_->str(alloc);
-}
 
 auto ByteArray::swap(ByteArray& rhs) noexcept -> void
 {

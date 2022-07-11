@@ -24,6 +24,7 @@
 #include "internal/otx/common/NymFile.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
@@ -63,8 +64,8 @@ Base::Base(
     , issued_transaction_numbers_()
     , request_number_(0)
     , acknowledged_request_numbers_()
-    , local_nymbox_hash_(api_.Factory().Identifier())
-    , remote_nymbox_hash_(api_.Factory().Identifier())
+    , local_nymbox_hash_()
+    , remote_nymbox_hash_()
     , target_version_(targetVersion)
 {
 }
@@ -84,7 +85,6 @@ Base::Base(
           {},
           {},
           calculate_id(api, local, remote),
-
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
@@ -96,9 +96,9 @@ Base::Base(
     , request_number_(serialized.requestnumber())
     , acknowledged_request_numbers_()
     , local_nymbox_hash_(
-          api_.Factory().Identifier(serialized.localnymboxhash()))
+          api_.Factory().IdentifierFromBase58(serialized.localnymboxhash()))
     , remote_nymbox_hash_(
-          api_.Factory().Identifier(serialized.remotenymboxhash()))
+          api_.Factory().IdentifierFromBase58(serialized.remotenymboxhash()))
     , target_version_(targetVersion)
 {
     for (const auto& it : serialized.acknowledgedrequestnumber()) {
@@ -153,7 +153,7 @@ auto Base::AvailableNumbers() const -> std::size_t
 auto Base::calculate_id(
     const api::Session& api,
     const Nym_p& client,
-    const Nym_p& server) noexcept(false) -> OTIdentifier
+    const Nym_p& server) noexcept(false) -> identifier::Generic
 {
     if (!client) { throw std::runtime_error("Invalid client nym"); }
 
@@ -163,7 +163,7 @@ auto Base::calculate_id(
     preimage.Assign(client->ID());
     preimage += server->ID();
 
-    return api.Factory().Identifier(preimage.Bytes());
+    return api.Factory().IdentifierFromPreimage(preimage.Bytes());
 }
 
 auto Base::consume_available(const Lock& lock, const TransactionNumber& number)
@@ -249,25 +249,25 @@ auto Base::finish_acknowledgements(
     for (const auto& it : toErase) { acknowledged_request_numbers_.erase(it); }
 }
 
-auto Base::GetID(const Lock& lock) const -> OTIdentifier
+auto Base::GetID(const Lock& lock) const -> identifier::Generic
 {
     OT_ASSERT(verify_write_lock(lock));
 
     try {
         return calculate_id(api_, nym_, remote_nym_);
     } catch (...) {
-        return api_.Factory().Identifier();
+        return identifier::Generic{};
     }
 }
 
 auto Base::HaveLocalNymboxHash() const -> bool
 {
-    return false == local_nymbox_hash_->empty();
+    return false == local_nymbox_hash_.empty();
 }
 
 auto Base::HaveRemoteNymboxHash() const -> bool
 {
-    return false == remote_nymbox_hash_->empty();
+    return false == remote_nymbox_hash_.empty();
 }
 
 auto Base::IDVersion(const Lock& lock) const -> proto::Context
@@ -279,20 +279,32 @@ auto Base::IDVersion(const Lock& lock) const -> proto::Context
 
     switch (Type()) {
         case otx::ConsensusType::Server: {
-            if (nym_) { output.set_localnym(nym_->ID().str()); }
+            if (nym_) {
+                output.set_localnym(nym_->ID().asBase58(api_.Crypto()));
+            }
 
-            if (remote_nym_) { output.set_remotenym(remote_nym_->ID().str()); }
+            if (remote_nym_) {
+                output.set_remotenym(remote_nym_->ID().asBase58(api_.Crypto()));
+            }
 
-            output.set_localnymboxhash(local_nymbox_hash_->str());
-            output.set_remotenymboxhash(remote_nymbox_hash_->str());
+            output.set_localnymboxhash(
+                local_nymbox_hash_.asBase58(api_.Crypto()));
+            output.set_remotenymboxhash(
+                remote_nymbox_hash_.asBase58(api_.Crypto()));
         } break;
         case otx::ConsensusType::Client: {
-            if (nym_) { output.set_remotenym(nym_->ID().str()); }
+            if (nym_) {
+                output.set_remotenym(nym_->ID().asBase58(api_.Crypto()));
+            }
 
-            if (remote_nym_) { output.set_localnym(remote_nym_->ID().str()); }
+            if (remote_nym_) {
+                output.set_localnym(remote_nym_->ID().asBase58(api_.Crypto()));
+            }
 
-            output.set_remotenymboxhash(local_nymbox_hash_->str());
-            output.set_localnymboxhash(remote_nymbox_hash_->str());
+            output.set_remotenymboxhash(
+                local_nymbox_hash_.asBase58(api_.Crypto()));
+            output.set_localnymboxhash(
+                remote_nymbox_hash_.asBase58(api_.Crypto()));
         } break;
         default: {
             OT_FAIL;
@@ -432,7 +444,7 @@ auto Base::LegacyDataFolder() const -> UnallocatedCString
     return api_.DataFolder();
 }
 
-auto Base::LocalNymboxHash() const -> OTIdentifier
+auto Base::LocalNymboxHash() const -> identifier::Generic
 {
     auto lock = Lock{lock_};
 
@@ -513,7 +525,7 @@ auto Base::RemoteNym() const -> const identity::Nym&
     return *remote_nym_;
 }
 
-auto Base::RemoteNymboxHash() const -> OTIdentifier
+auto Base::RemoteNymboxHash() const -> identifier::Generic
 {
     auto lock = Lock{lock_};
 
@@ -574,12 +586,14 @@ auto Base::serialize(const Lock& lock, const otx::ConsensusType type) const
     output.set_version(version_);
     output.set_type(translate(type));
 
-    if (nym_) { output.set_localnym(nym_->ID().str()); }
+    if (nym_) { output.set_localnym(nym_->ID().asBase58(api_.Crypto())); }
 
-    if (remote_nym_) { output.set_remotenym(remote_nym_->ID().str()); }
+    if (remote_nym_) {
+        output.set_remotenym(remote_nym_->ID().asBase58(api_.Crypto()));
+    }
 
-    output.set_localnymboxhash(local_nymbox_hash_->str());
-    output.set_remotenymboxhash(remote_nymbox_hash_->str());
+    output.set_localnymboxhash(local_nymbox_hash_.asBase58(api_.Crypto()));
+    output.set_remotenymboxhash(remote_nymbox_hash_.asBase58(api_.Crypto()));
     output.set_requestnumber(request_number_.load());
 
     for (const auto& it : acknowledged_request_numbers_) {
@@ -615,37 +629,39 @@ auto Base::Serialize(proto::Context& out) const -> bool
     return true;
 }
 
-auto Base::set_local_nymbox_hash(const Lock& lock, const Identifier& hash)
-    -> void
+auto Base::set_local_nymbox_hash(
+    const Lock& lock,
+    const identifier::Generic& hash) -> void
 {
     OT_ASSERT(verify_write_lock(lock));
 
     clear_signatures(lock);
     local_nymbox_hash_ = hash;
     LogVerbose()(OT_PRETTY_CLASS())("(")(type())(") ")(
-        "Set local nymbox hash to: ")(local_nymbox_hash_->asHex())
+        "Set local nymbox hash to: ")(local_nymbox_hash_.asHex())
         .Flush();
 }
 
-auto Base::set_remote_nymbox_hash(const Lock& lock, const Identifier& hash)
-    -> void
+auto Base::set_remote_nymbox_hash(
+    const Lock& lock,
+    const identifier::Generic& hash) -> void
 {
     OT_ASSERT(verify_write_lock(lock));
 
     clear_signatures(lock);
     remote_nymbox_hash_ = hash;
     LogVerbose()(OT_PRETTY_CLASS())("(")(type())(") ")(
-        "Set remote nymbox hash to: ")(remote_nymbox_hash_->asHex())
+        "Set remote nymbox hash to: ")(remote_nymbox_hash_.asHex())
         .Flush();
 }
 
-auto Base::SetLocalNymboxHash(const Identifier& hash) -> void
+auto Base::SetLocalNymboxHash(const identifier::Generic& hash) -> void
 {
     auto lock = Lock{lock_};
     set_local_nymbox_hash(lock, hash);
 }
 
-auto Base::SetRemoteNymboxHash(const Identifier& hash) -> void
+auto Base::SetRemoteNymboxHash(const identifier::Generic& hash) -> void
 {
     auto lock = Lock{lock_};
     set_remote_nymbox_hash(lock, hash);

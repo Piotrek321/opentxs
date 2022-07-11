@@ -13,8 +13,6 @@
 #include <tuple>
 
 #include "Proto.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
@@ -33,6 +31,12 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace identifier
+{
+class Generic;
+class Nym;
+}  // namespace identifier
 
 namespace identity
 {
@@ -103,8 +107,10 @@ private:
     using WeightMap =
         UnallocatedMap<crypto::key::asymmetric::Algorithm, Weight>;
     using Solution = UnallocatedMap<
-        OTNymID,
-        UnallocatedMap<OTIdentifier, crypto::key::asymmetric::Algorithm>>;
+        identifier::Nym,
+        UnallocatedMap<
+            identifier::Generic,
+            crypto::key::asymmetric::Algorithm>>;
     using Solutions = UnallocatedMap<Weight, SupportedKeys>;
     using Requirements = UnallocatedVector<identity::Nym::NymKeys>;
 

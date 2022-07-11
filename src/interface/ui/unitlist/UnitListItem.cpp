@@ -34,6 +34,7 @@ UnitListItem::UnitListItem(
     const UnitListSortKey& sortKey,
     [[maybe_unused]] CustomData& custom) noexcept
     : UnitListItemRow(parent, api, rowID, true)
+    , api_(api)
     , name_(sortKey)
 {
 }

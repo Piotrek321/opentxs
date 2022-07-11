@@ -27,9 +27,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -316,10 +313,12 @@ auto Message::HarvestTransactionNumbers(
     -> bool  // false until positively asserted.
 {
 
-    const auto MSG_NYM_ID = identifier::Nym::Factory(m_strNymID);
-    const auto NOTARY_ID = identifier::Notary::Factory(m_strNotaryID);
-    const auto ACCOUNT_ID = Identifier::Factory(
-        m_strAcctID->Exists() ? m_strAcctID : m_strNymID);  // This may be
+    const auto MSG_NYM_ID = api_.Factory().NymIDFromBase58(m_strNymID->Bytes());
+    const auto NOTARY_ID =
+        api_.Factory().NotaryIDFromBase58(m_strNotaryID->Bytes());
+    const auto ACCOUNT_ID = api_.Factory().IdentifierFromBase58(
+        (m_strAcctID->Exists() ? m_strAcctID : m_strNymID)->Bytes());  // This
+                                                                       // may be
     // unnecessary, but just
     // in case.
 

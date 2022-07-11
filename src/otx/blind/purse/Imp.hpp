@@ -178,8 +178,8 @@ private:
     const api::Session& api_;
     const VersionNumber version_;
     const blind::CashType type_;
-    const OTNotaryID notary_;
-    const OTUnitID unit_;
+    const identifier::Notary notary_;
+    const identifier::UnitDefinition unit_;
     blind::PurseType state_;
     Amount total_value_;
     Time latest_valid_from_;

@@ -49,7 +49,7 @@ OTStash::OTStash(const String& strInstrumentDefinitionID, std::int64_t lAmount)
 }
 
 OTStash::OTStash(
-    const Identifier& theInstrumentDefinitionID,
+    const identifier::Generic& theInstrumentDefinitionID,
     std::int64_t lAmount)
     : m_str_stash_name()
     , m_mapStashItems()

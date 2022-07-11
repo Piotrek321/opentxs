@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "internal/otx/Types.hpp"
+#include "ottest/fixtures/common/Base.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -39,6 +40,7 @@ class Definition;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 }  // namespace identifier
@@ -52,7 +54,6 @@ class Message;
 }  // namespace network
 
 class Amount;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -72,7 +73,7 @@ namespace ottest
 {
 auto check_account_activity_rpc(
     const User& user,
-    const ot::Identifier& account,
+    const ot::identifier::Generic& account,
     const AccountActivityData& expected) noexcept -> bool;
 auto check_account_list_rpc(
     const User& user,
@@ -101,7 +102,7 @@ private:
     std::unique_ptr<Imp> imp_;
 };
 
-class RPC_fixture : virtual public ::testing::Test
+class RPC_fixture : virtual public Base
 {
 protected:
     using AccountMap = ot::UnallocatedMap<
@@ -121,7 +122,6 @@ protected:
     static AccountMap registered_accounts_;
     static UserIndex users_;
 
-    const ot::api::Context& ot_;
     RPCPushCounter& push_;
 
     auto CreateNym(

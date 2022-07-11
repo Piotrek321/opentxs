@@ -27,6 +27,7 @@
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
@@ -40,7 +41,7 @@ auto Factory::BailmentNotice(
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
     const identifier::Notary& serverID,
-    const opentxs::Identifier& requestID,
+    const identifier::Generic& requestID,
     const UnallocatedCString& txid,
     const Amount& amount,
     const opentxs::PasswordPrompt& reason) noexcept
@@ -113,7 +114,7 @@ BailmentNotice::BailmentNotice(
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
     const identifier::Notary& serverID,
-    const Identifier& requestID,
+    const identifier::Generic& requestID,
     const UnallocatedCString& txid,
     const Amount& amount)
     : Request(
@@ -138,9 +139,12 @@ BailmentNotice::BailmentNotice(
     const Nym_p& nym,
     const SerializedType& serialized)
     : Request(api, nym, serialized)
-    , unit_(api_.Factory().UnitID(serialized.pendingbailment().unitid()))
-    , server_(api_.Factory().ServerID(serialized.pendingbailment().serverid()))
-    , requestID_(Identifier::Factory(serialized.pendingbailment().requestid()))
+    , unit_(api_.Factory().UnitIDFromBase58(
+          serialized.pendingbailment().unitid()))
+    , server_(api_.Factory().NotaryIDFromBase58(
+          serialized.pendingbailment().serverid()))
+    , requestID_(api.Factory().IdentifierFromBase58(
+          serialized.pendingbailment().requestid()))
     , txid_(serialized.pendingbailment().txid())
     , amount_(factory::Amount(serialized.pendingbailment().amount()))
 {

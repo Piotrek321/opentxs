@@ -48,9 +48,12 @@ public:
     operator SerializedType() const noexcept final;
 
     auto Begin() const noexcept -> Time final { return start_; }
-    auto ClaimID() const noexcept -> const Identifier& final { return claim_; }
+    auto ClaimID() const noexcept -> const identifier::Generic& final
+    {
+        return claim_;
+    }
     auto End() const noexcept -> Time final { return end_; }
-    auto ID() const noexcept -> const Identifier& final { return id_; }
+    auto ID() const noexcept -> const identifier::Generic& final { return id_; }
     auto Signature() const noexcept -> const proto::Signature& final
     {
         return sig_;
@@ -71,28 +74,28 @@ private:
     friend opentxs::Factory;
 
     const VersionNumber version_;
-    const OTIdentifier claim_;
+    const identifier::Generic claim_;
     const Type value_;
     const Validity valid_;
     const Time start_;
     const Time end_;
-    const OTIdentifier id_;
+    const identifier::Generic id_;
     const proto::Signature sig_;
 
     static auto calculate_id(
         const api::Session& api,
         const VersionNumber version,
-        const Identifier& claim,
+        const identifier::Generic& claim,
         const Type value,
         const Time start,
         const Time end,
         const Validity valid,
-        const identifier::Nym& nym) noexcept(false) -> OTIdentifier;
+        const identifier::Nym& nym) noexcept(false) -> identifier::Generic;
     static auto get_sig(
         const identity::Nym& signer,
         const VersionNumber version,
-        const Identifier& id,
-        const Identifier& claim,
+        const identifier::Generic& id,
+        const identifier::Generic& claim,
         const Type value,
         const Time start,
         const Time end,
@@ -100,15 +103,15 @@ private:
         const PasswordPrompt& reason) noexcept(false) -> proto::Signature;
     static auto id_form(
         const VersionNumber version,
-        const Identifier& claim,
+        const identifier::Generic& claim,
         const Type value,
         const Time start,
         const Time end,
         const Validity valid) noexcept -> SerializedType;
     static auto sig_form(
         const VersionNumber version,
-        const Identifier& id,
-        const Identifier& claim,
+        const identifier::Generic& id,
+        const identifier::Generic& claim,
         const Type value,
         const Time start,
         const Time end,
@@ -116,7 +119,7 @@ private:
 
     Item(
         const internal::Nym& parent,
-        const Identifier& claim,
+        const identifier::Generic& claim,
         const identity::Nym& signer,
         const PasswordPrompt& reason,
         const Type value = Type::Confirm,

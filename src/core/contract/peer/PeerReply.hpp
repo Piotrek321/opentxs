@@ -9,6 +9,10 @@
 
 #include "core/contract/Signable.hpp"
 #include "internal/util/Mutex.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/NoticeAcknowledgement.hpp"
@@ -70,7 +74,7 @@ public:
     static auto LoadRequest(
         const api::Session& api,
         const Nym_p& nym,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         proto::PeerRequest& request) -> bool;
 
     auto asAcknowledgement() const noexcept
@@ -82,7 +86,7 @@ public:
     auto Alias() const noexcept -> UnallocatedCString final { return Name(); }
     auto Name() const noexcept -> UnallocatedCString final
     {
-        return id_->str();
+        return id_.asBase58(api_.Crypto());
     }
     auto Serialize() const noexcept -> ByteArray final;
     auto Serialize(SerializedType&) const -> bool override;
@@ -114,7 +118,7 @@ protected:
         const identifier::Nym& initiator,
         const identifier::Notary& server,
         const PeerRequestType& type,
-        const Identifier& request,
+        const identifier::Generic& request,
         const UnallocatedCString& conditions = {});
     Reply(
         const api::Session& api,
@@ -123,19 +127,19 @@ protected:
         const UnallocatedCString& conditions = {});
 
 private:
-    const OTNymID initiator_;
-    const OTNymID recipient_;
-    const OTNotaryID server_;
-    const OTIdentifier cookie_;
+    const identifier::Nym initiator_;
+    const identifier::Nym recipient_;
+    const identifier::Notary server_;
+    const identifier::Generic cookie_;
     const PeerRequestType type_;
 
     static auto GetID(const api::Session& api, const SerializedType& contract)
-        -> OTIdentifier;
+        -> identifier::Generic;
     static auto FinalizeContract(Reply& contract, const PasswordPrompt& reason)
         -> bool;
 
     auto contract(const Lock& lock) const -> SerializedType;
-    auto GetID(const Lock& lock) const -> OTIdentifier final;
+    auto GetID(const Lock& lock) const -> identifier::Generic final;
     auto SigVersion(const Lock& lock) const -> SerializedType;
 
     auto update_signature(const Lock& lock, const PasswordPrompt& reason)

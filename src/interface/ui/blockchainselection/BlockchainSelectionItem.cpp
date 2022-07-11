@@ -38,6 +38,7 @@ BlockchainSelectionItem::BlockchainSelectionItem(
     const BlockchainSelectionSortKey& sortKey,
     CustomData& custom) noexcept
     : BlockchainSelectionItemRow(parent, api, rowID, true)
+    , api_(api)
     , testnet_(sortKey.second)
     , name_(sortKey.first)
     , enabled_(extract_custom<bool>(custom, 0))

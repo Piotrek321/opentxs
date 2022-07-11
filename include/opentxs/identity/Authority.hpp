@@ -49,7 +49,7 @@ public:
 
     virtual auto ContactCredentialVersion() const -> VersionNumber = 0;
     virtual auto EncryptionTargets() const noexcept -> AuthorityKeys = 0;
-    virtual auto GetMasterCredID() const -> OTIdentifier = 0;
+    virtual auto GetMasterCredID() const -> identifier::Generic = 0;
     virtual auto GetPublicAuthKey(
         crypto::key::asymmetric::Algorithm keytype,
         const String::List* plistRevokedIDs = nullptr) const

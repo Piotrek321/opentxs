@@ -20,12 +20,13 @@
 #include <type_traits>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "Proto.hpp"
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/identity/Nym.hpp"
@@ -36,6 +37,7 @@
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -113,7 +115,14 @@ Unit::Unit(
     const VersionNumber version,
     const display::Definition& displayDefinition,
     const Amount& redemptionIncrement)
-    : Signable(api, nym, version, terms, shortname, api.Factory().UnitID(), {})
+    : Signable(
+          api,
+          nym,
+          version,
+          terms,
+          shortname,
+          identifier::UnitDefinition{},
+          {})
     , unit_of_account_(unitOfAccount)
     , display_definition_(displayDefinition)
     , redemption_increment_(redemptionIncrement)
@@ -132,7 +141,7 @@ Unit::Unit(
           serialized.version(),
           serialized.terms(),
           serialized.name(),
-          api.Factory().UnitID(serialized.id()),
+          api.Factory().UnitIDFromBase58(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
@@ -167,7 +176,7 @@ auto Unit::AddAccountRecord(
         return false;
     }
 
-    const auto theAcctID = Identifier::Factory(theAccount);
+    const auto theAcctID = api_.Factory().Internal().Identifier(theAccount);
     const auto strAcctID = String::Factory(theAcctID);
 
     const auto strInstrumentDefinitionID = String::Factory(id(lock));
@@ -321,7 +330,7 @@ auto Unit::DisplayStatistics(String& strContents) const -> bool
     strContents.Concatenate(" Asset Type: "sv)
         .Concatenate(type)
         .Concatenate(" InstrumentDefinitionID: "sv)
-        .Concatenate(id_->str())
+        .Concatenate(id_.asBase58(api_.Crypto()))
         .Concatenate("\n\n"sv);
 
     return true;
@@ -329,7 +338,7 @@ auto Unit::DisplayStatistics(String& strContents) const -> bool
 
 auto Unit::EraseAccountRecord(
     const UnallocatedCString& dataFolder,
-    const Identifier& theAcctID) const -> bool
+    const identifier::Generic& theAcctID) const -> bool
 {
     Lock lock(lock_);
 
@@ -456,15 +465,15 @@ auto Unit::get_displayscales(const SerializedType& serialized) const
     return {};
 }
 
-auto Unit::GetID(const Lock& lock) const -> OTIdentifier
+auto Unit::GetID(const Lock& lock) const -> identifier::Generic
 {
     return GetID(api_, IDVersion(lock));
 }
 
 auto Unit::GetID(const api::Session& api, const SerializedType& contract)
-    -> OTIdentifier
+    -> identifier::Generic
 {
-    return api.Factory().InternalSession().UnitID(contract);
+    return api.Factory().InternalSession().UnitIDFromPreimage(contract);
 }
 
 auto Unit::get_unitofaccount(const SerializedType& serialized) const
@@ -569,8 +578,7 @@ auto Unit::SetAlias(const UnallocatedCString& alias) noexcept -> bool
 {
     InitAlias(alias);
     api_.Wallet().SetUnitDefinitionAlias(
-        identifier::UnitDefinition::Factory(id_->str()),
-        alias);  // TODO conversion
+        api_.Factory().Internal().UnitIDConvertSafe(id_), alias);
 
     return true;
 }
@@ -578,7 +586,7 @@ auto Unit::SetAlias(const UnallocatedCString& alias) noexcept -> bool
 auto Unit::SigVersion(const Lock& lock) const -> SerializedType
 {
     auto contract = IDVersion(lock);
-    contract.set_id(id(lock)->str().c_str());
+    contract.set_id(id(lock).asBase58(api_.Crypto()).c_str());
 
     return contract;
 }
@@ -694,7 +702,8 @@ auto Unit::VisitAccountRecords(
                     .Flush();
             } else {
                 const auto& wallet = api_.Wallet();
-                const auto accountID = Identifier::Factory(str_acct_id);
+                const auto accountID =
+                    api_.Factory().IdentifierFromBase58(str_acct_id);
                 auto account = wallet.Internal().Account(accountID);
 
                 if (false == bool(account)) {

@@ -11,11 +11,10 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::contract::implementation
 {
@@ -25,7 +24,7 @@ Signable::Signable(
     const VersionNumber version,
     const UnallocatedCString& conditions,
     const UnallocatedCString& alias,
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     Signatures&& signatures) noexcept
     : api_(api)
     , lock_()
@@ -44,7 +43,7 @@ Signable::Signable(
     const VersionNumber version,
     const UnallocatedCString& conditions,
     const UnallocatedCString& alias,
-    const Identifier& id,
+    const identifier::Generic& id,
     Signatures&& signatures) noexcept
     : Signable(
           api,
@@ -52,7 +51,7 @@ Signable::Signable(
           version,
           conditions,
           alias,
-          OTIdentifier{id},
+          identifier::Generic{id},
           std::move(signatures))
 {
 }
@@ -63,14 +62,7 @@ Signable::Signable(
     const VersionNumber version,
     const UnallocatedCString& conditions,
     const UnallocatedCString& alias) noexcept
-    : Signable(
-          api,
-          nym,
-          version,
-          conditions,
-          alias,
-          api.Factory().Identifier(),
-          {})
+    : Signable(api, nym, version, conditions, alias, identifier::Generic{}, {})
 {
 }
 
@@ -107,19 +99,19 @@ auto Signable::clear_signatures(const Lock& lock) noexcept -> void
 
 auto Signable::first_time_init(const Lock& lock) -> void
 {
-    const_cast<OTIdentifier&>(id_) = GetID(lock);
+    const_cast<identifier::Generic&>(id_) = GetID(lock);
 
-    if (id_->empty()) { throw std::runtime_error("Failed to calculate id"); }
+    if (id_.empty()) { throw std::runtime_error("Failed to calculate id"); }
 }
 
-auto Signable::id(const Lock& lock) const -> OTIdentifier
+auto Signable::id(const Lock& lock) const -> identifier::Generic
 {
     OT_ASSERT(verify_write_lock(lock));
 
     return id_;
 }
 
-auto Signable::ID() const noexcept -> OTIdentifier
+auto Signable::ID() const noexcept -> identifier::Generic
 {
     auto lock = Lock{lock_};
 
@@ -130,10 +122,11 @@ auto Signable::init_serialized(const Lock& lock) noexcept(false) -> void
 {
     const auto id = GetID(lock);
 
-    if (id_.get() != id) {
-        const auto error = UnallocatedCString{"Calculated id ("} + id->str() +
-                           ") does not match serialized id (" + id_->str() +
-                           ")";
+    if (id_ != id) {
+        const auto error = UnallocatedCString{"Calculated id ("} +
+                           id.asBase58(api_.Crypto()) +
+                           ") does not match serialized id (" +
+                           id_.asBase58(api_.Crypto()) + ")";
 
         throw std::runtime_error(error);
     }

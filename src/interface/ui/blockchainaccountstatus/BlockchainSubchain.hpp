@@ -49,6 +49,8 @@ using BlockchainSubchainRow =
 class BlockchainSubchain final : public BlockchainSubchainRow
 {
 public:
+    const api::session::Client& api_;
+
     auto Name() const noexcept -> UnallocatedCString final;
     auto Progress() const noexcept -> UnallocatedCString final;
     auto Type() const noexcept -> blockchain::crypto::Subchain final

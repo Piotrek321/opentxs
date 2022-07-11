@@ -21,6 +21,7 @@ namespace opentxs  // NOLINT
 // {
 namespace identifier
 {
+class Generic;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -38,7 +39,6 @@ class MainFile;
 class Server;
 }  // namespace server
 
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -65,19 +65,19 @@ public:
     }
 
     auto addBasketAccountID(
-        const Identifier& basketId,
-        const Identifier& basketAccountId,
-        const Identifier& basketContractId) -> bool;
+        const identifier::Generic& basketId,
+        const identifier::Generic& basketAccountId,
+        const identifier::Generic& basketContractId) -> bool;
     auto lookupBasketAccountID(
-        const Identifier& basketId,
-        Identifier& basketAccountId) -> bool;
+        const identifier::Generic& basketId,
+        identifier::Generic& basketAccountId) -> bool;
 
     auto lookupBasketAccountIDByContractID(
-        const Identifier& basketContractId,
-        Identifier& basketAccountId) -> bool;
+        const identifier::Generic& basketContractId,
+        identifier::Generic& basketAccountId) -> bool;
     auto lookupBasketContractIDByAccountID(
-        const Identifier& basketAccountId,
-        Identifier& basketContractId) -> bool;
+        const identifier::Generic& basketAccountId,
+        identifier::Generic& basketContractId) -> bool;
 
     // Whenever the server issues a voucher (like a cashier's cheque), it puts
     // the funds in one of these voucher accounts (one for each instrument

@@ -27,6 +27,7 @@
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
@@ -138,8 +139,9 @@ Outbailment::Outbailment(
     const Nym_p& nym,
     const SerializedType& serialized)
     : Request(api, nym, serialized, serialized.outbailment().instructions())
-    , unit_(api_.Factory().UnitID(serialized.outbailment().unitid()))
-    , server_(api_.Factory().ServerID(serialized.outbailment().serverid()))
+    , unit_(api_.Factory().UnitIDFromBase58(serialized.outbailment().unitid()))
+    , server_(api_.Factory().NotaryIDFromBase58(
+          serialized.outbailment().serverid()))
     , amount_(factory::Amount(serialized.outbailment().amount()))
 {
     Lock lock(lock_);

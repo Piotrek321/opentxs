@@ -41,7 +41,6 @@
 #include "opentxs/interface/rpc/response/Base.hpp"
 #include "opentxs/interface/rpc/response/GetAccountBalance.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::rpc::implementation
 {
@@ -68,7 +67,7 @@ auto RPC::get_account_balance(const request::Base& base) const noexcept
                 continue;
             }
 
-            const auto accountID = api.Factory().Identifier(id);
+            const auto accountID = api.Factory().IdentifierFromBase58(id);
 
             if (is_blockchain_account(base, accountID)) {
                 get_account_balance_blockchain(
@@ -88,7 +87,7 @@ auto RPC::get_account_balance(const request::Base& base) const noexcept
 auto RPC::get_account_balance_blockchain(
     const request::Base& base,
     const std::size_t index,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     UnallocatedVector<AccountData>& balances,
     response::Base::Responses& codes) const noexcept -> void
 {
@@ -108,11 +107,11 @@ auto RPC::get_account_balance_blockchain(
         const auto& definition =
             display::GetDefinition(BlockchainToUnit(chain));
         balances.emplace_back(
-            accountID.str(),
+            accountID.asBase58(api.Crypto()),
             blockchain::AccountName(chain),
-            blockchain::UnitID(api, chain).str(),
-            owner->str(),
-            blockchain::IssuerID(api, chain).str(),
+            blockchain::UnitID(api, chain).asBase58(api.Crypto()),
+            owner.asBase58(api.Crypto()),
+            blockchain::IssuerID(api, chain).asBase58(api.Crypto()),
             definition.Format(confirmed),
             definition.Format(unconfirmed),
             confirmed,
@@ -127,7 +126,7 @@ auto RPC::get_account_balance_blockchain(
 auto RPC::get_account_balance_custodial(
     const api::Session& api,
     const std::size_t index,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     UnallocatedVector<AccountData>& balances,
     response::Base::Responses& codes) const noexcept -> void
 {
@@ -144,11 +143,11 @@ auto RPC::get_account_balance_custodial(
             return definition.Format(balance);
         }();
         balances.emplace_back(
-            accountID.str(),
+            accountID.asBase58(api.Crypto()),
             account.get().Alias(),
-            unit.str(),
-            api.Storage().AccountOwner(accountID)->str(),
-            api.Storage().AccountIssuer(accountID)->str(),
+            unit.asBase58(api.Crypto()),
+            api.Storage().AccountOwner(accountID).asBase58(api.Crypto()),
+            api.Storage().AccountIssuer(accountID).asBase58(api.Crypto()),
             formatted,
             formatted,
             balance,

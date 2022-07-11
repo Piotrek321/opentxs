@@ -36,10 +36,10 @@ Cheque::Cheque(const api::Session& api)
     : ot_super(api)
     , m_lAmount(0)
     , m_strMemo(String::Factory())
-    , m_RECIPIENT_NYM_ID(api_.Factory().NymID())
+    , m_RECIPIENT_NYM_ID()
     , m_bHasRecipient(false)
-    , m_REMITTER_NYM_ID(api_.Factory().NymID())
-    , m_REMITTER_ACCT_ID(api_.Factory().Identifier())
+    , m_REMITTER_NYM_ID()
+    , m_REMITTER_ACCT_ID()
     , m_bHasRemitter(false)
 {
     InitCheque();
@@ -52,10 +52,10 @@ Cheque::Cheque(
     : ot_super(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
     , m_lAmount(0)
     , m_strMemo(String::Factory())
-    , m_RECIPIENT_NYM_ID(api_.Factory().NymID())
+    , m_RECIPIENT_NYM_ID()
     , m_bHasRecipient(false)
-    , m_REMITTER_NYM_ID(api_.Factory().NymID())
-    , m_REMITTER_ACCT_ID(api_.Factory().Identifier())
+    , m_REMITTER_NYM_ID()
+    , m_REMITTER_ACCT_ID()
     , m_bHasRemitter(false)
 {
     InitCheque();
@@ -169,10 +169,13 @@ auto Cheque::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                  String::Factory(xml->getAttributeValue("remitterAcctID"));
 
         const auto INSTRUMENT_DEFINITION_ID =
-            api_.Factory().UnitID(strInstrumentDefinitionID);
-        const auto NOTARY_ID = api_.Factory().ServerID(strNotaryID);
-        const auto SENDER_ACCT_ID = api_.Factory().Identifier(strSenderAcctID);
-        const auto SENDER_NYM_ID = api_.Factory().NymID(strSenderNymID);
+            api_.Factory().UnitIDFromBase58(strInstrumentDefinitionID->Bytes());
+        const auto NOTARY_ID =
+            api_.Factory().NotaryIDFromBase58(strNotaryID->Bytes());
+        const auto SENDER_ACCT_ID =
+            api_.Factory().IdentifierFromBase58(strSenderAcctID->Bytes());
+        const auto SENDER_NYM_ID =
+            api_.Factory().NymIDFromBase58(strSenderNymID->Bytes());
 
         SetInstrumentDefinitionID(INSTRUMENT_DEFINITION_ID);
         SetNotaryID(NOTARY_ID);
@@ -181,18 +184,21 @@ auto Cheque::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         // Recipient ID
         if (m_bHasRecipient) {
-            m_RECIPIENT_NYM_ID->SetString(strRecipientNymID);
+            m_RECIPIENT_NYM_ID =
+                api_.Factory().NymIDFromBase58(strRecipientNymID->Bytes());
         } else {
-            m_RECIPIENT_NYM_ID->clear();
+            m_RECIPIENT_NYM_ID.clear();
         }
 
         // Remitter ID (for vouchers)
         if (m_bHasRemitter) {
-            m_REMITTER_NYM_ID->SetString(strRemitterNymID);
-            m_REMITTER_ACCT_ID->SetString(strRemitterAcctID);
+            m_REMITTER_NYM_ID =
+                api_.Factory().NymIDFromBase58(strRemitterNymID->Bytes());
+            m_REMITTER_ACCT_ID =
+                api_.Factory().IdentifierFromBase58(strRemitterAcctID->Bytes());
         } else {
-            m_REMITTER_NYM_ID->clear();
-            m_REMITTER_ACCT_ID->clear();
+            m_REMITTER_NYM_ID.clear();
+            m_REMITTER_ACCT_ID.clear();
         }
         {
             const auto unittype = api_.Wallet().CurrencyTypeBasedOnUnitType(
@@ -262,8 +268,8 @@ auto Cheque::IssueCheque(
     const Time& VALID_FROM,
     const Time& VALID_TO,  // The expiration date (valid from/to dates) of
                            // the cheque
-    const Identifier& SENDER_ACCT_ID,  // The asset account the cheque is drawn
-                                       // on.
+    const identifier::Generic& SENDER_ACCT_ID,  // The asset account the cheque
+                                                // is drawn on.
     const identifier::Nym& SENDER_NYM_ID,  // This ID must match the user ID on
                                            // the asset account,
     // AND must verify the cheque signature with that user's key.
@@ -285,7 +291,7 @@ auto Cheque::IssueCheque(
 
     if (pRECIPIENT_NYM_ID.empty()) {
         m_bHasRecipient = false;
-        m_RECIPIENT_NYM_ID->clear();
+        m_RECIPIENT_NYM_ID.clear();
     } else {
         m_bHasRecipient = true;
         m_RECIPIENT_NYM_ID = pRECIPIENT_NYM_ID;
@@ -314,7 +320,7 @@ void Cheque::Release_Cheque()
 
     //    m_SENDER_ACCT_ID.Release();     // in parent class now.
     //    m_SENDER_NYM_ID.Release();     // in parent class now.
-    m_RECIPIENT_NYM_ID->clear();
+    m_RECIPIENT_NYM_ID.clear();
 
     ot_super::Release();  // since I've overridden the base class, I call it
                           // now...

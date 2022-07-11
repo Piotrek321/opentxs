@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <memory>
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
@@ -21,7 +23,9 @@ class Factory;
 namespace opentxs::crypto::internal
 {
 struct Bip32 {
-    virtual auto Init(const api::Factory& factory) noexcept -> void = 0;
+    virtual auto Init(
+        const std::shared_ptr<const api::Factory>& factory) noexcept
+        -> void = 0;
 
     virtual ~Bip32() = default;
 };

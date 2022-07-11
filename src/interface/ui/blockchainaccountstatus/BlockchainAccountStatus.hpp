@@ -16,6 +16,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -74,6 +75,7 @@ class BlockchainAccountStatus final : public BlockchainAccountStatusType,
                                       public Worker<api::session::Client>
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto Chain() const noexcept -> blockchain::Type final { return chain_; }
     auto Owner() const noexcept -> const identifier::Nym& final
     {
@@ -132,13 +134,13 @@ private:
     }
     auto populate(
         const blockchain::crypto::Account& account,
-        const Identifier& subaccountID,
+        const identifier::Generic& subaccountID,
         const blockchain::crypto::SubaccountType type,
         const blockchain::crypto::Subchain subchain,
         ChildMap& out) const noexcept -> void;
     auto populate(
         const blockchain::crypto::Subaccount& node,
-        const Identifier& sourceID,
+        const identifier::Generic& sourceID,
         const UnallocatedCString& sourceDescription,
         const UnallocatedCString& subaccountName,
         const blockchain::crypto::Subchain subchain,

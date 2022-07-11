@@ -17,18 +17,19 @@
 
 #include "Proto.hpp"
 #include "interface/ui/base/List.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs::factory
@@ -54,13 +55,14 @@ ActivitySummary::ActivitySummary(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : ActivitySummaryList(api, nymID, cb, true)
+    , api_(api)
     , listeners_(
-          {{api_.Activity().ThreadPublisher(nymID),
+          {{api.Activity().ThreadPublisher(nymID),
             new MessageProcessor<ActivitySummary>(
                 &ActivitySummary::process_thread)}})
     , running_(running)
 {
-    setup_listeners(listeners_);
+    setup_listeners(api_, listeners_);
     startup_ = std::make_unique<std::thread>(&ActivitySummary::startup, this);
 
     OT_ASSERT(startup_);
@@ -81,8 +83,8 @@ auto ActivitySummary::display_name(
     auto names = UnallocatedSet<UnallocatedCString>{};
 
     for (const auto& id : thread.participant()) {
-        names.emplace(
-            api_.Contacts().ContactName(api_.Factory().Identifier(id)));
+        names.emplace(api_.Contacts().ContactName(
+            api_.Factory().IdentifierFromBase58(id)));
     }
 
     if (names.empty()) { return thread.id(); }
@@ -99,7 +101,7 @@ auto ActivitySummary::display_name(
 }
 
 auto ActivitySummary::newest_item(
-    const Identifier& id,
+    const identifier::Generic& id,
     const proto::StorageThread& thread,
     CustomData& custom) noexcept -> const proto::StorageThreadItem&
 {
@@ -131,14 +133,14 @@ auto ActivitySummary::newest_item(
         static_cast<otx::client::StorageBox>(output->box())));
     custom.emplace_back(new UnallocatedCString(output->account()));
     custom.emplace_back(time);
-    custom.emplace_back(new OTIdentifier{id});
+    custom.emplace_back(new identifier::Generic{id});
 
     return *output;
 }
 
 void ActivitySummary::process_thread(const UnallocatedCString& id) noexcept
 {
-    const auto threadID = Identifier::Factory(id);
+    const auto threadID = api_.Factory().IdentifierFromBase58(id);
     auto thread = proto::StorageThread{};
     auto loaded = api_.Activity().Thread(primary_id_, threadID, thread);
 
@@ -159,12 +161,12 @@ void ActivitySummary::process_thread(const Message& message) noexcept
 
     OT_ASSERT(1 < body.size());
 
-    const auto threadID = api_.Factory().Identifier(body.at(1));
+    const auto threadID = api_.Factory().IdentifierFromHash(body.at(1).Bytes());
 
-    OT_ASSERT(false == threadID->empty());
+    OT_ASSERT(false == threadID.empty());
 
     delete_item(threadID);
-    process_thread(threadID->str());
+    process_thread(threadID.asBase58(api_.Crypto()));
 }
 
 void ActivitySummary::startup() noexcept

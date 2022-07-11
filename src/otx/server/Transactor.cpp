@@ -14,6 +14,7 @@
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -103,11 +104,11 @@ auto Transactor::issueNextTransactionNumberToNym(
 
 // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID.
 auto Transactor::addBasketAccountID(
-    const Identifier& BASKET_ID,
-    const Identifier& BASKET_ACCOUNT_ID,
-    const Identifier& BASKET_CONTRACT_ID) -> bool
+    const identifier::Generic& BASKET_ID,
+    const identifier::Generic& BASKET_ACCOUNT_ID,
+    const identifier::Generic& BASKET_CONTRACT_ID) -> bool
 {
-    auto theBasketAcctID = Identifier::Factory();
+    auto theBasketAcctID = identifier::Generic{};
 
     if (lookupBasketAccountID(BASKET_ID, theBasketAcctID)) {
         {
@@ -135,17 +136,16 @@ auto Transactor::addBasketAccountID(
 /// using the contract ID to look it up. (The basket contract ID is unique to
 /// this server.)
 auto Transactor::lookupBasketAccountIDByContractID(
-    const Identifier& BASKET_CONTRACT_ID,
-    Identifier& BASKET_ACCOUNT_ID) -> bool
+    const identifier::Generic& BASKET_CONTRACT_ID,
+    identifier::Generic& BASKET_ACCOUNT_ID) -> bool
 {
     // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
     // through that map...
     for (auto& it : contractIdToBasketAccountId_) {
-        auto strBasketContractID = String::Factory(it.first.c_str());
-        auto strBasketAcctID = String::Factory(it.second.c_str());
-
-        auto id_BASKET_CONTRACT = Identifier::Factory(strBasketContractID),
-             id_BASKET_ACCT = Identifier::Factory(strBasketAcctID);
+        auto id_BASKET_CONTRACT =
+            server_.API().Factory().IdentifierFromBase58(it.first);
+        auto id_BASKET_ACCT =
+            server_.API().Factory().IdentifierFromBase58(it.second);
 
         if (BASKET_CONTRACT_ID == id_BASKET_CONTRACT)  // if the basket contract
                                                        // ID passed in matches
@@ -163,17 +163,16 @@ auto Transactor::lookupBasketAccountIDByContractID(
 /// using the contract ID to look it up. (The basket contract ID is unique to
 /// this server.)
 auto Transactor::lookupBasketContractIDByAccountID(
-    const Identifier& BASKET_ACCOUNT_ID,
-    Identifier& BASKET_CONTRACT_ID) -> bool
+    const identifier::Generic& BASKET_ACCOUNT_ID,
+    identifier::Generic& BASKET_CONTRACT_ID) -> bool
 {
     // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
     // through that map...
     for (auto& it : contractIdToBasketAccountId_) {
-        auto strBasketContractID = String::Factory(it.first.c_str());
-        auto strBasketAcctID = String::Factory(it.second.c_str());
-
-        auto id_BASKET_CONTRACT = Identifier::Factory(strBasketContractID),
-             id_BASKET_ACCT = Identifier::Factory(strBasketAcctID);
+        auto id_BASKET_CONTRACT =
+            server_.API().Factory().IdentifierFromBase58(it.first);
+        auto id_BASKET_ACCT =
+            server_.API().Factory().IdentifierFromBase58(it.second);
 
         if (BASKET_ACCOUNT_ID == id_BASKET_ACCT)  // if the basket contract ID
                                                   // passed in matches this
@@ -191,17 +190,15 @@ auto Transactor::lookupBasketContractIDByAccountID(
 /// using the basket ID to look it up (the Basket ID is the same for all
 /// servers)
 auto Transactor::lookupBasketAccountID(
-    const Identifier& BASKET_ID,
-    Identifier& BASKET_ACCOUNT_ID) -> bool
+    const identifier::Generic& BASKET_ID,
+    identifier::Generic& BASKET_ACCOUNT_ID) -> bool
 {
     // Server stores a map of BASKET_ID to BASKET_ACCOUNT_ID. Let's iterate
     // through that map...
     for (auto& it : idToBasketMap_) {
-        auto strBasketID = String::Factory(it.first.c_str());
-        auto strBasketAcctID = String::Factory(it.second.c_str());
-
-        auto id_BASKET = Identifier::Factory(strBasketID),
-             id_BASKET_ACCT = Identifier::Factory(strBasketAcctID);
+        auto id_BASKET = server_.API().Factory().IdentifierFromBase58(it.first);
+        auto id_BASKET_ACCT =
+            server_.API().Factory().IdentifierFromBase58(it.second);
 
         if (BASKET_ID == id_BASKET)  // if the basket ID passed in matches this
                                      // one...

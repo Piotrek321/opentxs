@@ -92,8 +92,8 @@ private:  // Private prevents erroneous use by other classes.
     using ot_super = OTCronItem;
 
 private:
-    OTIdentifier m_RECIPIENT_ACCT_ID;
-    OTNymID m_RECIPIENT_NYM_ID;
+    identifier::Generic m_RECIPIENT_ACCT_ID;
+    identifier::Nym m_RECIPIENT_NYM_ID;
 
 protected:
     OTString m_strConsideration;  // Presumably an agreement is in return for
@@ -170,13 +170,11 @@ public:
      OTAgreement(const identifier::Notary& NOTARY_ID,
                  const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
        OR:
-     OTAgreement(const identifier::Notary& NOTARY_ID, const Identifier&
+     OTAgreement(const identifier::Notary& NOTARY_ID, const identifier::Generic&
     INSTRUMENT_DEFINITION_ID,
-                 const Identifier& SENDER_ACCT_ID, const Identifier&
-    SENDER_NYM_ID,
-                 const Identifier& RECIPIENT_ACCT_ID, const Identifier&
-    RECIPIENT_NYM_ID);
-       OR:
+                 const identifier::Generic& SENDER_ACCT_ID, const
+    identifier::Generic& SENDER_NYM_ID, const identifier::Generic&
+    RECIPIENT_ACCT_ID, const identifier::Generic& RECIPIENT_NYM_ID); OR:
      OTPaymentPlan * pPlan = new OTPaymentPlan(pAccount->GetRealNotaryID(),
                                     pAccount->GetInstrumentDefinitionID(),
                                     pAccount->GetRealAccountID(),
@@ -239,7 +237,7 @@ public:
      3) bool bConfirmation =  pPlan->Confirm(identity::Nym& PAYER_NYM,
                                              Nym *
     pMERCHANT_NYM=nullptr,
-                                             OTIdentifier *
+                                             identifier::Generic *
     p_id_MERCHANT_NYM=nullptr);
 
      (Transaction number and closing number are retrieved from Nym at this
@@ -281,7 +279,7 @@ public:
 
     virtual auto CompareAgreement(const OTAgreement& rhs) const -> bool;
 
-    inline auto GetRecipientAcctID() const -> const Identifier&
+    inline auto GetRecipientAcctID() const -> const identifier::Generic&
     {
         return m_RECIPIENT_ACCT_ID;
     }
@@ -289,7 +287,7 @@ public:
     {
         return m_RECIPIENT_NYM_ID;
     }
-    inline void SetRecipientAcctID(const Identifier& ACCT_ID)
+    inline void SetRecipientAcctID(const identifier::Generic& ACCT_ID)
     {
         m_RECIPIENT_ACCT_ID = ACCT_ID;
     }
@@ -355,11 +353,11 @@ public:
      m_lTransactionNum
      = lTransactionNum; }
 
-     inline const Identifier&    GetSenderAcctID()        { return
+     inline const identifier::Generic&    GetSenderAcctID()        { return
      m_SENDER_ACCT_ID; }
-     inline const Identifier&    GetSenderNymID()        { return
+     inline const identifier::Nym&    GetSenderNymID()        { return
      m_SENDER_NYM_ID; }
-     inline void            SetSenderAcctID(const Identifier& ACCT_ID)
+     inline void            SetSenderAcctID(const identifier::Generic& ACCT_ID)
      { m_SENDER_ACCT_ID = ACCT_ID; }
      inline void            SetSenderNymID(const identifier::Nym& NYM_ID)
      { m_SENDER_NYM_ID = NYM_ID; }
@@ -371,15 +369,14 @@ public:
     // From OTInstrument (parent class of OTTrackable, parent class of
     // OTCronItem, parent class of this)
     /*
-     OTInstrument(const identifier::Notary& NOTARY_ID, const Identifier&
-     INSTRUMENT_DEFINITION_ID)
-     : Contract()
+     OTInstrument(const identifier::Notary& NOTARY_ID, const
+     identifier::Generic& INSTRUMENT_DEFINITION_ID) : Contract()
 
-     inline const Identifier& GetInstrumentDefinitionID() const { return
-     m_InstrumentDefinitionID; }
-     inline const Identifier& GetNotaryID() const { return m_NotaryID; }
+     inline const identifier::Generic& GetInstrumentDefinitionID() const {
+     return m_InstrumentDefinitionID; } inline const identifier::Generic&
+     GetNotaryID() const { return m_NotaryID; }
 
-     inline void SetInstrumentDefinitionID(const Identifier&
+     inline void SetInstrumentDefinitionID(const identifier::Generic&
      INSTRUMENT_DEFINITION_ID)  {
      m_InstrumentDefinitionID    =
      INSTRUMENT_DEFINITION_ID; }
@@ -458,7 +455,7 @@ public:
         -> bool override;
     auto GetOpeningNumber(const identifier::Nym& theNymID) const
         -> std::int64_t override;
-    auto GetClosingNumber(const Identifier& theAcctID) const
+    auto GetClosingNumber(const identifier::Generic& theAcctID) const
         -> std::int64_t override;
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
@@ -481,9 +478,9 @@ protected:
         const api::Session& api,
         const identifier::Notary& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-        const Identifier& SENDER_ACCT_ID,
+        const identifier::Generic& SENDER_ACCT_ID,
         const identifier::Nym& SENDER_NYM_ID,
-        const Identifier& RECIPIENT_ACCT_ID,
+        const identifier::Generic& RECIPIENT_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID);
 };
 }  // namespace opentxs

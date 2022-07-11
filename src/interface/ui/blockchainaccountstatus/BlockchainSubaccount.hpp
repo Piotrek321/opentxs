@@ -12,7 +12,9 @@
 #include "interface/ui/base/RowType.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -33,12 +35,15 @@ class Client;
 }  // namespace session
 }  // namespace api
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace ui
 {
 class BlockchainSubaccount;
 }  // namespace ui
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -65,12 +70,15 @@ class BlockchainSubaccount final : public Combined<
                                        BlockchainSubaccountSourceSortKey>
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto Name() const noexcept -> UnallocatedCString final { return key_; }
     auto NymID() const noexcept -> const identifier::Nym& final
     {
         return primary_id_;
     }
-    auto SubaccountID() const noexcept -> const Identifier& final
+    auto SubaccountID() const noexcept -> const identifier::Generic& final
     {
         return row_id_;
     }

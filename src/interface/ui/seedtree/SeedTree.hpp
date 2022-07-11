@@ -17,6 +17,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -24,7 +25,6 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/interface/ui/SeedTree.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
@@ -51,6 +51,7 @@ class Client;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -73,7 +74,6 @@ class Message;
 }  // namespace network
 
 class Amount;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -93,10 +93,11 @@ using SeedTreeList = List<
 class SeedTree final : public SeedTreeList, public Worker<api::session::Client>
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto ClearCallbacks() const noexcept -> void final;
     auto Debug() const noexcept -> UnallocatedCString final;
-    auto DefaultNym() const noexcept -> OTNymID final;
-    auto DefaultSeed() const noexcept -> OTIdentifier final;
+    auto DefaultNym() const noexcept -> identifier::Nym final;
+    auto DefaultSeed() const noexcept -> identifier::Generic final;
 
     auto SetCallbacks(Callbacks&&) noexcept -> void final;
 
@@ -129,15 +130,16 @@ private:
     };
 
     using NymData = std::pair<SeedTreeItemSortKey, UnallocatedCString>;
-    using NymMap = UnallocatedMap<OTNymID, NymData>;
+    using NymMap = UnallocatedMap<identifier::Nym, NymData>;
     using SeedData =
         std::tuple<bool, UnallocatedCString, crypto::SeedStyle, NymMap>;
-    using ChildMap = UnallocatedMap<OTIdentifier, SeedData>;
+    using ChildMap = UnallocatedMap<identifier::Generic, SeedData>;
     using GuardedCallbacks =
         libguarded::ordered_guarded<Callbacks, std::shared_mutex>;
-    using GuardedNym = libguarded::ordered_guarded<OTNymID, std::shared_mutex>;
+    using GuardedNym =
+        libguarded::ordered_guarded<identifier::Nym, std::shared_mutex>;
     using GuardedSeed =
-        libguarded::ordered_guarded<OTIdentifier, std::shared_mutex>;
+        libguarded::ordered_guarded<identifier::Generic, std::shared_mutex>;
 
     mutable GuardedCallbacks callbacks_;
     GuardedNym default_nym_;
@@ -148,14 +150,14 @@ private:
         const SeedTreeSortKey& index,
         CustomData& custom) const noexcept -> RowPointer final;
     auto load_seed(
-        const Identifier& id,
+        const identifier::Generic& id,
         UnallocatedCString& name,
         crypto::SeedStyle& type,
         bool& isPrimary) const noexcept(false) -> void;
-    auto load_nym(OTNymID&& id, ChildMap& out) const noexcept -> void;
+    auto load_nym(identifier::Nym&& id, ChildMap& out) const noexcept -> void;
     auto load_nyms(ChildMap& out) const noexcept -> void;
-    auto load_seed(const Identifier& id, ChildMap& out) const noexcept(false)
-        -> SeedData&;
+    auto load_seed(const identifier::Generic& id, ChildMap& out) const
+        noexcept(false) -> SeedData&;
     auto load_seeds(ChildMap& out) const noexcept -> void;
     auto nym_name(const identity::Nym& nym) const noexcept
         -> UnallocatedCString;
@@ -167,7 +169,7 @@ private:
     auto process_nym(Message&& in) noexcept -> void;
     auto process_nym(const identifier::Nym& id) noexcept -> void;
     auto process_seed(Message&& in) noexcept -> void;
-    auto process_seed(const Identifier& id) noexcept -> void;
+    auto process_seed(const identifier::Generic& id) noexcept -> void;
     auto startup() noexcept -> void;
 };
 }  // namespace opentxs::ui::implementation

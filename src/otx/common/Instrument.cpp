@@ -11,16 +11,14 @@
 #include <cstdint>
 
 #include "internal/otx/common/script/OTScriptable.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
 
 namespace opentxs
 {
 Instrument::Instrument(const api::Session& api)
     : OTScriptable(api)
-    , m_InstrumentDefinitionID(api_.Factory().UnitID())
-    , m_NotaryID(api_.Factory().ServerID())
+    , m_InstrumentDefinitionID()
+    , m_NotaryID()
     , m_VALID_FROM()
     , m_VALID_TO()
 {

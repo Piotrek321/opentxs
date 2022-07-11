@@ -25,12 +25,12 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 }  // namespace identifier
 
 class Factory;
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -55,7 +55,7 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const UnallocatedCString& terms);
 

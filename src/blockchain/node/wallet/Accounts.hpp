@@ -27,8 +27,6 @@
 #include "internal/util/Timer.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Allocated.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Actor.hpp"
@@ -75,6 +73,7 @@ class Subchain;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -88,8 +87,6 @@ class Raw;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -129,7 +126,7 @@ private:
         shutdown,
     };
 
-    using AccountMap = Map<OTNymID, wallet::Account>;
+    using AccountMap = Map<identifier::Nym, wallet::Account>;
 
     const api::Session& api_;
     const node::internal::Manager& node_;

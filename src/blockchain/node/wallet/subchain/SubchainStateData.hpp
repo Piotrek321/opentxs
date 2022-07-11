@@ -153,7 +153,7 @@ class SubchainStateData
       public boost::enable_shared_from_this<SubchainStateData>
 {
 public:
-    using SubchainIndex = database::Wallet::pSubchainIndex;
+    using SubchainIndex = database::Wallet::SubchainIndex;
     using ElementCache =
         libguarded::shared_guarded<wallet::ElementCache, std::shared_mutex>;
     using MatchCache =
@@ -168,9 +168,9 @@ public:
     database::Wallet& db_;
     const node::internal::Mempool& mempool_oracle_;
     const crypto::Subaccount& subaccount_;
-    const OTNymID owner_;
+    const identifier::Nym owner_;
     const crypto::SubaccountType account_type_;
-    const OTIdentifier id_;
+    const identifier::Generic id_;
     const crypto::Subchain subchain_;
     const Type chain_;
     const cfilter::Type filter_type_;

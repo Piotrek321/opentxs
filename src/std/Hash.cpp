@@ -150,7 +150,7 @@ auto hash<opentxs::crypto::Parameters>::operator()(
 auto hash<opentxs::crypto::Seed>::operator()(
     const opentxs::crypto::Seed& rhs) const noexcept -> std::size_t
 {
-    static const auto hasher = hash<opentxs::OTIdentifier>{};
+    static const auto hasher = hash<opentxs::identifier::Generic>{};
 
     return hasher(rhs.ID());
 }
@@ -224,8 +224,8 @@ auto hash<opentxs::FixedByteArray<32>>::operator()(
     return hasher(data);
 }
 
-auto hash<opentxs::OTIdentifier>::operator()(
-    const opentxs::Identifier& data) const noexcept -> std::size_t
+auto hash<opentxs::identifier::Generic>::operator()(
+    const opentxs::identifier::Generic& data) const noexcept -> std::size_t
 {
     auto out = 0_uz;
     std::memcpy(&out, data.data(), std::min(sizeof(out), data.size()));
@@ -233,27 +233,27 @@ auto hash<opentxs::OTIdentifier>::operator()(
     return out;
 }
 
-auto hash<opentxs::OTNotaryID>::operator()(
+auto hash<opentxs::identifier::Notary>::operator()(
     const opentxs::identifier::Notary& data) const noexcept -> std::size_t
 {
-    static const auto hasher = hash<opentxs::OTIdentifier>{};
+    static const auto hasher = hash<opentxs::identifier::Generic>{};
 
     return hasher(data);
 }
 
-auto hash<opentxs::OTNymID>::operator()(
+auto hash<opentxs::identifier::Nym>::operator()(
     const opentxs::identifier::Nym& data) const noexcept -> std::size_t
 {
-    static const auto hasher = hash<opentxs::OTIdentifier>{};
+    static const auto hasher = hash<opentxs::identifier::Generic>{};
 
     return hasher(data);
 }
 
-auto hash<opentxs::OTUnitID>::operator()(
+auto hash<opentxs::identifier::UnitDefinition>::operator()(
     const opentxs::identifier::UnitDefinition& data) const noexcept
     -> std::size_t
 {
-    static const auto hasher = hash<opentxs::OTIdentifier>{};
+    static const auto hasher = hash<opentxs::identifier::Generic>{};
 
     return hasher(data);
 }
@@ -261,7 +261,7 @@ auto hash<opentxs::OTUnitID>::operator()(
 auto hash<opentxs::PaymentCode>::operator()(
     const opentxs::PaymentCode& rhs) const noexcept -> std::size_t
 {
-    static const auto hasher = hash<opentxs::OTIdentifier>{};
+    static const auto hasher = hash<opentxs::identifier::Generic>{};
 
     return hasher(rhs.ID());
 }

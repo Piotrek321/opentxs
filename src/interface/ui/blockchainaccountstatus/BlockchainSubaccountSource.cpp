@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "interface/ui/base/List.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 
 namespace opentxs::factory
 {
@@ -44,6 +43,7 @@ BlockchainSubaccountSource::BlockchainSubaccountSource(
           rowID,
           key,
           false)
+    , api_(api)
 {
 }
 

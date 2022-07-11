@@ -7,7 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
@@ -16,6 +16,11 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class Signature;
@@ -34,7 +39,7 @@ public:
     using Signature = std::shared_ptr<proto::Signature>;
 
     virtual auto Alias() const noexcept -> UnallocatedCString = 0;
-    virtual auto ID() const noexcept -> OTIdentifier = 0;
+    virtual auto ID() const noexcept -> identifier::Generic = 0;
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Nym() const noexcept -> Nym_p = 0;
     virtual auto Terms() const noexcept -> const UnallocatedCString& = 0;

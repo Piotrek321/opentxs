@@ -10,9 +10,10 @@
 #include <atomic>
 #include <future>
 #include <memory>
+#include <type_traits>
+#include <utility>
 
 #include "interface/ui/base/List.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
@@ -27,7 +28,6 @@
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -51,7 +51,7 @@ MessagableList::MessagableList(
     const SimpleCallback& cb) noexcept
     : MessagableListList(api, nymID, cb, false)
     , Worker(api, {})
-    , owner_contact_id_(Widget::api_.Contacts().ContactID(nymID))
+    , owner_contact_id_(api_.Contacts().ContactID(nymID))
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().ContactUpdate()},
@@ -64,7 +64,7 @@ auto MessagableList::construct_row(
     const MessagableListSortKey& index,
     CustomData&) const noexcept -> RowPointer
 {
-    return factory::MessagableListItem(*this, Widget::api_, id, index);
+    return factory::MessagableListItem(*this, api_, id, index);
 }
 
 auto MessagableList::pipeline(Message&& in) noexcept -> void
@@ -137,7 +137,7 @@ auto MessagableList::process_contact(
             .Flush();
     }
 
-    switch (Widget::api_.OTX().CanMessage(primary_id_, id, false)) {
+    switch (api_.OTX().CanMessage(primary_id_, id, false)) {
         case otx::client::Messagability::READY:
         case otx::client::Messagability::MISSING_RECIPIENT:
         case otx::client::Messagability::UNREGISTERED: {
@@ -168,11 +168,11 @@ auto MessagableList::process_contact(const Message& message) noexcept -> void
     OT_ASSERT(1 < body.size());
 
     const auto& id = body.at(1);
-    const auto contactID = Widget::api_.Factory().Identifier(id);
+    const auto contactID = api_.Factory().IdentifierFromHash(id.Bytes());
 
-    OT_ASSERT(false == contactID->empty());
+    OT_ASSERT(false == contactID.empty());
 
-    const auto name = Widget::api_.Contacts().ContactName(contactID);
+    const auto name = api_.Contacts().ContactName(contactID);
     process_contact(contactID, {false, name});
 }
 
@@ -183,23 +183,24 @@ auto MessagableList::process_nym(const Message& message) noexcept -> void
     OT_ASSERT(1 < body.size());
 
     const auto& id = body.at(1);
-    const auto nymID = Widget::api_.Factory().NymID(id);
+    const auto nymID = api_.Factory().NymIDFromHash(id.Bytes());
 
-    OT_ASSERT(false == nymID->empty());
+    OT_ASSERT(false == nymID.empty());
 
-    const auto contactID = Widget::api_.Contacts().ContactID(nymID);
-    const auto name = Widget::api_.Contacts().ContactName(contactID);
+    const auto contactID = api_.Contacts().ContactID(nymID);
+    const auto name = api_.Contacts().ContactName(contactID);
     process_contact(contactID, {false, name});
 }
 
 auto MessagableList::startup() noexcept -> void
 {
-    const auto contacts = Widget::api_.Contacts().ContactList();
+    const auto contacts = api_.Contacts().ContactList();
     LogDetail()(OT_PRETTY_CLASS())("Loading ")(contacts.size())(" contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {
-        process_contact(Identifier::Factory(id), {false, alias});
+        process_contact(
+            api_.Factory().IdentifierFromBase58(id), {false, alias});
     }
 
     finish_startup();

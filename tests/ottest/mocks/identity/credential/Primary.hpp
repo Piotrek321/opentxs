@@ -26,7 +26,7 @@ public:
     MOCK_METHOD(UnallocatedCString, Path, (), (const, override));
     MOCK_METHOD(bool, Path, (proto::HDPath & output), (const, override));
     MOCK_METHOD(UnallocatedCString, Alias, (), (const, noexcept, override));
-    MOCK_METHOD(OTIdentifier, ID, (), (const, noexcept, override));
+    MOCK_METHOD(identifier::Generic, ID, (), (const, noexcept, override));
     MOCK_METHOD(UnallocatedCString, Name, (), (const, noexcept, override));
     MOCK_METHOD(Nym_p, Nym, (), (const, noexcept, override));
     MOCK_METHOD(
@@ -44,7 +44,7 @@ public:
         (const bool asPrivate),
         (const, noexcept, override));
     MOCK_METHOD(
-        const Identifier&,
+        const identifier::Generic&,
         CredentialID,
         (),
         (const, noexcept, override));

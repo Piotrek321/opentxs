@@ -24,6 +24,7 @@
 #include "internal/util/Editor.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -31,6 +32,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -56,12 +58,12 @@ namespace opentxs
 OTCronItem::OTCronItem(const api::Session& api)
     : ot_super(api)
     , m_dequeClosingNumbers{}
-    , m_pCancelerNymID(api_.Factory().NymID())
+    , m_pCancelerNymID()
     , m_bCanceled(false)
     , m_bRemovalFlag(false)
     , m_pCron(nullptr)
     , serverNym_(nullptr)
-    , notaryID_(api_.Factory().Identifier())
+    , notaryID_()
     , m_CREATION_DATE()
     , m_LAST_PROCESS_DATE()
     , m_PROCESS_INTERVAL(1)
@@ -75,12 +77,12 @@ OTCronItem::OTCronItem(
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
     : ot_super(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
     , m_dequeClosingNumbers{}
-    , m_pCancelerNymID(api_.Factory().NymID())
+    , m_pCancelerNymID()
     , m_bCanceled(false)
     , m_bRemovalFlag(false)
     , m_pCron(nullptr)
     , serverNym_(nullptr)
-    , notaryID_(api_.Factory().Identifier())
+    , notaryID_()
     , m_CREATION_DATE()
     , m_LAST_PROCESS_DATE()
     , m_PROCESS_INTERVAL(1)
@@ -92,16 +94,16 @@ OTCronItem::OTCronItem(
     const api::Session& api,
     const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-    const Identifier& ACCT_ID,
+    const identifier::Generic& ACCT_ID,
     const identifier::Nym& NYM_ID)
     : ot_super(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID, ACCT_ID, NYM_ID)
     , m_dequeClosingNumbers{}
-    , m_pCancelerNymID(api_.Factory().NymID())
+    , m_pCancelerNymID()
     , m_bCanceled(false)
     , m_bRemovalFlag(false)
     , m_pCron(nullptr)
     , serverNym_(nullptr)
-    , notaryID_(api_.Factory().Identifier())
+    , notaryID_()
     , m_CREATION_DATE()
     , m_LAST_PROCESS_DATE()
     , m_PROCESS_INTERVAL(1)
@@ -213,7 +215,7 @@ auto OTCronItem::GetActiveCronTransNums(
     // We need to load up the local list of active (recurring) transactions.
     //
     auto strNotaryID = String::Factory(notaryID);
-    auto filename = api::Legacy::GetFilenameLst(nymID.str());
+    auto filename = api::Legacy::GetFilenameLst(nymID.asBase58(api.Crypto()));
 
     if (OTDB::Exists(
             api, dataFolder, szFoldername, strNotaryID->Get(), filename, "")) {
@@ -261,7 +263,8 @@ auto OTCronItem::EraseActiveCronReceipt(
     // from that list. Otherwise the GUI will continue thinking the transaction
     // is active in cron.
     //
-    auto list_filename = api::Legacy::GetFilenameLst(nymID.str());
+    auto list_filename =
+        api::Legacy::GetFilenameLst(nymID.asBase58(api.Crypto()));
 
     if (OTDB::Exists(
             api,
@@ -403,7 +406,8 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
     } else  // It wasn't there already, so we need to save the number in our
             // local list of trans nums.
     {
-        auto list_filename = api::Legacy::GetFilenameLst(theNymID.str());
+        auto list_filename =
+            api::Legacy::GetFilenameLst(theNymID.asBase58(api_.Crypto()));
         NumList numlist;
 
         if (OTDB::Exists(
@@ -877,7 +881,7 @@ void OTCronItem::HookRemovalFromCron(
             // of the same cron item) but for whatever reason, I'm checking
             // the nymID on the original version. Sue me.
             //
-            const OTNymID NYM_ID = pOrigCronItem->GetSenderNymID();
+            const identifier::Nym NYM_ID = pOrigCronItem->GetSenderNymID();
             pOriginator = api_.Wallet().Nym(NYM_ID);
         }
 
@@ -1037,7 +1041,7 @@ void OTCronItem::onFinalReceipt(
 //
 auto OTCronItem::DropFinalReceiptToInbox(
     const identifier::Nym& NYM_ID,
-    const Identifier& ACCOUNT_ID,
+    const identifier::Generic& ACCOUNT_ID,
     const std::int64_t& lNewTransactionNumber,
     const std::int64_t& lClosingNumber,
     const String& strOrigCronItem,
@@ -1094,7 +1098,7 @@ auto OTCronItem::DropFinalReceiptToInbox(
         // set up the transaction items (each transaction may have multiple
         // items... but not in this case.)
         auto pItem1{api_.Factory().InternalSession().Item(
-            *pTrans1, itemType::finalReceipt, api_.Factory().Identifier())};
+            *pTrans1, itemType::finalReceipt, identifier::Generic{})};
 
         OT_ASSERT(false != bool(pItem1));
 
@@ -1178,8 +1182,7 @@ auto OTCronItem::DropFinalReceiptToInbox(
         if (account) {
             OT_ASSERT(ACCOUNT_ID == account.get().GetPurportedAccountID());
 
-            if (account.get().SaveInbox(
-                    *theInbox, api_.Factory().Identifier())) {
+            if (account.get().SaveInbox(*theInbox)) {
                 account.Release();  // inbox hash has changed here, so we
                                     // save the account to reflect that
                                     // change.
@@ -1192,7 +1195,7 @@ auto OTCronItem::DropFinalReceiptToInbox(
         } else  // todo: would the account EVER be null here? Should never
                 // be. Therefore should we save the inbox here?
         {
-            theInbox->SaveInbox(api_.Factory().Identifier());
+            theInbox->SaveInbox();
         }
 
         // Notice above, if the account loads but fails to verify, then we
@@ -1273,9 +1276,7 @@ auto OTCronItem::DropFinalReceiptToNymbox(
         // set up the transaction items (each transaction may have multiple
         // items... but not in this case.)
         auto pItem1{api_.Factory().InternalSession().Item(
-            *pTransaction,
-            itemType::finalReceipt,
-            api_.Factory().Identifier())};
+            *pTransaction, itemType::finalReceipt, identifier::Generic{})};
 
         OT_ASSERT(false != bool(pItem1));
 
@@ -1361,7 +1362,7 @@ auto OTCronItem::DropFinalReceiptToNymbox(
 
         // TODO: Better rollback capabilities in case of failures here:
 
-        auto theNymboxHash = api_.Factory().Identifier();
+        auto theNymboxHash = identifier::Generic{};
 
         // Save nymbox to storage. (File, DB, wherever it goes.)
         theLedger->SaveNymbox(theNymboxHash);
@@ -1418,7 +1419,7 @@ auto OTCronItem::GetOpeningNumber(const identifier::Nym& theNymID) const
     return 0;
 }
 
-auto OTCronItem::GetClosingNumber(const Identifier& theAcctID) const
+auto OTCronItem::GetClosingNumber(const identifier::Generic& theAcctID) const
     -> std::int64_t
 {
     const auto& theSenderAcctID = GetSenderAcctID();
@@ -1480,10 +1481,12 @@ auto OTCronItem::GetCancelerID(identifier::Nym& theOutput) const -> bool
 {
     if (!IsCanceled()) {
         theOutput.clear();
+
         return false;
     }
 
-    theOutput.SetString(m_pCancelerNymID->str());
+    theOutput = m_pCancelerNymID;
+
     return true;
 }
 
@@ -1493,7 +1496,7 @@ auto OTCronItem::CancelBeforeActivation(
     const identity::Nym& theCancelerNym,
     const PasswordPrompt& reason) -> bool
 {
-    OT_ASSERT(!m_pCancelerNymID->empty());
+    OT_ASSERT(!m_pCancelerNymID.empty());
 
     if (IsCanceled()) { return false; }
 
@@ -1525,7 +1528,7 @@ void OTCronItem::Release_CronItem()
 
     m_bRemovalFlag = false;
     m_bCanceled = false;
-    m_pCancelerNymID->clear();
+    m_pCancelerNymID.clear();
 }
 
 void OTCronItem::Release()

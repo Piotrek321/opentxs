@@ -22,19 +22,20 @@
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/HDIndex.hpp"
 
 namespace opentxs::crypto
 {
 Bip32::Imp::Imp(const api::Crypto& crypto) noexcept
     : crypto_(crypto)
+    , factory_()
     , blank_()
 {
 }
@@ -266,10 +267,14 @@ auto Bip32::Imp::extract(
     return output;
 }
 
-auto Bip32::Imp::Init(const api::Factory& factory) noexcept -> void
+auto Bip32::Imp::Init(
+    const std::shared_ptr<const api::Factory>& factory) noexcept -> void
 {
-    auto& blank = const_cast<std::optional<Key>&>(blank_);
-    blank.emplace(factory.Secret(0), factory.Secret(0), ByteArray{}, Path{}, 0);
+    OT_ASSERT(factory);
+
+    factory_ = factory;
+    blank_.set_value(
+        Key{factory->Secret(0), factory->Secret(0), ByteArray{}, Path{}, 0});
 }
 
 auto Bip32::Imp::IsHard(const Bip32Index index) noexcept -> bool
@@ -300,12 +305,13 @@ auto Bip32::Imp::provider(const EcdsaCurve& curve) const noexcept
     }
 }
 
-auto Bip32::Imp::SeedID(const ReadView entropy) const -> OTIdentifier
+auto Bip32::Imp::SeedID(const ReadView entropy) const -> identifier::Generic
 {
-    auto output = Identifier::Factory();
-    output->CalculateDigest(entropy);
+    const auto f = factory_.lock();
 
-    return output;
+    OT_ASSERT(f);
+
+    return f->IdentifierFromPreimage(entropy);
 }
 
 auto Bip32::Imp::SerializePrivate(
@@ -370,6 +376,6 @@ auto Bip32::Imp::SerializePublic(
 
     OT_ASSERT_MSG(78 == output.size(), std::to_string(output.size()).c_str());
 
-    return crypto_.Encode().IdentifierEncode(output);
+    return crypto_.Encode().IdentifierEncode(output.Bytes());
 }
 }  // namespace opentxs::crypto

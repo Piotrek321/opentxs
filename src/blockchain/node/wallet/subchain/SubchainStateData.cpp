@@ -72,7 +72,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ByteLiterals.hpp"
@@ -528,8 +527,8 @@ SubchainStateData::SubchainStateData(
       })
     , watchdog_(api_.Network().Asio().Internal().GetTimer())
 {
-    OT_ASSERT(false == owner_->empty());
-    OT_ASSERT(false == id_->empty());
+    OT_ASSERT(false == owner_.empty());
+    OT_ASSERT(false == id_.empty());
 }
 
 SubchainStateData::SubchainStateData(
@@ -1378,7 +1377,7 @@ auto SubchainStateData::select_all(
         }
     };
     const auto SelectTxo = [&](const auto& all, auto& out) {
-        const auto self = id_->str();
+        const auto self = id_.asBase58(api_.Crypto());
 
         for (const auto& [outpoint, pOutput] : all) {
             OT_ASSERT(pOutput);
@@ -1429,7 +1428,7 @@ auto SubchainStateData::select_matches(
         [&](const auto& all, const auto& selected, auto& out) {
             if (0u == selected.size()) { return; }
 
-            const auto self = id_->str();
+            const auto self = id_.asBase58(api_.Crypto());
 
             for (const auto& [outpoint, pOutput] : all) {
                 if (0u < selected.count(outpoint)) {
@@ -1825,9 +1824,9 @@ auto SubchainStateData::translate(const TXOs& utxos, Patterns& outpoints)
 
         for (auto& key : keys) {
             const auto& [id, subchain, index] = key;
-            auto account = api_.Factory().Identifier(id);
+            auto account = api_.Factory().IdentifierFromBase58(id);
 
-            OT_ASSERT(false == account->empty());
+            OT_ASSERT(false == account.empty());
             // TODO the assertion below will not always be true in the future
             // but for now it will catch some bugs
             OT_ASSERT(account == id_);

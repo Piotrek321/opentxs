@@ -36,6 +36,7 @@ namespace api
 {
 namespace session
 {
+class Factory;
 class Wallet;
 }  // namespace session
 
@@ -62,7 +63,7 @@ public:
     auto AccountList(
         const UnitType type,
         const identifier::UnitDefinition& unitID) const
-        -> UnallocatedSet<OTIdentifier> final;
+        -> UnallocatedSet<identifier::Generic> final;
     auto BailmentInitiated(const identifier::UnitDefinition& unitID) const
         -> bool final;
     auto BailmentInstructions(
@@ -79,12 +80,13 @@ public:
     auto GetRequests(
         const contract::peer::PeerRequestType type,
         const RequestStatus state = RequestStatus::All) const
-        -> UnallocatedSet<std::tuple<OTIdentifier, OTIdentifier, bool>> final;
+        -> UnallocatedSet<
+            std::tuple<identifier::Generic, identifier::Generic, bool>> final;
     auto IssuerID() const -> const identifier::Nym& final { return issuer_id_; }
     auto LocalNymID() const -> const identifier::Nym& final { return nym_id_; }
     auto Paired() const -> bool final;
     auto PairingCode() const -> const UnallocatedCString& final;
-    auto PrimaryServer() const -> OTNotaryID final;
+    auto PrimaryServer() const -> identifier::Notary final;
     auto RequestTypes() const
         -> UnallocatedSet<contract::peer::PeerRequestType> final;
     auto Serialize(proto::Issuer&) const -> bool final;
@@ -94,30 +96,32 @@ public:
     void AddAccount(
         const UnitType type,
         const identifier::UnitDefinition& unitID,
-        const Identifier& accountID) final;
+        const identifier::Generic& accountID) final;
     auto AddReply(
         const contract::peer::PeerRequestType type,
-        const Identifier& requestID,
-        const Identifier& replyID) -> bool final;
+        const identifier::Generic& requestID,
+        const identifier::Generic& replyID) -> bool final;
     auto AddRequest(
         const contract::peer::PeerRequestType type,
-        const Identifier& requestID) -> bool final;
+        const identifier::Generic& requestID) -> bool final;
     auto RemoveAccount(
         const UnitType type,
         const identifier::UnitDefinition& unitID,
-        const Identifier& accountID) -> bool final;
+        const identifier::Generic& accountID) -> bool final;
     void SetPaired(const bool paired) final;
     void SetPairingCode(const UnallocatedCString& code) final;
     auto SetUsed(
         const contract::peer::PeerRequestType type,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         const bool isUsed = true) -> bool final;
 
     Issuer(
+        const api::session::Factory& factory,
         const api::session::Wallet& wallet,
         const identifier::Nym& nymID,
         const proto::Issuer& serialized);
     Issuer(
+        const api::session::Factory& factory,
         const api::session::Wallet& wallet,
         const identifier::Nym& nymID,
         const identifier::Nym& issuerID);
@@ -130,37 +134,42 @@ public:
     ~Issuer() final;
 
 private:
-    using Workflow =
-        UnallocatedMap<OTIdentifier, std::pair<OTIdentifier, bool>>;
+    using Workflow = UnallocatedMap<
+        identifier::Generic,
+        std::pair<identifier::Generic, bool>>;
     using WorkflowMap =
         UnallocatedMap<contract::peer::PeerRequestType, Workflow>;
-    using UnitAccountPair = std::pair<OTUnitID, OTIdentifier>;
+    using UnitAccountPair =
+        std::pair<identifier::UnitDefinition, identifier::Generic>;
 
     static constexpr auto current_version_ = VersionNumber{1};
 
+    const api::session::Factory& factory_;
     const api::session::Wallet& wallet_;
     VersionNumber version_{0};
     UnallocatedCString pairing_code_{""};
     mutable OTFlag paired_;
-    const OTNymID nym_id_;
-    const OTNymID issuer_id_;
+    const identifier::Nym nym_id_;
+    const identifier::Nym issuer_id_;
     UnallocatedMap<UnitType, UnallocatedSet<UnitAccountPair>> account_map_;
     WorkflowMap peer_requests_;
 
     auto find_request(
         const Lock& lock,
         const contract::peer::PeerRequestType type,
-        const Identifier& requestID) -> std::pair<bool, Workflow::iterator>;
+        const identifier::Generic& requestID)
+        -> std::pair<bool, Workflow::iterator>;
     auto get_requests(
         const Lock& lock,
         const contract::peer::PeerRequestType type,
         const RequestStatus state = RequestStatus::All) const
-        -> UnallocatedSet<std::tuple<OTIdentifier, OTIdentifier, bool>>;
+        -> UnallocatedSet<
+            std::tuple<identifier::Generic, identifier::Generic, bool>>;
 
     auto add_request(
         const Lock& lock,
         const contract::peer::PeerRequestType type,
-        const Identifier& requestID,
-        const Identifier& replyID) -> bool;
+        const identifier::Generic& requestID,
+        const identifier::Generic& replyID) -> bool;
 };
 }  // namespace opentxs::otx::client::implementation

@@ -25,6 +25,7 @@
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
@@ -131,14 +132,14 @@ auto Contact::ClaimID(
     preimage.set_value(value);
     preimage.set_subtype(subtype);
 
-    return ClaimID(api, preimage)->str();
+    return ClaimID(api, preimage).asBase58(api.Crypto());
 }
 
 // static
 auto Contact::ClaimID(const api::Session& api, const proto::Claim& preimage)
-    -> OTIdentifier
+    -> identifier::Generic
 {
-    return api.Factory().InternalSession().Identifier(preimage);
+    return api.Factory().InternalSession().IdentifierFromPreimage(preimage);
 }
 
 // static
@@ -181,7 +182,7 @@ Contact::Contact(
           version,
           identity::CredentialRole::Contact,
           crypto::key::asymmetric::Mode::Null,
-          get_master_id(master))
+          get_master_id(api, master))
     , data_([&](const crypto::Parameters& params) -> const proto::ContactData {
         auto proto = proto::ContactData{};
         params.Internal().GetContactData(proto);
@@ -207,7 +208,7 @@ Contact::Contact(
           parent,
           source,
           serialized,
-          get_master_id(serialized, master))
+          get_master_id(api, serialized, master))
     , data_(serialized.contactdata())
 {
     Lock lock(lock_);

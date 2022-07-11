@@ -25,6 +25,7 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -138,7 +139,7 @@ class PublishContract::Imp final : public Base::Imp
 {
 public:
     const contract::Type contract_type_;
-    const OTIdentifier contract_id_;
+    const identifier::Generic contract_id_;
     const Space payload_;
     PublishContract* parent_;
 
@@ -175,7 +176,7 @@ public:
         out.AddFrame(Buffer{static_cast<std::uint32_t>(contract_type_)});
         out.Internal().AddFrame([&] {
             auto out = proto::Identifier{};
-            contract_id_->Serialize(out);
+            contract_id_.Serialize(out);
 
             return out;
         }());
@@ -187,12 +188,14 @@ public:
     Imp() noexcept
         : Base::Imp()
         , contract_type_(contract::Type::invalid)
-        , contract_id_(Identifier::Factory())
+        , contract_id_()
         , payload_()
         , parent_(nullptr)
     {
     }
-    Imp(const contract::Type type, OTIdentifier&& id, Space&& payload) noexcept
+    Imp(const contract::Type type,
+        identifier::Generic&& id,
+        Space&& payload) noexcept
         : Base::Imp(MessageType::publish_contract)
         , contract_type_(type)
         , contract_id_(std::move(id))
@@ -201,9 +204,9 @@ public:
     {
     }
     Imp(const contract::Type type,
-        const Identifier& id,
+        const identifier::Generic& id,
         Space&& payload) noexcept
-        : Imp(type, OTIdentifier{id}, std::move(payload))
+        : Imp(type, identifier::Generic{id}, std::move(payload))
     {
     }
     Imp(const api::Session& api,
@@ -229,7 +232,7 @@ PublishContract::PublishContract(Imp* imp) noexcept
     imp_->parent_ = this;
 }
 
-auto PublishContract::ID() const noexcept -> const Identifier&
+auto PublishContract::ID() const noexcept -> const identifier::Generic&
 {
     return Imp::get(imp_).contract_id_;
 }

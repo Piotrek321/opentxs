@@ -208,7 +208,7 @@ public:
     }
     auto ID() const noexcept -> const identifier::Nym& final
     {
-        static const auto blank = identifier::Nym::Factory();
+        static const auto blank = identifier::Nym{};
 
         return blank;
     }

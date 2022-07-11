@@ -26,6 +26,7 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 }  // namespace identifier
@@ -43,7 +44,6 @@ class Server;
 }  // namespace context
 }  // namespace otx
 
-class Identifier;
 class OTAgent;
 class OTBylaw;
 class OTClause;
@@ -123,12 +123,12 @@ public:
         const identifier::Nym& theNymID,
         OTAgent** ppAgent = nullptr) const -> OTParty*;
     auto FindPartyBasedOnAccountID(
-        const Identifier& theAcctID,
+        const identifier::Generic& theAcctID,
         OTPartyAccount** ppPartyAccount = nullptr) const -> OTParty*;
     auto GetAgent(UnallocatedCString str_agent_name) const -> OTAgent*;
     auto GetPartyAccount(UnallocatedCString str_acct_name) const
         -> OTPartyAccount*;
-    auto GetPartyAccountByID(const Identifier& theAcctID) const
+    auto GetPartyAccountByID(const identifier::Generic& theAcctID) const
         -> OTPartyAccount*;
     // This function returns the count of how many trans#s a Nym needs in order
     // to confirm as
@@ -289,7 +289,7 @@ public:
                                 // std::int32_t. (Time in seconds.)
 
     void UpdateContentsToTag(Tag& parent, bool bCalculatingID) const;
-    void CalculateContractID(Identifier& newID) const override;
+    void CalculateContractID(identifier::Generic& newID) const override;
 
     void Release() override;
     void Release_Scriptable();

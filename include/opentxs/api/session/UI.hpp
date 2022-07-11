@@ -41,6 +41,7 @@ class UI;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 class Notary;
 class UnitDefinition;
@@ -85,8 +86,6 @@ class SeedValidator;
 class UnitList;
 class UnitListQt;
 }  // namespace ui
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -98,13 +97,13 @@ class OPENTXS_EXPORT UI
 public:
     virtual auto AccountActivity(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback updateCB = {}) const noexcept
         -> const opentxs::ui::AccountActivity& = 0;
     /// Caller does not own this pointer
     virtual auto AccountActivityQt(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::AccountActivityQt* = 0;
     virtual auto AccountList(
@@ -147,13 +146,13 @@ public:
         -> opentxs::ui::ActivitySummaryQt* = 0;
     virtual auto ActivityThread(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const SimpleCallback updateCB = {}) const noexcept
         -> const opentxs::ui::ActivityThread& = 0;
     /// Caller does not own this pointer
     virtual auto ActivityThreadQt(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::ActivityThreadQt* = 0;
     /// Caller does not own this pointer
@@ -190,11 +189,11 @@ public:
     virtual auto BlockchainUnitID(const opentxs::blockchain::Type chain)
         const noexcept -> const identifier::UnitDefinition& = 0;
     virtual auto Contact(
-        const Identifier& contactID,
+        const identifier::Generic& contactID,
         const SimpleCallback updateCB = {}) const noexcept
         -> const opentxs::ui::Contact& = 0;
     virtual auto ContactQt(
-        const Identifier& contactID,
+        const identifier::Generic& contactID,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::ContactQt* = 0;
     virtual auto ContactList(

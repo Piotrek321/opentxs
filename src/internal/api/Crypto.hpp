@@ -9,8 +9,9 @@
 
 #pragma once
 
-#include "opentxs/api/crypto/Crypto.hpp"
+#include <memory>
 
+#include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/crypto/key/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -63,7 +64,9 @@ public:
     virtual auto hasOpenSSL() const noexcept -> bool = 0;
     virtual auto hasSodium() const noexcept -> bool = 0;
 
-    virtual auto Init(const api::Factory& factory) noexcept -> void = 0;
+    virtual auto Init(
+        const std::shared_ptr<const api::Factory>& factory) noexcept
+        -> void = 0;
     auto Internal() noexcept -> Crypto& final { return *this; }
 
     ~Crypto() override = default;

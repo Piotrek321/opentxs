@@ -28,13 +28,14 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Unit.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
@@ -74,6 +75,7 @@ class Transaction;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -97,7 +99,6 @@ class PaymentWorkflow;
 }  // namespace proto
 
 class Data;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -107,9 +108,11 @@ namespace opentxs::ui::implementation
 class BlockchainAccountActivity final : public AccountActivity
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto ContractID() const noexcept -> UnallocatedCString final
     {
-        return opentxs::blockchain::UnitID(Widget::api_, chain_).str();
+        return opentxs::blockchain::UnitID(api_, chain_)
+            .asBase58(api_.Crypto());
     }
     using AccountActivity::DepositAddress;
     auto DepositAddress() const noexcept -> UnallocatedCString final
@@ -133,7 +136,8 @@ public:
     }
     auto NotaryID() const noexcept -> UnallocatedCString final
     {
-        return opentxs::blockchain::NotaryID(Widget::api_, chain_).str();
+        return opentxs::blockchain::NotaryID(api_, chain_)
+            .asBase58(api_.Crypto());
     }
     auto NotaryName() const noexcept -> UnallocatedCString final
     {
@@ -176,7 +180,7 @@ public:
         const api::session::Client& api,
         const blockchain::Type chain,
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback& cb) noexcept;
     BlockchainAccountActivity() = delete;
     BlockchainAccountActivity(const BlockchainAccountActivity&) = delete;

@@ -60,11 +60,11 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Base& = 0;
     virtual auto LegacyDataFolder() const -> UnallocatedCString = 0;
-    virtual auto LocalNymboxHash() const -> OTIdentifier = 0;
+    virtual auto LocalNymboxHash() const -> identifier::Generic = 0;
     virtual auto Notary() const -> const identifier::Notary& = 0;
     virtual auto NymboxHashMatch() const -> bool = 0;
     virtual auto RemoteNym() const -> const identity::Nym& = 0;
-    virtual auto RemoteNymboxHash() const -> OTIdentifier = 0;
+    virtual auto RemoteNymboxHash() const -> identifier::Generic = 0;
     virtual auto Request() const -> RequestNumber = 0;
     using Signable::Serialize;
     OPENTXS_NO_EXPORT virtual auto Serialize(proto::Context& out) const
@@ -93,8 +93,8 @@ public:
     OPENTXS_NO_EXPORT virtual auto Refresh(
         proto::Context& out,
         const PasswordPrompt& reason) -> bool = 0;
-    virtual void SetLocalNymboxHash(const Identifier& hash) = 0;
-    virtual void SetRemoteNymboxHash(const Identifier& hash) = 0;
+    virtual void SetLocalNymboxHash(const identifier::Generic& hash) = 0;
+    virtual void SetRemoteNymboxHash(const identifier::Generic& hash) = 0;
     virtual void SetRequest(const RequestNumber req) = 0;
 
     Base(const Base&) = delete;

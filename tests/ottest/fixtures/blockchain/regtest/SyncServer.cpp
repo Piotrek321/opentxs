@@ -31,7 +31,10 @@ std::unique_ptr<SyncRequestor> Regtest_fixture_sync_server::sync_requestor_{};
 namespace ottest
 {
 Regtest_fixture_sync_server::Regtest_fixture_sync_server()
-    : Regtest_fixture_normal(0, ot::Options{}.SetBlockchainWalletEnabled(false))
+    : Regtest_fixture_normal(
+          ot_,
+          0,
+          ot::Options{}.SetBlockchainWalletEnabled(false))
 {
     if (false == init_) {
 

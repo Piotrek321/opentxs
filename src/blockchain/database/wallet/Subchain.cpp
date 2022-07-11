@@ -30,12 +30,10 @@
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/ByteArray.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Types.hpp"
 #include "util/LMDB.hpp"
 #include "util/ScopeGuard.hpp"
@@ -47,7 +45,7 @@ struct SubchainData::Imp {
     auto GetSubchainID(
         const NodeID& subaccount,
         const crypto::Subchain subchain,
-        MDB_txn* tx) const noexcept -> pSubchainIndex
+        MDB_txn* tx) const noexcept -> SubchainIndex
     {
         auto lock = sLock{lock_};
         upgrade_future_.get();
@@ -118,7 +116,7 @@ struct SubchainData::Imp {
 
         try {
             auto output{false};
-            auto newIndices = UnallocatedVector<pPatternID>{};
+            auto newIndices = UnallocatedVector<PatternID>{};
             auto highest = Bip32Index{};
             auto tx = lmdb_.TransactionRW();
 
@@ -274,32 +272,28 @@ private:
         return output;
     }
     auto pattern_id(const SubchainIndex& subchain, const Bip32Index index)
-        const noexcept -> pPatternID
+        const noexcept -> PatternID
     {
 
         auto preimage = api_.Factory().Data();
         preimage.Assign(subchain);
         preimage.Concatenate(&index, sizeof(index));
-        auto output = api_.Factory().Identifier();
-        output->CalculateDigest(preimage.Bytes());
 
-        return output;
+        return api_.Factory().IdentifierFromPreimage(preimage.Bytes());
     }
     auto subchain_index(
         const NodeID& subaccount,
         const crypto::Subchain subchain,
         const cfilter::Type type,
-        const VersionNumber version) const noexcept -> pSubchainIndex
+        const VersionNumber version) const noexcept -> SubchainIndex
     {
         auto preimage = api_.Factory().Data();
         preimage.Assign(subaccount);
         preimage.Concatenate(&subchain, sizeof(subchain));
         preimage.Concatenate(&type, sizeof(type));
         preimage.Concatenate(&version, sizeof(version));
-        auto output = api_.Factory().Identifier();
-        output->CalculateDigest(preimage.Bytes());
 
-        return output;
+        return api_.Factory().IdentifierFromPreimage(preimage.Bytes());
     }
 
     auto upgrade() noexcept -> void
@@ -325,7 +319,7 @@ SubchainData::SubchainData(
 auto SubchainData::GetSubchainID(
     const NodeID& subaccount,
     const crypto::Subchain subchain,
-    MDB_txn* tx) const noexcept -> pSubchainIndex
+    MDB_txn* tx) const noexcept -> SubchainIndex
 {
     return imp_->GetSubchainID(subaccount, subchain, tx);
 }

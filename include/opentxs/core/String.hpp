@@ -21,9 +21,13 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 class Armored;
 class Contract;
-class Identifier;
 class NymFile;
 class Signature;
 class String;
@@ -48,7 +52,7 @@ public:
         -> opentxs::Pimpl<opentxs::String>;
     static auto Factory(const Contract& value)
         -> opentxs::Pimpl<opentxs::String>;
-    static auto Factory(const Identifier& value)
+    static auto Factory(const identifier::Generic& value)
         -> opentxs::Pimpl<opentxs::String>;
     static auto Factory(const NymFile& value)
         -> opentxs::Pimpl<opentxs::String>;

@@ -21,6 +21,8 @@ namespace opentxs
 class ByteArray::Imp : virtual public opentxs::Allocated
 {
 public:
+    // TODO make the type of parent_ variable a template parameter so that
+    // Generic::Imp can inherit from this class rather than duplicating it.
     ByteArray* parent_;
 
     using Vector = opentxs::Vector<std::byte>;
@@ -54,9 +56,6 @@ public:
     {
         return data_.get_allocator();
     }
-    auto GetPointer() const -> const void* { return data_.data(); }
-    auto GetSize() const -> std::size_t { return size(); }
-    auto IsEmpty() const -> bool { return empty(); }
     auto IsNull() const -> bool;
     auto operator==(const opentxs::Data& rhs) const noexcept -> bool;
     auto operator!=(const opentxs::Data& rhs) const noexcept -> bool;
@@ -98,8 +97,6 @@ public:
     auto Randomize(const std::size_t size) -> bool;
     auto resize(const std::size_t size) -> bool;
     auto SetSize(const std::size_t size) -> bool;
-    auto str() const -> UnallocatedCString;
-    auto str(alloc::Default alloc) const -> CString;
     auto WriteInto() noexcept -> AllocateOutput;
     auto zeroMemory() -> void;
 

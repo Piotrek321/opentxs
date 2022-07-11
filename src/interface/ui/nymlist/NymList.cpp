@@ -13,7 +13,6 @@
 #include <utility>
 
 #include "interface/ui/base/List.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -27,7 +26,6 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -48,7 +46,7 @@ namespace opentxs::ui::implementation
 NymList::NymList(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
-    : NymListList(api, api.Factory().Identifier(), cb, false)
+    : NymListList(api, identifier::Generic{}, cb, false)
     , Worker(api, {})
 {
     init_executor({
@@ -63,19 +61,19 @@ auto NymList::construct_row(
     const NymListSortKey& index,
     CustomData& custom) const noexcept -> RowPointer
 {
-    return factory::NymListItem(*this, Widget::api_, id, index, custom);
+    return factory::NymListItem(*this, api_, id, index, custom);
 }
 
 auto NymList::load() noexcept -> void
 {
-    for (const auto& nym : Widget::api_.Wallet().LocalNyms()) {
-        load(std::move(const_cast<OTNymID&&>(nym)));
+    for (const auto& nym : api_.Wallet().LocalNyms()) {
+        load(std::move(const_cast<identifier::Nym&&>(nym)));
     }
 }
 
-auto NymList::load(OTNymID&& id) noexcept -> void
+auto NymList::load(identifier::Nym&& id) noexcept -> void
 {
-    auto nym = Widget::api_.Wallet().Nym(id);
+    auto nym = api_.Wallet().Nym(id);
     auto custom = CustomData{};
     add_item(id, nym->Name(), custom);
 }
@@ -146,23 +144,23 @@ auto NymList::process_new_nym(Message&& in) noexcept -> void
 
     OT_ASSERT(1 < body.size());
 
-    auto nymID = Widget::api_.Factory().NymID(body.at(1));
+    auto nymID = api_.Factory().NymIDFromHash(body.at(1).Bytes());
 
-    OT_ASSERT(false == nymID->empty());
+    OT_ASSERT(false == nymID.empty());
 
     load(std::move(nymID));
 }
 
 auto NymList::process_nym_changed(Message&& in) noexcept -> void
 {
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     const auto body = in.Body();
 
     OT_ASSERT(1 < body.size());
 
-    auto nymID = api.Factory().NymID(body.at(1));
+    auto nymID = api.Factory().NymIDFromHash(body.at(1).Bytes());
 
-    OT_ASSERT(false == nymID->empty());
+    OT_ASSERT(false == nymID.empty());
 
     if (false == api.Wallet().IsLocalNym(nymID)) { return; }
 

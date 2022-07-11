@@ -7,12 +7,14 @@
 
 #include <boost/endian/buffers.hpp>
 #include <boost/endian/conversion.hpp>
+#include <future>
+#include <memory>
 #include <optional>
 
 #include "crypto/HDNode.hpp"
 #include "internal/crypto/Crypto.hpp"
+#include "internal/util/AsyncConst.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -38,6 +40,11 @@ class HD;
 
 class EcdsaProvider;
 }  // namespace crypto
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 
 class ByteArray;
 class Data;
@@ -81,8 +88,9 @@ public:
         Bip32Index& index,
         Data& chainCode,
         Data& key) const -> bool;
-    auto Init(const api::Factory& factory) noexcept -> void final;
-    auto SeedID(const ReadView entropy) const -> OTIdentifier;
+    auto Init(const std::shared_ptr<const api::Factory>& factory) noexcept
+        -> void final;
+    auto SeedID(const ReadView entropy) const -> identifier::Generic;
     auto SerializePrivate(
         const Bip32Network network,
         const Bip32Depth depth,
@@ -111,7 +119,8 @@ private:
     using HDNode = implementation::HDNode;
 
     const api::Crypto& crypto_;
-    const std::optional<Key> blank_;
+    std::weak_ptr<const api::Factory> factory_;
+    AsyncConst<Key> blank_;
 
     static auto IsHard(const Bip32Index) noexcept -> bool;
 

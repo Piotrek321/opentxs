@@ -9,12 +9,13 @@
 
 #include "interface/ui/base/Row.hpp"
 #include "internal/interface/ui/UI.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/ui/SeedTreeNym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-class QVariant;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -35,6 +36,8 @@ class SeedTreeNym;
 }  // namespace ui
 // }  // namespace v1
 }  // namespace opentxs
+
+class QVariant;
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui::implementation
@@ -47,9 +50,11 @@ using SeedTreeNymRow =
 class SeedTreeNym final : public SeedTreeNymRow
 {
 public:
+    const api::session::Client& api_;
+
     auto NymID() const noexcept -> UnallocatedCString final
     {
-        return row_id_->str();
+        return row_id_.asBase58(api_.Crypto());
     }
     auto Index() const noexcept -> std::size_t final { return index_; }
     auto Name() const noexcept -> UnallocatedCString final;

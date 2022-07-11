@@ -24,6 +24,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -51,7 +52,6 @@
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace be = boost::endian;
 
@@ -498,7 +498,7 @@ auto Input::AddSignatures(const Signatures& signatures) noexcept -> bool
 }
 
 auto Input::AssociatedLocalNyms(
-    UnallocatedVector<OTNymID>& output) const noexcept -> void
+    UnallocatedVector<identifier::Nym>& output) const noexcept -> void
 {
     cache_.for_each_key([&](const auto& key) {
         const auto& owner = api_.Crypto().Blockchain().Owner(key);
@@ -508,7 +508,7 @@ auto Input::AssociatedLocalNyms(
 }
 
 auto Input::AssociatedRemoteContacts(
-    UnallocatedVector<OTIdentifier>& output) const noexcept -> void
+    UnallocatedVector<identifier::Generic>& output) const noexcept -> void
 {
     const auto hashes = script_->LikelyPubkeyHashes(api_);
     std::for_each(std::begin(hashes), std::end(hashes), [&](const auto& hash) {
@@ -521,7 +521,7 @@ auto Input::AssociatedRemoteContacts(
 
     auto payer = cache_.payer();
 
-    if (false == payer->empty()) { output.emplace_back(std::move(payer)); }
+    if (false == payer.empty()) { output.emplace_back(std::move(payer)); }
 }
 
 auto Input::AssociatePreviousOutput(const internal::Output& in) noexcept -> bool
@@ -736,7 +736,7 @@ auto Input::FindMatches(
         inputs.emplace_back(txid, previous_.Bytes(), element);
         const auto& [index, subchainID] = element;
         const auto& [subchain, account] = subchainID;
-        cache_.add({account->str(), subchain, index});
+        cache_.add({account.asBase58(api_.Crypto()), subchain, index});
         log(OT_PRETTY_CLASS())("input ")(position)(" of transaction ")
             .asHex(txid)(" spends ")(
                 blockchain::block::Outpoint{reader(outpoint)})
@@ -962,7 +962,8 @@ auto Input::Serialize(const std::uint32_t index, SerializeType& out)
         serializedKey.set_version(key_version_);
         serializedKey.set_chain(
             translate(UnitToClaim(BlockchainToUnit(chain_))));
-        serializedKey.set_nym(api_.Crypto().Blockchain().Owner(key).str());
+        serializedKey.set_nym(
+            api_.Crypto().Blockchain().Owner(key).asBase58(api_.Crypto()));
         serializedKey.set_subaccount(accountID);
         serializedKey.set_subchain(static_cast<std::uint32_t>(subchain));
         serializedKey.set_index(index);

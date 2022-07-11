@@ -18,8 +18,6 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/interface/qt/AccountActivity.hpp"
@@ -68,6 +66,7 @@ class Client;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -77,7 +76,6 @@ struct BlankModel;
 }  // namespace ui
 
 class Flag;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -89,7 +87,7 @@ class ImpQt final : public session::imp::UI::Imp
 public:
     auto AccountActivityQt(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::AccountActivityQt* final;
     auto AccountListQt(const identifier::Nym& nym, const SimpleCallback cb)
@@ -107,7 +105,7 @@ public:
         -> opentxs::ui::ActivitySummaryQt* final;
     auto ActivityThreadQt(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::ActivityThreadQt* final;
     auto BlankModel(const std::size_t columns) const noexcept
@@ -123,8 +121,10 @@ public:
         -> opentxs::ui::BlockchainSelectionQt* final;
     auto BlockchainStatisticsQt(const SimpleCallback updateCB) const noexcept
         -> opentxs::ui::BlockchainStatisticsQt* final;
-    auto ContactQt(const Identifier& contactID, const SimpleCallback cb)
-        const noexcept -> opentxs::ui::ContactQt* final;
+    auto ContactQt(
+        const identifier::Generic& contactID,
+        const SimpleCallback cb) const noexcept
+        -> opentxs::ui::ContactQt* final;
     auto ContactListQt(const identifier::Nym& nymID, const SimpleCallback cb)
         const noexcept -> opentxs::ui::ContactListQt* final;
     auto IdentityManagerQt() const noexcept

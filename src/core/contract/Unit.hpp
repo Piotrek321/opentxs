@@ -61,7 +61,7 @@ public:
         unit_of_account_version_map_;
 
     static auto GetID(const api::Session& api, const SerializedType& contract)
-        -> OTIdentifier;
+        -> identifier::Generic;
 
     auto AddAccountRecord(
         const UnallocatedCString& dataFolder,
@@ -69,7 +69,7 @@ public:
     auto DisplayStatistics(String& strContents) const -> bool override;
     auto EraseAccountRecord(
         const UnallocatedCString& dataFolder,
-        const Identifier& theAcctID) const -> bool override;
+        const identifier::Generic& theAcctID) const -> bool override;
     auto Name() const noexcept -> UnallocatedCString override
     {
         return short_name_;
@@ -139,7 +139,7 @@ private:
     const UnallocatedCString short_name_;
 
     auto contract(const Lock& lock) const -> SerializedType;
-    auto GetID(const Lock& lock) const -> OTIdentifier override;
+    auto GetID(const Lock& lock) const -> identifier::Generic override;
     auto get_displayscales(const SerializedType&) const
         -> std::optional<display::Definition>;
     auto get_unitofaccount(const SerializedType&) const -> opentxs::UnitType;

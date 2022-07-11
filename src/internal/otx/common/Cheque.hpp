@@ -53,7 +53,7 @@ class Cheque : public OTTrackable
 public:
     inline void SetAsVoucher(
         const identifier::Nym& remitterNymID,
-        const Identifier& remitterAcctID)
+        const identifier::Generic& remitterAcctID)
     {
         m_REMITTER_NYM_ID = remitterNymID;
         m_REMITTER_ACCT_ID = remitterAcctID;
@@ -71,12 +71,12 @@ public:
     {
         return m_REMITTER_NYM_ID;
     }
-    inline auto GetRemitterAcctID() const -> const Identifier&
+    inline auto GetRemitterAcctID() const -> const identifier::Generic&
     {
         return m_REMITTER_ACCT_ID;
     }
     inline auto HasRemitter() const -> bool { return m_bHasRemitter; }
-    inline auto SourceAccountID() const -> const Identifier&
+    inline auto SourceAccountID() const -> const identifier::Generic&
     {
         return ((m_bHasRemitter) ? m_REMITTER_ACCT_ID : m_SENDER_ACCT_ID);
     }
@@ -93,8 +93,8 @@ public:
         const std::int64_t& lTransactionNum,
         const Time& VALID_FROM,
         const Time& VALID_TO,  // The expiration date (valid from/to dates.)
-        const Identifier& SENDER_ACCT_ID,  // The asset account the cheque is
-                                           // drawn on.
+        const identifier::Generic& SENDER_ACCT_ID,  // The asset account the
+                                                    // cheque is drawn on.
         const identifier::Nym& SENDER_NYM_ID,  // This ID must match the user ID
                                                // on the asset account,
         // AND must verify the cheque signature with that user's key.
@@ -123,11 +123,11 @@ protected:
     Amount m_lAmount{0};
     OTString m_strMemo;
     // Optional. If present, must match depositor's user ID.
-    OTNymID m_RECIPIENT_NYM_ID;
+    identifier::Nym m_RECIPIENT_NYM_ID;
     bool m_bHasRecipient{false};
     // In the case of vouchers (cashier's cheques) we store the Remitter's ID.
-    OTNymID m_REMITTER_NYM_ID;
-    OTIdentifier m_REMITTER_ACCT_ID;
+    identifier::Nym m_REMITTER_NYM_ID;
+    identifier::Generic m_REMITTER_ACCT_ID;
     bool m_bHasRemitter{false};
 
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;

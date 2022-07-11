@@ -36,7 +36,6 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -85,6 +84,7 @@ class Transaction;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -109,7 +109,6 @@ class BlockchainTransaction;
 
 class Contact;
 class Data;
-class Identifier;
 class Options;
 class PasswordPrompt;
 // }  // namespace v1
@@ -129,7 +128,7 @@ struct BlockchainImp final : public Blockchain::Imp {
 
     auto ActivityDescription(
         const identifier::Nym& nym,
-        const Identifier& thread,
+        const identifier::Generic& thread,
         const UnallocatedCString& threadItemID) const noexcept
         -> UnallocatedCString final;
     auto ActivityDescription(
@@ -145,7 +144,7 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto KeyGenerated(
         const opentxs::blockchain::Type chain,
         const identifier::Nym& account,
-        const Identifier& subaccount,
+        const identifier::Generic& subaccount,
         const opentxs::blockchain::crypto::SubaccountType type,
         const opentxs::blockchain::crypto::Subchain subchain) const noexcept
         -> void final;
@@ -170,7 +169,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const opentxs::blockchain::Type chain,
         const identifier::Nym& owner,
         const opentxs::blockchain::crypto::SubaccountType type,
-        const Identifier& account,
+        const identifier::Generic& account,
         const Blockchain::Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void final;
@@ -235,7 +234,7 @@ private:
         proto::BlockchainTransaction& out) const noexcept
         -> std::unique_ptr<opentxs::blockchain::bitcoin::block::Transaction>;
     auto notify_new_account(
-        const Identifier& id,
+        const identifier::Generic& id,
         const identifier::Nym& owner,
         opentxs::blockchain::Type chain,
         opentxs::blockchain::crypto::SubaccountType type) const noexcept

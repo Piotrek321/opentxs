@@ -22,7 +22,10 @@ class Client;
 }  // namespace session
 }  // namespace api
 
-class Identifier;
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -30,10 +33,13 @@ class Identifier;
 namespace opentxs::api::session::ui
 {
 struct UpdateManager {
-    auto ActivateUICallback(const Identifier& widget) const noexcept -> void;
-    auto ClearUICallbacks(const Identifier& widget) const noexcept -> void;
-    auto RegisterUICallback(const Identifier& widget, const SimpleCallback& cb)
-        const noexcept -> void;
+    auto ActivateUICallback(const identifier::Generic& widget) const noexcept
+        -> void;
+    auto ClearUICallbacks(const identifier::Generic& widget) const noexcept
+        -> void;
+    auto RegisterUICallback(
+        const identifier::Generic& widget,
+        const SimpleCallback& cb) const noexcept -> void;
 
     UpdateManager(const api::session::Client& api) noexcept;
 

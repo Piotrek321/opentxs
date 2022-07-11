@@ -14,11 +14,11 @@
 #include <utility>
 
 #include "interface/ui/base/List.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/OTX.hpp"
@@ -32,7 +32,6 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -56,9 +55,9 @@ ContactList::ContactList(
     const SimpleCallback& cb) noexcept
     : ContactListList(api, nymID, cb, false)
     , Worker(api, {})
-    , owner_contact_id_(Widget::api_.Contacts().ContactID(nymID))
+    , owner_contact_id_(api_.Contacts().ContactID(nymID))
 {
-    OT_ASSERT(false == owner_contact_id_->empty());
+    OT_ASSERT(false == owner_contact_id_.empty());
 
     process_contact(owner_contact_id_);
     init_executor({UnallocatedCString{api.Endpoints().ContactUpdate()}});
@@ -77,32 +76,32 @@ ContactList::ParsedArgs::ParsedArgs(
 auto ContactList::ParsedArgs::extract_nymid(
     const api::Session& api,
     const UnallocatedCString& purportedID,
-    const UnallocatedCString& purportedPaymentCode) noexcept -> OTNymID
+    const UnallocatedCString& purportedPaymentCode) noexcept -> identifier::Nym
 {
-    auto output = api.Factory().NymID();
+    auto output = identifier::Nym{};
 
     if (false == purportedID.empty()) {
         // Case 1: purportedID is a nym id
-        output = api.Factory().NymID(purportedID);
+        output = api.Factory().NymIDFromBase58(purportedID);
 
-        if (false == output->empty()) { return output; }
+        if (false == output.empty()) { return output; }
 
         // Case 2: purportedID is a payment code
         output = api.Factory().NymIDFromPaymentCode(purportedID);
 
-        if (false == output->empty()) { return output; }
+        if (false == output.empty()) { return output; }
     }
 
     if (false == purportedPaymentCode.empty()) {
         // Case 3: purportedPaymentCode is a payment code
         output = api.Factory().NymIDFromPaymentCode(purportedPaymentCode);
 
-        if (false == output->empty()) { return output; }
+        if (false == output.empty()) { return output; }
 
         // Case 4: purportedPaymentCode is a nym id
-        output->SetString(purportedPaymentCode);
+        output = api.Factory().NymIDFromBase58(purportedPaymentCode);
 
-        if (false == output->empty()) { return output; }
+        if (false == output.empty()) { return output; }
     }
 
     // Case 5: not possible to extract a nym id
@@ -139,13 +138,13 @@ auto ContactList::AddContact(
     const UnallocatedCString& paymentCode,
     const UnallocatedCString& nymID) const noexcept -> UnallocatedCString
 {
-    auto args = ParsedArgs{Widget::api_, nymID, paymentCode};
-    const auto contact = Widget::api_.Contacts().NewContact(
-        label, args.nym_id_, args.payment_code_);
+    auto args = ParsedArgs{api_, nymID, paymentCode};
+    const auto contact =
+        api_.Contacts().NewContact(label, args.nym_id_, args.payment_code_);
     const auto& id = contact->ID();
-    Widget::api_.OTX().CanMessage(primary_id_, id, true);
+    api_.OTX().CanMessage(primary_id_, id, true);
 
-    return id.str();
+    return id.asBase58(api_.Crypto());
 }
 
 auto ContactList::construct_row(
@@ -153,7 +152,7 @@ auto ContactList::construct_row(
     const ContactListSortKey& index,
     CustomData&) const noexcept -> RowPointer
 {
-    return factory::ContactListItem(*this, Widget::api_, id, index);
+    return factory::ContactListItem(*this, api_, id, index);
 }
 
 auto ContactList::pipeline(Message&& in) noexcept -> void
@@ -214,16 +213,17 @@ auto ContactList::process_contact(const Message& in) noexcept -> void
     OT_ASSERT(1 < body.size());
 
     const auto& id = body.at(1);
-    const auto contactID = Widget::api_.Factory().Identifier(id);
+    const auto contactID = api_.Factory().IdentifierFromHash(id.Bytes());
 
-    OT_ASSERT(false == contactID->empty());
+    OT_ASSERT(false == contactID.empty());
 
     process_contact(contactID);
 }
 
-auto ContactList::process_contact(const Identifier& contactID) noexcept -> void
+auto ContactList::process_contact(const identifier::Generic& contactID) noexcept
+    -> void
 {
-    auto name = Widget::api_.Contacts().ContactName(contactID);
+    auto name = api_.Contacts().ContactName(contactID);
 
     OT_ASSERT(false == name.empty());
 
@@ -234,13 +234,13 @@ auto ContactList::process_contact(const Identifier& contactID) noexcept -> void
 
 auto ContactList::startup() noexcept -> void
 {
-    const auto contacts = Widget::api_.Contacts().ContactList();
+    const auto contacts = api_.Contacts().ContactList();
     LogVerbose()(OT_PRETTY_CLASS())("Loading ")(contacts.size())(" contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {
         auto custom = CustomData{};
-        const auto contactID = Widget::api_.Factory().Identifier(id);
+        const auto contactID = api_.Factory().IdentifierFromBase58(id);
         process_contact(contactID);
     }
 

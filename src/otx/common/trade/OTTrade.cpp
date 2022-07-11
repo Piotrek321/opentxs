@@ -12,6 +12,7 @@
 #include <cstring>
 #include <memory>
 
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/common/Account.hpp"
@@ -48,8 +49,8 @@ enum { TradeProcessIntervalSeconds = 10 };
 
 OTTrade::OTTrade(const api::Session& api)
     : ot_super(api)
-    , currencyTypeID_(api_.Factory().UnitID())
-    , currencyAcctID_(api_.Factory().Identifier())
+    , currencyTypeID_()
+    , currencyAcctID_()
     , offer_(nullptr)
     , hasTradeActivated_(false)
     , stopPrice_(0)
@@ -65,10 +66,10 @@ OTTrade::OTTrade(
     const api::Session& api,
     const identifier::Notary& notaryID,
     const identifier::UnitDefinition& instrumentDefinitionID,
-    const Identifier& assetAcctId,
+    const identifier::Generic& assetAcctId,
     const identifier::Nym& nymID,
     const identifier::UnitDefinition& currencyId,
-    const Identifier& currencyAcctId)
+    const identifier::Generic& currencyAcctId)
     : ot_super(api, notaryID, instrumentDefinitionID, assetAcctId, nymID)
     , currencyTypeID_(currencyId)
     , currencyAcctID_(currencyAcctId)
@@ -170,13 +171,17 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                    currencyAcctID = String::Factory(
                        xml->getAttributeValue("currencyAcctID"));
 
-        const auto NOTARY_ID = api_.Factory().ServerID(notaryID);
-        const auto INSTRUMENT_DEFINITION_ID =
-                       api_.Factory().UnitID(instrumentDefinitionID),
-                   CURRENCY_TYPE_ID = api_.Factory().UnitID(currencyTypeID);
-        const auto ASSET_ACCT_ID = api_.Factory().Identifier(assetAcctID),
-                   CURRENCY_ACCT_ID = api_.Factory().Identifier(currencyAcctID);
-        const auto NYM_ID = api_.Factory().NymID(nymID);
+        const auto NOTARY_ID =
+            api_.Factory().NotaryIDFromBase58(notaryID->Bytes());
+        const auto INSTRUMENT_DEFINITION_ID = api_.Factory().UnitIDFromBase58(
+                       instrumentDefinitionID->Bytes()),
+                   CURRENCY_TYPE_ID =
+                       api_.Factory().UnitIDFromBase58(currencyTypeID->Bytes());
+        const auto ASSET_ACCT_ID = api_.Factory().IdentifierFromBase58(
+                       assetAcctID->Bytes()),
+                   CURRENCY_ACCT_ID = api_.Factory().IdentifierFromBase58(
+                       currencyAcctID->Bytes());
+        const auto NYM_ID = api_.Factory().NymIDFromBase58(nymID->Bytes());
 
         SetNotaryID(NOTARY_ID);
         SetSenderNymID(NYM_ID);
@@ -384,13 +389,13 @@ auto OTTrade::VerifyOffer(OTOffer& offer) const -> bool
 auto OTTrade::GetOffer(const PasswordPrompt& reason, OTMarket** market)
     -> OTOffer*
 {
-    auto id = api_.Factory().Identifier();
+    auto id = identifier::Generic{};
 
     return GetOffer(id, reason, market);
 }
 
 auto OTTrade::GetOffer(
-    Identifier& offerMarketId,
+    identifier::Generic& offerMarketId,
     const PasswordPrompt& reason,
     OTMarket** market) -> OTOffer*
 {
@@ -407,7 +412,8 @@ auto OTTrade::GetOffer(
 
         // It loaded. Let's get the Market ID off of it so we can locate the
         // market.
-        const auto OFFER_MARKET_ID = api_.Factory().Identifier(*offer_);
+        const auto OFFER_MARKET_ID =
+            api_.Factory().Internal().Identifier(*offer_);
 
         if (market != nullptr) {
             auto pMarket = GetCron()->GetMarket(OFFER_MARKET_ID);
@@ -460,7 +466,7 @@ auto OTTrade::GetOffer(
     // *Also remember we saved a copy of the original in the cron folder.
 
     // It loaded. Let's get the Market ID off of it so we can locate the market.
-    const auto OFFER_MARKET_ID = api_.Factory().Identifier(*offer);
+    const auto OFFER_MARKET_ID = api_.Factory().Internal().Identifier(*offer);
     offerMarketId.Assign(OFFER_MARKET_ID);
 
     // Previously if a user tried to use a market that didn't exist, I'd just
@@ -752,7 +758,8 @@ void OTTrade::onRemovalFromCron(const PasswordPrompt& reason)
 //    GetSenderAcctID()    -- asset account.
 //    GetCurrencyAcctID()    -- currency account.
 
-auto OTTrade::GetClosingNumber(const Identifier& acctId) const -> std::int64_t
+auto OTTrade::GetClosingNumber(const identifier::Generic& acctId) const
+    -> std::int64_t
 {
     if (acctId == GetSenderAcctID()) {
         return GetAssetAcctClosingNum();
@@ -1080,7 +1087,7 @@ auto OTTrade::ProcessCron(const PasswordPrompt& reason) -> bool
     bool bStayOnMarket =
         true;  // by default stay on the market (until some rule expires me.)
 
-    auto OFFER_MARKET_ID = api_.Factory().Identifier();
+    auto OFFER_MARKET_ID = identifier::Generic{};
     OTMarket* market = nullptr;
 
     // If the Offer is already active on a market, then I already have a pointer
@@ -1138,10 +1145,9 @@ auto OTTrade::ProcessCron(const PasswordPrompt& reason) -> bool
 }
 
 /*
-X OTIdentifier    currencyTypeID_;    // GOLD (Asset) is trading for DOLLARS
-(Currency).
-X OTIdentifier    currencyAcctID_;    // My Dollar account, used for paying
-for my Gold (say) trades.
+X identifier::Generic    currencyTypeID_;    // GOLD (Asset) is trading for
+DOLLARS (Currency). X identifier::Generic    currencyAcctID_;    // My Dollar
+account, used for paying for my Gold (say) trades.
 
 X std::int64_t            stopPrice_;        // The price limit that activates
 the
@@ -1219,8 +1225,8 @@ auto OTTrade::IssueTrade(OTOffer& offer, char stopSign, const Amount& stopPrice)
 void OTTrade::Release_Trade()
 {
     // If there were any dynamically allocated objects, clean them up here.
-    currencyTypeID_->clear();
-    currencyAcctID_->clear();
+    currencyTypeID_.clear();
+    currencyAcctID_.clear();
 
     marketOffer_->Release();
 }

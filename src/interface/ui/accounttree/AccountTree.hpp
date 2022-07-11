@@ -16,6 +16,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -23,7 +24,6 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/interface/ui/AccountTree.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
@@ -49,7 +49,9 @@ class Client;
 
 namespace identifier
 {
+class Generic;
 class Nym;
+class UnitDefinition;
 }  // namespace identifier
 
 namespace network
@@ -66,7 +68,6 @@ class Message;
 }  // namespace network
 
 class Amount;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -87,6 +88,7 @@ class AccountTree final : public AccountTreeList,
                           public Worker<api::session::Client>
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto Debug() const noexcept -> UnallocatedCString final;
     auto Owner() const noexcept -> const identifier::Nym& final
     {
@@ -141,7 +143,7 @@ private:
     auto load_blockchain(ChildMap& out, SubscribeSet& subscribe) const noexcept
         -> void;
     auto load_blockchain_account(
-        OTIdentifier&& id,
+        identifier::Generic&& id,
         ChildMap& out,
         SubscribeSet& subscribe) const noexcept -> void;
     auto load_blockchain_account(
@@ -149,26 +151,26 @@ private:
         ChildMap& out,
         SubscribeSet& subscribe) const noexcept -> void;
     auto load_blockchain_account(
-        OTIdentifier&& id,
+        identifier::Generic&& id,
         blockchain::Type chain,
         ChildMap& out,
         SubscribeSet& subscribe) const noexcept -> void;
     auto load_blockchain_account(
-        OTIdentifier&& id,
+        identifier::Generic&& id,
         blockchain::Type chain,
         Amount&& balance,
         ChildMap& out,
         SubscribeSet& subscribe) const noexcept -> void;
     auto load_custodial(ChildMap& out) const noexcept -> void;
-    auto load_custodial_account(OTIdentifier&& id, ChildMap& out) const noexcept
-        -> void;
+    auto load_custodial_account(identifier::Generic&& id, ChildMap& out)
+        const noexcept -> void;
     auto load_custodial_account(
-        OTIdentifier&& id,
+        identifier::Generic&& id,
         Amount&& balance,
         ChildMap& out) const noexcept -> void;
     auto load_custodial_account(
-        OTIdentifier&& id,
-        OTUnitID&& contract,
+        identifier::Generic&& id,
+        identifier::UnitDefinition&& contract,
         UnitType type,
         Amount&& balance,
         UnallocatedCString&& name,

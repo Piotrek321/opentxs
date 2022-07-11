@@ -10,7 +10,6 @@
 #include <string_view>
 
 #include "internal/otx/common/Contract.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -53,7 +52,7 @@ namespace opentxs::otx::blind::internal
 class Mint : public Contract
 {
 public:
-    virtual auto AccountID() const -> OTIdentifier = 0;
+    virtual auto AccountID() const -> identifier::Generic = 0;
     auto API() const noexcept -> const api::Session& { return api_; }
     virtual auto Expired() const -> bool = 0;
     virtual auto GetDenomination(std::int32_t nIndex) const -> Amount = 0;

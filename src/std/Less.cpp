@@ -73,9 +73,9 @@ auto less<opentxs::otx::client::MessageTask>::operator()(
     const auto& [lID, lMessage, lFunction] = lhs;
     const auto& [rID, rMessage, rFunction] = rhs;
 
-    if (lID->str() < rID->str()) { return true; }
+    if (lID < rID) { return true; }
 
-    if (rID->str() < lID->str()) { return false; }
+    if (rID < lID) { return false; }
 
     if (lMessage < rMessage) { return true; }
 
@@ -93,17 +93,17 @@ auto less<opentxs::otx::client::PaymentTask>::operator()(
     const auto& [lID, lPayment] = lhs;
     const auto& [rID, rPayment] = rhs;
 
-    if (lID->str() < rID->str()) { return true; }
+    if (lID < rID) { return true; }
 
-    if (rID->str() < lID->str()) { return false; }
+    if (rID < lID) { return false; }
 
-    auto lPaymentID = opentxs::Identifier::Factory();
-    auto rPaymentID = opentxs::Identifier::Factory();
+    auto lPaymentID = opentxs::identifier::Generic{};
+    auto rPaymentID = opentxs::identifier::Generic{};
 
     lPayment->GetIdentifier(lPaymentID);
     rPayment->GetIdentifier(rPaymentID);
 
-    if (lPaymentID->str() < rPaymentID->str()) { return true; }
+    if (lPaymentID < rPaymentID) { return true; }
 
     return false;
 }
@@ -115,15 +115,15 @@ auto less<opentxs::otx::client::PeerReplyTask>::operator()(
     const auto& [lNym, lReply, lRequest] = lhs;
     const auto& [rNym, rReply, rRequest] = rhs;
 
-    if (lNym->str() < rNym->str()) { return true; }
+    if (lNym < rNym) { return true; }
 
-    if (rNym->str() < lNym->str()) { return false; }
+    if (rNym < lNym) { return false; }
 
-    if (lReply->ID()->str() < rReply->ID()->str()) { return true; }
+    if (lReply->ID() < rReply->ID()) { return true; }
 
-    if (rReply->ID()->str() < lReply->ID()->str()) { return false; }
+    if (rReply->ID() < lReply->ID()) { return false; }
 
-    if (lRequest->ID()->str() < rRequest->ID()->str()) { return true; }
+    if (lRequest->ID() < rRequest->ID()) { return true; }
 
     return false;
 }
@@ -135,11 +135,11 @@ auto less<opentxs::otx::client::PeerRequestTask>::operator()(
     const auto& [lID, lRequest] = lhs;
     const auto& [rID, rRequest] = rhs;
 
-    if (lID->str() < rID->str()) { return true; }
+    if (lID < rID) { return true; }
 
-    if (rID->str() < lID->str()) { return false; }
+    if (rID < lID) { return false; }
 
-    if (lRequest->ID()->str() < rRequest->ID()->str()) { return true; }
+    if (lRequest->ID() < rRequest->ID()) { return true; }
 
     return false;
 }
@@ -151,15 +151,15 @@ auto less<opentxs::ui::implementation::ActivityThreadRowID>::operator()(
     const auto& [lID, lBox, lAccount] = lhs;
     const auto& [rID, rBox, rAccount] = rhs;
 
-    if (lID->str() < rID->str()) { return true; }
+    if (lID < rID) { return true; }
 
-    if (rID->str() < lID->str()) { return false; }
+    if (rID < lID) { return false; }
 
     if (lBox < rBox) { return true; }
 
     if (rBox < lBox) { return false; }
 
-    if (lAccount->str() < rAccount->str()) { return true; }
+    if (lAccount < rAccount) { return true; }
 
     return false;
 }
@@ -211,25 +211,25 @@ auto less<opentxs::FixedByteArray<32>>::operator()(
     return lhs < rhs;
 }
 
-auto less<opentxs::OTIdentifier>::operator()(
-    const opentxs::OTIdentifier& lhs,
-    const opentxs::OTIdentifier& rhs) const -> bool
+auto less<opentxs::identifier::Generic>::operator()(
+    const opentxs::identifier::Generic& lhs,
+    const opentxs::identifier::Generic& rhs) const -> bool
 {
-    return lhs.get() < rhs.get();
+    return lhs.operator<(rhs);
 }
 
-auto less<opentxs::OTNotaryID>::operator()(
-    const opentxs::OTNotaryID& lhs,
-    const opentxs::OTNotaryID& rhs) const -> bool
+auto less<opentxs::identifier::Notary>::operator()(
+    const opentxs::identifier::Notary& lhs,
+    const opentxs::identifier::Notary& rhs) const -> bool
 {
-    return lhs.get() < rhs.get();
+    return lhs.operator<(rhs);
 }
 
-auto less<opentxs::OTNymID>::operator()(
-    const opentxs::OTNymID& lhs,
-    const opentxs::OTNymID& rhs) const -> bool
+auto less<opentxs::identifier::Nym>::operator()(
+    const opentxs::identifier::Nym& lhs,
+    const opentxs::identifier::Nym& rhs) const -> bool
 {
-    return lhs.get() < rhs.get();
+    return lhs.operator<(rhs);
 }
 
 auto less<opentxs::OTPeerReply>::operator()(
@@ -250,14 +250,14 @@ auto less<opentxs::OTSecret>::operator()(
     const opentxs::OTSecret& lhs,
     const opentxs::OTSecret& rhs) const -> bool
 {
-    return lhs.get() < rhs.get();
+    return lhs.get().operator<(rhs.get());
 }
 
-auto less<opentxs::OTUnitID>::operator()(
-    const opentxs::OTUnitID& lhs,
-    const opentxs::OTUnitID& rhs) const -> bool
+auto less<opentxs::identifier::UnitDefinition>::operator()(
+    const opentxs::identifier::UnitDefinition& lhs,
+    const opentxs::identifier::UnitDefinition& rhs) const -> bool
 {
-    return lhs.get() < rhs.get();
+    return lhs.operator<(rhs);
 }
 
 auto less<opentxs::OT_DownloadNymboxType>::operator()(

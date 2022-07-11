@@ -15,6 +15,8 @@
 #include "interface/ui/seedtree/SeedTreeItem.hpp"
 #include "interface/ui/seedtree/SeedTreeNym.hpp"
 #include "internal/interface/ui/UI.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
@@ -59,10 +61,12 @@ SeedTreeQt::SeedTreeQt(internal::SeedTree& parent) noexcept
 
     imp_->parent_.SetCallbacks(
         {[this](const auto& id) {
-             emit defaultNymChanged(QString::fromStdString(id.str()));
+             emit defaultNymChanged(QString::fromStdString(
+                 id.asBase58(imp_->parent_.API().Crypto())));
          },
          [this](const auto& id) {
-             emit defaultSeedChanged(QString::fromStdString(id.str()));
+             emit defaultSeedChanged(QString::fromStdString(
+                 id.asBase58(imp_->parent_.API().Crypto())));
          }});
 }
 
@@ -79,12 +83,14 @@ auto SeedTreeQt::check() -> void
 
 auto SeedTreeQt::defaultNym() const noexcept -> QString
 {
-    return QString::fromStdString(imp_->parent_.DefaultNym()->str());
+    return QString::fromStdString(
+        imp_->parent_.DefaultNym().asBase58(imp_->parent_.API().Crypto()));
 }
 
 auto SeedTreeQt::defaultSeed() const noexcept -> QString
 {
-    return QString::fromStdString(imp_->parent_.DefaultSeed()->str());
+    return QString::fromStdString(
+        imp_->parent_.DefaultSeed().asBase58(imp_->parent_.API().Crypto()));
 }
 
 SeedTreeQt::~SeedTreeQt()

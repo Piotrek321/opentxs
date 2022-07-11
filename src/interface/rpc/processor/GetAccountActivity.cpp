@@ -9,6 +9,7 @@
 
 #include <PaymentWorkflow.pb.h>
 #include <PaymentWorkflowEnums.pb.h>
+#include <type_traits>
 #include <utility>
 
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -31,7 +32,6 @@
 #include "opentxs/interface/ui/AccountActivity.hpp"
 #include "opentxs/interface/ui/BalanceItem.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs::rpc::implementation
@@ -59,12 +59,12 @@ auto RPC::get_account_activity(const request::Base& base) const
                 continue;
             }
 
-            const auto accountID = api.Factory().Identifier(id);
-            const auto owner = [&]() -> OTNymID {
+            const auto accountID = api.Factory().IdentifierFromBase58(id);
+            const auto owner = [&]() -> identifier::Nym {
                 const auto [chain, owner] =
                     api.Crypto().Blockchain().LookupAccount(accountID);
 
-                if (owner->empty()) {
+                if (owner.empty()) {
 
                     return api.Storage().AccountOwner(accountID);
                 } else {
@@ -84,16 +84,18 @@ auto RPC::get_account_activity(const request::Base& base) const
                         otx::client::StorageBox::INTERNALTRANSFER ==
                         row.Type()) {
 
-                        return api.Contacts().ContactID(owner)->str();
+                        return api.Contacts().ContactID(owner).asBase58(
+                            api.Crypto());
                     }
 
                     return {};
                 }();
                 const auto state = [&] {
                     auto out{proto::PAYMENTWORKFLOWSTATE_ERROR};
-                    const auto id = api.Factory().Identifier(row.Workflow());
+                    const auto id =
+                        api.Factory().IdentifierFromBase58(row.Workflow());
 
-                    if (id->empty()) { return out; }
+                    if (id.empty()) { return out; }
 
                     auto proto = proto::PaymentWorkflow{};
 

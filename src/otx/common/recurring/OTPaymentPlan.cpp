@@ -26,6 +26,7 @@
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -104,9 +105,9 @@ OTPaymentPlan::OTPaymentPlan(
     const api::Session& api,
     const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-    const Identifier& SENDER_ACCT_ID,
+    const identifier::Generic& SENDER_ACCT_ID,
     const identifier::Nym& SENDER_NYM_ID,
-    const Identifier& RECIPIENT_ACCT_ID,
+    const identifier::Generic& RECIPIENT_ACCT_ID,
     const identifier::Nym& RECIPIENT_NYM_ID)
     : ot_super(
           api,
@@ -254,11 +255,11 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
                RECIPIENT_ACCT_ID = String::Factory(GetRecipientAcctID()),
                RECIPIENT_NYM_ID = String::Factory(GetRecipientNymID());
 
-    OT_ASSERT(!m_pCancelerNymID->empty());
+    OT_ASSERT(!m_pCancelerNymID.empty());
 
     auto strCanceler = String::Factory();
 
-    if (m_bCanceled) { m_pCancelerNymID->GetString((strCanceler)); }
+    if (m_bCanceled) { m_pCancelerNymID.GetString(api_.Crypto(), strCanceler); }
 
     // OTAgreement
     Tag tag("agreement");
@@ -949,13 +950,9 @@ auto OTPaymentPlan::ProcessPayment(
             // set up the transaction items (each transaction may have multiple
             // items... but not in this case.)
             auto pItemSend{api_.Factory().InternalSession().Item(
-                *pTransSend,
-                itemType::paymentReceipt,
-                api_.Factory().Identifier())};
+                *pTransSend, itemType::paymentReceipt, identifier::Generic{})};
             auto pItemRecip{api_.Factory().InternalSession().Item(
-                *pTransRecip,
-                itemType::paymentReceipt,
-                api_.Factory().Identifier())};
+                *pTransRecip, itemType::paymentReceipt, identifier::Generic{})};
 
             OT_ASSERT(false != bool(pItemSend));
             OT_ASSERT(false != bool(pItemRecip));
@@ -1245,10 +1242,8 @@ auto OTPaymentPlan::ProcessPayment(
             theRecipientInbox->SaveContract();
 
             // Save both inboxes to storage. (File, DB, wherever it goes.)
-            sourceAccount.get().SaveInbox(
-                *theSenderInbox, api_.Factory().Identifier());
-            recipientAccount.get().SaveInbox(
-                *theRecipientInbox, api_.Factory().Identifier());
+            sourceAccount.get().SaveInbox(*theSenderInbox);
+            recipientAccount.get().SaveInbox(*theRecipientInbox);
 
             // These correspond to the AddTransaction() calls just above. These
             // are stored in separate files now.

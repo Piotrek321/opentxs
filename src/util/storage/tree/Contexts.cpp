@@ -18,6 +18,7 @@
 #include "internal/serialization/protobuf/verify/Context.hpp"
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
@@ -26,8 +27,12 @@
 
 namespace opentxs::storage
 {
-Contexts::Contexts(const Driver& storage, const UnallocatedCString& hash)
-    : Node(storage, hash)
+Contexts::Contexts(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
+    const Driver& storage,
+    const UnallocatedCString& hash)
+    : Node(crypto, factory, storage, hash)
 {
     if (check_hash(hash)) {
         init(hash);
@@ -36,12 +41,12 @@ Contexts::Contexts(const Driver& storage, const UnallocatedCString& hash)
     }
 }
 
-auto Contexts::Delete(const UnallocatedCString& id) -> bool
+auto Contexts::Delete(const identifier::Nym& id) -> bool
 {
-    return delete_item(id);
+    return delete_item(id.asBase58(crypto_));
 }
 
-void Contexts::init(const UnallocatedCString& hash)
+auto Contexts::init(const UnallocatedCString& hash) -> void
 {
     std::shared_ptr<proto::StorageNymList> serialized;
     driver_.LoadProto(hash, serialized);
@@ -61,12 +66,13 @@ void Contexts::init(const UnallocatedCString& hash)
 }
 
 auto Contexts::Load(
-    const UnallocatedCString& id,
+    const identifier::Nym& id,
     std::shared_ptr<proto::Context>& output,
     UnallocatedCString& alias,
     const bool checking) const -> bool
 {
-    return load_proto<proto::Context>(id, output, alias, checking);
+    return load_proto<proto::Context>(
+        id.asBase58(crypto_), output, alias, checking);
 }
 
 auto Contexts::save(const std::unique_lock<std::mutex>& lock) const -> bool

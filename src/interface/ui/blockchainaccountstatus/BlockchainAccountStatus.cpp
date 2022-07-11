@@ -19,7 +19,6 @@
 #include <utility>
 
 #include "interface/ui/base/List.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -110,7 +109,7 @@ auto BlockchainAccountStatus::construct_row(
     CustomData& custom) const noexcept -> RowPointer
 {
     return factory::BlockchainSubaccountSourceWidget(
-        *this, Widget::api_, id, index, custom);
+        *this, api_, id, index, custom);
 }
 
 auto BlockchainAccountStatus::load() noexcept -> void
@@ -118,7 +117,7 @@ auto BlockchainAccountStatus::load() noexcept -> void
     try {
         auto map = [&] {
             auto out = ChildMap{};
-            const auto& api = Widget::api_;
+            const auto& api = api_;
             const auto& account =
                 api.Crypto().Blockchain().Account(primary_id_, chain_);
             // TODO imported accounts
@@ -224,12 +223,12 @@ auto BlockchainAccountStatus::shut_down() noexcept -> void
 
 auto BlockchainAccountStatus::populate(
     const blockchain::crypto::Account& account,
-    const Identifier& subaccountID,
+    const identifier::Generic& subaccountID,
     const blockchain::crypto::SubaccountType type,
     const blockchain::crypto::Subchain subchain,
     ChildMap& out) const noexcept -> void
 {
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     using Type = blockchain::crypto::SubaccountType;
 
     switch (type) {
@@ -239,7 +238,7 @@ auto BlockchainAccountStatus::populate(
             const auto path = subaccount.Path();
             populate(
                 subaccount,
-                api.Factory().Identifier(path.root()),
+                api.Factory().IdentifierFromBase58(path.root()),
                 api.Crypto().Seed().SeedDescription(path.root()),
                 subaccount.Name(),
                 subchain,
@@ -280,7 +279,7 @@ auto BlockchainAccountStatus::populate(
 
 auto BlockchainAccountStatus::populate(
     const blockchain::crypto::Subaccount& node,
-    const Identifier& sourceID,
+    const identifier::Generic& sourceID,
     const UnallocatedCString& sourceDescription,
     const UnallocatedCString& subaccountName,
     const blockchain::crypto::Subchain subchain,
@@ -352,7 +351,7 @@ auto BlockchainAccountStatus::populate(
 auto BlockchainAccountStatus::process_account(const Message& in) noexcept
     -> void
 {
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     auto body = in.Body();
 
     OT_ASSERT(4 < body.size());
@@ -361,12 +360,13 @@ auto BlockchainAccountStatus::process_account(const Message& in) noexcept
 
     if (chain != chain_) { return; }
 
-    const auto owner = api.Factory().Identifier(body.at(2));
+    const auto owner = api.Factory().IdentifierFromHash(body.at(2).Bytes());
 
     if (owner != primary_id_) { return; }
 
     const auto type = body.at(3).as<blockchain::crypto::SubaccountType>();
-    const auto subaccountID = api.Factory().Identifier(body.at(4));
+    const auto subaccountID =
+        api.Factory().IdentifierFromHash(body.at(4).Bytes());
     const auto& account =
         api.Crypto().Blockchain().Account(primary_id_, chain_);
     auto out = ChildMap{};
@@ -392,7 +392,7 @@ auto BlockchainAccountStatus::process_account(const Message& in) noexcept
 auto BlockchainAccountStatus::process_progress(const Message& in) noexcept
     -> void
 {
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     auto body = in.Body();
 
     OT_ASSERT(5 < body.size());
@@ -401,12 +401,13 @@ auto BlockchainAccountStatus::process_progress(const Message& in) noexcept
 
     if (chain != chain_) { return; }
 
-    const auto owner = api.Factory().Identifier(body.at(2));
+    const auto owner = api.Factory().IdentifierFromHash(body.at(2).Bytes());
 
     if (owner != primary_id_) { return; }
 
     const auto type = body.at(3).as<blockchain::crypto::SubaccountType>();
-    const auto subaccountID = api.Factory().Identifier(body.at(4));
+    const auto subaccountID =
+        api.Factory().IdentifierFromHash(body.at(4).Bytes());
     const auto subchain = body.at(5).as<blockchain::crypto::Subchain>();
     const auto& account =
         api.Crypto().Blockchain().Account(primary_id_, chain_);
@@ -459,7 +460,7 @@ auto BlockchainAccountStatus::subchain_display_name(
     using Height = blockchain::block::Height;
     const auto target = [&]() -> std::optional<Height> {
         try {
-            const auto& api = Widget::api_;
+            const auto& api = api_;
             const auto handle =
                 api.Network().Blockchain().GetChain(node.Parent().Chain());
 

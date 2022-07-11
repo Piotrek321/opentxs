@@ -17,6 +17,11 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class Bip47Channel;
@@ -36,7 +41,7 @@ struct Account::Factory<crypto::HD, proto::HDPath, HDProtocol, PasswordPrompt> {
     static auto get(
         const api::Session& api,
         const crypto::Account& parent,
-        Identifier& id,
+        identifier::Generic& id,
         const proto::HDPath& data,
         const HDProtocol standard,
         const PasswordPrompt& reason) noexcept -> std::unique_ptr<crypto::HD>
@@ -50,7 +55,7 @@ struct Account::Factory<crypto::HD, proto::HDAccount> {
     static auto get(
         const api::Session& api,
         const crypto::Account& parent,
-        Identifier& id,
+        identifier::Generic& id,
         const proto::HDAccount& data) noexcept -> std::unique_ptr<crypto::HD>
     {
         return factory::BlockchainHDSubaccount(api, parent, data, id);
@@ -63,7 +68,7 @@ struct Account::
     static auto get(
         const api::Session& api,
         const crypto::Account& parent,
-        Identifier& id,
+        identifier::Generic& id,
         const opentxs::PaymentCode& code,
         const identity::Nym& nym) noexcept
         -> std::unique_ptr<crypto::Notification>
@@ -84,7 +89,7 @@ struct Account::Factory<
     static auto get(
         const api::Session& api,
         const crypto::Account& parent,
-        Identifier& id,
+        identifier::Generic& id,
         const api::session::Contacts& contacts,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
@@ -110,7 +115,7 @@ struct Account::Factory<
     static auto get(
         const api::Session& api,
         const crypto::Account& parent,
-        Identifier& id,
+        identifier::Generic& id,
         const api::session::Contacts& contacts,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
@@ -129,7 +134,7 @@ struct Account::
     static auto get(
         const api::Session& api,
         const crypto::Account& parent,
-        Identifier& id,
+        identifier::Generic& id,
         const api::session::Contacts& contacts,
         const proto::Bip47Channel& data) noexcept
         -> std::unique_ptr<crypto::PaymentCode>
@@ -141,7 +146,7 @@ struct Account::
 template <typename InterfaceType, typename PayloadType>
 auto Account::NodeGroup<InterfaceType, PayloadType>::add(
     const Lock& lock,
-    const Identifier& id,
+    const identifier::Generic& id,
     std::unique_ptr<PayloadType> node) noexcept -> bool
 {
     if (false == bool(node)) {

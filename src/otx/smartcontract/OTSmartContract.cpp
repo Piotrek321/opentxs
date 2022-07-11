@@ -41,6 +41,7 @@
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -781,15 +782,14 @@ OTParty * FindPartyBasedOnNymAsAuthAgent(identity::Nym& theNym, OTAgent **
 ppAgent=nullptr);
 OTParty * FindPartyBasedOnAccount(OTAccount& theAccount, OTPartyAccount **
 ppPartyAccount=nullptr);
-OTParty * FindPartyBasedOnNymIDAsAgent(const Identifier& theNymID, OTAgent **
-ppAgent=nullptr);
-OTParty * FindPartyBasedOnNymIDAsAuthAgent(const Identifier& theNymID,
-OTAgent ** ppAgent=nullptr);
-OTParty * FindPartyBasedOnAccountID(const Identifier& theAcctID,
-OTPartyAccount ** ppPartyAccount=nullptr);
-OTAgent            * GetAgent(UnallocatedCString str_agent_name);
-OTPartyAccount    * GetPartyAccount(UnallocatedCString str_acct_name);
-OTPartyAccount    * GetPartyAccountByID(const Identifier& theAcctID);
+OTParty * FindPartyBasedOnNymIDAsAgent(const identifier::Generic& theNymID,
+OTAgent ** ppAgent=nullptr); OTParty * FindPartyBasedOnNymIDAsAuthAgent(const
+identifier::Generic& theNymID, OTAgent ** ppAgent=nullptr); OTParty *
+FindPartyBasedOnAccountID(const identifier::Generic& theAcctID, OTPartyAccount
+** ppPartyAccount=nullptr); OTAgent            * GetAgent(UnallocatedCString
+str_agent_name); OTPartyAccount    * GetPartyAccount(UnallocatedCString
+str_acct_name); OTPartyAccount    * GetPartyAccountByID(const
+identifier::Generic& theAcctID);
 */
 
 // Returns true if it was empty (and thus successfully set.)
@@ -863,8 +863,8 @@ auto OTSmartContract::GetOpeningNumber(const identifier::Nym& theNymID) const
     return 0;
 }
 
-auto OTSmartContract::GetClosingNumber(const Identifier& theAcctID) const
-    -> std::int64_t
+auto OTSmartContract::GetClosingNumber(
+    const identifier::Generic& theAcctID) const -> std::int64_t
 {
     OTPartyAccount* pPartyAcct =
         GetPartyAccountByID(theAcctID);  // from OTScriptable.
@@ -1123,7 +1123,7 @@ auto OTSmartContract::GetAcctBalance(UnallocatedCString from_acct_name)
     // then we can error out here if he's not.  We can then pass in his Nym ID.
     //
 
-    auto theFromAgentID = api_.Factory().Identifier();
+    auto theFromAgentID = identifier::Generic{};
     const bool bFromAgentID = pFromAgent->GetSignerID(theFromAgentID);
 
     if (!bFromAgentID) {
@@ -1141,15 +1141,13 @@ auto OTSmartContract::GetAcctBalance(UnallocatedCString from_acct_name)
     }
 
     const auto theFromAcctID =
-        api_.Factory().Identifier(pFromAcct->GetAcctID());
+        api_.Factory().IdentifierFromBase58(pFromAcct->GetAcctID().Bytes());
     //
     // BELOW THIS POINT, theFromAcctID and theFromAgentID available.
-    const UnallocatedCString str_party_id = pFromParty->GetPartyID();
-    const auto strPartyID = String::Factory(str_party_id);
-    const auto PARTY_NYM_ID = api_.Factory().NymID(strPartyID);
-
+    const auto PARTY_NYM_ID =
+        api_.Factory().NymIDFromBase58(pFromParty->GetPartyID());
     const auto PARTY_ACCT_ID =
-        api_.Factory().Identifier(pFromAcct->GetAcctID());
+        api_.Factory().IdentifierFromBase58(pFromAcct->GetAcctID().Bytes());
 
     // Load up the party's account so we can get the balance.
     auto account = api_.Wallet().Internal().Account(PARTY_ACCT_ID);
@@ -1334,7 +1332,7 @@ auto OTSmartContract::GetUnitTypeIDofAcct(UnallocatedCString from_acct_name)
     // then we can error out here if he's not.  We can then pass in his Nym ID.
     //
 
-    auto theFromAgentID = api_.Factory().Identifier();
+    auto theFromAgentID = identifier::Generic{};
     const bool bFromAgentID = pFromAgent->GetSignerID(theFromAgentID);
 
     if (!bFromAgentID) {
@@ -1355,15 +1353,16 @@ auto OTSmartContract::GetUnitTypeIDofAcct(UnallocatedCString from_acct_name)
     }
 
     const auto theFromAcctID =
-        api_.Factory().Identifier(pFromAcct->GetAcctID());
+        api_.Factory().IdentifierFromBase58(pFromAcct->GetAcctID().Bytes());
     //
     // BELOW THIS POINT, theFromAcctID and theFromAgentID available.
     const UnallocatedCString str_party_id = pFromParty->GetPartyID();
     const auto strPartyID = String::Factory(str_party_id);
-    const auto PARTY_NYM_ID = api_.Factory().NymID(strPartyID);
+    const auto PARTY_NYM_ID =
+        api_.Factory().NymIDFromBase58(strPartyID->Bytes());
 
     const auto PARTY_ACCT_ID =
-        api_.Factory().Identifier(pFromAcct->GetAcctID());
+        api_.Factory().IdentifierFromBase58(pFromAcct->GetAcctID().Bytes());
 
     // Load up the party's account and get the instrument definition.
     auto account = api_.Wallet().Internal().Account(PARTY_ACCT_ID);
@@ -1375,7 +1374,7 @@ auto OTSmartContract::GetUnitTypeIDofAcct(UnallocatedCString from_acct_name)
         return str_return_value;
     }
 
-    return account.get().GetInstrumentDefinitionID().str();
+    return account.get().GetInstrumentDefinitionID().asBase58(api_.Crypto());
 }
 
 auto OTSmartContract::GetStashBalance(
@@ -1797,7 +1796,7 @@ auto OTSmartContract::StashAcctFunds(
     // then we can error out here if he's not.  We can then pass in his Nym ID.
     //
 
-    auto theFromAgentID = api_.Factory().NymID();
+    auto theFromAgentID = identifier::Nym{};
     const bool bFromAgentID = pFromAgent->GetSignerID(theFromAgentID);
 
     if (!bFromAgentID) {
@@ -1815,7 +1814,7 @@ auto OTSmartContract::StashAcctFunds(
     }
 
     const auto theFromAcctID =
-        api_.Factory().Identifier(pFromAcct->GetAcctID());
+        api_.Factory().IdentifierFromBase58(pFromAcct->GetAcctID().Bytes());
     //
     // BELOW THIS POINT, theFromAcctID and theFromAgentID available.
 
@@ -1824,14 +1823,18 @@ auto OTSmartContract::StashAcctFunds(
     //
     ReleaseLastSenderRecipientIDs();
 
-    theFromAgentID->GetString(m_strLastSenderUser);  // This is the last Nym ID
+    theFromAgentID.GetString(
+        api_.Crypto(), m_strLastSenderUser);  // This is the last Nym ID
     // of a party who SENT money.
-    theFromAcctID->GetString(m_strLastSenderAcct);  // This is the last Acct ID
-                                                    // of a party who SENT
-                                                    // money.
-    //    theToAgentID.GetString(m_strLastRecipientUser);    // This is the last
+    theFromAcctID.GetString(
+        api_.Crypto(), m_strLastSenderAcct);  // This is the last Acct ID
+                                              // of a party who SENT
+                                              // money.
+    //    theToAgentID.GetString(api_.Crypto(), m_strLastRecipientUser);    //
+    //    This is the last
     // Nym ID of a party who RECEIVED money.
-    //    theToAcctID.GetString(m_strLastRecipientAcct);    // This is the last
+    //    theToAcctID.GetString(api_.Crypto(), m_strLastRecipientAcct);    //
+    //    This is the last
     // Acct ID of a party who RECEIVED money.
     // Above: the ToAgent and ToAcct are commented out,
     // since the funds are going into a stash.
@@ -2039,7 +2042,7 @@ auto OTSmartContract::UnstashAcctFunds(
     // then we can error out here if he's not.  We can then pass in his Nym ID.
     //
 
-    auto theToAgentID = api_.Factory().NymID();
+    auto theToAgentID = identifier::Nym{};
     const bool bToAgentID = pToAgent->GetSignerID(theToAgentID);
 
     if (!bToAgentID) {
@@ -2057,7 +2060,8 @@ auto OTSmartContract::UnstashAcctFunds(
         return false;
     }
 
-    const auto theToAcctID = api_.Factory().Identifier(pToAcct->GetAcctID());
+    const auto theToAcctID =
+        api_.Factory().IdentifierFromBase58(pToAcct->GetAcctID().Bytes());
     //
     // BELOW THIS POINT, theToAcctID and theToAgentID available.
 
@@ -2066,12 +2070,14 @@ auto OTSmartContract::UnstashAcctFunds(
     //
     ReleaseLastSenderRecipientIDs();
 
-    theToAgentID->GetString(m_strLastRecipientUser);  // This is the last Nym ID
-                                                      // of a party who RECEIVED
-                                                      // money.
-    theToAcctID->GetString(m_strLastRecipientAcct);  // This is the last Acct ID
-                                                     // of a party who RECEIVED
-                                                     // money.
+    theToAgentID.GetString(
+        api_.Crypto(), m_strLastRecipientUser);  // This is the last Nym ID
+                                                 // of a party who RECEIVED
+                                                 // money.
+    theToAcctID.GetString(
+        api_.Crypto(), m_strLastRecipientAcct);  // This is the last Acct ID
+                                                 // of a party who RECEIVED
+                                                 // money.
     // Above: the FromAgent and FromAcct are commented out,
     // since the funds are coming from a stash.
 
@@ -2100,7 +2106,7 @@ auto OTSmartContract::UnstashAcctFunds(
 auto OTSmartContract::StashFunds(
     const std::int64_t& lAmount,  // negative amount here means UNstash.
                                   // Positive means STASH.
-    const Identifier& PARTY_ACCT_ID,
+    const identifier::Generic& PARTY_ACCT_ID,
     const identifier::Nym& PARTY_NYM_ID,
     OTStash& theStash,
     const PasswordPrompt& reason) -> bool
@@ -2455,9 +2461,7 @@ auto OTSmartContract::StashFunds(
             // items... but not in this case.)
             //
             auto pItemParty{api_.Factory().InternalSession().Item(
-                *pTransParty,
-                itemType::paymentReceipt,
-                api_.Factory().Identifier())};
+                *pTransParty, itemType::paymentReceipt, identifier::Generic{})};
             OT_ASSERT(false != bool(pItemParty));  //  may be unnecessary, I'll
                                                    //  have to
                                                    // check
@@ -2831,8 +2835,7 @@ auto OTSmartContract::StashFunds(
             thePartyInbox->SignContract(*pServerNym, reason);
             thePartyInbox->SaveContract();
 
-            account.get().SaveInbox(
-                *thePartyInbox, api_.Factory().Identifier());
+            account.get().SaveInbox(*thePartyInbox);
 
             // This corresponds to the AddTransaction() call just above.
             // These are stored in a separate file now.
@@ -3087,8 +3090,8 @@ auto OTSmartContract::MoveAcctFundsStr(
     // then we can error out here if he's not.  We can then pass in his Nym ID
     //
 
-    auto theFromAgentID = api_.Factory().NymID();
-    auto theToAgentID = api_.Factory().NymID();
+    auto theFromAgentID = identifier::Nym{};
+    auto theToAgentID = identifier::Nym{};
     const bool bFromAgentID = pFromAgent->GetSignerID(theFromAgentID);
     const bool bToAgentID = pToAgent->GetSignerID(theToAgentID);
 
@@ -3118,9 +3121,10 @@ auto OTSmartContract::MoveAcctFundsStr(
         return false;
     }
 
-    const auto theFromAcctID =
-                   api_.Factory().Identifier(pFromAcct->GetAcctID()),
-               theToAcctID = api_.Factory().Identifier(pToAcct->GetAcctID());
+    const auto theFromAcctID = api_.Factory().IdentifierFromBase58(
+                   pFromAcct->GetAcctID().Bytes()),
+               theToAcctID = api_.Factory().IdentifierFromBase58(
+                   pToAcct->GetAcctID().Bytes());
     //
     // BELOW THIS POINT, theFromAcctID, theFromAgentID, theToAcctID, and
     // theToAgentID are all available.
@@ -3130,17 +3134,21 @@ auto OTSmartContract::MoveAcctFundsStr(
     //
     ReleaseLastSenderRecipientIDs();
 
-    theFromAgentID->GetString(m_strLastSenderUser);  // This is the last Nym ID
+    theFromAgentID.GetString(
+        api_.Crypto(), m_strLastSenderUser);  // This is the last Nym ID
     // of a party who SENT money.
-    theFromAcctID->GetString(m_strLastSenderAcct);  // This is the last Acct ID
-                                                    // of a party who SENT
-                                                    // money.
-    theToAgentID->GetString(m_strLastRecipientUser);  // This is the last Nym ID
-                                                      // of a party who RECEIVED
-                                                      // money.
-    theToAcctID->GetString(m_strLastRecipientAcct);  // This is the last Acct ID
-                                                     // of a party who RECEIVED
-                                                     // money.
+    theFromAcctID.GetString(
+        api_.Crypto(), m_strLastSenderAcct);  // This is the last Acct ID
+                                              // of a party who SENT
+                                              // money.
+    theToAgentID.GetString(
+        api_.Crypto(), m_strLastRecipientUser);  // This is the last Nym ID
+                                                 // of a party who RECEIVED
+                                                 // money.
+    theToAcctID.GetString(
+        api_.Crypto(), m_strLastRecipientAcct);  // This is the last Acct ID
+                                                 // of a party who RECEIVED
+                                                 // money.
 
     bool bMoved = MoveFunds(
         lAmount,
@@ -5060,11 +5068,11 @@ void OTSmartContract::UpdateContents(const PasswordPrompt& reason)
                ACTIVATOR_NYM_ID = String::Factory(GetSenderNymID()),
                ACTIVATOR_ACCT_ID = String::Factory(GetSenderAcctID());
 
-    OT_ASSERT(!m_pCancelerNymID->empty());
+    OT_ASSERT(!m_pCancelerNymID.empty());
 
     auto strCanceler = String::Factory();
 
-    if (m_bCanceled) { m_pCancelerNymID->GetString(strCanceler); }
+    if (m_bCanceled) { m_pCancelerNymID.GetString(api_.Crypto(), strCanceler); }
 
     const auto tCreation =
         formatTimestamp(m_bCalculatingID ? Time{} : GetCreationDate());
@@ -5186,7 +5194,7 @@ void OTSmartContract::PrepareToActivate(
     const std::int64_t& lOpeningTransNo,
     const std::int64_t& lClosingTransNo,
     const identifier::Nym& theNymID,
-    const Identifier& theAcctID)
+    const identifier::Generic& theAcctID)
 {
     SetTransactionNum(lOpeningTransNo);
 
@@ -5247,17 +5255,18 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
             String::Factory(xml->getAttributeValue("cancelerNymID"));
 
         if (strNotaryID->Exists()) {
-            const auto NOTARY_ID = api_.Factory().ServerID(strNotaryID);
+            const auto NOTARY_ID =
+                api_.Factory().NotaryIDFromBase58(strNotaryID->Bytes());
             SetNotaryID(NOTARY_ID);
         }
         if (strActivatorNymID->Exists()) {
             const auto ACTIVATOR_NYM_ID =
-                api_.Factory().NymID(strActivatorNymID);
+                api_.Factory().NymIDFromBase58(strActivatorNymID->Bytes());
             SetSenderNymID(ACTIVATOR_NYM_ID);
         }
         if (strActivatorAcctID->Exists()) {
-            const auto ACTIVATOR_ACCT_ID =
-                api_.Factory().Identifier(strActivatorAcctID);
+            const auto ACTIVATOR_ACCT_ID = api_.Factory().IdentifierFromBase58(
+                strActivatorAcctID->Bytes());
             SetSenderAcctID(ACTIVATOR_ACCT_ID);
         }
 
@@ -5265,12 +5274,13 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
             m_bCanceled = true;
 
             if (strCancelerNymID->Exists()) {
-                m_pCancelerNymID->SetString(strCancelerNymID);
+                m_pCancelerNymID =
+                    api_.Factory().NymIDFromBase58(strCancelerNymID->Bytes());
             }
             // else log
         } else {
             m_bCanceled = false;
-            m_pCancelerNymID->clear();
+            m_pCancelerNymID.clear();
         }
 
         const auto strTransNum =
@@ -5376,9 +5386,9 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
 // true == success, false == failure.
 auto OTSmartContract::MoveFunds(
     const std::int64_t& lAmount,
-    const Identifier& SOURCE_ACCT_ID,      // GetSenderAcctID();
-    const identifier::Nym& SENDER_NYM_ID,  // GetSenderNymID();
-    const Identifier& RECIPIENT_ACCT_ID,   // GetRecipientAcctID();
+    const identifier::Generic& SOURCE_ACCT_ID,     // GetSenderAcctID();
+    const identifier::Nym& SENDER_NYM_ID,          // GetSenderNymID();
+    const identifier::Generic& RECIPIENT_ACCT_ID,  // GetRecipientAcctID();
     const identifier::Nym& RECIPIENT_NYM_ID,
     const PasswordPrompt& reason) -> bool  // GetRecipientNymID();
 {
@@ -5809,13 +5819,9 @@ auto OTSmartContract::MoveFunds(
             // set up the transaction items (each transaction may have multiple
             // items... but not in this case.)
             auto pItemSend{api_.Factory().InternalSession().Item(
-                *pTransSend,
-                itemType::paymentReceipt,
-                api_.Factory().Identifier())};
+                *pTransSend, itemType::paymentReceipt, identifier::Generic{})};
             auto pItemRecip{api_.Factory().InternalSession().Item(
-                *pTransRecip,
-                itemType::paymentReceipt,
-                api_.Factory().Identifier())};
+                *pTransRecip, itemType::paymentReceipt, identifier::Generic{})};
 
             // these may be unnecessary, I'll have to check
             // CreateItemFromTransaction. I'll leave em.
@@ -6095,10 +6101,8 @@ auto OTSmartContract::MoveFunds(
             theRecipientInbox->SaveContract();
 
             // Save both inboxes to storage. (File, DB, wherever it goes.)
-            sourceAccount.get().SaveInbox(
-                *theSenderInbox, api_.Factory().Identifier());
-            recipientAccount.get().SaveInbox(
-                *theRecipientInbox, api_.Factory().Identifier());
+            sourceAccount.get().SaveInbox(*theSenderInbox);
+            recipientAccount.get().SaveInbox(*theRecipientInbox);
 
             // These correspond to the AddTransaction() calls, just above
             //

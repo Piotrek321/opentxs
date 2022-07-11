@@ -48,9 +48,6 @@ public:
         const -> bool final;
     [[nodiscard]] auto Extract(std::uint64_t& output, const std::size_t pos = 0)
         const -> bool final;
-    auto GetPointer() const -> const void* final;
-    auto GetSize() const -> std::size_t final { return N; }
-    auto IsEmpty() const -> bool final { return false; }
     auto IsNull() const -> bool final;
     auto operator==(const Data& rhs) const noexcept -> bool final;
     auto operator!=(const Data& rhs) const noexcept -> bool final;
@@ -59,8 +56,6 @@ public:
     auto operator<=(const Data& rhs) const noexcept -> bool final;
     auto operator>=(const Data& rhs) const noexcept -> bool final;
     auto size() const -> std::size_t final { return N; }
-    auto str() const -> UnallocatedCString override;
-    auto str(alloc::Default alloc) const -> CString override;
 
     [[nodiscard]] auto Assign(const Data& source) noexcept -> bool final;
     [[nodiscard]] auto Assign(const ReadView source) noexcept -> bool final;
@@ -112,8 +107,6 @@ public:
 
 private:
     std::array<std::byte, N> data_;
-
-    auto clone() const -> Data* override;
 };
 
 // NOTE sorry Windows users, MSVC throws an ICE if we export this symbol

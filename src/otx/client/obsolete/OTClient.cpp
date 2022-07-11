@@ -14,6 +14,8 @@
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -50,8 +52,8 @@ auto OTClient::ProcessUserCommand(
     const MessageType requestedCommand,
     otx::context::Server& context,
     Message& theMessage,
-    const Identifier& pHisNymID,
-    const Identifier& pHisAcctID,
+    const identifier::Generic& pHisNymID,
+    const identifier::Generic& pHisAcctID,
     const PasswordPrompt& reason,
     const Amount& lTransactionAmount,
     const Account* pAccount,
@@ -140,8 +142,8 @@ auto OTClient::ProcessUserCommand(
             // (1) Set up member variables
             theMessage.m_strCommand = String::Factory("processNymbox");
             theMessage.SetAcknowledgments(context);
-            auto NYMBOX_HASH = Identifier::Factory(context.LocalNymboxHash());
-            NYMBOX_HASH->GetString(theMessage.m_strNymboxHash);
+            const auto& NYMBOX_HASH = context.LocalNymboxHash();
+            NYMBOX_HASH.GetString(api_.Crypto(), theMessage.m_strNymboxHash);
 
             if (!String::Factory(NYMBOX_HASH)->Exists()) {
                 LogError()(OT_PRETTY_CLASS())(
@@ -175,10 +177,10 @@ auto OTClient::ProcessUserCommand(
             // (1) Set up member variables
             theMessage.m_strCommand = String::Factory("getTransactionNumbers");
             theMessage.SetAcknowledgments(context);
-            auto NYMBOX_HASH = Identifier::Factory(context.LocalNymboxHash());
-            NYMBOX_HASH->GetString(theMessage.m_strNymboxHash);
+            const auto& NYMBOX_HASH = context.LocalNymboxHash();
+            NYMBOX_HASH.GetString(api_.Crypto(), theMessage.m_strNymboxHash);
 
-            if (NYMBOX_HASH->IsEmpty()) {
+            if (NYMBOX_HASH.empty()) {
                 LogError()(OT_PRETTY_CLASS())(
                     "Failed getting NymboxHash from Nym for server: ")(
                     context.Notary())(".")

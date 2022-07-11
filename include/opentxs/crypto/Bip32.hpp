@@ -13,7 +13,6 @@
 
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -35,6 +34,11 @@ namespace internal
 struct Bip32;
 }  // namespace internal
 }  // namespace crypto
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 
 namespace proto
 {
@@ -93,7 +97,7 @@ public:
         Bip32Index& index,
         Data& chainCode,
         Data& key) const -> bool;
-    auto SeedID(const ReadView entropy) const -> OTIdentifier;
+    auto SeedID(const ReadView entropy) const -> identifier::Generic;
     auto SerializePrivate(
         const Bip32Network network,
         const Bip32Depth depth,

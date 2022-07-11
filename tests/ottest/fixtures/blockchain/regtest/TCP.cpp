@@ -12,7 +12,7 @@
 namespace ottest
 {
 Regtest_fixture_tcp::Regtest_fixture_tcp()
-    : Regtest_fixture_base(false, 1, ot::Options{}, ot::Options{})
+    : Regtest_fixture_base(ot_, false, 1, ot::Options{}, ot::Options{})
     , tcp_listen_address_(miner_.Factory().BlockchainAddress(
           ot::blockchain::p2p::Protocol::bitcoin,
           ot::blockchain::p2p::Network::ipv4,

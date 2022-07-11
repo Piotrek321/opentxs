@@ -469,7 +469,7 @@ auto Database::LoadTransaction(
 }
 
 auto Database::LookupContact(const Data& pubkeyHash) const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     return imp_.wallet_.LookupContact(pubkeyHash);
 }

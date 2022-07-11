@@ -15,7 +15,6 @@
 #include <string_view>
 #include <utility>
 
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
@@ -47,7 +46,6 @@
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Types.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
@@ -220,7 +218,7 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
     auto output = opentxs::blockchain::Balance{};
     const auto& chainFrame = body.at(1);
     const auto nym =
-        haveNym ? api_.Factory().NymID(body.at(2)) : api_.Factory().NymID();
+        haveNym ? api_.Factory().NymIDFromHash(body.at(2).Bytes()) : identifier::Nym{};
 
     const auto chain = chainFrame.as<Chain>();
 
@@ -327,7 +325,7 @@ auto BalanceOracle::Imp::process_update_nym_balance(Message&& in) noexcept
     OT_ASSERT(4 < body.size());
 
     const auto chain = body.at(1).as<Chain>();
-    const auto owner = api_.Factory().NymID(body.at(2));
+    const auto owner = api_.Factory().NymIDFromHash(body.at(2).Bytes());
     auto balance = std::make_pair(
         factory::Amount(body.at(3)), factory::Amount(body.at(4)));
     process_update_balance(owner, chain, std::move(balance));

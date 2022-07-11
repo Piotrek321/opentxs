@@ -88,7 +88,7 @@ auto Inputs::AnyoneCanPay(const std::size_t index) noexcept -> bool
 }
 
 auto Inputs::AssociatedLocalNyms(
-    UnallocatedVector<OTNymID>& output) const noexcept -> void
+    UnallocatedVector<identifier::Nym>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(inputs_), std::end(inputs_), [&](const auto& item) {
@@ -97,7 +97,7 @@ auto Inputs::AssociatedLocalNyms(
 }
 
 auto Inputs::AssociatedRemoteContacts(
-    UnallocatedVector<OTIdentifier>& output) const noexcept -> void
+    UnallocatedVector<identifier::Generic>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(inputs_), std::end(inputs_), [&](const auto& item) {

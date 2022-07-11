@@ -38,6 +38,7 @@ class Factory;
 class Storage;
 }  // namespace session
 
+class Crypto;
 class Factory;
 class Session;
 }  // namespace api
@@ -48,13 +49,17 @@ class Bip32;
 class Bip39;
 }  // namespace crypto
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class Ciphertext;
 class Seed;
 }  // namespace proto
 
-class Identifier;
 class PasswordPrompt;
 class Secret;
 // }  // namespace v1
@@ -69,7 +74,7 @@ public:
     const OTSecret words_;
     const OTSecret phrase_;
     const OTSecret entropy_;
-    const OTIdentifier id_;
+    const identifier::Generic id_;
     const api::session::Storage* const storage_;
     const proto::Ciphertext encrypted_words_;
     const proto::Ciphertext encrypted_phrase_;

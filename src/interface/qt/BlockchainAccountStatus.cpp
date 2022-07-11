@@ -14,6 +14,8 @@
 #include <QVariant>
 #include <memory>
 
+#include "opentxs/api/session/Crypto.hpp"
+
 namespace opentxs::factory
 {
 auto BlockchainAccountStatusQtModel(
@@ -57,7 +59,7 @@ BlockchainAccountStatusQt::BlockchainAccountStatusQt(
 
 auto BlockchainAccountStatusQt::getNym() const noexcept -> QString
 {
-    return imp_->parent_.Owner().str().c_str();
+    return imp_->parent_.Owner().asBase58(imp_->parent_.API().Crypto()).c_str();
 }
 
 auto BlockchainAccountStatusQt::getChain() const noexcept -> int
@@ -97,7 +99,7 @@ auto BlockchainSubaccount::qt_data(
             out = Name().c_str();
         } break;
         case Parent::SubaccountIDRole: {
-            out = SubaccountID().str().c_str();
+            out = SubaccountID().asBase58(api_.Crypto()).c_str();
         } break;
         default: {
         }
@@ -125,7 +127,7 @@ auto BlockchainSubaccountSource::qt_data(
             out = Name().c_str();
         } break;
         case Parent::SourceIDRole: {
-            out = SourceID().str().c_str();
+            out = SourceID().asBase58(api_.Crypto()).c_str();
         } break;
         case Parent::SubaccountTypeRole: {
             out = static_cast<int>(Type());

@@ -14,7 +14,6 @@
 #include <iosfwd>
 #include <memory>
 
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -23,6 +22,11 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace identity
 {
 namespace wot
@@ -47,19 +51,20 @@ namespace opentxs::identity::wot::claim
 class OPENTXS_EXPORT Group
 {
 public:
-    using ItemMap = UnallocatedMap<OTIdentifier, std::shared_ptr<claim::Item>>;
+    using ItemMap =
+        UnallocatedMap<identifier::Generic, std::shared_ptr<claim::Item>>;
 
     auto operator+(const Group& rhs) const -> Group;
 
     auto begin() const -> ItemMap::const_iterator;
     auto Best() const -> std::shared_ptr<Item>;
-    auto Claim(const Identifier& item) const -> std::shared_ptr<Item>;
-    auto HaveClaim(const Identifier& item) const -> bool;
+    auto Claim(const identifier::Generic& item) const -> std::shared_ptr<Item>;
+    auto HaveClaim(const identifier::Generic& item) const -> bool;
     auto AddItem(const std::shared_ptr<Item>& item) const -> Group;
     auto AddPrimary(const std::shared_ptr<Item>& item) const -> Group;
-    auto Delete(const Identifier& id) const -> Group;
+    auto Delete(const identifier::Generic& id) const -> Group;
     auto end() const -> ItemMap::const_iterator;
-    auto Primary() const -> const Identifier&;
+    auto Primary() const -> const identifier::Generic&;
     auto PrimaryClaim() const -> std::shared_ptr<Item>;
     auto SerializeTo(proto::ContactSection& section, const bool withIDs = false)
         const -> bool;

@@ -28,6 +28,11 @@ class Client;
 }  // namespace session
 }  // namespace api
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace ui
 {
 namespace implementation
@@ -37,8 +42,6 @@ class AccountActivity;
 
 class DestinationValidator;
 }  // namespace ui
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -61,7 +64,7 @@ public:
     OPENTXS_NO_EXPORT DestinationValidator(
         const api::session::Client&,
         std::int8_t,
-        const Identifier&,
+        const identifier::Generic&,
         implementation::AccountActivity&) noexcept;
     DestinationValidator() = delete;
     DestinationValidator(const DestinationValidator&) = delete;

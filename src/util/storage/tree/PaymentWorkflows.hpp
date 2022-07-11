@@ -25,6 +25,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
 namespace proto
 {
 class PaymentWorkflow;
@@ -37,7 +47,7 @@ class Nym;
 }  // namespace storage
 // }  // namespace v1
 }  // namespace opentxs
-// NOLINTENd(modernize-concat-nested-namespaces)
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {
@@ -109,6 +119,10 @@ private:
         const otx::client::PaymentWorkflowState newState,
         otx::client::PaymentWorkflowState& state);
 
-    PaymentWorkflows(const Driver& storage, const UnallocatedCString& key);
+    PaymentWorkflows(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& key);
 };
 }  // namespace opentxs::storage

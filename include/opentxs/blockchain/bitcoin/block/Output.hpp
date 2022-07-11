@@ -12,7 +12,6 @@
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -36,6 +35,11 @@ class Script;
 }  // namespace bitcoin
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainTransactionOutput;
@@ -49,7 +53,7 @@ namespace opentxs::blockchain::bitcoin::block
 class OPENTXS_EXPORT Output
 {
 public:
-    using ContactID = OTIdentifier;
+    using ContactID = identifier::Generic;
 
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Output& = 0;

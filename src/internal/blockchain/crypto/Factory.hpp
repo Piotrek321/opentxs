@@ -8,7 +8,6 @@
 #pragma once
 
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -46,6 +45,7 @@ class Wallet;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -62,7 +62,6 @@ class HDPath;
 }  // namespace proto
 
 class Data;
-class Identifier;
 class PasswordPrompt;
 class PaymentCode;
 // }  // namespace v1
@@ -77,9 +76,9 @@ auto BlockchainAccountKeys(
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
-    const UnallocatedSet<OTIdentifier>& hdAccounts,
-    const UnallocatedSet<OTIdentifier>& importedAccounts,
-    const UnallocatedSet<OTIdentifier>& paymentCodeAccounts) noexcept
+    const UnallocatedSet<identifier::Generic>& hdAccounts,
+    const UnallocatedSet<identifier::Generic>& importedAccounts,
+    const UnallocatedSet<identifier::Generic>& paymentCodeAccounts) noexcept
     -> std::unique_ptr<blockchain::crypto::Account>;
 auto BlockchainHDSubaccount(
     const api::Session& api,
@@ -87,18 +86,20 @@ auto BlockchainHDSubaccount(
     const proto::HDPath& path,
     const blockchain::crypto::HDProtocol standard,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>;
+    identifier::Generic& id) noexcept
+    -> std::unique_ptr<blockchain::crypto::HD>;
 auto BlockchainHDSubaccount(
     const api::Session& api,
     const blockchain::crypto::Account& parent,
     const proto::HDAccount& serialized,
-    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>;
+    identifier::Generic& id) noexcept
+    -> std::unique_ptr<blockchain::crypto::HD>;
 auto BlockchainNotificationSubaccount(
     const api::Session& api,
     const blockchain::crypto::Account& parent,
     const opentxs::PaymentCode& code,
     const identity::Nym& nym,
-    Identifier& id) noexcept
+    identifier::Generic& id) noexcept
     -> std::unique_ptr<blockchain::crypto::Notification>;
 auto BlockchainPCSubaccount(
     const api::Session& api,
@@ -109,14 +110,14 @@ auto BlockchainPCSubaccount(
     const proto::HDPath& path,
     const Data& txid,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept
+    identifier::Generic& id) noexcept
     -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainPCSubaccount(
     const api::Session& api,
     const api::session::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const proto::Bip47Channel& serialized,
-    Identifier& id) noexcept
+    identifier::Generic& id) noexcept
     -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainWalletKeys(
     const api::Session& api,

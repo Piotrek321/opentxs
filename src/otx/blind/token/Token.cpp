@@ -11,11 +11,12 @@
 #include <memory>
 #include <utility>
 
-#include "internal/core/identifier/Factory.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Container.hpp"
@@ -98,9 +99,9 @@ namespace opentxs::otx::blind
 {
 auto Token::Imp::Notary() const -> const identifier::Notary&
 {
-    static const auto id = factory::IdentifierNotary();
+    static const auto id = identifier::Notary{};
 
-    return *id;
+    return id;
 }
 
 auto Token::Imp::Owner() const noexcept -> internal::Purse&
@@ -112,9 +113,9 @@ auto Token::Imp::Owner() const noexcept -> internal::Purse&
 
 auto Token::Imp::Unit() const -> const identifier::UnitDefinition&
 {
-    static const auto id = factory::IdentifierUnit();
+    static const auto id = identifier::UnitDefinition{};
 
-    return *id;
+    return id;
 }
 }  // namespace opentxs::otx::blind
 

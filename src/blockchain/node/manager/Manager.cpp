@@ -137,8 +137,8 @@ struct NullWallet final : public node::internal::Wallet {
     {
         return {};
     }
-    auto GetBalance(const identifier::Nym&, const Identifier&) const noexcept
-        -> Balance final
+    auto GetBalance(const identifier::Nym&, const identifier::Generic&)
+        const noexcept -> Balance final
     {
         return {};
     }
@@ -167,14 +167,14 @@ struct NullWallet final : public node::internal::Wallet {
     }
     auto GetOutputs(
         const identifier::Nym&,
-        const Identifier&,
+        const identifier::Generic&,
         alloc::Default alloc) const noexcept -> Vector<UTXO> final
     {
         return Vector<UTXO>{alloc};
     }
     auto GetOutputs(
         const identifier::Nym&,
-        const Identifier&,
+        const identifier::Generic&,
         TxoState,
         alloc::Default alloc) const noexcept -> Vector<UTXO> final
     {
@@ -831,7 +831,7 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
 
     OT_ASSERT(4 < body.size());
 
-    const auto sender = api_.Factory().NymID(body.at(1));
+    const auto sender = api_.Factory().NymIDFromHash(body.at(1).Bytes());
     const auto address = UnallocatedCString{body.at(2).Bytes()};
     const auto amount = factory::Amount(body.at(3));
     const auto memo = UnallocatedCString{body.at(4).Bytes()};
@@ -842,8 +842,8 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
         const auto pNym = api_.Wallet().Nym(sender);
 
         if (!pNym) {
-            const auto error =
-                UnallocatedCString{"Invalid sender "} + sender->str();
+            const auto error = UnallocatedCString{"Invalid sender "} +
+                               sender.asBase58(api_.Crypto());
             rc = SendResult::InvalidSenderNym;
 
             throw std::runtime_error{error};
@@ -863,12 +863,11 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
             throw std::runtime_error{error.c_str()};
         }
 
-        auto id = api_.Factory().Identifier();
-        id->Randomize();
+        auto id = api_.Factory().IdentifierFromRandom();
         auto proposal = proto::BlockchainTransactionProposal{};
         proposal.set_version(proposal_version_);
-        proposal.set_id(id->str());
-        proposal.set_initiator(sender->data(), sender->size());
+        proposal.set_id(id.asBase58(api_.Crypto()));
+        proposal.set_initiator(sender.data(), sender.size());
         proposal.set_expires(
             Clock::to_time_t(Clock::now() + std::chrono::hours(1)));
         proposal.set_memo(memo);
@@ -883,14 +882,14 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
                 [[fallthrough]];
             }
             case Style::P2PKH: {
-                output.set_pubkeyhash(data.str());
+                output.set_pubkeyhash(UnallocatedCString{data.Bytes()});
             } break;
             case Style::P2WSH: {
                 output.set_segwit(true);
                 [[fallthrough]];
             }
             case Style::P2SH: {
-                output.set_scripthash(data.str());
+                output.set_scripthash(UnallocatedCString{data.Bytes()});
             } break;
             default: {
                 rc = SendResult::UnsupportedAddressFormat;
@@ -916,7 +915,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
 
     OT_ASSERT(4 < body.size());
 
-    const auto nymID = api_.Factory().NymID(body.at(1));
+    const auto nymID = api_.Factory().NymIDFromHash(body.at(1).Bytes());
     const auto recipient =
         api_.Factory().PaymentCode(UnallocatedCString{body.at(2).Bytes()});
     const auto contact =
@@ -935,7 +934,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
 
             throw std::runtime_error{
                 UnallocatedCString{"Unable to load recipient nym ("} +
-                nymID->str() + ')'};
+                nymID.asBase58(api_.Crypto()) + ')'};
         }
 
         const auto& nym = *pNym;
@@ -986,13 +985,11 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
         }
 
         const auto& key = *pKey;
-        auto id = api_.Factory().Identifier();
-        id->Randomize();
 
         proto::BlockchainTransactionProposal proposal{};
         proposal.set_version(proposal_version_);
-        proposal.set_id(id->str());
-        proposal.set_initiator(nymID->data(), nymID->size());
+        proposal.set_id(api_.Factory().IdentifierFromRandom().asBase58(api_.Crypto()));
+        proposal.set_initiator(nymID.data(), nymID.size());
         proposal.set_expires(
             Clock::to_time_t(Clock::now() + std::chrono::hours(1)));
         proposal.set_memo(memo);
@@ -1000,15 +997,15 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
         txout.set_version(output_version_);
         amount.Serialize(writer(txout.mutable_amount()));
         txout.set_index(index.value());
-        txout.set_paymentcodechannel(account.ID().str());
+        txout.set_paymentcodechannel(account.ID().asBase58(api_.Crypto()));
         const auto pubkey = api_.Factory().DataFromBytes(key.PublicKey());
         LogVerbose()(OT_PRETTY_CLASS())(" using derived public key ")(
             pubkey.asHex())(" at "
                              "index"
                              " ")(index.value())(" for outgoing transaction")
             .Flush();
-        txout.set_pubkey(pubkey.str());
-        txout.set_contact(UnallocatedCString{contact->Bytes()});
+        txout.set_pubkey(UnallocatedCString{pubkey.Bytes()});
+        txout.set_contact(UnallocatedCString{contact.Bytes()});
 
         if (account.IsNotified()) {
             // TODO preemptive notifications go here

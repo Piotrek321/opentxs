@@ -19,7 +19,6 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/Unit.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/interface/ui/BlockchainSelectionItem.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -78,6 +77,8 @@ class BlockchainSelectionItem final
       public std::enable_shared_from_this<BlockchainSelectionItem>
 {
 public:
+    const api::session::Client& api_;
+
     auto Name() const noexcept -> UnallocatedCString final { return name_; }
     auto IsEnabled() const noexcept -> bool final { return enabled_; }
     auto IsTestnet() const noexcept -> bool final { return testnet_; }

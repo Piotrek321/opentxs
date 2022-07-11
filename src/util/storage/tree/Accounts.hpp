@@ -25,6 +25,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
 namespace storage
 {
 class Driver;
@@ -39,22 +49,27 @@ namespace opentxs::storage
 class Accounts final : public Node
 {
 public:
-    auto AccountContract(const Identifier& accountID) const -> OTUnitID;
-    auto AccountIssuer(const Identifier& accountID) const -> OTNymID;
-    auto AccountOwner(const Identifier& accountID) const -> OTNymID;
-    auto AccountServer(const Identifier& accountID) const -> OTNotaryID;
-    auto AccountSigner(const Identifier& accountID) const -> OTNymID;
-    auto AccountUnit(const Identifier& accountID) const -> UnitType;
+    auto AccountContract(const identifier::Generic& accountID) const
+        -> identifier::UnitDefinition;
+    auto AccountIssuer(const identifier::Generic& accountID) const
+        -> identifier::Nym;
+    auto AccountOwner(const identifier::Generic& accountID) const
+        -> identifier::Nym;
+    auto AccountServer(const identifier::Generic& accountID) const
+        -> identifier::Notary;
+    auto AccountSigner(const identifier::Generic& accountID) const
+        -> identifier::Nym;
+    auto AccountUnit(const identifier::Generic& accountID) const -> UnitType;
     auto AccountsByContract(const identifier::UnitDefinition& unit) const
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto AccountsByIssuer(const identifier::Nym& issuerNym) const
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto AccountsByOwner(const identifier::Nym& ownerNym) const
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto AccountsByServer(const identifier::Notary& server) const
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto AccountsByUnit(const UnitType unit) const
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto Load(
         const UnallocatedCString& id,
@@ -87,16 +102,24 @@ public:
 private:
     friend Tree;
 
-    using NymIndex = UnallocatedMap<OTNymID, UnallocatedSet<OTIdentifier>>;
+    using NymIndex =
+        UnallocatedMap<identifier::Nym, UnallocatedSet<identifier::Generic>>;
     using ServerIndex =
-        UnallocatedMap<OTNotaryID, UnallocatedSet<OTIdentifier>>;
-    using ContractIndex =
-        UnallocatedMap<OTUnitID, UnallocatedSet<OTIdentifier>>;
-    using UnitIndex = UnallocatedMap<UnitType, UnallocatedSet<OTIdentifier>>;
+        UnallocatedMap<identifier::Notary, UnallocatedSet<identifier::Generic>>;
+    using ContractIndex = UnallocatedMap<
+        identifier::UnitDefinition,
+        UnallocatedSet<identifier::Generic>>;
+    using UnitIndex =
+        UnallocatedMap<UnitType, UnallocatedSet<identifier::Generic>>;
     /** owner, signer, issuer, server, contract, unit */
-    using AccountData =
-        std::tuple<OTNymID, OTNymID, OTNymID, OTNotaryID, OTUnitID, UnitType>;
-    using ReverseIndex = UnallocatedMap<OTIdentifier, AccountData>;
+    using AccountData = std::tuple<
+        identifier::Nym,
+        identifier::Nym,
+        identifier::Nym,
+        identifier::Notary,
+        identifier::UnitDefinition,
+        UnitType>;
+    using ReverseIndex = UnallocatedMap<identifier::Generic, AccountData>;
 
     NymIndex owner_index_{};
     NymIndex signer_index_{};
@@ -108,13 +131,16 @@ private:
 
     template <typename A, typename M, typename I>
     static auto add_set_index(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const A& argID,
         M& mapID,
         I& index) -> bool;
 
     template <typename K, typename I>
-    static void erase(const Identifier& accountID, const K& key, I& index)
+    static void erase(
+        const identifier::Generic& accountID,
+        const K& key,
+        I& index)
     {
         try {
             auto& set = index.at(key);
@@ -125,13 +151,14 @@ private:
         }
     }
 
-    auto get_account_data(const Lock& lock, const OTIdentifier& accountID) const
-        -> AccountData&;
+    auto get_account_data(
+        const Lock& lock,
+        const identifier::Generic& accountID) const -> AccountData&;
     auto serialize() const -> proto::StorageAccounts;
 
     auto check_update_account(
         const Lock& lock,
-        const OTIdentifier& accountID,
+        const identifier::Generic& accountID,
         const identifier::Nym& ownerNym,
         const identifier::Nym& signerNym,
         const identifier::Nym& issuerNym,
@@ -141,6 +168,10 @@ private:
     void init(const UnallocatedCString& hash) final;
     auto save(const Lock& lock) const -> bool final;
 
-    Accounts(const Driver& storage, const UnallocatedCString& key);
+    Accounts(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& key);
 };
 }  // namespace opentxs::storage

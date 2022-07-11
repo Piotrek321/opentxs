@@ -17,6 +17,8 @@
 #include "interface/ui/base/Combined.hpp"
 #include "interface/ui/base/Widget.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Group.hpp"
 #include "opentxs/identity/wot/claim/Section.hpp"
@@ -130,11 +132,12 @@ ContactSection::ContactSection(
     CustomData& custom) noexcept
     : Combined(
           api,
-          Identifier::Factory(parent.ContactID()),
+          api.Factory().IdentifierFromBase58(parent.ContactID()),
           parent.WidgetID(),
           parent,
           rowID,
           key)
+    , api_(api)
 {
     startup_ = std::make_unique<std::thread>(
         &ContactSection::startup,

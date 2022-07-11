@@ -21,6 +21,7 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/Contract.hpp"
@@ -47,6 +48,7 @@
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -194,7 +196,7 @@ auto UserCommandProcessor::add_numbers_to_nymbox(
     const NumList& newNumbers,
     bool& savedNymbox,
     Ledger& nymbox,
-    Identifier& nymboxHash) const -> bool
+    identifier::Generic& nymboxHash) const -> bool
 {
     if (false == nymbox.LoadNymbox()) {
         LogError()(OT_PRETTY_CLASS())("Error loading nymbox.").Flush();
@@ -336,7 +338,7 @@ void UserCommandProcessor::check_acknowledgements(ReplyMessage& reply) const
         }
 
         if (bIsDirtyNymbox) {
-            auto nymboxHash = Identifier::Factory();
+            auto nymboxHash = identifier::Generic{};
             nymbox->ReleaseSignatures();
             nymbox->SignContract(server_.GetServerNym(), reason_);
             nymbox->SaveContract();
@@ -387,7 +389,7 @@ auto UserCommandProcessor::check_client_nym(ReplyMessage& reply) const -> bool
 
 auto UserCommandProcessor::check_message_notary(
     const identifier::Notary& notaryID,
-    const Identifier& realNotaryID) -> bool
+    const identifier::Generic& realNotaryID) -> bool
 {
     // Validate the server ID, to keep users from intercepting a valid requst
     // and sending it to the wrong server.
@@ -555,7 +557,8 @@ auto UserCommandProcessor::cmd_check_nym(ReplyMessage& reply) const -> bool
     OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_check_nym);
 
     reply.SetSuccess(true);
-    auto nym = server_.API().Wallet().Nym(identifier::Nym::Factory(targetNym));
+    auto nym = server_.API().Wallet().Nym(
+        server_.API().Factory().NymIDFromBase58(targetNym->Bytes()));
 
     if (nym) {
         auto publicNym = proto::Nym{};
@@ -588,7 +591,8 @@ auto UserCommandProcessor::cmd_delete_asset_account(ReplyMessage& reply) const
 
     OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_del_asset_acct);
 
-    const auto accountID = Identifier::Factory(msgIn.m_strAcctID);
+    const auto accountID = server_.API().Factory().IdentifierFromBase58(
+        msgIn.m_strAcctID->Bytes());
     const auto& context = reply.Context();
     const auto& serverNym = *context.Nym();
     auto account =
@@ -774,7 +778,8 @@ auto UserCommandProcessor::cmd_get_account_data(ReplyMessage& reply) const
     const auto& nymID = context.RemoteNym().ID();
     const auto& serverID = context.Notary();
     const auto& serverNym = *context.Nym();
-    const auto accountID = Identifier::Factory(msgIn.m_strAcctID);
+    const auto accountID = server_.API().Factory().IdentifierFromBase58(
+        msgIn.m_strAcctID->Bytes());
     auto account =
         server_.API().Wallet().Internal().mutable_Account(accountID, reason_);
 
@@ -814,8 +819,8 @@ auto UserCommandProcessor::cmd_get_account_data(ReplyMessage& reply) const
         return false;
     }
 
-    auto inboxHash = Identifier::Factory();
-    auto outboxHash = Identifier::Factory();
+    auto inboxHash = identifier::Generic{};
+    auto outboxHash = identifier::Generic{};
     auto serializedAccount = String::Factory();
     auto serializedInbox = String::Factory();
     auto serializedOutbox = String::Factory();
@@ -868,7 +873,8 @@ auto UserCommandProcessor::cmd_get_box_receipt(ReplyMessage& reply) const
     const auto& nymID = context.RemoteNym().ID();
     const auto& serverID = context.Notary();
     const auto& serverNym = *context.Nym();
-    const auto accountID = Identifier::Factory(msgIn.m_strAcctID);
+    const auto accountID = server_.API().Factory().IdentifierFromBase58(
+        msgIn.m_strAcctID->Bytes());
     std::unique_ptr<Ledger> box{};
 
     switch (boxType) {
@@ -941,8 +947,8 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
 
     switch (static_cast<contract::Type>(msgIn.enum_)) {
         case contract::Type::nym: {
-            const auto id =
-                api.Factory().NymID(msgIn.m_strInstrumentDefinitionID);
+            const auto id = api.Factory().NymIDFromBase58(
+                msgIn.m_strInstrumentDefinitionID->Bytes());
             auto contract = api.Wallet().Nym(id);
 
             if (contract) {
@@ -959,8 +965,8 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
             }
         } break;
         case contract::Type::notary: {
-            const auto id =
-                api.Factory().ServerID(msgIn.m_strInstrumentDefinitionID);
+            const auto id = api.Factory().NotaryIDFromBase58(
+                msgIn.m_strInstrumentDefinitionID->Bytes());
 
             try {
                 const auto contract = api.Wallet().Server(id);
@@ -982,8 +988,8 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
             }
         } break;
         case contract::Type::unit: {
-            const auto id =
-                api.Factory().UnitID(msgIn.m_strInstrumentDefinitionID);
+            const auto id = api.Factory().UnitIDFromBase58(
+                msgIn.m_strInstrumentDefinitionID->Bytes());
 
             try {
                 const auto contract = api.Wallet().UnitDefinition(id);
@@ -1049,8 +1055,8 @@ auto UserCommandProcessor::cmd_get_market_offers(ReplyMessage& reply) const
 
     if (depth < 0) { depth = 0; }
 
-    const auto market =
-        server_.Cron().GetMarket(identifier::Nym::Factory(msgIn.m_strNymID2));
+    const auto market = server_.Cron().GetMarket(
+        server_.API().Factory().NymIDFromBase58(msgIn.m_strNymID2->Bytes()));
 
     if (false == bool(market)) { return false; }
 
@@ -1079,8 +1085,8 @@ auto UserCommandProcessor::cmd_get_market_recent_trades(
 
     OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_get_market_recent_trades);
 
-    const auto market =
-        server_.Cron().GetMarket(identifier::Nym::Factory(msgIn.m_strNymID2));
+    const auto market = server_.Cron().GetMarket(
+        server_.API().Factory().NymIDFromBase58(msgIn.m_strNymID2->Bytes()));
 
     if (false == bool(market)) { return false; }
 
@@ -1110,8 +1116,8 @@ auto UserCommandProcessor::cmd_get_mint(ReplyMessage& reply) const -> bool
     reply.SetSuccess(true);
     reply.SetBool(false);
     const auto& unitID = msgIn.m_strInstrumentDefinitionID;
-    auto& mint =
-        manager_.GetPublicMint(identifier::UnitDefinition::Factory(unitID));
+    auto& mint = manager_.GetPublicMint(
+        server_.API().Factory().UnitIDFromBase58(unitID->Bytes()));
 
     if (mint) {
         reply.SetBool(true);
@@ -1157,7 +1163,7 @@ auto UserCommandProcessor::cmd_get_nymbox(ReplyMessage& reply) const -> bool
     const auto& nymID = context.RemoteNym().ID();
     const auto& serverID = context.Notary();
     const auto& serverNym = *context.Nym();
-    auto newNymboxHash = Identifier::Factory();
+    auto newNymboxHash = identifier::Generic{};
     auto nymbox = load_nymbox(nymID, serverID, serverNym, false);
 
     if (false == bool(nymbox)) {
@@ -1256,7 +1262,7 @@ auto UserCommandProcessor::cmd_get_transaction_numbers(
         return false;
     }
 
-    auto NYMBOX_HASH = Identifier::Factory();
+    auto NYMBOX_HASH = identifier::Generic{};
     bool bSuccess = true;
     bool bSavedNymbox = false;
     const auto& serverID = context.Notary();
@@ -1344,7 +1350,7 @@ auto UserCommandProcessor::cmd_issue_basket(ReplyMessage& reply) const -> bool
     // The contract ID of the basket is calculated based on the UNSIGNED portion
     // of the contract (so it is unique on every server) and for the same
     // reason_ with the AccountID removed before calculating.
-    auto basketAccountID = Identifier::Factory();
+    auto basketAccountID = identifier::Generic{};
     const auto BASKET_ID =
         contract::unit::Basket::CalculateBasketID(server_.API(), serialized);
 
@@ -1371,7 +1377,7 @@ auto UserCommandProcessor::cmd_issue_basket(ReplyMessage& reply) const -> bool
 
         try {
             server_.API().Wallet().UnitDefinition(
-                identifier::UnitDefinition::Factory(subcontractID));
+                server_.API().Factory().UnitIDFromBase58(subcontractID));
         } catch (...) {
             LogError()(OT_PRETTY_CLASS())("Missing subcurrency ")(
                 subcontractID)(".")
@@ -1394,7 +1400,7 @@ auto UserCommandProcessor::cmd_issue_basket(ReplyMessage& reply) const -> bool
         auto newAccount = server_.API().Wallet().Internal().CreateAccount(
             serverNymID,
             serverID,
-            identifier::UnitDefinition::Factory(it.unit()),
+            server_.API().Factory().UnitIDFromBase58(it.unit()),
             *serverNym,
             Account::basketsub,
             0,
@@ -1429,8 +1435,9 @@ auto UserCommandProcessor::cmd_issue_basket(ReplyMessage& reply) const -> bool
     try {
         const auto contract =
             server_.API().Wallet().Internal().UnitDefinition(serialized);
-        const auto contractID = identifier::UnitDefinition::Factory(
-            contract->ID()->str());  // TODO conversion
+        const auto contractID =
+            server_.API().Factory().Internal().UnitIDConvertSafe(
+                contract->ID());
         reply.SetInstrumentDefinitionID(String::Factory(contractID));
 
         // I don't save this here. Instead, I wait for AddBasketAccountID and
@@ -1506,8 +1513,9 @@ auto UserCommandProcessor::cmd_notarize_transaction(ReplyMessage& reply) const
     const auto& serverID = context.Notary();
     const auto& serverNym = *context.Nym();
     const auto& serverNymID = serverNym.ID();
-    const auto accountID = Identifier::Factory(msgIn.m_strAcctID);
-    auto nymboxHash = Identifier::Factory();
+    const auto accountID = server_.API().Factory().IdentifierFromBase58(
+        msgIn.m_strAcctID->Bytes());
+    auto nymboxHash = identifier::Generic{};
     auto input{manager_.Factory().InternalSession().Ledger(
         nymID, accountID, serverID)};
     auto responseLedger{manager_.Factory().InternalSession().Ledger(
@@ -1614,8 +1622,9 @@ auto UserCommandProcessor::cmd_process_inbox(ReplyMessage& reply) const -> bool
     const auto& serverNym = *context.Nym();
     const auto& serverNymID = serverNym.ID();
     const auto& nym = reply.Context().RemoteNym();
-    const auto accountID = Identifier::Factory(msgIn.m_strAcctID);
-    auto nymboxHash = Identifier::Factory();
+    const auto accountID = server_.API().Factory().IdentifierFromBase58(
+        msgIn.m_strAcctID->Bytes());
+    auto nymboxHash = identifier::Generic{};
     auto input{manager_.Factory().InternalSession().Ledger(
         nymID, accountID, serverID)};
     auto responseLedger{manager_.Factory().InternalSession().Ledger(
@@ -1786,7 +1795,7 @@ auto UserCommandProcessor::cmd_process_nymbox(ReplyMessage& reply) const -> bool
     const auto& serverID = context.Notary();
     const auto& serverNym = *context.Nym();
     const auto& serverNymID = serverNym.ID();
-    auto nymboxHash = Identifier::Factory();
+    auto nymboxHash = identifier::Generic{};
     auto input{
         manager_.Factory().InternalSession().Ledger(nymID, nymID, serverID)};
     auto responseLedger{manager_.Factory().InternalSession().Ledger(
@@ -1894,7 +1903,7 @@ auto UserCommandProcessor::cmd_query_instrument_definitions(
         if (0 == status.compare("exists")) {
             try {
                 server_.API().Wallet().UnitDefinition(
-                    identifier::UnitDefinition::Factory(unitID));
+                    server_.API().Factory().UnitIDFromBase58(unitID));
 
                 newMap[unitID] = "true";
             } catch (...) {
@@ -1926,8 +1935,8 @@ auto UserCommandProcessor::cmd_register_account(ReplyMessage& reply) const
     const auto& nymID = context.RemoteNym().ID();
     const auto& serverID = context.Notary();
     const auto& serverNym = *context.Nym();
-    const auto contractID =
-        identifier::UnitDefinition::Factory(msgIn.m_strInstrumentDefinitionID);
+    const auto contractID = server_.API().Factory().UnitIDFromBase58(
+        msgIn.m_strInstrumentDefinitionID->Bytes());
     auto account = server_.API().Wallet().Internal().CreateAccount(
         nymID, serverID, contractID, serverNym, Account::user, 0, reason_);
 
@@ -1963,7 +1972,7 @@ auto UserCommandProcessor::cmd_register_account(ReplyMessage& reply) const
         return false;
     }
 
-    auto accountID = Identifier::Factory();
+    auto accountID = identifier::Generic{};
     account.get().GetIdentifier(accountID);
     auto outbox{manager_.Factory().InternalSession().Ledger(
         nymID, accountID, serverID)};
@@ -1990,10 +1999,7 @@ auto UserCommandProcessor::cmd_register_account(ReplyMessage& reply) const
 
         if (inboxLoaded) { inboxLoaded = inbox->SaveContract(); }
 
-        if (inboxLoaded) {
-            inboxLoaded =
-                account.get().SaveInbox(*inbox, Identifier::Factory());
-        }
+        if (inboxLoaded) { inboxLoaded = account.get().SaveInbox(*inbox); }
     }
 
     if (true == outboxLoaded) {
@@ -2008,10 +2014,7 @@ auto UserCommandProcessor::cmd_register_account(ReplyMessage& reply) const
 
         if (outboxLoaded) { outboxLoaded = outbox->SaveContract(); }
 
-        if (outboxLoaded) {
-            outboxLoaded =
-                account.get().SaveOutbox(*outbox, Identifier::Factory());
-        }
+        if (outboxLoaded) { outboxLoaded = account.get().SaveOutbox(*outbox); }
     }
 
     if (false == inboxLoaded) {
@@ -2096,8 +2099,8 @@ auto UserCommandProcessor::cmd_register_instrument_definition(
 {
     const auto& msgIn = reply.Original();
     reply.SetInstrumentDefinitionID(msgIn.m_strInstrumentDefinitionID);
-    const auto contractID =
-        identifier::UnitDefinition::Factory(msgIn.m_strInstrumentDefinitionID);
+    const auto contractID = server_.API().Factory().UnitIDFromBase58(
+        msgIn.m_strInstrumentDefinitionID->Bytes());
 
     OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_issue_asset);
 
@@ -2153,7 +2156,7 @@ auto UserCommandProcessor::cmd_register_instrument_definition(
     }
 
     reply.SetPayload(String::Factory(account.get()));
-    auto accountID = Identifier::Factory();
+    auto accountID = identifier::Generic{};
     account.get().GetIdentifier(accountID);
     reply.SetAccount(String::Factory(accountID));
     server_.GetMainFile().SaveMainFile();
@@ -2172,7 +2175,7 @@ auto UserCommandProcessor::cmd_register_instrument_definition(
     auto nymfile = server_.API().Wallet().Internal().mutable_Nymfile(
         reply.Context().RemoteNym().ID(), reason_);
     auto& theAccountSet = nymfile.get().GetSetAssetAccounts();
-    theAccountSet.insert(accountID->str());
+    theAccountSet.insert(accountID.asBase58(server_.API().Crypto()));
     reply.DropToNymbox(false);
     manager_.UpdateMint(contractID);
 
@@ -2309,7 +2312,8 @@ auto UserCommandProcessor::cmd_send_nym_message(ReplyMessage& reply) const
     const auto& server = context.Notary();
     const auto& msgIn = reply.Original();
     const auto& targetNym = msgIn.m_strNymID2;
-    const auto recipient = identifier::Nym::Factory(targetNym);
+    const auto recipient =
+        manager_.Factory().NymIDFromBase58(targetNym->Bytes());
     reply.SetTargetNym(targetNym);
 
     OT_ENFORCE_PERMISSION_MSG(ServerSettings::_cmd_send_message);
@@ -2466,8 +2470,9 @@ auto UserCommandProcessor::cmd_usage_credits(ReplyMessage& reply) const -> bool
 
     if (false == admin) { adjustment = 0; }
 
-    const auto targetNymID = identifier::Nym::Factory(msgIn.m_strNymID2);
-    auto nymID = identifier::Nym::Factory();
+    const auto targetNymID =
+        server_.API().Factory().NymIDFromBase58(msgIn.m_strNymID2->Bytes());
+    auto nymID = identifier::Nym{};
 
     if (targetNymID == adminNymID) {
         nymID = adminNymID;
@@ -2541,7 +2546,7 @@ auto UserCommandProcessor::create_nymbox(
         return {};
     }
 
-    auto notUsed = Identifier::Factory();
+    auto notUsed = identifier::Generic{};
 
     if (false == save_nymbox(serverNym, notUsed, *nymbox)) {
         LogError()(OT_PRETTY_CLASS())("Unable to save nymbox for ")(nymID)(".")
@@ -2611,7 +2616,7 @@ void UserCommandProcessor::drop_reply_notice_to_nymbox(
     OT_ASSERT(pReplyNotice);
 
     auto pReplyNoticeItem{server.API().Factory().InternalSession().Item(
-        *pReplyNotice, itemType::replyNotice, Identifier::Factory())};
+        *pReplyNotice, itemType::replyNotice, {})};
 
     OT_ASSERT(pReplyNoticeItem);
 
@@ -2644,7 +2649,7 @@ void UserCommandProcessor::drop_reply_notice_to_nymbox(
     theNymbox->ReleaseSignatures();
     theNymbox->SignContract(serverNym, reason_);
     theNymbox->SaveContract();
-    auto NYMBOX_HASH = Identifier::Factory();
+    auto NYMBOX_HASH = identifier::Generic{};
     theNymbox->SaveNymbox(NYMBOX_HASH);
     replyNotice->SaveBoxReceipt(*theNymbox);
     context.SetLocalNymboxHash(NYMBOX_HASH);
@@ -2652,10 +2657,10 @@ void UserCommandProcessor::drop_reply_notice_to_nymbox(
 
 auto UserCommandProcessor::hash_check(
     const otx::context::Client& context,
-    Identifier& nymboxHash) const -> bool
+    identifier::Generic& nymboxHash) const -> bool
 {
     if (context.HaveLocalNymboxHash()) {
-        nymboxHash.SetString(context.LocalNymboxHash()->str());
+        nymboxHash = context.LocalNymboxHash();
     } else {
         LogError()(OT_PRETTY_CLASS())(
             "Continuing without server side nymbox hash.")
@@ -2702,7 +2707,7 @@ auto UserCommandProcessor::isAdmin(const identifier::Nym& nymID) -> bool
 
 auto UserCommandProcessor::load_inbox(
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const identifier::Notary& serverID,
     const identity::Nym& serverNym,
     const bool verifyAccount) const -> std::unique_ptr<Ledger>
@@ -2739,7 +2744,7 @@ auto UserCommandProcessor::load_inbox(
         return {};
     }
 
-    auto notUsed = Identifier::Factory();
+    auto notUsed = identifier::Generic{};
 
     if (inbox->LoadedLegacyData()) { save_inbox(serverNym, notUsed, *inbox); }
 
@@ -2778,7 +2783,7 @@ auto UserCommandProcessor::load_nymbox(
         return {};
     }
 
-    auto notUsed = Identifier::Factory();
+    auto notUsed = identifier::Generic{};
 
     if (nymbox->LoadedLegacyData()) {
         save_nymbox(serverNym, notUsed, *nymbox);
@@ -2789,7 +2794,7 @@ auto UserCommandProcessor::load_nymbox(
 
 auto UserCommandProcessor::load_outbox(
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const identifier::Notary& serverID,
     const identity::Nym& serverNym,
     const bool verifyAccount) const -> std::unique_ptr<Ledger>
@@ -2827,7 +2832,7 @@ auto UserCommandProcessor::load_outbox(
         return {};
     }
 
-    auto notUsed = Identifier::Factory();
+    auto notUsed = identifier::Generic{};
 
     if (outbox->LoadedLegacyData()) {
         save_outbox(serverNym, notUsed, *outbox);
@@ -2885,7 +2890,8 @@ auto UserCommandProcessor::ProcessUserCommand(
     OT_ASSERT(reply.HaveContext());
 
     auto& context = reply.Context();
-    context.SetRemoteNymboxHash(Identifier::Factory(msgIn.m_strNymboxHash));
+    context.SetRemoteNymboxHash(manager_.Factory().IdentifierFromBase58(
+        msgIn.m_strNymboxHash->Bytes()));
 
     // ENTERING THE INNER SANCTUM OF SECURITY. If the user got all the way to
     // here, Then he has passed multiple levels of security, and all commands
@@ -3072,7 +3078,7 @@ auto UserCommandProcessor::save_box(const identity::Nym& nym, Ledger& box) const
 
 auto UserCommandProcessor::save_inbox(
     const identity::Nym& nym,
-    Identifier& hash,
+    identifier::Generic& hash,
     Ledger& inbox) const -> bool
 {
     if (false == save_box(nym, inbox)) { return false; }
@@ -3084,7 +3090,7 @@ auto UserCommandProcessor::save_inbox(
 
 auto UserCommandProcessor::save_nymbox(
     const identity::Nym& nym,
-    Identifier& hash,
+    identifier::Generic& hash,
     Ledger& nymbox) const -> bool
 {
     if (false == save_box(nym, nymbox)) { return false; }
@@ -3096,7 +3102,7 @@ auto UserCommandProcessor::save_nymbox(
 
 auto UserCommandProcessor::save_outbox(
     const identity::Nym& nym,
-    Identifier& hash,
+    identifier::Generic& hash,
     Ledger& outbox) const -> bool
 {
     if (false == save_box(nym, outbox)) { return false; }
@@ -3107,7 +3113,7 @@ auto UserCommandProcessor::save_outbox(
 }
 
 auto UserCommandProcessor::verify_box(
-    const Identifier& ownerID,
+    const identifier::Generic& ownerID,
     Ledger& box,
     const identity::Nym& nym,
     const bool full) const -> bool

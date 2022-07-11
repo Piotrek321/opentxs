@@ -32,22 +32,23 @@ public:
     ot::UnallocatedCString seed_id_;
     std::uint32_t index_;
     ot::Nym_p nym_;
-    ot::OTNymID nym_id_;
+    ot::identifier::Nym nym_id_;
     ot::UnallocatedCString payment_code_;
     ot::Amount expected_balance_ = 0;
 
-    auto Account(std::string_view type) const noexcept -> const ot::Identifier&;
+    auto Account(std::string_view type) const noexcept
+        -> const ot::identifier::Generic&;
     auto Contact(std::string_view contact) const noexcept
-        -> const ot::Identifier&;
+        -> const ot::identifier::Generic&;
     auto PaymentCode() const -> ot::PaymentCode;
     auto Reason() const noexcept -> ot::OTPasswordPrompt;
     auto SetAccount(std::string_view type, std::string_view id) const noexcept
         -> bool;
-    auto SetAccount(std::string_view type, const ot::Identifier& id)
+    auto SetAccount(std::string_view type, const ot::identifier::Generic& id)
         const noexcept -> bool;
     auto SetContact(std::string_view contact, std::string_view id)
         const noexcept -> bool;
-    auto SetContact(std::string_view contact, const ot::Identifier& id)
+    auto SetContact(std::string_view contact, const ot::identifier::Generic& id)
         const noexcept -> bool;
 
     auto init(
@@ -90,8 +91,8 @@ public:
 
 private:
     mutable std::mutex lock_;
-    mutable ot::Map<ot::CString, ot::OTIdentifier> contacts_;
-    mutable ot::Map<ot::CString, ot::OTIdentifier> accounts_;
+    mutable ot::Map<ot::CString, ot::identifier::Generic> contacts_;
+    mutable ot::Map<ot::CString, ot::identifier::Generic> accounts_;
 
     auto init_basic(
         const ot::api::session::Client& api,

@@ -24,6 +24,7 @@
 #include "internal/serialization/protobuf/verify/Contact.hpp"
 #include "internal/serialization/protobuf/verify/StorageContacts.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Container.hpp"
@@ -34,8 +35,12 @@
 
 namespace opentxs::storage
 {
-Contacts::Contacts(const Driver& storage, const UnallocatedCString& hash)
-    : Node(storage, hash)
+Contacts::Contacts(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
+    const Driver& storage,
+    const UnallocatedCString& hash)
+    : Node(crypto, factory, storage, hash)
     , merge_()
     , merged_()
     , nym_contact_index_()
@@ -65,7 +70,7 @@ void Contacts::extract_nyms(const Lock& lock, const proto::Contact& data) const
         abort();
     }
 
-    const auto& contact = data.id();
+    const auto contact = factory_.IdentifierFromBase58(data.id());
 
     for (const auto& section : data.contactdata().section()) {
         if (section.name() !=
@@ -80,7 +85,7 @@ void Contacts::extract_nyms(const Lock& lock, const proto::Contact& data) const
             }
 
             const auto& nymID = item.value();
-            nym_contact_index_[nymID] = contact;
+            nym_contact_index_[factory_.NymIDFromBase58(nymID)] = contact;
         }
     }
 }
@@ -115,10 +120,10 @@ void Contacts::init(const UnallocatedCString& hash)
     // NOTE the address field is no longer used
 
     for (const auto& index : serialized->nym()) {
-        const auto& contact = index.contact();
+        const auto contact = factory_.IdentifierFromBase58(index.contact());
 
         for (const auto& nym : index.nym()) {
-            nym_contact_index_[nym] = contact;
+            nym_contact_index_[factory_.NymIDFromBase58(nym)] = contact;
         }
     }
 }
@@ -158,7 +163,7 @@ auto Contacts::nomalize_id(const UnallocatedCString& input) const
     return it->second;
 }
 
-auto Contacts::NymOwner(UnallocatedCString nym) const -> UnallocatedCString
+auto Contacts::NymOwner(const identifier::Nym& nym) const -> identifier::Generic
 {
     Lock lock(write_lock_);
 
@@ -259,13 +264,13 @@ auto Contacts::serialize() const -> proto::StorageContacts
         }
     }
 
-    UnallocatedMap<UnallocatedCString, UnallocatedSet<UnallocatedCString>> nyms;
+    auto nyms = Map<UnallocatedCString, UnallocatedSet<UnallocatedCString>>{};
 
     for (const auto& it : nym_contact_index_) {
         const auto& nym = it.first;
         const auto& contact = it.second;
-        auto& list = nyms[contact];
-        list.insert(nym);
+        auto& list = nyms[contact.asBase58(crypto_)];
+        list.insert(nym.asBase58(crypto_));
     }
 
     for (const auto& it : nyms) {

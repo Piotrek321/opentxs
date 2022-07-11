@@ -26,6 +26,7 @@
 #include "internal/otx/common/crypto/Signature.hpp"
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -65,7 +66,7 @@ Contract::Contract(
     , m_strName(name)
     , m_strFoldername(foldername)
     , m_strFilename(filename)
-    , m_ID(api_.Factory().Identifier(strID))
+    , m_ID(api_.Factory().IdentifierFromBase58(strID.Bytes()))
     , m_xmlUnsigned(StringXML::Factory())
     , m_strRawFile(String::Factory())
     , m_strSigHashType(crypto::HashType::Error)
@@ -90,12 +91,12 @@ Contract::Contract(const api::Session& api, const String& strID)
 {
 }
 
-Contract::Contract(const api::Session& api, const Identifier& theID)
+Contract::Contract(const api::Session& api, const identifier::Generic& theID)
     : Contract(api, String::Factory(theID))
 {
 }
 
-void Contract::SetIdentifier(const Identifier& theID) { m_ID = theID; }
+void Contract::SetIdentifier(const identifier::Generic& theID) { m_ID = theID; }
 
 // The name, filename, version, and ID loaded by the wallet
 // are NOT released here, since they are used immediately after
@@ -148,14 +149,14 @@ void Contract::GetFilename(String& strFilename) const
     String::Factory(strFilename.Get()) = m_strFilename;
 }
 
-void Contract::GetIdentifier(Identifier& theIdentifier) const
+void Contract::GetIdentifier(identifier::Generic& theIdentifier) const
 {
-    theIdentifier.SetString(m_ID->str());
+    theIdentifier = m_ID;
 }
 
 void Contract::GetIdentifier(String& theIdentifier) const
 {
-    m_ID->GetString(theIdentifier);
+    m_ID.GetString(api_.Crypto(), theIdentifier);
 }
 
 // Make sure this contract checks out. Very high level.
@@ -202,21 +203,21 @@ auto Contract::VerifyContract() const -> bool
     return true;
 }
 
-void Contract::CalculateContractID(Identifier& newID) const
+void Contract::CalculateContractID(identifier::Generic& newID) const
 {
     // may be redundant...
     UnallocatedCString str_Trim(m_strRawFile->Get());
     UnallocatedCString str_Trim2 = String::trim(str_Trim);
-
     auto strTemp = String::Factory(str_Trim2.c_str());
+    newID = api_.Factory().IdentifierFromPreimage(strTemp->Bytes());
 
-    if (!newID.CalculateDigest(strTemp->Bytes())) {
+    if (newID.empty()) {
         LogError()(OT_PRETTY_CLASS())("Error calculating Contract digest.")
             .Flush();
     }
 }
 
-void Contract::CalculateAndSetContractID(Identifier& newID)
+void Contract::CalculateAndSetContractID(identifier::Generic& newID)
 {
     CalculateContractID(newID);
     SetIdentifier(newID);
@@ -224,7 +225,7 @@ void Contract::CalculateAndSetContractID(Identifier& newID)
 
 auto Contract::VerifyContractID() const -> bool
 {
-    auto newID = api_.Factory().Identifier();
+    auto newID = identifier::Generic{};
     CalculateContractID(newID);
 
     // newID now contains the Hash aka Message Digest aka Fingerprint
@@ -246,7 +247,7 @@ auto Contract::VerifyContractID() const -> bool
         return false;
     } else {
         auto str1 = String::Factory();
-        newID->GetString(str1);
+        newID.GetString(api_.Crypto(), str1);
         LogDetail()(OT_PRETTY_CLASS())("Contract ID *SUCCESSFUL* match to "
                                        "hash of contract file: ")(str1)
             .Flush();
@@ -1449,9 +1450,9 @@ auto Contract::CreateContract(
                                               // once
         {                                     // we've created the serialized
             auto NEW_ID =
-                api_.Factory().Identifier();  // string for this contract, is
-            CalculateContractID(NEW_ID);      // to then load it up from that
-                                              // string.
+                identifier::Generic{};    // string for this contract, is
+            CalculateContractID(NEW_ID);  // to then load it up from that
+                                          // string.
             m_ID = NEW_ID;
 
             return true;
@@ -1611,7 +1612,8 @@ auto Contract::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             return (-1);  // error condition
         }
 
-        const auto nymId = api_.Factory().NymID(strSignerNymID);
+        const auto nymId =
+            api_.Factory().NymIDFromBase58(strSignerNymID->Bytes());
         const auto pNym = api_.Wallet().Nym(nymId);
 
         if (nullptr == pNym) {

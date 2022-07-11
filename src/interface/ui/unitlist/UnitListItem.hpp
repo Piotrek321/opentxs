@@ -17,7 +17,6 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/Unit.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/interface/ui/UnitListItem.hpp"
 #include "opentxs/util/Container.hpp"
@@ -68,6 +67,8 @@ using UnitListItemRow =
 class UnitListItem final : public UnitListItemRow
 {
 public:
+    const api::session::Client& api_;
+
     auto Name() const noexcept -> UnallocatedCString final { return name_; }
     auto Unit() const noexcept -> UnitType final { return row_id_; }
 

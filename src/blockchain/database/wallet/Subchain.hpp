@@ -17,7 +17,6 @@
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -70,7 +69,7 @@ public:
     auto GetSubchainID(
         const NodeID& subaccount,
         const crypto::Subchain subchain,
-        MDB_txn* tx) const noexcept -> pSubchainIndex;
+        MDB_txn* tx) const noexcept -> SubchainIndex;
     auto GetPatterns(const SubchainIndex& subchain, alloc::Default alloc)
         const noexcept -> Patterns;
     auto Reorg(

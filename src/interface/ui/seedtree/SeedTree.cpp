@@ -21,7 +21,6 @@
 #include <utility>
 
 #include "interface/ui/base/List.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/identity/Nym.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -63,11 +62,11 @@ namespace opentxs::ui::implementation
 SeedTree::SeedTree(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
-    : SeedTreeList(api, api.Factory().Identifier(), cb, false)
+    : SeedTreeList(api, identifier::Generic{}, cb, false)
     , Worker(api, 100ms)
     , callbacks_()
-    , default_nym_(api.Factory().NymID())
-    , default_seed_(api.Factory().Identifier())
+    , default_nym_()
+    , default_seed_()
 {
     init_executor({
         UnallocatedCString{api.Endpoints().NymCreated()},
@@ -150,13 +149,13 @@ auto SeedTree::ClearCallbacks() const noexcept -> void
 
 auto SeedTree::check_default_nym() noexcept -> void
 {
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     const auto old = *default_nym_.lock_shared();
     auto data = api.Wallet().DefaultNym();
     auto& [current, count] = data;
 
     if ((0u < count) && (old != current)) {
-        default_nym_.modify([&](auto& nym) { nym->Assign(data.first); });
+        default_nym_.modify([&](auto& nym) { nym.Assign(data.first); });
 
         {
             auto handle = callbacks_.lock_shared();
@@ -167,19 +166,19 @@ auto SeedTree::check_default_nym() noexcept -> void
             UpdateNotify();
         }
 
-        if (false == old->empty()) { process_nym(old); }
+        if (false == old.empty()) { process_nym(old); }
     }
 }
 
 auto SeedTree::check_default_seed() noexcept -> void
 {
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     const auto old = *default_seed_.lock_shared();
     const auto [id, count] = api.Crypto().Seed().DefaultSeed();
-    auto current = api.Factory().Identifier(id);
+    auto current = api.Factory().IdentifierFromBase58(id);
 
     if ((0u < count) && (old != current)) {
-        default_seed_.modify([&](auto& seed) { seed->Assign(current); });
+        default_seed_.modify([&](auto& seed) { seed.Assign(current); });
 
         {
             auto handle = callbacks_.lock_shared();
@@ -190,7 +189,7 @@ auto SeedTree::check_default_seed() noexcept -> void
             UpdateNotify();
         }
 
-        if (false == old->empty()) { process_seed(old); }
+        if (false == old.empty()) { process_seed(old); }
     }
 }
 
@@ -199,7 +198,7 @@ auto SeedTree::construct_row(
     const SeedTreeSortKey& index,
     CustomData& custom) const noexcept -> RowPointer
 {
-    return factory::SeedTreeItemModel(*this, Widget::api_, id, index, custom);
+    return factory::SeedTreeItemModel(*this, api_, id, index, custom);
 }
 
 auto SeedTree::Debug() const noexcept -> UnallocatedCString
@@ -225,14 +224,14 @@ auto SeedTree::Debug() const noexcept -> UnallocatedCString
     return out.str();
 }
 
-auto SeedTree::DefaultNym() const noexcept -> OTNymID
+auto SeedTree::DefaultNym() const noexcept -> identifier::Nym
 {
     wait_for_startup();
 
     return *default_nym_.lock_shared();
 }
 
-auto SeedTree::DefaultSeed() const noexcept -> OTIdentifier
+auto SeedTree::DefaultSeed() const noexcept -> identifier::Generic
 {
     wait_for_startup();
 
@@ -252,12 +251,12 @@ auto SeedTree::load() noexcept -> void
 }
 
 auto SeedTree::load_seed(
-    const Identifier& id,
+    const identifier::Generic& id,
     UnallocatedCString& name,
     crypto::SeedStyle& type,
     bool& isPrimary) const noexcept(false) -> void
 {
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     const auto& factory = api.Factory();
     const auto& seeds = api.Crypto().Seed();
     const auto reason = factory.PasswordPrompt("Display seed tree");
@@ -267,16 +266,17 @@ auto SeedTree::load_seed(
         throw std::runtime_error{"invalid seed"};
     }
 
-    const auto sId = id.str();
+    const auto sId = id.asBase58(api_.Crypto());
     name = seeds.SeedDescription(sId);
     type = seed.Type();
     isPrimary = (sId == seeds.DefaultSeed().first);
 }
 
-auto SeedTree::load_nym(OTNymID&& nymID, ChildMap& out) const noexcept -> void
+auto SeedTree::load_nym(identifier::Nym&& nymID, ChildMap& out) const noexcept
+    -> void
 {
     LogTrace()(OT_PRETTY_CLASS())(nymID).Flush();
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     const auto nym = api.Wallet().Nym(nymID);
 
     try {
@@ -302,9 +302,9 @@ auto SeedTree::load_nym(OTNymID&& nymID, ChildMap& out) const noexcept -> void
 
         static_assert(sizeof(index) <= sizeof(std::size_t));
 
-        const auto seedID = api.Factory().Identifier(path.root());
+        const auto seedID = api.Factory().IdentifierFromBase58(path.root());
 
-        if (seedID->empty()) {
+        if (seedID.empty()) {
             throw std::runtime_error{"invalid path (missing seed id)"};
         }
 
@@ -325,12 +325,12 @@ auto SeedTree::load_nym(OTNymID&& nymID, ChildMap& out) const noexcept -> void
 
 auto SeedTree::load_nyms(ChildMap& out) const noexcept -> void
 {
-    for (const auto& nymID : Widget::api_.Wallet().LocalNyms()) {
-        load_nym(std::move(const_cast<OTNymID&>(nymID)), out);
+    for (const auto& nymID : api_.Wallet().LocalNyms()) {
+        load_nym(std::move(const_cast<identifier::Nym&>(nymID)), out);
     }
 }
 
-auto SeedTree::load_seed(const Identifier& id, ChildMap& out) const
+auto SeedTree::load_seed(const identifier::Generic& id, ChildMap& out) const
     noexcept(false) -> SeedData&
 {
     if (auto it = out.find(id); out.end() != it) {
@@ -347,10 +347,10 @@ auto SeedTree::load_seed(const Identifier& id, ChildMap& out) const
 
 auto SeedTree::load_seeds(ChildMap& out) const noexcept -> void
 {
-    const auto& api = Widget::api_;
+    const auto& api = api_;
 
     for (auto& [id, alias] : api.Storage().SeedList()) {
-        const auto seedID = api.Factory().Identifier(id);
+        const auto seedID = api.Factory().IdentifierFromBase58(id);
 
         try {
             load_seed(seedID, out);
@@ -367,10 +367,10 @@ auto SeedTree::nym_name(const identity::Nym& nym) const noexcept
     auto out = std::stringstream{};
     out << nym.Name();
     auto handle = default_nym_.lock_shared();
-    const auto& id = handle->get();
-    LogTrace()(OT_PRETTY_CLASS())("Default nym is ")(id).Flush();
+    const auto& id = handle;
+    LogTrace()(OT_PRETTY_CLASS())("Default nym is ")(*id).Flush();
 
-    if (nym.ID() == id) { out << " (default)"; }
+    if (nym.ID() == *id) { out << " (default)"; }
 
     return out.str();
 }
@@ -442,7 +442,7 @@ auto SeedTree::process_nym(Message&& in) noexcept -> void
 
     OT_ASSERT(1 < body.size());
 
-    auto id = Widget::api_.Factory().NymID(body.at(1));
+    auto id = api_.Factory().NymIDFromHash(body.at(1).Bytes());
     check_default_nym();
     process_nym(id);
 }
@@ -451,7 +451,7 @@ auto SeedTree::process_nym(const identifier::Nym& id) noexcept -> void
 {
     add_children([&] {
         auto out = ChildMap{};
-        load_nym(std::move(id), out);
+        load_nym(identifier::Nym{id}, out);
 
         return out;
     }());
@@ -463,12 +463,12 @@ auto SeedTree::process_seed(Message&& in) noexcept -> void
 
     OT_ASSERT(1 < body.size());
 
-    const auto id = Widget::api_.Factory().Identifier(body.at(1));
+    const auto id = api_.Factory().IdentifierFromHash(body.at(1).Bytes());
     check_default_seed();
     process_seed(id);
 }
 
-auto SeedTree::process_seed(const Identifier& id) noexcept -> void
+auto SeedTree::process_seed(const identifier::Generic& id) noexcept -> void
 {
     auto index = SeedTreeSortKey{};
     auto custom = [&] {

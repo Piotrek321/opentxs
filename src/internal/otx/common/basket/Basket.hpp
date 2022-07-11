@@ -106,7 +106,7 @@ class Basket final : public Contract
 public:
     void UpdateContents(const PasswordPrompt& reason) final;
 
-    void CalculateContractID(Identifier& newID) const final;
+    void CalculateContractID(identifier::Generic& newID) const final;
 
     inline auto GetMinimumTransfer() const -> const Amount&
     {
@@ -151,22 +151,22 @@ public:
     // creates Account ID later
     // (That's why you don't see the account ID being passed in to the method.)
     void AddSubContract(
-        const Identifier& SUB_CONTRACT_ID,
+        const identifier::Generic& SUB_CONTRACT_ID,
         std::int64_t lMinimumTransferAmount);
     inline void IncrementSubCount() { m_nSubCount++; }
 
     // For generating a user request to exchange in/out of a basket.
     // Assumes that SetTransferMultiple has already been called.
     void AddRequestSubContract(
-        const Identifier& SUB_CONTRACT_ID,
-        const Identifier& SUB_ACCOUNT_ID,
+        const identifier::Generic& SUB_CONTRACT_ID,
+        const identifier::Generic& SUB_ACCOUNT_ID,
         const std::int64_t& lClosingTransactionNo);
 
-    inline void SetRequestAccountID(const Identifier& theAccountID)
+    inline void SetRequestAccountID(const identifier::Generic& theAccountID)
     {
         m_RequestAccountID = theAccountID;
     }
-    inline auto GetRequestAccountID() -> const Identifier&
+    inline auto GetRequestAccountID() -> const identifier::Generic&
     {
         return m_RequestAccountID;
     }
@@ -197,7 +197,7 @@ protected:
     // basket.
     std::int32_t m_nTransferMultiple{0};
     // used in a request basket so the server knows your acct ID.
-    OTIdentifier m_RequestAccountID;
+    identifier::Generic m_RequestAccountID;
     dequeOfBasketItems m_dequeItems;
     // When saving, we might wish to produce a version without Account IDs
     // So that the resulting hash will be a consistent ID across different

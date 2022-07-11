@@ -75,7 +75,7 @@ public:
 
     auto AddItem(
         const identifier::Nym& claimOwner,
-        const Identifier& claim,
+        const identifier::Generic& claim,
         const identity::Nym& signer,
         const PasswordPrompt& reason,
         const Item::Type value,
@@ -91,11 +91,12 @@ public:
         return *nyms_.at(position);
     }
     auto begin() noexcept -> iterator final { return {this, 0}; }
-    auto DeleteItem(const Identifier& item) noexcept -> bool final;
+    auto DeleteItem(const identifier::Generic& item) noexcept -> bool final;
     auto end() noexcept -> iterator final { return {this, nyms_.size()}; }
-    void Register(const Identifier& id, const identifier::Nym& nym) noexcept
-        final;
-    void Unregister(const Identifier& id) noexcept final;
+    void Register(
+        const identifier::Generic& id,
+        const identifier::Nym& nym) noexcept final;
+    void Unregister(const identifier::Generic& id) noexcept final;
 
     Group() = delete;
     Group(const Group&) = delete;
@@ -114,7 +115,7 @@ private:
     const VersionNumber version_;
     const bool external_;
     Vector nyms_;
-    UnallocatedMap<OTIdentifier, OTNymID> map_;
+    UnallocatedMap<identifier::Generic, identifier::Nym> map_;
 
     static auto instantiate(
         internal::Group& parent,

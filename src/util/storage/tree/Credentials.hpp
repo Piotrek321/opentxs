@@ -19,6 +19,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
 namespace proto
 {
 class Credential;
@@ -31,7 +41,7 @@ class Tree;
 }  // namespace storage
 // }  // namespace v1
 }  // namespace opentxs
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::storage
 {
@@ -66,6 +76,10 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageCredentials;
 
-    Credentials(const Driver& storage, const UnallocatedCString& hash);
+    Credentials(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

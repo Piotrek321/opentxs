@@ -34,7 +34,7 @@ auto Bip32::Imp::DeriveKey(
     const Secret& seed,
     const Path& path) const -> Key
 {
-    auto output{blank_.value()};
+    auto output{blank_.get()};
 
     try {
         auto& [privateKey, chainCode, publicKey, pathOut, parent] = output;
@@ -87,7 +87,7 @@ auto Bip32::Imp::DerivePrivateKey(
         }
     }();
     auto output = [&] {
-        auto out{blank_.value()};
+        auto out{blank_.get()};
         auto& [privateKey, chainCode, publicKey, pathOut, parent] = out;
         auto path = proto::HDPath{};
 
@@ -156,7 +156,7 @@ auto Bip32::Imp::DerivePublicKey(
         }
     }();
     auto output = [&] {
-        auto out{blank_.value()};
+        auto out{blank_.get()};
         auto& [privateKey, chainCode, publicKey, pathOut, parent] = out;
         auto path = proto::HDPath{};
 

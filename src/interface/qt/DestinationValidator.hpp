@@ -28,6 +28,11 @@ class Client;
 }  // namespace session
 }  // namespace api
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace ui
 {
 namespace implementation
@@ -35,8 +40,6 @@ namespace implementation
 class AccountActivity;
 }  // namespace implementation
 }  // namespace ui
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -49,7 +52,7 @@ struct DestinationValidator::Imp {
     static auto Blockchain(
         const api::session::Client& api,
         DestinationValidator& main,
-        const Identifier& account,
+        const identifier::Generic& account,
         Parent& parent) noexcept -> std::unique_ptr<Imp>;
     static auto Custodial(
         const api::session::Client& api,

@@ -19,6 +19,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -27,7 +28,6 @@
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::ui::implementation
 {
@@ -38,7 +38,7 @@ ChequeBalanceItem::ChequeBalanceItem(
     const AccountActivitySortKey& sortKey,
     CustomData& custom,
     const identifier::Nym& nymID,
-    const Identifier& accountID) noexcept
+    const identifier::Generic& accountID) noexcept
     : BalanceItem(parent, api, rowID, sortKey, custom, nymID, accountID)
     , cheque_(nullptr)
 {
@@ -120,13 +120,13 @@ auto ChequeBalanceItem::startup(
     auto name = UnallocatedCString{};
     auto text = UnallocatedCString{};
     auto number = std::to_string(cheque_->GetTransactionNum());
-    auto otherNymID = identifier::Nym::Factory();
+    auto otherNymID = identifier::Nym{};
 
     switch (type_) {
         case otx::client::StorageBox::INCOMINGCHEQUE: {
-            otherNymID->Assign(cheque_->GetSenderNymID());
+            otherNymID.Assign(cheque_->GetSenderNymID());
 
-            if (otherNymID->empty()) { otherNymID = nym_id_; }
+            if (otherNymID.empty()) { otherNymID = nym_id_; }
 
             switch (event.type()) {
                 case proto::PAYMENTEVENTTYPE_CONVEY: {
@@ -146,13 +146,13 @@ auto ChequeBalanceItem::startup(
             }
         } break;
         case otx::client::StorageBox::OUTGOINGCHEQUE: {
-            otherNymID->Assign(cheque_->GetRecipientNymID());
+            otherNymID.Assign(cheque_->GetRecipientNymID());
 
             switch (event.type()) {
                 case proto::PAYMENTEVENTTYPE_CREATE: {
                     text = "Wrote cheque #" + number;
 
-                    if (false == otherNymID->empty()) {
+                    if (false == otherNymID.empty()) {
                         text += " for " + get_contact_name(otherNymID);
                     }
                 } break;
@@ -212,7 +212,7 @@ auto ChequeBalanceItem::UUID() const noexcept -> UnallocatedCString
 
         return api::session::Workflow::UUID(
                    api_, cheque_->GetNotaryID(), cheque_->GetTransactionNum())
-            ->str();
+            .asBase58(api_.Crypto());
     }
 
     return {};

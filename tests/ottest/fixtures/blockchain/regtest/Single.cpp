@@ -10,13 +10,15 @@
 
 namespace ottest
 {
-Regtest_fixture_single::Regtest_fixture_single(ot::Options clientArgs)
-    : Regtest_fixture_normal(1, std::move(clientArgs))
+Regtest_fixture_single::Regtest_fixture_single(
+    const ot::api::Context& ot,
+    ot::Options clientArgs)
+    : Regtest_fixture_normal(ot, 1, std::move(clientArgs))
 {
 }
 
 Regtest_fixture_single::Regtest_fixture_single()
-    : Regtest_fixture_normal(1)
+    : Regtest_fixture_normal(ot_, 1)
 {
 }
 }  // namespace ottest

@@ -13,12 +13,9 @@ namespace opentxs::blockchain::database::wallet
 {
 using Parent = database::Wallet;
 using SubchainIndex = Parent::SubchainIndex;
-using pSubchainIndex = Parent::pSubchainIndex;
 using NodeID = Parent::NodeID;
-using pNodeID = Parent::pNodeID;
 using Patterns = Parent::Patterns;
 using ElementMap = Parent::ElementMap;
 using MatchingIndices = Parent::MatchingIndices;
-using PatternID = Identifier;
-using pPatternID = OTIdentifier;
+using PatternID = identifier::Generic;
 }  // namespace opentxs::blockchain::database::wallet

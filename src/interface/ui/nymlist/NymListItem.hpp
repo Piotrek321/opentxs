@@ -60,6 +60,8 @@ using NymListItemRow =
 class NymListItem : public NymListItemRow
 {
 public:
+    const api::session::Client& api_;
+
     auto NymID() const noexcept -> UnallocatedCString final;
     auto Name() const noexcept -> UnallocatedCString final;
 

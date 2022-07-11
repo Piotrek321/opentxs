@@ -31,6 +31,7 @@ class Notary;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 class UnitDefinition;
@@ -61,7 +62,6 @@ namespace server
 class Server;
 }  // namespace server
 
-class Identifier;
 class PasswordPrompt;
 class String;
 // }  // namespace v1
@@ -129,7 +129,7 @@ private:
         OTTransaction& transaction,
         const Ledger& inbox,
         const Ledger& outbox,
-        const Identifier& accounthash) const;
+        const identifier::Generic& accounthash) const;
     auto extract_cheque(
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID,
@@ -271,7 +271,7 @@ private:
         const Item& balanceItem,
         otx::context::Client& context,
         ExclusiveAccount& account,
-        Identifier& accountHash,
+        identifier::Generic& accountHash,
         Ledger& inbox,
         Ledger& outbox,
         Item& responseItem,

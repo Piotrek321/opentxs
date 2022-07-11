@@ -19,6 +19,8 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -38,7 +40,7 @@ TransferBalanceItem::TransferBalanceItem(
     const AccountActivitySortKey& sortKey,
     CustomData& custom,
     const identifier::Nym& nymID,
-    const Identifier& accountID) noexcept
+    const identifier::Generic& accountID) noexcept
     : BalanceItem(parent, api, rowID, sortKey, custom, nymID, accountID)
     , transfer_()
 {
@@ -64,7 +66,8 @@ auto TransferBalanceItem::effective_amount() const noexcept -> opentxs::Amount
         } break;
         case otx::client::StorageBox::INTERNALTRANSFER: {
             const auto in =
-                parent_.AccountID() == transfer_->GetDestinationAcctID().str();
+                parent_.AccountID() ==
+                transfer_->GetDestinationAcctID().asBase58(api_.Crypto());
 
             if (in) {
                 sign = 1;
@@ -145,10 +148,11 @@ auto TransferBalanceItem::startup(
 
                     if (0 < workflow.party_size()) {
                         text += get_contact_name(
-                            identifier::Nym::Factory(workflow.party(0)));
+                            api_.Factory().NymIDFromBase58(workflow.party(0)));
                     } else {
                         text += "account " +
-                                transfer_->GetDestinationAcctID().str();
+                                transfer_->GetDestinationAcctID().asBase58(
+                                    api_.Crypto());
                     }
                 } break;
                 case proto::PAYMENTEVENTTYPE_COMPLETE: {
@@ -168,10 +172,11 @@ auto TransferBalanceItem::startup(
 
                     if (0 < workflow.party_size()) {
                         text += get_contact_name(
-                            identifier::Nym::Factory(workflow.party(0)));
+                            api_.Factory().NymIDFromBase58(workflow.party(0)));
                     } else {
                         text += "account " +
-                                transfer_->GetPurportedAccountID().str();
+                                transfer_->GetPurportedAccountID().asBase58(
+                                    api_.Crypto());
                     }
                 } break;
                 case proto::PAYMENTEVENTTYPE_COMPLETE: {
@@ -186,18 +191,21 @@ auto TransferBalanceItem::startup(
         } break;
         case otx::client::StorageBox::INTERNALTRANSFER: {
             const auto in =
-                parent_.AccountID() == transfer_->GetDestinationAcctID().str();
+                parent_.AccountID() ==
+                transfer_->GetDestinationAcctID().asBase58(api_.Crypto());
 
             switch (event.type()) {
                 case proto::PAYMENTEVENTTYPE_ACKNOWLEDGE: {
                     if (in) {
                         text = "Received internal transfer #" + number +
                                " from account " +
-                               transfer_->GetPurportedAccountID().str();
+                               transfer_->GetPurportedAccountID().asBase58(
+                                   api_.Crypto());
                     } else {
                         text = "Sent internal transfer #" + number +
                                " to account " +
-                               transfer_->GetDestinationAcctID().str();
+                               transfer_->GetDestinationAcctID().asBase58(
+                                   api_.Crypto());
                     }
                 } break;
                 case proto::PAYMENTEVENTTYPE_COMPLETE: {
@@ -253,7 +261,7 @@ auto TransferBalanceItem::UUID() const noexcept -> UnallocatedCString
                    api_,
                    transfer_->GetPurportedNotaryID(),
                    transfer_->GetTransactionNum())
-            ->str();
+            .asBase58(api_.Crypto());
     }
 
     return {};

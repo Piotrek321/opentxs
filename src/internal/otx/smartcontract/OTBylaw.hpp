@@ -11,13 +11,21 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 class OTClause;
 class OTScript;
 class OTScriptable;
 class Tag;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace opentxs
+{
 using mapOfCallbacks = UnallocatedMap<UnallocatedCString, UnallocatedCString>;
 using mapOfClauses = UnallocatedMap<UnallocatedCString, OTClause*>;
 using mapOfVariables = UnallocatedMap<UnallocatedCString, OTVariable*>;

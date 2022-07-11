@@ -9,6 +9,7 @@
 
 #include <utility>
 
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -17,7 +18,6 @@
 #include "opentxs/interface/rpc/response/Base.hpp"
 #include "opentxs/interface/rpc/response/ListNyms.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::rpc::implementation
 {
@@ -35,7 +35,7 @@ auto RPC::list_nyms(const request::Base& base) const noexcept
         const auto& session = this->session(base);
 
         for (const auto& id : session.Wallet().LocalNyms()) {
-            ids.emplace_back(id->str());
+            ids.emplace_back(id.asBase58(ot_.Crypto()));
         }
 
         return reply(status(ids));

@@ -244,7 +244,7 @@ auto Context::Init_Factory() -> void
 
     OT_ASSERT(factory_);
 
-    crypto_->Internal().Init(*factory_);
+    crypto_->Internal().Init(factory_);
 }
 
 auto Context::Init_Log() -> void

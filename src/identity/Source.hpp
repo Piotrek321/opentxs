@@ -69,7 +69,7 @@ public:
     auto asString() const noexcept -> OTString final;
     auto Description() const noexcept -> OTString final;
     auto Type() const noexcept -> identity::SourceType final { return type_; }
-    auto NymID() const noexcept -> OTNymID final;
+    auto NymID() const noexcept -> identifier::Nym final;
     auto Serialize(proto::NymIDSource& serialized) const noexcept -> bool final;
     auto Verify(
         const proto::Credential& master,

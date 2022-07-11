@@ -23,6 +23,11 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -36,7 +41,7 @@ public:
 
     auto FilterType() const noexcept -> cfilter::Type;
     auto SubaccountID(const api::Session& api) const noexcept
-        -> const Identifier&;
+        -> const identifier::Generic&;
     auto Type() const noexcept -> crypto::Subchain;
     auto Version() const noexcept -> VersionNumber;
 
@@ -44,7 +49,7 @@ public:
         const crypto::Subchain type,
         const cfilter::Type filter,
         const VersionNumber version,
-        const Identifier& subaccount) noexcept;
+        const identifier::Generic& subaccount) noexcept;
     SubchainID(const ReadView bytes) noexcept(false);
     SubchainID() = delete;
     SubchainID(const SubchainID&) = delete;
@@ -63,6 +68,6 @@ private:
     mutable std::optional<crypto::Subchain> subchain_;
     mutable std::optional<cfilter::Type> filter_;
     mutable std::optional<VersionNumber> version_;
-    mutable std::optional<OTIdentifier> subaccount_;
+    mutable std::optional<identifier::Generic> subaccount_;
 };
 }  // namespace opentxs::blockchain::database::wallet::db

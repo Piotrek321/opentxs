@@ -329,7 +329,7 @@ public:
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
-        const opentxs::Identifier& requestID,
+        const identifier::Generic& requestID,
         const UnallocatedCString& txid,
         const Amount& amount,
         const opentxs::PasswordPrompt& reason) noexcept
@@ -343,7 +343,7 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) noexcept
@@ -389,7 +389,7 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const bool ack,
         const UnallocatedCString& url,
@@ -481,7 +481,7 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const contract::peer::PeerRequestType type,
         const bool& ack,
@@ -528,7 +528,7 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) noexcept
@@ -667,7 +667,7 @@ public:
         bool external) -> identity::wot::verification::internal::Group*;
     static auto VerificationItem(
         const identity::wot::verification::internal::Nym& parent,
-        const opentxs::Identifier& claim,
+        const identifier::Generic& claim,
         const identity::Nym& signer,
         const opentxs::PasswordPrompt& reason,
         const bool value,

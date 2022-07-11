@@ -17,7 +17,6 @@
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -25,13 +24,11 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/bitcoin/block/Factory.hpp"
 #include "internal/core/Amount.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/block/Script.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
@@ -47,7 +44,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -112,8 +108,8 @@ auto BitcoinTransactionOutput(
         auto cs = blockchain::bitcoin::CompactSize(in.script().size());
         auto keys = boost::container::flat_set<blockchain::crypto::Key>{};
         auto pkh = boost::container::flat_set<blockchain::PatternID>{};
-        using Payer = OTIdentifier;
-        using Payee = OTIdentifier;
+        using Payer = identifier::Generic;
+        using Payee = identifier::Generic;
         using Correction = std::pair<Payer, Payee>;
         auto corrections = UnallocatedVector<Correction>{};
         const auto& blockchain = api.Crypto().Blockchain();
@@ -131,7 +127,7 @@ auto BitcoinTransactionOutput(
                 auto sender = blockchain.SenderContact(keyid);
                 auto recipient = blockchain.RecipientContact(keyid);
 
-                if (sender->empty() || recipient->empty()) { OT_FAIL; }
+                if (sender.empty() || recipient.empty()) { OT_FAIL; }
 
                 corrections.emplace_back(
                     std::move(sender), std::move(recipient));
@@ -141,17 +137,6 @@ auto BitcoinTransactionOutput(
         }
 
         for (const auto& pattern : in.pubkey_hash()) { pkh.emplace(pattern); }
-        const auto& hash = in.mined_block();
-        blockchain::block::Position position =
-            0 < hash.size()
-                ? blockchain::block::Position{in.mined_height(), hash}
-                : blockchain::block::Position{};
-
-        UnallocatedSet<blockchain::node::TxoTag> txoTags;
-
-        for (const auto& tag : in.tag()) {
-            txoTags.emplace(static_cast<blockchain::node::TxoTag>(tag));
-        }
 
         auto out = std::make_unique<ReturnType>(
             api,
@@ -167,24 +152,45 @@ auto BitcoinTransactionOutput(
                  ? std::make_optional<blockchain::PatternID>(in.script_hash())
                  : std::nullopt),
             in.indexed(),
-            position,
+            [&]() -> blockchain::block::Position {
+                if (const auto& hash = in.mined_block(); 0 < hash.size()) {
+
+                    return {in.mined_height(), hash};
+                } else {
+
+                    return {};
+                }
+            }(),
             static_cast<blockchain::node::TxoState>(in.state()),
-            txoTags);
+            [&] {
+                auto out = UnallocatedSet<blockchain::node::TxoTag>{};
+
+                for (const auto& tag : in.tag()) {
+                    out.emplace(static_cast<blockchain::node::TxoTag>(tag));
+                }
+
+                return out;
+            }());
 
         for (const auto& payer : in.payer()) {
             if (false == payer.empty()) {
-                auto id = api.Factory().Identifier();
-                id->Assign(payer.data(), payer.size());
+                out->SetPayer([&] {
+                    auto id = identifier::Generic{};
+                    id.Assign(payer.data(), payer.size());
 
-                out->SetPayer(id);
+                    return id;
+                }());
             }
         }
 
         for (const auto& payee : in.payee()) {
             if (false == payee.empty()) {
-                auto id = api.Factory().Identifier();
-                id->Assign(payee.data(), payee.size());
-                out->SetPayee(id);
+                out->SetPayee([&] {
+                    auto id = identifier::Generic{};
+                    id.Assign(payee.data(), payee.size());
+
+                    return id;
+                }());
             }
         }
 
@@ -311,7 +317,7 @@ Output::Output(const Output& rhs) noexcept
 }
 
 auto Output::AssociatedLocalNyms(
-    UnallocatedVector<OTNymID>& output) const noexcept -> void
+    UnallocatedVector<identifier::Nym>& output) const noexcept -> void
 {
     cache_.for_each_key([&](const auto& key) {
         const auto& owner = api_.Crypto().Blockchain().Owner(key);
@@ -321,7 +327,7 @@ auto Output::AssociatedLocalNyms(
 }
 
 auto Output::AssociatedRemoteContacts(
-    UnallocatedVector<OTIdentifier>& output) const noexcept -> void
+    UnallocatedVector<identifier::Generic>& output) const noexcept -> void
 {
     const auto hashes = script_->LikelyPubkeyHashes(api_);
     const auto& api = api_.Crypto().Blockchain();
@@ -336,8 +342,8 @@ auto Output::AssociatedRemoteContacts(
     auto payer = cache_.payer();
     auto payee = cache_.payee();
 
-    if (false == payee->empty()) { output.emplace_back(std::move(payee)); }
-    if (false == payer->empty()) { output.emplace_back(std::move(payer)); }
+    if (false == payee.empty()) { output.emplace_back(std::move(payee)); }
+    if (false == payer.empty()) { output.emplace_back(std::move(payer)); }
 }
 
 auto Output::CalculateSize() const noexcept -> std::size_t
@@ -373,7 +379,8 @@ auto Output::FindMatches(
             const auto& [txid, element] = match;
             const auto& [index, subchainID] = element;
             const auto& [subchain, account] = subchainID;
-            auto keyid = crypto::Key{account->str(), subchain, index};
+            auto keyid =
+                crypto::Key{account.asBase58(api_.Crypto()), subchain, index};
             log(OT_PRETTY_CLASS())("output ")(index_)(" of transaction ")
                 .asHex(tx)(" matches ")(print(keyid))
                 .Flush();
@@ -382,8 +389,8 @@ auto Output::FindMatches(
                 auto sender = api.SenderContact(keyid);
                 auto recipient = api.RecipientContact(keyid);
 
-                if (sender->empty()) { OT_FAIL; }
-                if (recipient->empty()) { OT_FAIL; }
+                if (sender.empty()) { OT_FAIL; }
+                if (recipient.empty()) { OT_FAIL; }
 
                 cache_.set_payer(sender);
                 cache_.set_payee(recipient);
@@ -408,7 +415,7 @@ auto Output::index_elements() noexcept -> void
     LogTrace()(OT_PRETTY_CLASS())(patterns.size())(" pubkey hashes found:")
         .Flush();
     std::for_each(
-        std::begin(patterns), std::end(patterns), [&](const auto& id) -> auto {
+        std::begin(patterns), std::end(patterns), [&](const auto& id) -> auto{
             hashes.emplace(id);
             LogTrace()("    * ")(id).Flush();
         });
@@ -545,7 +552,7 @@ auto Output::Serialize(SerializeType& out) const noexcept -> bool
         serializedKey.set_version(key_version_);
         serializedKey.set_chain(
             translate(UnitToClaim(BlockchainToUnit(chain_))));
-        serializedKey.set_nym(api.Owner(key).str());
+        serializedKey.set_nym(api.Owner(key).asBase58(api_.Crypto()));
         serializedKey.set_subaccount(accountID);
         serializedKey.set_subchain(static_cast<std::uint32_t>(subchain));
         serializedKey.set_index(index);
@@ -557,12 +564,12 @@ auto Output::Serialize(SerializeType& out) const noexcept -> bool
 
     out.set_indexed(true);
 
-    if (const auto payer = cache_.payer(); false == payer->empty()) {
-        out.add_payer(UnallocatedCString{payer->Bytes()});
+    if (const auto payer = cache_.payer(); false == payer.empty()) {
+        out.add_payer(UnallocatedCString{payer.Bytes()});
     }
 
-    if (const auto payee = cache_.payee(); false == payee->empty()) {
-        out.add_payee(UnallocatedCString{payee->Bytes()});
+    if (const auto payee = cache_.payee(); false == payee.empty()) {
+        out.add_payee(UnallocatedCString{payee.Bytes()});
     }
 
     if (const auto& [height, hash] = cache_.position(); 0 <= height) {

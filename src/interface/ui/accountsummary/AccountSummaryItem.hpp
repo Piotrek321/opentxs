@@ -16,6 +16,9 @@
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Unit.hpp"
@@ -24,8 +27,6 @@
 #include "opentxs/interface/ui/AccountSummaryItem.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
-
-class QVariant;
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -59,6 +60,8 @@ class AccountSummaryItem;
 }  // namespace ui
 // }  // namespace v1
 }  // namespace opentxs
+
+class QVariant;
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui::implementation
@@ -69,9 +72,11 @@ using AccountSummaryItemRow =
 class AccountSummaryItem final : public AccountSummaryItemRow
 {
 public:
+    const api::session::Client& api_;
+
     auto AccountID() const noexcept -> UnallocatedCString final
     {
-        return account_id_.str();
+        return account_id_.asBase58(api_.Crypto());
     }
     auto Balance() const noexcept -> Amount final
     {
@@ -96,14 +101,15 @@ public:
     ~AccountSummaryItem() final = default;
 
 private:
-    const Identifier& account_id_;
+    const identifier::Generic& account_id_;
     const UnitType& currency_;
     mutable Amount balance_;
     IssuerItemSortKey name_;
     mutable OTUnitDefinition contract_;
 
-    static auto load_unit(const api::Session& api, const Identifier& id)
-        -> OTUnitDefinition;
+    static auto load_unit(
+        const api::Session& api,
+        const identifier::Generic& id) -> OTUnitDefinition;
 
     auto qt_data(const int column, const int role, QVariant& out) const noexcept
         -> void final;

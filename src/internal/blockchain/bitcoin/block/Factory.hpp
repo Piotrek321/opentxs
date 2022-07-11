@@ -72,6 +72,11 @@ class Outpoint;
 }  // namespace block
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace network
 {
 namespace blockchain
@@ -91,7 +96,6 @@ class BlockchainTransactionInput;
 class BlockchainTransactionOutput;
 }  // namespace proto
 
-class Identifier;
 class Log;
 // }  // namespace v1
 }  // namespace opentxs

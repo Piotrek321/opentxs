@@ -20,6 +20,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/ByteArray.hpp"
@@ -65,7 +66,7 @@ Request::Request(
     , initiator_(nym->ID())
     , recipient_(recipient)
     , server_(server)
-    , cookie_(Identifier::Random())
+    , cookie_(api_.Factory().IdentifierFromRandom())
     , type_(type)
 {
 }
@@ -82,15 +83,15 @@ Request::Request(
           serialized.version(),
           conditions,
           "",
-          api.Factory().Identifier(serialized.id()),
+          api.Factory().IdentifierFromBase58(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
               : Signatures{})
-    , initiator_(api.Factory().NymID(serialized.initiator()))
-    , recipient_(api.Factory().NymID(serialized.recipient()))
-    , server_(api.Factory().ServerID(serialized.server()))
-    , cookie_(Identifier::Factory(serialized.cookie()))
+    , initiator_(api.Factory().NymIDFromBase58(serialized.initiator()))
+    , recipient_(api.Factory().NymIDFromBase58(serialized.recipient()))
+    , server_(api.Factory().NotaryIDFromBase58(serialized.server()))
+    , cookie_(api.Factory().IdentifierFromBase58(serialized.cookie()))
     , type_(translate(serialized.type()))
 {
 }
@@ -175,15 +176,15 @@ auto Request::Finish(Request& contract, const PasswordPrompt& reason) -> bool
     }
 }
 
-auto Request::GetID(const Lock& lock) const -> OTIdentifier
+auto Request::GetID(const Lock& lock) const -> identifier::Generic
 {
     return GetID(api_, IDVersion(lock));
 }
 
 auto Request::GetID(const api::Session& api, const SerializedType& contract)
-    -> OTIdentifier
+    -> identifier::Generic
 {
-    return api.Factory().InternalSession().Identifier(contract);
+    return api.Factory().InternalSession().IdentifierFromPreimage(contract);
 }
 
 auto Request::IDVersion(const Lock& lock) const -> SerializedType
@@ -228,7 +229,7 @@ auto Request::Serialize(SerializedType& output) const -> bool
 auto Request::SigVersion(const Lock& lock) const -> SerializedType
 {
     auto contract = IDVersion(lock);
-    contract.set_id(String::Factory(id(lock))->Get());
+    contract.set_id(id(lock).asBase58(api_.Crypto()));
 
     return contract;
 }

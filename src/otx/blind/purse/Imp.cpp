@@ -33,6 +33,7 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
@@ -343,8 +344,8 @@ Purse::Purse(const api::Session& api, const proto::Purse& in) noexcept
           api,
           in.version(),
           translate(in.type()),
-          identifier::Notary::Factory(in.notary()),
-          identifier::UnitDefinition::Factory(in.mint()),
+          api.Factory().NotaryIDFromBase58(in.notary()),
+          api.Factory().UnitIDFromBase58(in.mint()),
           translate(in.state()),
           factory::Amount(in.totalvalue()),
           Clock::from_time_t(in.latestvalidfrom()),
@@ -747,8 +748,8 @@ auto Purse::Serialize(proto::Purse& output) const noexcept -> bool
         output.set_version(version_);
         output.set_type(translate(type_));
         output.set_state(translate(state_));
-        output.set_notary(notary_->str());
-        output.set_mint(unit_->str());
+        output.set_notary(notary_.asBase58(api_.Crypto()));
+        output.set_mint(unit_.asBase58(api_.Crypto()));
         total_value_.Serialize(writer(output.mutable_totalvalue()));
         output.set_latestvalidfrom(Clock::to_time_t(latest_valid_from_));
         output.set_earliestvalidto(Clock::to_time_t(earliest_valid_to_));

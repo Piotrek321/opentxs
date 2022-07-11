@@ -17,6 +17,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -43,6 +44,11 @@ class Client;
 class Session;
 }  // namespace api
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace network
 {
 namespace zeromq
@@ -55,8 +61,6 @@ class Publish;
 class Message;
 }  // namespace zeromq
 }  // namespace network
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -83,7 +87,8 @@ public:
         const UnallocatedCString& paymentCode,
         const UnallocatedCString& nymID) const noexcept
         -> UnallocatedCString final;
-    auto ID() const noexcept -> const Identifier& final
+    auto API() const noexcept -> const api::Session& final { return api_; }
+    auto ID() const noexcept -> const identifier::Generic& final
     {
         return owner_contact_id_;
     }
@@ -116,7 +121,7 @@ private:
     };
 
     struct ParsedArgs {
-        OTNymID nym_id_;
+        identifier::Nym nym_id_;
         PaymentCode payment_code_;
 
         ParsedArgs(
@@ -128,7 +133,8 @@ private:
         static auto extract_nymid(
             const api::Session& api,
             const UnallocatedCString& purportedID,
-            const UnallocatedCString& purportedPaymentCode) noexcept -> OTNymID;
+            const UnallocatedCString& purportedPaymentCode) noexcept
+            -> identifier::Nym;
         static auto extract_paymentcode(
             const api::Session& api,
             const UnallocatedCString& purportedID,
@@ -148,7 +154,7 @@ private:
     }
 
     auto process_contact(const Message& message) noexcept -> void;
-    auto process_contact(const Identifier& contactID) noexcept -> void;
+    auto process_contact(const identifier::Generic& contactID) noexcept -> void;
     auto startup() noexcept -> void;
 };
 }  // namespace opentxs::ui::implementation

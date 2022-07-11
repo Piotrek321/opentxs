@@ -203,8 +203,8 @@ void Notary::generate_mint(
     const UnallocatedCString& unitID,
     const std::uint32_t series) const
 {
-    const auto unit = Factory().UnitID(unitID);
-    const auto server = Factory().ServerID(serverID);
+    const auto unit = Factory().UnitIDFromBase58(unitID);
+    const auto server = Factory().NotaryIDFromBase58(serverID);
     const auto& nym = server_.GetServerNym();
     auto& mint = GetPrivateMint(unit, series);
 
@@ -310,8 +310,8 @@ auto Notary::GetPrivateMint(
     std::uint32_t index) const noexcept -> otx::blind::Mint&
 {
     auto lock = opentxs::Lock{mint_lock_};
-    const UnallocatedCString id{unitID.str()};
-    const UnallocatedCString seriesID =
+    const auto id{unitID.asBase58(crypto_)};
+    const auto seriesID =
         UnallocatedCString(SERIES_DIVIDER) + std::to_string(index);
     auto& seriesMap = mints_[id];
     // Modifying the private version may invalidate the public version
@@ -327,7 +327,7 @@ auto Notary::GetPublicMint(const identifier::UnitDefinition& unitID)
     const noexcept -> otx::blind::Mint&
 {
     auto lock = opentxs::Lock{mint_lock_};
-    const UnallocatedCString id{unitID.str()};
+    const UnallocatedCString id{unitID.asBase58(crypto_)};
     const UnallocatedCString seriesID{PUBLIC_SERIES};
     auto& output = mints_[id].try_emplace(seriesID, *this).first->second;
 
@@ -398,7 +398,7 @@ auto Notary::load_private_mint(
         lock,
         unitID,
         seriesID,
-        factory_.Mint(ID(), NymID(), Factory().UnitID(unitID)));
+        factory_.Mint(ID(), NymID(), Factory().UnitIDFromBase58(unitID)));
 }
 
 auto Notary::load_public_mint(
@@ -407,7 +407,10 @@ auto Notary::load_public_mint(
     const UnallocatedCString seriesID) const -> otx::blind::Mint
 {
     return verify_mint(
-        lock, unitID, seriesID, factory_.Mint(ID(), Factory().UnitID(unitID)));
+        lock,
+        unitID,
+        seriesID,
+        factory_.Mint(ID(), Factory().UnitIDFromBase58(unitID)));
 }
 
 void Notary::mint() const
@@ -416,7 +419,7 @@ void Notary::mint() const
 
     opentxs::Lock updateLock(mint_update_lock_, std::defer_lock);
 
-    const UnallocatedCString serverID{server_.GetServerID().str()};
+    const auto serverID{server_.GetServerID().asBase58(crypto_)};
 
     OT_ASSERT(false == serverID.empty());
 
@@ -448,7 +451,7 @@ void Notary::mint() const
             continue;
         }
 
-        auto& mint = GetPrivateMint(Factory().UnitID(unitID), last);
+        auto& mint = GetPrivateMint(Factory().UnitIDFromBase58(unitID), last);
 
         if (!mint) {
             LogError()(OT_PRETTY_CLASS())("Failed to load existing series.")
@@ -513,7 +516,7 @@ void Notary::Start()
 void Notary::UpdateMint(const identifier::UnitDefinition& unitID) const
 {
     opentxs::Lock updateLock(mint_update_lock_);
-    mints_to_check_.push_front(unitID.str());
+    mints_to_check_.push_front(unitID.asBase58(crypto_));
 }
 
 auto Notary::verify_lock(const opentxs::Lock& lock, const std::mutex& mutex)
@@ -546,7 +549,7 @@ auto Notary::verify_mint(
         auto& internal = mint.Internal();
 
         if (false == internal.LoadMint(seriesID.c_str())) {
-            UpdateMint(Factory().UnitID(unitID));
+            UpdateMint(Factory().UnitIDFromBase58(unitID));
 
             return otx::blind::Mint{*this};
         }

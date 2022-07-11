@@ -17,7 +17,6 @@
 #include <ctime>
 #include <memory>
 
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -33,12 +32,15 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class ContactItem;
 }  // namespace proto
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -51,7 +53,7 @@ public:
     auto operator==(const Item& rhs) const -> bool;
 
     auto End() const -> const std::time_t&;
-    auto ID() const -> const Identifier&;
+    auto ID() const -> const identifier::Generic&;
     auto isActive() const -> bool;
     auto isLocal() const -> bool;
     auto isPrimary() const -> bool;

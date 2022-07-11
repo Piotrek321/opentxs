@@ -30,7 +30,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
 #include "internal/util/TSV.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"
 #include "opentxs/blockchain/bitcoin/block/Script.hpp"
@@ -43,7 +42,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"  // IWYU pragma: keep
 #include "util/LMDB.hpp"
 
@@ -149,7 +147,7 @@ auto OutputCache::AddOutput(
 
     auto rc = AddOutput(id, tx, std::move(output));
 
-    if (!rc) { return false; }
+    if (false == rc) { return false; }
 
     rc &= AddToState(state, id, tx);
     rc &= AddToPosition(position, id, tx);
@@ -171,7 +169,9 @@ auto OutputCache::AddToAccount(
         auto rc = lmdb_.Store(wallet::accounts_, id.Bytes(), output.Bytes(), tx)
                       .first;
 
-        if (!rc) { throw std::runtime_error{"Failed to update account index"}; }
+        if (false == rc) {
+            throw std::runtime_error{"Failed to update account index"};
+        }
 
         set.emplace(output);
 
@@ -197,7 +197,9 @@ auto OutputCache::AddToKey(
         auto rc =
             lmdb_.Store(wallet::keys_, reader(key), output.Bytes(), tx).first;
 
-        if (!rc) { throw std::runtime_error{"Failed to update key index"}; }
+        if (false == rc) {
+            throw std::runtime_error{"Failed to update key index"};
+        }
 
         set.emplace(output);
 
@@ -223,7 +225,9 @@ auto OutputCache::AddToNym(
         auto rc =
             lmdb_.Store(wallet::nyms_, id.Bytes(), output.Bytes(), tx).first;
 
-        if (!rc) { throw std::runtime_error{"Failed to update nym index"}; }
+        if (false == rc) {
+            throw std::runtime_error{"Failed to update nym index"};
+        }
 
         index.emplace(output);
         list.emplace(id);
@@ -253,7 +257,9 @@ auto OutputCache::AddToPosition(
                     wallet::positions_, reader(key.data_), output.Bytes(), tx)
                 .first;
 
-        if (!rc) { throw std::runtime_error{"Failed to update key index"}; }
+        if (false == rc) {
+            throw std::runtime_error{"Failed to update key index"};
+        }
 
         set.emplace(output);
 
@@ -282,7 +288,9 @@ auto OutputCache::AddToState(
                           tx)
                       .first;
 
-        if (!rc) { throw std::runtime_error{"Failed to update key index"}; }
+        if (false == rc) {
+            throw std::runtime_error{"Failed to update key index"};
+        }
 
         set.emplace(output);
 
@@ -307,7 +315,7 @@ auto OutputCache::AddToSubchain(
             lmdb_.Store(wallet::subchains_, id.Bytes(), output.Bytes(), tx)
                 .first;
 
-        if (!rc) {
+        if (false == rc) {
             throw std::runtime_error{"Failed to update subchain index"};
         }
 
@@ -335,7 +343,7 @@ auto OutputCache::ChangePosition(
             auto rc = lmdb_.Delete(
                 wallet::positions_, reader(oldP.data_), id.Bytes(), tx);
 
-            if (!rc) {
+            if (false == rc) {
                 throw std::runtime_error{"Failed to remove old position index"};
             }
         } else {
@@ -348,7 +356,7 @@ auto OutputCache::ChangePosition(
             lmdb_.Store(wallet::positions_, reader(newP.data_), id.Bytes(), tx)
                 .first;
 
-        if (!rc) {
+        if (false == rc) {
             throw std::runtime_error{"Failed to add position state index"};
         }
 
@@ -357,7 +365,7 @@ auto OutputCache::ChangePosition(
         from.erase(id);
         to.emplace(id);
 
-        if (from.empty()) { positions_.erase(oldPosition); }
+        if (0u == from.size()) { positions_.erase(oldPosition); }
 
         return true;
     } catch (const std::exception& e) {
@@ -408,14 +416,16 @@ auto OutputCache::ChangeState(
                           tx)
                       .first;
 
-        if (!rc) { throw std::runtime_error{"Failed to add new state index"}; }
+        if (false == rc) {
+            throw std::runtime_error{"Failed to add new state index"};
+        }
 
         for (const auto& state : all_states()) {
             if (auto it = states_.find(state); states_.end() != it) {
                 auto& from = it->second;
                 from.erase(id);
 
-                if (from.empty()) { states_.erase(it); }
+                if (0u == from.size()) { states_.erase(it); }
             }
         }
 
@@ -595,9 +605,12 @@ auto OutputCache::populate() noexcept -> void
     };
     const auto accounts = [&](const auto key, const auto value) {
         auto& map = accounts_;
-        auto id = api_.Factory().Identifier();
-        id->Assign(key);
+        auto id = [&] {
+            auto out = identifier::Generic{};
+            out.Assign(key);
 
+            return out;
+        }();
         auto& set = map[std::move(id)];
         set.emplace(value);
 
@@ -612,9 +625,12 @@ auto OutputCache::populate() noexcept -> void
     };
     const auto nyms = [&](const auto key, const auto value) {
         auto& map = nyms_;
-        auto id = api_.Factory().NymID();
-        id->Assign(key);
+        auto id = [&] {
+            auto out = identifier::Nym{};
+            out.Assign(key);
 
+            return out;
+        }();
         nym_list_.emplace(id);
         auto& set = map[std::move(id)];
         set.emplace(value);
@@ -630,10 +646,12 @@ auto OutputCache::populate() noexcept -> void
     };
     const auto states = [&](const auto key, const auto value) {
         auto& map = states_;
-        auto out = std::size_t{0_uz};
-        std::memcpy(&out, key.data(), std::min(key.size(), sizeof(out)));
+        auto id = [&] {
+            auto out = 0_uz;
+            std::memcpy(&out, key.data(), std::min(key.size(), sizeof(out)));
 
-        const auto id = static_cast<node::TxoState>(out);
+            return static_cast<node::TxoState>(out);
+        }();
         auto& set = map[std::move(id)];
         set.emplace(value);
 
@@ -641,9 +659,12 @@ auto OutputCache::populate() noexcept -> void
     };
     const auto subchains = [&](const auto key, const auto value) {
         auto& map = subchains_;
-        auto id = api_.Factory().Identifier();
-        id->Assign(key);
+        auto id = [&] {
+            auto out = identifier::Generic{};
+            out.Assign(key);
 
+            return out;
+        }();
         auto& set = map[std::move(id)];
         set.emplace(value);
 
@@ -784,7 +805,7 @@ auto OutputCache::Print() const noexcept -> void
     log(OT_PRETTY_CLASS())("Outputs by nym:\n");
 
     for (const auto& [id, outputs] : nyms_) {
-        log("  * ")(id->str())("\n");
+        log("  * ")(id)("\n");
 
         for (const auto& outpoint : outputs) {
             log("    * ")(outpoint.str())("\n");
@@ -795,7 +816,7 @@ auto OutputCache::Print() const noexcept -> void
     log(OT_PRETTY_CLASS())("Outputs by subaccount:\n");
 
     for (const auto& [id, outputs] : accounts_) {
-        log("  * ")(id->str())("\n");
+        log("  * ")(id)("\n");
 
         for (const auto& outpoint : outputs) {
             log("    * ")(outpoint.str())("\n");
@@ -806,7 +827,7 @@ auto OutputCache::Print() const noexcept -> void
     log(OT_PRETTY_CLASS())("Outputs by subchain:\n");
 
     for (const auto& [id, outputs] : subchains_) {
-        log("  * ")(id->str())("\n");
+        log("  * ")(id)("\n");
 
         for (const auto& outpoint : outputs) {
             log("    * ")(outpoint.str())("\n");
@@ -840,10 +861,15 @@ auto OutputCache::Print() const noexcept -> void
     lmdb_.Read(
         generation_,
         [&](const auto key, const auto value) -> bool {
-            block::Height height{};
-            OT_ASSERT(sizeof(height) == key.size());
-            std::memcpy(&height, key.data(), key.size());
+            const auto height = [&] {
+                auto out = block::Height{};
 
+                OT_ASSERT(sizeof(out) == key.size());
+
+                std::memcpy(&out, key.data(), key.size());
+
+                return out;
+            }();
             const auto outpoint = block::Outpoint{value};
             log("  * height ")(height)(", ")(outpoint.str())("\n");
 
@@ -876,7 +902,7 @@ auto OutputCache::UpdatePosition(
                                 tx)
                             .first;
 
-        if (!rc) {
+        if (false == rc) {
             throw std::runtime_error{"Failed to update wallet position"};
         }
 
@@ -901,23 +927,43 @@ auto OutputCache::write_output(
             auto rc =
                 lmdb_.Store(wallet::keys_, reader(sKey), id.Bytes(), tx).first;
 
-            if (!rc) { throw std::runtime_error{"update to key index"}; }
+            if (false == rc) {
+                throw std::runtime_error{"update to key index"};
+            }
 
-            auto [cache, added] = keys_.try_emplace(key);
-            if (added) cache->second.reserve(reserve_);
-            cache->second.emplace(id);
+            auto& cache = [&]() -> Outpoints& {
+                if (auto it = keys_.find(key); keys_.end() != it) {
+
+                    return it->second;
+                }
+
+                auto& out = keys_[key];
+                out.reserve(reserve_);
+
+                return out;
+            }();
+            cache.emplace(id);
         }
 
-        Space serialized{};
-        bitcoin::block::internal::Output::SerializeType data{};
-        if (!output.Internal().Serialize(data)) {
-            throw std::runtime_error{
-                "failed to serialize akeys_.try_emplaces protobuf"};
-        }
+        const auto serialized = [&] {
+            auto out = Space{};
+            const auto data = [&] {
+                auto proto = bitcoin::block::internal::Output::SerializeType{};
+                const auto rc = output.Internal().Serialize(proto);
 
-        if (!proto::write(data, writer(serialized))) {
-            throw std::runtime_error{"failed to serialize as bytes"};
-        }
+                if (false == rc) {
+                    throw std::runtime_error{"failed to serialize as protobuf"};
+                }
+
+                return proto;
+            }();
+
+            if (false == proto::write(data, writer(out))) {
+                throw std::runtime_error{"failed to serialize as bytes"};
+            }
+
+            return out;
+        }();
 
         return lmdb_.Store(wallet::outputs_, id.Bytes(), reader(serialized), tx)
             .first;

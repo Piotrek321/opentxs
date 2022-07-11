@@ -26,6 +26,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
@@ -301,11 +302,12 @@ auto VerifyBoxReceiptExists(
     const api::Session& api,
     const UnallocatedCString& dataFolder,
     const identifier::Notary& NOTARY_ID,
-    const identifier::Nym& NYM_ID,  // Unused here for now, but still
-                                    // convention.
-    const Identifier& ACCOUNT_ID,   // If for Nymbox (vs inbox/outbox) then pass
-                                    // NYM_ID in this field also.
-    const std::int32_t nBoxType,    // 0/nymbox, 1/inbox, 2/outbox
+    const identifier::Nym& NYM_ID,          // Unused here for now, but still
+                                            // convention.
+    const identifier::Generic& ACCOUNT_ID,  // If for Nymbox (vs inbox/outbox)
+                                            // then pass NYM_ID in this field
+                                            // also.
+    const std::int32_t nBoxType,            // 0/nymbox, 1/inbox, 2/outbox
     const std::int64_t& lTransactionNum) -> bool
 {
     const auto lLedgerType = static_cast<std::int64_t>(nBoxType);

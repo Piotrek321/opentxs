@@ -28,6 +28,7 @@ class Wallet;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 }  // namespace identifier
@@ -55,7 +56,6 @@ class Context;
 }  // namespace proto
 
 class Factory;
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -101,7 +101,7 @@ private:
         const Nym_p& remoteNym,
         std::shared_ptr<otx::context::internal::Base>& output) const final;
     auto load_legacy_account(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const eLock& lock,
         AccountLock& row) const -> bool final;
     auto signer_nym(const identifier::Nym& id) const -> Nym_p final;

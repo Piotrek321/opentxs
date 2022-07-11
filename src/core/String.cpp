@@ -22,6 +22,8 @@ extern "C" {
 #include "internal/otx/common/NymFile.hpp"
 #include "internal/otx/common/crypto/Signature.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
@@ -60,7 +62,7 @@ auto String::Factory(const Contract& value) -> OTString
     return OTString(new implementation::String(value));
 }
 
-auto String::Factory(const Identifier& value) -> OTString
+auto String::Factory(const identifier::Generic& value) -> OTString
 {
     return OTString(new implementation::String(value));
 }
@@ -227,10 +229,10 @@ String::String()
 // This constructor gets the string version of the ID passed in,
 // and sets that string on this object. (For when you need a string
 // version of an ID.)
-String::String(const opentxs::Identifier& theValue)
+String::String(const identifier::Generic& theValue)
     : String()
 {
-    if (theValue.size() > 0) { theValue.GetString(*this); }
+    if (theValue.size() > 0) { theValue.GetString(Context().Crypto(), *this); }
 }
 
 String::String(const opentxs::Contract& theValue)

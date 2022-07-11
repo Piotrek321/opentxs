@@ -7,10 +7,12 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <functional>
+#include <string_view>
 
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Allocated.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -21,8 +23,6 @@ namespace identifier
 {
 class Nym;
 }  // namespace identifier
-
-using OTNymID = Pimpl<identifier::Nym>;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -30,65 +30,32 @@ using OTNymID = Pimpl<identifier::Nym>;
 namespace std
 {
 template <>
-struct OPENTXS_EXPORT hash<opentxs::OTNymID> {
+struct OPENTXS_EXPORT hash<opentxs::identifier::Nym> {
     auto operator()(const opentxs::identifier::Nym& data) const noexcept
         -> std::size_t;
 };
 
 template <>
-struct OPENTXS_EXPORT less<opentxs::OTNymID> {
-    auto operator()(const opentxs::OTNymID& lhs, const opentxs::OTNymID& rhs)
-        const -> bool;
+struct OPENTXS_EXPORT less<opentxs::identifier::Nym> {
+    auto operator()(
+        const opentxs::identifier::Nym& lhs,
+        const opentxs::identifier::Nym& rhs) const -> bool;
 };
 }  // namespace std
 
-namespace opentxs
-{
-OPENTXS_EXPORT auto operator==(
-    const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator!=(
-    const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator<(
-    const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator>(
-    const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator<=(
-    const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator>=(
-    const OTNymID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-}  // namespace opentxs
-
 namespace opentxs::identifier
 {
-class OPENTXS_EXPORT Nym : virtual public opentxs::Identifier
+class OPENTXS_EXPORT Nym : virtual public identifier::Generic
 {
 public:
-    static auto Factory() -> OTNymID;
-    static auto Factory(const UnallocatedCString& rhs) -> OTNymID;
-    static auto Factory(const String& rhs) -> OTNymID;
-    static auto Factory(const identity::Nym& nym) -> OTNymID;
+    OPENTXS_NO_EXPORT Nym(Imp* imp) noexcept;
+    Nym(allocator_type alloc = {}) noexcept;
+    Nym(const Nym& rhs, allocator_type alloc = {}) noexcept;
+    Nym(Nym&& rhs) noexcept;
+    Nym(Nym&& rhs, allocator_type alloc) noexcept;
+    auto operator=(const Nym& rhs) noexcept -> Nym&;
+    auto operator=(Nym&& rhs) noexcept -> Nym&;
 
-    Nym(const Nym&) = delete;
-    Nym(Nym&&) = delete;
-    auto operator=(const Nym&) -> Nym& = delete;
-    auto operator=(Nym&&) -> Nym& = delete;
-
-    ~Nym() override = default;
-
-protected:
-    Nym() = default;
-
-private:
-    friend OTNymID;
-
-#ifndef _WIN32
-    auto clone() const -> Nym* override = 0;
-#endif
+    ~Nym() override;
 };
 }  // namespace opentxs::identifier

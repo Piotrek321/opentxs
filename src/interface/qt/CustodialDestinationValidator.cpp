@@ -7,10 +7,11 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "interface/qt/DestinationValidator.hpp"  // IWYU pragma: associated
 
+#include <string>
+
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::ui
 {
@@ -24,9 +25,10 @@ struct CustodialDestionationValidator final : public DestinationValidator::Imp {
     auto getDetails() const -> QString final { return {}; }
     auto validate(QString& input, int& pos) const -> QValidator::State final
     {
-        const auto id = api_.Factory().Identifier(input.toStdString());
+        const auto id =
+            api_.Factory().IdentifierFromBase58(input.toStdString());
 
-        if (id->empty()) {
+        if (id.empty()) {
 
             return QValidator::State::Invalid;
         } else {

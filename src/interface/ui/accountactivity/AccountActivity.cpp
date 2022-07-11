@@ -14,10 +14,10 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/core/identifier/Notary.hpp"  // IWYU pragma: keep
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs::ui::implementation
@@ -25,7 +25,7 @@ namespace opentxs::ui::implementation
 AccountActivity::AccountActivity(
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const AccountType type,
     const SimpleCallback& cb) noexcept
     : AccountActivityList(api, nymID, cb, true)
@@ -72,13 +72,7 @@ auto AccountActivity::construct_row(
     CustomData& custom) const noexcept -> RowPointer
 {
     return factory::BalanceItem(
-        *this,
-        Widget::Widget::api_,
-        id,
-        index,
-        custom,
-        primary_id_,
-        account_id_);
+        *this, api_, id, index, custom, primary_id_, account_id_);
 }
 
 auto AccountActivity::init(Endpoints endpoints) noexcept -> void

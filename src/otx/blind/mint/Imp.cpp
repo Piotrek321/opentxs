@@ -27,6 +27,7 @@
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -60,7 +61,7 @@ Mint::Mint(
     , m_VALID_FROM(Time::min())
     , m_VALID_TO(Time::min())
     , m_EXPIRATION(Time::min())
-    , m_CashAccountID(api.Factory().Identifier())
+    , m_CashAccountID()
 {
     m_strFoldername->Set(api.Internal().Legacy().Mint());
     m_strFilename->Set(api_.Internal()
@@ -78,7 +79,7 @@ Mint::Mint(
     , m_mapPrivate()
     , m_mapPublic()
     , m_NotaryID(notary)
-    , m_ServerNymID(api.Factory().NymID())
+    , m_ServerNymID()
     , m_InstrumentDefinitionID(unit)
     , m_nDenominationCount(0)
     , m_bSavePrivateKeys(false)
@@ -86,7 +87,7 @@ Mint::Mint(
     , m_VALID_FROM(Time::min())
     , m_VALID_TO(Time::min())
     , m_EXPIRATION(Time::min())
-    , m_CashAccountID(api.Factory().Identifier())
+    , m_CashAccountID()
 {
     m_strFoldername->Set(api.Internal().Legacy().Mint());
     m_strFilename->Set(api_.Internal()
@@ -100,16 +101,16 @@ Mint::Mint(const api::Session& api)
     : Imp(api)
     , m_mapPrivate()
     , m_mapPublic()
-    , m_NotaryID(api.Factory().ServerID())
-    , m_ServerNymID(api.Factory().NymID())
-    , m_InstrumentDefinitionID(api.Factory().UnitID())
+    , m_NotaryID()
+    , m_ServerNymID()
+    , m_InstrumentDefinitionID()
     , m_nDenominationCount(0)
     , m_bSavePrivateKeys(false)
     , m_nSeries(0)
     , m_VALID_FROM(Time::min())
     , m_VALID_TO(Time::min())
     , m_EXPIRATION(Time::min())
-    , m_CashAccountID(api.Factory().Identifier())
+    , m_CashAccountID()
 {
     InitMint();
 }
@@ -143,7 +144,7 @@ void Mint::ReleaseDenominations()
 void Mint::Release_Mint()
 {
     ReleaseDenominations();
-    m_CashAccountID->clear();
+    m_CashAccountID.clear();
     Imp::Release_Mint();
 }
 
@@ -191,8 +192,8 @@ auto Mint::LoadMint(std::string_view extension) -> bool
                 .c_str());
     }
 
-    const auto strFilename = fs::path{m_InstrumentDefinitionID->str()} +=
-        extension;
+    const auto strFilename =
+        fs::path{m_InstrumentDefinitionID.asBase58(api_.Crypto())} += extension;
     const char* szFolder1name = api_.Internal().Legacy().Mint();
     const char* szFolder2name = strNotaryID->Get();
     const char* szFilename = strFilename.c_str();
@@ -253,8 +254,8 @@ auto Mint::SaveMint(std::string_view extension) -> bool
                 .c_str());
     }
 
-    const auto strFilename = fs::path{m_InstrumentDefinitionID->str()} +=
-        extension;
+    const auto strFilename =
+        fs::path{m_InstrumentDefinitionID.asBase58(api_.Crypto())} += extension;
     const char* szFolder1name = api_.Internal().Legacy().Mint();
     const char* szFolder2name = strNotaryID->Get();
     const char* szFilename = strFilename.c_str();
@@ -522,17 +523,19 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_VALID_FROM = parseTimestamp(xml->getAttributeValue("validFrom"));
         m_VALID_TO = parseTimestamp(xml->getAttributeValue("validTo"));
 
-        m_NotaryID->SetString(strNotaryID);
-        m_ServerNymID->SetString(strServerNymID);
-        m_InstrumentDefinitionID->SetString(strInstrumentDefinitionID);
-        m_CashAccountID->SetString(strCashAcctID);
+        m_NotaryID = api_.Factory().NotaryIDFromBase58(strNotaryID->Bytes());
+        m_ServerNymID = api_.Factory().NymIDFromBase58(strServerNymID->Bytes());
+        m_InstrumentDefinitionID =
+            api_.Factory().UnitIDFromBase58(strInstrumentDefinitionID->Bytes());
+        m_CashAccountID =
+            api_.Factory().IdentifierFromBase58(strCashAcctID->Bytes());
 
         LogDetail()(OT_PRETTY_CLASS())
             //    "\n===> Loading XML for mint into memory structures..."
             ("Mint version: ")(m_strVersion)(" Notary ID: ")(
                 strNotaryID)(" Instrument Definition ID: ")(
                 strInstrumentDefinitionID)(" Cash Acct ID: ")(
-                strCashAcctID)((m_CashAccountID->empty()) ? "FAILURE" : "SUCCESS")(
+                strCashAcctID)((m_CashAccountID.empty()) ? "FAILURE" : "SUCCESS")(
                 " loading Cash Account into memory for pointer: ")(
                 "Mint::m_pReserveAcct ")(" Series: ")(
                 m_nSeries)(" Expiration: ")(m_EXPIRATION)(" Valid From: ")(
@@ -596,9 +599,8 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
  // static method (call it without an instance, using notation:
  OTAccount::GenerateNewAccount)
- OTAccount * OTAccount::GenerateNewAccount(    const Identifier& theNymID,
- const identifier::Notary& theNotaryID,
-                                            const Nym & theServerNym,
+ OTAccount * OTAccount::GenerateNewAccount(    const identifier::Generic&
+ theNymID, const identifier::Notary& theNotaryID, const Nym & theServerNym,
  const OTMessage & theMessage,
                                             const OTAccount::AccountType
  eAcctType=OTAccount::user)

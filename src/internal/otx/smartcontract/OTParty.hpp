@@ -21,16 +21,12 @@ namespace opentxs  // NOLINT
 // {
 namespace api
 {
-namespace session
-{
-class Wallet;
-}  // namespace session
-
 class Session;
 }  // namespace api
 
 namespace identifier
 {
+class Generic;
 class Notary;
 }  // namespace identifier
 
@@ -48,7 +44,6 @@ class Server;
 }  // namespace otx
 
 class Contract;
-class Identifier;
 class NumList;
 class OTAgent;
 class OTPartyAccount;
@@ -233,13 +228,13 @@ public:
     // set agent's pointer to Nym
     // and return true.
     auto HasAgentByNymID(
-        const Identifier& theNymID,
+        const identifier::Generic& theNymID,
         OTAgent** ppAgent = nullptr) const -> bool;
     auto HasAuthorizingAgent(
         const identity::Nym& theNym,
         OTAgent** ppAgent = nullptr) const -> bool;
     auto HasAuthorizingAgentByNymID(
-        const Identifier& theNymID,
+        const identifier::Generic& theNymID,
         OTAgent** ppAgent = nullptr) const
         -> bool;  // ppAgent lets you get the agent
                   // ptr if it was there.
@@ -274,7 +269,7 @@ public:
     auto GetAccountByIndex(std::int32_t nIndex) -> OTPartyAccount*;  // by index
     auto GetAccountByAgent(const UnallocatedCString& str_agent_name)
         -> OTPartyAccount*;  // by agent name
-    auto GetAccountByID(const Identifier& theAcctID) const
+    auto GetAccountByID(const identifier::Generic& theAcctID) const
         -> OTPartyAccount*;  // by asset acct id
     // If account is present for Party, set account's pointer to theAccount and
     // return true.
@@ -283,7 +278,7 @@ public:
         const Account& theAccount,
         OTPartyAccount** ppPartyAccount = nullptr) const -> bool;
     auto HasAccountByID(
-        const Identifier& theAcctID,
+        const identifier::Generic& theAcctID,
         OTPartyAccount** ppPartyAccount = nullptr) const -> bool;
     auto VerifyOwnershipOfAccount(const Account& theAccount) const -> bool;
     auto VerifyAccountsWithTheirAgents(
@@ -312,11 +307,9 @@ public:
     // speak directly
     // to said agent.)
 
+    OTParty(const api::Session& api, const UnallocatedCString& dataFolder);
     OTParty(
-        const api::session::Wallet& wallet,
-        const UnallocatedCString& dataFolder);
-    OTParty(
-        const api::session::Wallet& wallet,
+        const api::Session& api,
         const UnallocatedCString& dataFolder,
         const char* szName,
         bool bIsOwnerNym,
@@ -324,7 +317,7 @@ public:
         const char* szAuthAgent,
         bool bCreateAgent = false);
     OTParty(
-        const api::session::Wallet& wallet,
+        const api::Session& api,
         const UnallocatedCString& dataFolder,
         UnallocatedCString str_PartyName,
         const identity::Nym& theNym,  // Nym is BOTH owner AND agent, when
@@ -340,7 +333,7 @@ public:
     virtual ~OTParty();
 
 private:
-    const api::session::Wallet& wallet_;
+    const api::Session& api_;
     const UnallocatedCString data_folder_;
     UnallocatedCString* m_pstr_party_name;
     // true, is "nym". false, is "entity".

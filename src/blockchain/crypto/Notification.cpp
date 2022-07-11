@@ -26,7 +26,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -35,7 +34,7 @@ auto BlockchainNotificationSubaccount(
     const blockchain::crypto::Account& parent,
     const opentxs::PaymentCode& code,
     const identity::Nym& nym,
-    Identifier& id) noexcept
+    identifier::Generic& id) noexcept
     -> std::unique_ptr<blockchain::crypto::Notification>
 {
     using ReturnType = blockchain::crypto::implementation::Notification;
@@ -53,7 +52,7 @@ Notification::Notification(
     const crypto::Account& parent,
     const opentxs::PaymentCode& code,
     proto::HDPath&& path,
-    Identifier& out) noexcept
+    identifier::Generic& out) noexcept
     : Subaccount(
           api,
           parent,
@@ -78,14 +77,12 @@ auto Notification::AllowedSubchains() const noexcept -> UnallocatedSet<Subchain>
 auto Notification::calculate_id(
     const api::Session& api,
     const blockchain::Type chain,
-    const opentxs::PaymentCode& code) noexcept -> OTIdentifier
+    const opentxs::PaymentCode& code) noexcept -> identifier::Generic
 {
     auto preimage = api.Factory().DataFromBytes(code.ID().Bytes());
     preimage.Concatenate(&chain, sizeof(chain));
-    auto output = api.Factory().Identifier();
-    output->CalculateDigest(preimage.Bytes());
 
-    return output;
+    return api.Factory().IdentifierFromPreimage(preimage.Bytes());
 }
 
 auto Notification::init() noexcept -> void

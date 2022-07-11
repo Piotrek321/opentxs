@@ -16,6 +16,7 @@
 #include <mutex>
 #include <stdexcept>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
@@ -24,11 +25,12 @@
 #include "internal/serialization/protobuf/verify/Bip47Channel.hpp"
 #include "internal/serialization/protobuf/verify/StorageBip47Contexts.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Types.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/Plugin.hpp"
@@ -40,9 +42,11 @@
 namespace opentxs::storage
 {
 Bip47Channels::Bip47Channels(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
     const Driver& storage,
     const UnallocatedCString& hash)
-    : Node(storage, hash)
+    : Node(crypto, factory, storage, hash)
     , index_lock_()
     , channel_data_()
     , chain_index_()
@@ -54,7 +58,8 @@ Bip47Channels::Bip47Channels(
     }
 }
 
-auto Bip47Channels::Chain(const Identifier& channelID) const -> UnitType
+auto Bip47Channels::Chain(const identifier::Generic& channelID) const
+    -> UnitType
 {
     auto lock = sLock{index_lock_};
 
@@ -88,8 +93,9 @@ auto Bip47Channels::extract_set(const I& id, const V& index) const ->
 }
 
 template <typename L>
-auto Bip47Channels::get_channel_data(const L& lock, const Identifier& id) const
-    -> const Bip47Channels::ChannelData&
+auto Bip47Channels::get_channel_data(
+    const L& lock,
+    const identifier::Generic& id) const -> const Bip47Channels::ChannelData&
 {
     try {
 
@@ -103,7 +109,7 @@ auto Bip47Channels::get_channel_data(const L& lock, const Identifier& id) const
 
 auto Bip47Channels::index(
     const eLock& lock,
-    const Identifier& id,
+    const identifier::Generic& id,
     const proto::Bip47Channel& data) -> void
 {
     const auto& common = data.deterministic().common();
@@ -135,7 +141,7 @@ auto Bip47Channels::init(const UnallocatedCString& hash) -> void
         repair_indices();
     } else {
         for (const auto& index : proto->index()) {
-            auto id = Identifier::Factory(index.channelid());
+            auto id = factory_.IdentifierFromBase58(index.channelid());
             auto& chain = channel_data_[id];
             chain = ClaimToUnit(translate(index.chain()));
             chain_index_[chain].emplace(std::move(id));
@@ -144,13 +150,14 @@ auto Bip47Channels::init(const UnallocatedCString& hash) -> void
 }
 
 auto Bip47Channels::Load(
-    const Identifier& id,
+    const identifier::Generic& id,
     std::shared_ptr<proto::Bip47Channel>& output,
     const bool checking) const -> bool
 {
     UnallocatedCString alias{""};
 
-    return load_proto<proto::Bip47Channel>(id.str(), output, alias, checking);
+    return load_proto<proto::Bip47Channel>(
+        id.asBase58(crypto_), output, alias, checking);
 }
 
 auto Bip47Channels::repair_indices() noexcept -> void
@@ -159,7 +166,7 @@ auto Bip47Channels::repair_indices() noexcept -> void
         auto lock = eLock{index_lock_};
 
         for (const auto& [strid, alias] : List()) {
-            const auto id = Identifier::Factory(strid);
+            const auto id = factory_.IdentifierFromBase58(strid);
             auto data = std::shared_ptr<proto::Bip47Channel>{};
             const auto loaded = Load(id, data, false);
 
@@ -212,21 +219,22 @@ auto Bip47Channels::serialize() const -> proto::StorageBip47Contexts
         const auto& chain = data;
         auto& index = *serialized.add_index();
         index.set_version(CHANNEL_INDEX_VERSION);
-        index.set_channelid(id->str());
+        index.set_channelid(id.asBase58(crypto_));
         index.set_chain(translate(UnitToClaim(chain)));
     }
 
     return serialized;
 }
 
-auto Bip47Channels::Store(const Identifier& id, const proto::Bip47Channel& data)
-    -> bool
+auto Bip47Channels::Store(
+    const identifier::Generic& id,
+    const proto::Bip47Channel& data) -> bool
 {
     {
         auto lock = eLock{index_lock_};
         index(lock, id, data);
     }
 
-    return store_proto(data, id.str(), "");
+    return store_proto(data, id.asBase58(crypto_), "");
 }
 }  // namespace opentxs::storage

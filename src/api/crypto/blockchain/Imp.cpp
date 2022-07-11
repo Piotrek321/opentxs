@@ -58,7 +58,6 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 #include "util/HDIndex.hpp"
 
@@ -212,7 +211,7 @@ auto Blockchain::Imp::Account(
         const auto error = CString{"Unable to load "sv}
                                .append(print(chain))
                                .append(" account for nym ("sv)
-                               .append(nymID.str()) +
+                               .append(nymID.asBase58(api_.Crypto())) +
                            ')';
 
         throw std::runtime_error{error.c_str()};
@@ -222,26 +221,26 @@ auto Blockchain::Imp::Account(
 }
 
 auto Blockchain::Imp::AccountList(const identifier::Nym& nym) const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     return wallets_.AccountList(nym);
 }
 
 auto Blockchain::Imp::AccountList(const opentxs::blockchain::Type chain)
-    const noexcept -> UnallocatedSet<OTIdentifier>
+    const noexcept -> UnallocatedSet<identifier::Generic>
 {
     return wallets_.AccountList(chain);
 }
 
 auto Blockchain::Imp::AccountList() const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     return wallets_.AccountList();
 }
 
 auto Blockchain::Imp::ActivityDescription(
     const identifier::Nym&,
-    const Identifier&,
+    const identifier::Generic&,
     const UnallocatedCString&) const noexcept -> UnallocatedCString
 {
     return {};
@@ -266,10 +265,10 @@ auto Blockchain::Imp::address_prefix(
 
 auto Blockchain::Imp::AssignContact(
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const Subchain subchain,
     const Bip32Index index,
-    const Identifier& contactID) const noexcept -> bool
+    const identifier::Generic& contactID) const noexcept -> bool
 {
     if (false == validate_nym(nymID)) { return false; }
 
@@ -306,7 +305,7 @@ auto Blockchain::Imp::AssignContact(
 
 auto Blockchain::Imp::AssignLabel(
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const Subchain subchain,
     const Bip32Index index,
     const UnallocatedCString& label) const noexcept -> bool
@@ -446,7 +445,7 @@ auto Blockchain::Imp::Confirm(
 {
     try {
         const auto [id, subchain, index] = key;
-        const auto accountID = api_.Factory().Identifier(id);
+        const auto accountID = api_.Factory().IdentifierFromBase58(id);
 
         return get_node(accountID).Internal().Confirm(subchain, index, tx);
     } catch (const std::exception& e) {
@@ -653,7 +652,7 @@ auto Blockchain::Imp::GetKey(const Key& id) const noexcept(false)
     -> const opentxs::blockchain::crypto::Element&
 {
     const auto [str, subchain, index] = id;
-    const auto account = api_.Factory().Identifier(str);
+    const auto account = api_.Factory().IdentifierFromBase58(str);
     using Type = opentxs::blockchain::crypto::SubaccountType;
 
     switch (accounts_.Type(account)) {
@@ -677,7 +676,7 @@ auto Blockchain::Imp::GetKey(const Key& id) const noexcept(false)
     throw std::out_of_range("key not found");
 }
 
-auto Blockchain::Imp::get_node(const Identifier& accountID) const
+auto Blockchain::Imp::get_node(const identifier::Generic& accountID) const
     noexcept(false) -> opentxs::blockchain::crypto::Subaccount&
 {
     const auto& nymID = accounts_.Owner(accountID);
@@ -689,7 +688,7 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
         const auto error =
             UnallocatedCString{"unable to determine unit type for "
                                "blockchain subaccount "} +
-            accountID.str() + " belonging to nym " + nymID.str();
+                    accountID.asBase58(api_.Crypto()) + " belonging to nym " + nymID.asBase58(api_.Crypto());
 
         throw std::out_of_range(error);
     }
@@ -714,15 +713,16 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
 
 auto Blockchain::Imp::HDSubaccount(
     const identifier::Nym& nymID,
-    const Identifier& accountID) const noexcept(false)
+    const identifier::Generic& accountID) const noexcept(false)
     -> const opentxs::blockchain::crypto::HD&
 {
     const auto type =
         api_.Storage().BlockchainSubaccountAccountType(nymID, accountID);
 
     if (UnitType::Error == type) {
-        const auto error = UnallocatedCString{"HD account "} + accountID.str() +
-                           " for " + nymID.str() + " does not exist";
+        const auto error = UnallocatedCString{"HD account "} +
+                           accountID.asBase58(api_.Crypto()) + " for " +
+                           nymID.asBase58(api_.Crypto()) + " does not exist";
 
         throw std::out_of_range(error);
     }
@@ -796,7 +796,7 @@ auto Blockchain::Imp::KeyEndpoint() const noexcept -> std::string_view
 auto Blockchain::Imp::KeyGenerated(
     const opentxs::blockchain::Type,
     const identifier::Nym&,
-    const Identifier&,
+    const identifier::Generic&,
     const opentxs::blockchain::crypto::SubaccountType,
     const opentxs::blockchain::crypto::Subchain) const noexcept -> void
 {
@@ -814,8 +814,8 @@ auto Blockchain::Imp::LoadTransactionBitcoin(const Txid&) const noexcept
     return {};
 }
 
-auto Blockchain::Imp::LookupAccount(const Identifier& id) const noexcept
-    -> AccountData
+auto Blockchain::Imp::LookupAccount(
+    const identifier::Generic& id) const noexcept -> AccountData
 {
     return wallets_.LookupAccount(id);
 }
@@ -830,9 +830,9 @@ auto Blockchain::Imp::NewHDSubaccount(
     const opentxs::blockchain::crypto::HDProtocol standard,
     const opentxs::blockchain::Type derivationChain,
     const opentxs::blockchain::Type targetChain,
-    const PasswordPrompt& reason) const noexcept -> OTIdentifier
+    const PasswordPrompt& reason) const noexcept -> identifier::Generic
 {
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
 
     if (false == validate_nym(nymID)) { return blank; }
 
@@ -889,12 +889,12 @@ auto Blockchain::Imp::NewHDSubaccount(
         auto& tree = wallets_.Get(targetChain).Account(nymID);
         tree.Internal().AddHDNode(accountPath, standard, reason, accountID);
 
-        OT_ASSERT(false == accountID->empty());
+        OT_ASSERT(false == accountID.empty());
 
         LogVerbose()(OT_PRETTY_CLASS())("Created new HD subaccount ")(
             accountID)(" for ")(print(targetChain))(" account ")(
-            tree.AccountID())(" owned by ")(nymID.str())(" using path ")(
-            opentxs::crypto::Print(accountPath))
+            tree.AccountID())(" owned by ")(nymID.asBase58(api_.Crypto()))(
+            " using path ")(opentxs::crypto::Print(accountPath))
             .Flush();
         accounts_.New(
             opentxs::blockchain::crypto::SubaccountType::HD,
@@ -928,7 +928,7 @@ auto Blockchain::Imp::NewPaymentCodeSubaccount(
     const opentxs::PaymentCode& remote,
     const proto::HDPath path,
     const opentxs::blockchain::Type chain,
-    const PasswordPrompt& reason) const noexcept -> OTIdentifier
+    const PasswordPrompt& reason) const noexcept -> identifier::Generic
 {
     auto lock = Lock{nym_mutex(nymID)};
 
@@ -942,9 +942,9 @@ auto Blockchain::Imp::new_payment_code(
     const opentxs::PaymentCode& remote,
     const proto::HDPath path,
     const opentxs::blockchain::Type chain,
-    const PasswordPrompt& reason) const noexcept -> OTIdentifier
+    const PasswordPrompt& reason) const noexcept -> identifier::Generic
 {
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
 
     if (false == validate_nym(nymID)) { return blank; }
 
@@ -982,12 +982,12 @@ auto Blockchain::Imp::new_payment_code(
         tree.Internal().AddUpdatePaymentCode(
             local, remote, path, reason, accountID);
 
-        OT_ASSERT(false == accountID->empty());
+        OT_ASSERT(false == accountID.empty());
 
         LogVerbose()(OT_PRETTY_CLASS())("Created new payment code subaccount ")(
             accountID)(" for  ")(print(chain))(" account ")(tree.AccountID())(
-            " owned by ")(nymID.str())("in reference to remote payment code ")(
-            remote.asBase58())
+            " owned by ")(nymID.asBase58(api_.Crypto()))(
+            "in reference to remote payment code ")(remote.asBase58())
             .Flush();
         accounts_.New(
             opentxs::blockchain::crypto::SubaccountType::PaymentCode,
@@ -1020,11 +1020,11 @@ auto Blockchain::Imp::Owner(const Key& key) const noexcept
     -> const identifier::Nym&
 {
     const auto& [account, subchain, index] = key;
-    static const auto blank = api_.Factory().NymID();
+    static const auto blank = identifier::Nym{};
 
     if (Subchain::Outgoing == subchain) { return blank; }
 
-    return Owner(api_.Factory().Identifier(account));
+    return Owner(api_.Factory().IdentifierFromBase58(account));
 }
 
 auto Blockchain::Imp::p2pkh(
@@ -1040,7 +1040,7 @@ auto Blockchain::Imp::p2pkh(
 
         OT_ASSERT(21 == preimage.size());
 
-        return api_.Crypto().Encode().IdentifierEncode(preimage);
+        return api_.Crypto().Encode().IdentifierEncode(preimage.Bytes());
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())("Unsupported chain (")(print(chain))(")")
             .Flush();
@@ -1062,7 +1062,7 @@ auto Blockchain::Imp::p2sh(
 
         OT_ASSERT(21 == preimage.size());
 
-        return api_.Crypto().Encode().IdentifierEncode(preimage);
+        return api_.Crypto().Encode().IdentifierEncode(preimage.Bytes());
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())("Unsupported chain (")(print(chain))(")")
             .Flush();
@@ -1098,15 +1098,15 @@ auto Blockchain::Imp::p2wpkh(
 
 auto Blockchain::Imp::PaymentCodeSubaccount(
     const identifier::Nym& nymID,
-    const Identifier& accountID) const noexcept(false)
+    const identifier::Generic& accountID) const noexcept(false)
     -> const opentxs::blockchain::crypto::PaymentCode&
 {
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
     if (UnitType::Error == type) {
         const auto error = UnallocatedCString{"Payment code account "} +
-                           accountID.str() + " for " + nymID.str() +
-                           " does not exist";
+                           accountID.asBase58(api_.Crypto()) + " for " +
+                           nymID.asBase58(api_.Crypto()) + " does not exist";
 
         throw std::out_of_range(error);
     }
@@ -1189,15 +1189,15 @@ auto Blockchain::Imp::PubkeyHash(
 }
 
 auto Blockchain::Imp::RecipientContact(const Key& key) const noexcept
-    -> OTIdentifier
+    -> identifier::Generic
 {
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
     const auto& [account, subchain, index] = key;
     using Subchain = opentxs::blockchain::crypto::Subchain;
 
     if (is_notification(subchain)) { return blank; }
 
-    const auto accountID = api_.Factory().Identifier(account);
+    const auto accountID = api_.Factory().IdentifierFromBase58(account);
     const auto& owner = Owner(accountID);
 
     try {
@@ -1234,7 +1234,7 @@ auto Blockchain::Imp::Release(const Key key) const noexcept -> bool
 {
     try {
         const auto [id, subchain, index] = key;
-        const auto accountID = api_.Factory().Identifier(id);
+        const auto accountID = api_.Factory().IdentifierFromBase58(id);
 
         return get_node(accountID).Internal().Unreserve(subchain, index);
     } catch (...) {
@@ -1247,22 +1247,22 @@ auto Blockchain::Imp::ReportScan(
     const opentxs::blockchain::Type,
     const identifier::Nym&,
     const opentxs::blockchain::crypto::SubaccountType,
-    const Identifier&,
+    const identifier::Generic&,
     const Subchain,
     const opentxs::blockchain::block::Position&) const noexcept -> void
 {
 }
 
 auto Blockchain::Imp::SenderContact(const Key& key) const noexcept
-    -> OTIdentifier
+    -> identifier::Generic
 {
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
     const auto& [account, subchain, index] = key;
     using Subchain = opentxs::blockchain::crypto::Subchain;
 
     if (is_notification(subchain)) { return blank; }
 
-    const auto accountID = api_.Factory().Identifier(account);
+    const auto accountID = api_.Factory().IdentifierFromBase58(account);
     const auto& owner = Owner(accountID);
 
     try {
@@ -1302,7 +1302,7 @@ auto Blockchain::Imp::Unconfirm(
 {
     try {
         const auto [id, subchain, index] = key;
-        const auto accountID = api_.Factory().Identifier(id);
+        const auto accountID = api_.Factory().IdentifierFromBase58(id);
 
         return get_node(accountID).Internal().Unconfirm(
             subchain, index, tx, time);

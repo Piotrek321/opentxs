@@ -7,9 +7,21 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Types.hpp"
+
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::ui
 {
@@ -18,7 +30,7 @@ class OPENTXS_EXPORT Widget
 public:
     virtual void ClearCallbacks() const noexcept = 0;
     virtual void SetCallback(SimpleCallback cb) const noexcept = 0;
-    virtual auto WidgetID() const noexcept -> OTIdentifier = 0;
+    virtual auto WidgetID() const noexcept -> identifier::Generic = 0;
 
     Widget(const Widget&) = delete;
     Widget(Widget&&) = delete;

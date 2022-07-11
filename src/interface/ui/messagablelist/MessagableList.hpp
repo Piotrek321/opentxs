@@ -13,6 +13,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/interface/ui/MessagableList.hpp"
@@ -72,7 +73,8 @@ class MessagableList final : public MessagableListList,
                              public Worker<api::session::Client>
 {
 public:
-    auto ID() const noexcept -> const Identifier& final
+    auto API() const noexcept -> const api::Session& final { return api_; }
+    auto ID() const noexcept -> const identifier::Generic& final
     {
         return owner_contact_id_;
     }
@@ -105,7 +107,7 @@ private:
         shutdown = value(WorkType::Shutdown),
     };
 
-    const OTIdentifier owner_contact_id_;
+    const identifier::Generic owner_contact_id_;
 
     auto construct_row(
         const MessagableListRowID& id,

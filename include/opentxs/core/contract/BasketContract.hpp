@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/core/contract/Unit.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -45,14 +46,14 @@ public:
 
     static auto CalculateBasketID(
         const api::Session& api,
-        const proto::UnitDefinition& serialized) -> OTIdentifier;
+        const proto::UnitDefinition& serialized) -> identifier::Generic;
     static auto FinalizeTemplate(
         const api::Session& api,
         const Nym_p& nym,
         proto::UnitDefinition& serialized,
         const PasswordPrompt& reason) -> bool;
 
-    virtual auto BasketID() const -> OTIdentifier = 0;
+    virtual auto BasketID() const -> identifier::Generic = 0;
     virtual auto Currencies() const -> const Subcontracts& = 0;
     virtual auto Weight() const -> std::uint64_t = 0;
 

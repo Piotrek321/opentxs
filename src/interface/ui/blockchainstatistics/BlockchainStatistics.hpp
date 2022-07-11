@@ -21,11 +21,11 @@
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/Timer.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/interface/ui/BlockchainStatistics.hpp"
 #include "opentxs/interface/ui/Blockchains.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
@@ -91,6 +91,8 @@ class BlockchainStatistics final : public BlockchainStatisticsList,
                                    public Worker<api::session::Client>
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
+
     BlockchainStatistics(
         const api::session::Client& api,
         const SimpleCallback& cb) noexcept;

@@ -79,7 +79,7 @@ public:
         -> bool;
 
     auto Alias() const noexcept -> UnallocatedCString;
-    auto ID() const noexcept -> OTIdentifier;
+    auto ID() const noexcept -> identifier::Generic;
     auto Nym() const noexcept -> Nym_p;
     auto Terms() const noexcept -> const UnallocatedCString&;
     auto Validate() const noexcept -> bool;

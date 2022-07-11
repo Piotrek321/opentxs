@@ -91,7 +91,7 @@ namespace opentxs::contract::unit
 {
 auto Basket::CalculateBasketID(
     const api::Session& api,
-    const proto::UnitDefinition& serialized) -> OTIdentifier
+    const proto::UnitDefinition& serialized) -> identifier::Generic
 {
     auto contract(serialized);
     contract.clear_id();
@@ -202,7 +202,7 @@ Basket::Basket(const Basket& rhs)
 {
 }
 
-auto Basket::BasketID() const -> OTIdentifier
+auto Basket::BasketID() const -> identifier::Generic
 {
     Lock lock(lock_);
 

@@ -37,6 +37,7 @@ class Client;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -55,8 +56,6 @@ namespace ui
 {
 class ActivityThreadItem;
 }  // namespace ui
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -71,6 +70,8 @@ using ActivityThreadItemRow =
 class ActivityThreadItem : public ActivityThreadItemRow
 {
 public:
+    const api::session::Client& api_;
+
     auto Amount() const noexcept -> opentxs::Amount override { return 0; }
     auto Deposit() const noexcept -> bool override { return false; }
     auto DisplayAmount() const noexcept -> UnallocatedCString override
@@ -98,9 +99,9 @@ public:
 protected:
     const identifier::Nym& nym_id_;
     const Time time_;
-    const Identifier& item_id_;
+    const identifier::Generic& item_id_;
     const otx::client::StorageBox& box_;
-    const Identifier& account_id_;
+    const identifier::Generic& account_id_;
     UnallocatedCString from_;
     UnallocatedCString text_;
     OTFlag loading_;

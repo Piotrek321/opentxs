@@ -17,7 +17,6 @@
 #include "opentxs/core/Amount.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database::implemenation
@@ -62,7 +61,7 @@ auto Wallet::AddMempoolTransaction(
 }
 
 auto Wallet::AddOutgoingTransaction(
-    const Identifier& proposalID,
+    const identifier::Generic& proposalID,
     const proto::BlockchainTransactionProposal& proposal,
     const bitcoin::block::Transaction& transaction) const noexcept -> bool
 {
@@ -70,7 +69,7 @@ auto Wallet::AddOutgoingTransaction(
 }
 
 auto Wallet::AddProposal(
-    const Identifier& id,
+    const identifier::Generic& id,
     const proto::BlockchainTransactionProposal& tx) const noexcept -> bool
 {
     return proposals_.AddProposal(id, tx);
@@ -81,12 +80,14 @@ auto Wallet::AdvanceTo(const block::Position& pos) const noexcept -> bool
     return outputs_.AdvanceTo(pos);
 }
 
-auto Wallet::CancelProposal(const Identifier& id) const noexcept -> bool
+auto Wallet::CancelProposal(const identifier::Generic& id) const noexcept
+    -> bool
 {
     return outputs_.CancelProposal(id);
 }
 
-auto Wallet::CompletedProposals() const noexcept -> UnallocatedSet<OTIdentifier>
+auto Wallet::CompletedProposals() const noexcept
+    -> UnallocatedSet<identifier::Generic>
 {
     return proposals_.CompletedProposals();
 }
@@ -99,7 +100,7 @@ auto Wallet::FinalizeReorg(
 }
 
 auto Wallet::ForgetProposals(
-    const UnallocatedSet<OTIdentifier>& ids) const noexcept -> bool
+    const UnallocatedSet<identifier::Generic>& ids) const noexcept -> bool
 {
     return proposals_.ForgetProposals(ids);
 }
@@ -141,7 +142,7 @@ auto Wallet::GetOutputs(
 
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
-    const Identifier& node,
+    const identifier::Generic& node,
     node::TxoState type,
     alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
@@ -175,7 +176,7 @@ auto Wallet::GetPosition() const noexcept -> block::Position
 
 auto Wallet::GetSubchainID(
     const NodeID& balanceNode,
-    const crypto::Subchain subchain) const noexcept -> pSubchainIndex
+    const crypto::Subchain subchain) const noexcept -> SubchainIndex
 {
     return subchains_.GetSubchainID(balanceNode, subchain, nullptr);
 }
@@ -218,7 +219,7 @@ auto Wallet::GetWalletHeight() const noexcept -> block::Height
     return outputs_.GetWalletHeight();
 }
 
-auto Wallet::LoadProposal(const Identifier& id) const noexcept
+auto Wallet::LoadProposal(const identifier::Generic& id) const noexcept
     -> std::optional<proto::BlockchainTransactionProposal>
 {
     return proposals_.LoadProposal(id);
@@ -231,7 +232,7 @@ auto Wallet::LoadProposals() const noexcept
 }
 
 auto Wallet::LookupContact(const Data& pubkeyHash) const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     return common_.LookupContact(pubkeyHash);
 }
@@ -276,7 +277,7 @@ auto Wallet::ReorgTo(
 
 auto Wallet::ReserveUTXO(
     const identifier::Nym& spender,
-    const Identifier& id,
+    const identifier::Generic& id,
     node::internal::SpendPolicy& policy) const noexcept -> std::optional<UTXO>
 {
     if (!proposals_.Exists(id)) {

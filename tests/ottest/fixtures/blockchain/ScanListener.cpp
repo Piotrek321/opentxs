@@ -57,9 +57,9 @@ struct ScanListener::Imp {
     };
 
     using SubchainMap = ot::UnallocatedMap<Subchain, Data>;
-    using AccountMap = ot::UnallocatedMap<ot::OTIdentifier, SubchainMap>;
+    using AccountMap = ot::UnallocatedMap<ot::identifier::Generic, SubchainMap>;
     using ChainMap = ot::UnallocatedMap<Chain, AccountMap>;
-    using Map = ot::UnallocatedMap<ot::OTNymID, ChainMap>;
+    using Map = ot::UnallocatedMap<ot::identifier::Nym, ChainMap>;
 
     const ot::api::Session& api_;
     const ot::OTZMQListenCallback cb_;
@@ -75,18 +75,18 @@ struct ScanListener::Imp {
 
         const auto chain = body.at(1).as<Chain>();
         auto nymID = [&] {
-            auto out = api_.Factory().NymID();
-            out->Assign(body.at(2).Bytes());
+            auto out = ot::identifier::Nym{};
+            out.Assign(body.at(2).Bytes());
 
-            OT_ASSERT(false == out->empty());
+            OT_ASSERT(false == out.empty());
 
             return out;
         }();
         auto accountID = [&] {
-            auto out = api_.Factory().Identifier();
-            out->Assign(body.at(4).Bytes());
+            auto out = ot::identifier::Generic{};
+            out.Assign(body.at(4).Bytes());
 
-            OT_ASSERT(false == out->empty());
+            OT_ASSERT(false == out.empty());
 
             return out;
         }();

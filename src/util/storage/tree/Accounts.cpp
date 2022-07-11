@@ -21,10 +21,13 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/StorageAccounts.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
@@ -52,16 +55,16 @@
 
 #define SERIALIZE_INDEX(index, field)                                          \
     for (const auto& [id, accounts] : index) {                                 \
-        if (id->empty()) { continue; }                                         \
+        if (id.empty()) { continue; }                                          \
                                                                                \
         auto& listProto = *serialized.add_##field();                           \
         listProto.set_version(INDEX_VERSION);                                  \
-        listProto.set_id(id->str());                                           \
+        listProto.set_id(id.asBase58(crypto_));                                \
                                                                                \
         for (const auto& accountID : accounts) {                               \
-            if (accountID->empty()) { continue; }                              \
+            if (accountID.empty()) { continue; }                               \
                                                                                \
-            listProto.add_list(accountID->str());                              \
+            listProto.add_list(accountID.asBase58(crypto_));                   \
         }                                                                      \
                                                                                \
         if (0 == listProto.list_size()) {                                      \
@@ -72,16 +75,15 @@
 
 #define DESERIALIZE_INDEX(field, index, position, factory)                     \
     for (const auto& it : serialized->field()) {                               \
-        const auto id = factory(it.id());                                      \
+        const auto id = factory_.factory(it.id());                             \
                                                                                \
         auto& map = index[id];                                                 \
                                                                                \
         for (const auto& account : it.list()) {                                \
-            const auto accountID = Identifier::Factory(account);               \
+            const auto accountID = factory_.IdentifierFromBase58(account);     \
                                                                                \
             map.emplace(accountID);                                            \
-            std::get<position>(get_account_data(lock, accountID))              \
-                ->SetString(id->str());                                        \
+            std::get<position>(get_account_data(lock, accountID)) = id;        \
         }                                                                      \
     }                                                                          \
     static_assert(0 < sizeof(char))  // NOTE silence -Wextra-semi-stmt
@@ -91,8 +93,12 @@
 
 namespace opentxs::storage
 {
-Accounts::Accounts(const Driver& storage, const UnallocatedCString& hash)
-    : Node(storage, hash)
+Accounts::Accounts(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
+    const Driver& storage,
+    const UnallocatedCString& hash)
+    : Node(crypto, factory, storage, hash)
 {
     if (check_hash(hash)) {
         init(hash);
@@ -101,76 +107,81 @@ Accounts::Accounts(const Driver& storage, const UnallocatedCString& hash)
     }
 }
 
-auto Accounts::AccountContract(const Identifier& id) const -> OTUnitID
+auto Accounts::AccountContract(const identifier::Generic& id) const
+    -> identifier::UnitDefinition
 {
     EXTRACT_FIELD(4);
 }
 
-auto Accounts::AccountIssuer(const Identifier& id) const -> OTNymID
+auto Accounts::AccountIssuer(const identifier::Generic& id) const
+    -> identifier::Nym
 {
     EXTRACT_FIELD(2);
 }
 
-auto Accounts::AccountOwner(const Identifier& id) const -> OTNymID
+auto Accounts::AccountOwner(const identifier::Generic& id) const
+    -> identifier::Nym
 {
     EXTRACT_FIELD(0);
 }
 
-auto Accounts::AccountServer(const Identifier& id) const -> OTNotaryID
+auto Accounts::AccountServer(const identifier::Generic& id) const
+    -> identifier::Notary
 {
     EXTRACT_FIELD(3);
 }
 
-auto Accounts::AccountSigner(const Identifier& id) const -> OTNymID
+auto Accounts::AccountSigner(const identifier::Generic& id) const
+    -> identifier::Nym
 {
     EXTRACT_FIELD(1);
 }
 
-auto Accounts::AccountUnit(const Identifier& id) const -> UnitType
+auto Accounts::AccountUnit(const identifier::Generic& id) const -> UnitType
 {
     EXTRACT_FIELD(5);
 }
 
 auto Accounts::AccountsByContract(const identifier::UnitDefinition& contract)
-    const -> UnallocatedSet<OTIdentifier>
+    const -> UnallocatedSet<identifier::Generic>
 {
     EXTRACT_SET_BY_ID(contract_index_, contract);
 }
 
 auto Accounts::AccountsByIssuer(const identifier::Nym& issuerNym) const
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     EXTRACT_SET_BY_ID(issuer_index_, issuerNym);
 }
 
 auto Accounts::AccountsByOwner(const identifier::Nym& ownerNym) const
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     EXTRACT_SET_BY_ID(owner_index_, ownerNym);
 }
 
 auto Accounts::AccountsByServer(const identifier::Notary& server) const
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     EXTRACT_SET_BY_ID(server_index_, server);
 }
 
 auto Accounts::AccountsByUnit(const UnitType unit) const
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     EXTRACT_SET_BY_VALUE(unit_index_, unit);
 }
 
 template <typename A, typename M, typename I>
 auto Accounts::add_set_index(
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const A& argID,
     M& mapID,
     I& index) -> bool
 {
-    if (mapID->empty()) {
+    if (mapID.empty()) {
         index[argID].emplace(accountID);
-        mapID->SetString(argID.str());
+        mapID = argID;
     } else {
         if (mapID != argID) {
             LogError()(OT_PRETTY_STATIC(Accounts))("Provided index id (")(
@@ -194,7 +205,7 @@ auto Accounts::Alias(const UnallocatedCString& id) const -> UnallocatedCString
 
 auto Accounts::check_update_account(
     const Lock& lock,
-    const OTIdentifier& accountID,
+    const identifier::Generic& accountID,
     const identifier::Nym& ownerNym,
     const identifier::Nym& signerNym,
     const identifier::Nym& issuerNym,
@@ -202,7 +213,7 @@ auto Accounts::check_update_account(
     const identifier::UnitDefinition& contract,
     const UnitType unit) -> bool
 {
-    if (accountID->empty()) {
+    if (accountID.empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid account ID.").Flush();
 
         return false;
@@ -278,7 +289,7 @@ auto Accounts::check_update_account(
 auto Accounts::Delete(const UnallocatedCString& id) -> bool
 {
     Lock lock(write_lock_);
-    const auto accountID = Identifier::Factory(id);
+    const auto accountID = factory_.IdentifierFromBase58(id);
     auto it = account_data_.find(accountID);
 
     if (account_data_.end() != it) {
@@ -296,23 +307,17 @@ auto Accounts::Delete(const UnallocatedCString& id) -> bool
     return delete_item(lock, id);
 }
 
-auto Accounts::get_account_data(const Lock& lock, const OTIdentifier& accountID)
-    const -> Accounts::AccountData&
+auto Accounts::get_account_data(
+    const Lock& lock,
+    const identifier::Generic& accountID) const -> Accounts::AccountData&
 {
     OT_ASSERT(verify_write_lock(lock));
 
     auto data = account_data_.find(accountID);
 
     if (account_data_.end() == data) {
-        AccountData blank{
-            identifier::Nym::Factory(),
-            identifier::Nym::Factory(),
-            identifier::Nym::Factory(),
-            identifier::Notary::Factory(),
-            identifier::UnitDefinition::Factory(),
-            UnitType::Unknown};
-        auto [output, added] =
-            account_data_.emplace(accountID, std::move(blank));
+        auto [output, added] = account_data_.emplace(
+            accountID, AccountData{{}, {}, {}, {}, {}, UnitType::Unknown});
 
         OT_ASSERT(added);
 
@@ -341,12 +346,11 @@ void Accounts::init(const UnallocatedCString& hash)
             it.itemid(), Metadata{it.hash(), it.alias(), 0, false});
     }
 
-    DESERIALIZE_INDEX(owner, owner_index_, 0, identifier::Nym::Factory);
-    DESERIALIZE_INDEX(signer, signer_index_, 1, identifier::Nym::Factory);
-    DESERIALIZE_INDEX(issuer, issuer_index_, 2, identifier::Nym::Factory);
-    DESERIALIZE_INDEX(server, server_index_, 3, identifier::Notary::Factory);
-    DESERIALIZE_INDEX(
-        unit, contract_index_, 4, identifier::UnitDefinition::Factory);
+    DESERIALIZE_INDEX(owner, owner_index_, 0, NymIDFromBase58);
+    DESERIALIZE_INDEX(signer, signer_index_, 1, NymIDFromBase58);
+    DESERIALIZE_INDEX(issuer, issuer_index_, 2, NymIDFromBase58);
+    DESERIALIZE_INDEX(server, server_index_, 3, NotaryIDFromBase58);
+    DESERIALIZE_INDEX(unit, contract_index_, 4, UnitIDFromBase58);
 
     for (const auto& it : serialized->index()) {
         const auto unit = it.type();
@@ -354,7 +358,7 @@ void Accounts::init(const UnallocatedCString& hash)
         auto& map = unit_index_[type];
 
         for (const auto& account : it.account()) {
-            const auto accountID = Identifier::Factory(account);
+            const auto accountID = factory_.IdentifierFromBase58(account);
 
             map.emplace(accountID);
             std::get<5>(get_account_data(lock, accountID)) = type;
@@ -417,9 +421,9 @@ auto Accounts::serialize() const -> proto::StorageAccounts
         listProto.set_type(translate(UnitToClaim(type)));
 
         for (const auto& accountID : accounts) {
-            if (accountID->empty()) { continue; }
+            if (accountID.empty()) { continue; }
 
-            listProto.add_account(accountID->str());
+            listProto.add_account(accountID.asBase58(crypto_));
         }
 
         if (0 == listProto.account_size()) {
@@ -449,7 +453,7 @@ auto Accounts::Store(
     const UnitType unit) -> bool
 {
     Lock lock(write_lock_);
-    const auto account = Identifier::Factory(id);
+    const auto account = factory_.IdentifierFromBase58(id);
 
     if (!check_update_account(
             lock, account, owner, signer, issuer, server, contract, unit)) {

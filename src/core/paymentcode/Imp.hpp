@@ -189,13 +189,13 @@ private:
     const OTSecret chain_code_;
     const std::uint8_t bitmessage_version_;
     const std::uint8_t bitmessage_stream_;
-    const OTNymID id_;
+    const identifier::Nym id_;
     std::shared_ptr<crypto::key::Secp256k1> key_;
 
     static auto calculate_id(
         const api::Session& api,
         const ReadView pubkey,
-        const ReadView chaincode) noexcept -> OTNymID;
+        const ReadView chaincode) noexcept -> identifier::Nym;
     static auto effective_version(
         VersionType requested,
         VersionType actual) noexcept(false) -> VersionType;

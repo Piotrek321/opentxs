@@ -19,18 +19,19 @@
 #include <tuple>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/core/Core.hpp"
-#include "2_Factory.hpp"
-#include "internal/core/Factory.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/Types.hpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/ServerContract.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -94,7 +95,7 @@ auto Factory::ServerContract(
             name,
             std::move(list),
             std::move(key),
-            api.Factory().ServerID());
+            identifier::Notary{});
 
         OT_ASSERT(output);
 
@@ -160,7 +161,7 @@ Server::Server(
     const UnallocatedCString& name,
     UnallocatedList<contract::Server::Endpoint>&& endpoints,
     ByteArray&& key,
-    OTNotaryID&& id,
+    identifier::Notary&& id,
     Signatures&& signatures)
     : Signable(
           api,
@@ -191,7 +192,7 @@ Server::Server(
           serialized.name(),
           extract_endpoints(serialized),
           api.Factory().DataFromBytes(serialized.transportkey()),
-          api.Factory().ServerID(serialized.id()),
+          api.Factory().NotaryIDFromBase58(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
@@ -243,9 +244,9 @@ auto Server::extract_endpoints(const proto::ServerContract& serialized) noexcept
     return output;
 }
 
-auto Server::GetID(const Lock& lock) const -> OTIdentifier
+auto Server::GetID(const Lock& lock) const -> identifier::Generic
 {
-    return api_.Factory().InternalSession().ServerID(IDVersion(lock));
+    return api_.Factory().Internal().NotaryIDFromPreimage(IDVersion(lock));
 }
 
 auto Server::ConnectInfo(
@@ -336,7 +337,7 @@ auto Server::SetAlias(const UnallocatedCString& alias) noexcept -> bool
 {
     InitAlias(alias);
     api_.Wallet().SetServerAlias(
-        identifier::Notary::Factory(id_->str()), alias);  // TODO conversion
+        api_.Factory().Internal().NotaryIDConvertSafe(id_), alias);
 
     return true;
 }
@@ -391,7 +392,7 @@ auto Server::Statistics(String& strContents) const -> bool
     strContents.Concatenate(" Notary Provider: "sv)
         .Concatenate(nym_->Alias())
         .Concatenate(" NotaryID: "sv)
-        .Concatenate(id_->str())
+        .Concatenate(id_.asBase58(api_.Crypto()))
         .Concatenate("\n\n"sv);
 
     return true;

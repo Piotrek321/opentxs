@@ -28,7 +28,11 @@ class Seed;
 class Seed;
 }  // namespace crypto
 
-class Identifier;
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 class Secret;
 // }  // namespace v1
 }  // namespace opentxs
@@ -64,7 +68,7 @@ public:
     class Imp;
 
     auto Entropy() const noexcept -> const Secret&;
-    auto ID() const noexcept -> const Identifier&;
+    auto ID() const noexcept -> const identifier::Generic&;
     auto Index() const noexcept -> Bip32Index;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> const internal::Seed&;
     auto Phrase() const noexcept -> const Secret&;

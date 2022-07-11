@@ -11,16 +11,15 @@
 #include <shared_mutex>
 
 #include "internal/util/Mutex.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::crypto
 {
 struct AccountIndex::Imp {
-    using Accounts = UnallocatedSet<OTIdentifier>;
+    using Accounts = UnallocatedSet<identifier::Generic>;
 
     auto AccountList(const identifier::Nym& nymID) const noexcept -> Accounts
     {
@@ -52,7 +51,7 @@ struct AccountIndex::Imp {
 
         return all_;
     }
-    auto Query(const Identifier& account) const noexcept -> Data
+    auto Query(const identifier::Generic& account) const noexcept -> Data
     {
         auto lock = sLock{lock_};
 
@@ -65,7 +64,7 @@ struct AccountIndex::Imp {
         }
     }
     auto Register(
-        const Identifier& account,
+        const identifier::Generic& account,
         const identifier::Nym& owner,
         Chain chain) const noexcept -> void
     {
@@ -77,7 +76,7 @@ struct AccountIndex::Imp {
     }
 
     Imp(const api::Session& api) noexcept
-        : blank_(Chain::Unknown, api.Factory().NymID())
+        : blank_(Chain::Unknown, identifier::Nym{})
         , lock_()
         , map_()
         , chain_index_()
@@ -92,9 +91,9 @@ struct AccountIndex::Imp {
     auto operator=(Imp&&) -> Imp& = delete;
 
 private:
-    using Map = UnallocatedMap<OTIdentifier, Data>;
+    using Map = UnallocatedMap<identifier::Generic, Data>;
     using ChainIndex = UnallocatedMap<Chain, Accounts>;
-    using NymIndex = UnallocatedMap<OTNymID, Accounts>;
+    using NymIndex = UnallocatedMap<identifier::Nym, Accounts>;
 
     const Data blank_;
     mutable std::shared_mutex lock_;
@@ -110,29 +109,31 @@ AccountIndex::AccountIndex(const api::Session& api) noexcept
 }
 
 auto AccountIndex::AccountList(const identifier::Nym& nymID) const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     return imp_->AccountList(nymID);
 }
 
 auto AccountIndex::AccountList(const Chain chain) const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     return imp_->AccountList(chain);
 }
 
-auto AccountIndex::AccountList() const noexcept -> UnallocatedSet<OTIdentifier>
+auto AccountIndex::AccountList() const noexcept
+    -> UnallocatedSet<identifier::Generic>
 {
     return imp_->AccountList();
 }
 
-auto AccountIndex::Query(const Identifier& account) const noexcept -> Data
+auto AccountIndex::Query(const identifier::Generic& account) const noexcept
+    -> Data
 {
     return imp_->Query(account);
 }
 
 auto AccountIndex::Register(
-    const Identifier& account,
+    const identifier::Generic& account,
     const identifier::Nym& owner,
     Chain chain) const noexcept -> void
 {

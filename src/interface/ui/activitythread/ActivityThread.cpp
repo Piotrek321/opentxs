@@ -18,7 +18,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <tuple>
-#include <type_traits>
 
 #include "Proto.hpp"
 #include "interface/ui/base/List.hpp"
@@ -56,9 +55,9 @@
 #include "opentxs/util/Time.hpp"
 
 template class std::tuple<
-    opentxs::OTIdentifier,
+    opentxs::identifier::Generic,
     opentxs::otx::client::StorageBox,
-    opentxs::OTIdentifier>;
+    opentxs::identifier::Generic>;
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -67,7 +66,7 @@ namespace opentxs::factory
 auto ActivityThreadModel(
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const Identifier& threadID,
+    const identifier::Generic& threadID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::ActivityThread>
 {
@@ -82,7 +81,7 @@ namespace opentxs::ui::implementation
 ActivityThread::ActivityThread(
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const Identifier& threadID,
+    const identifier::Generic& threadID,
     const SimpleCallback& cb) noexcept
     : ActivityThreadList(api, nymID, cb, false)
     , Worker(api, 100ms)
@@ -114,7 +113,7 @@ auto ActivityThread::calculate_display_name() const noexcept
     auto names = UnallocatedSet<UnallocatedCString>{};
 
     for (const auto& contactID : contacts_) {
-        names.emplace(Widget::api_.Contacts().ContactName(contactID));
+        names.emplace(api_.Contacts().ContactName(contactID));
     }
 
     return comma(names);
@@ -125,7 +124,9 @@ auto ActivityThread::calculate_participants() const noexcept
 {
     auto ids = UnallocatedSet<UnallocatedCString>{};
 
-    for (const auto& id : contacts_) { ids.emplace(id->str()); }
+    for (const auto& id : contacts_) {
+        ids.emplace(id.asBase58(api_.Crypto()));
+    }
 
     return comma(ids);
 }
@@ -187,21 +188,21 @@ auto ActivityThread::construct_row(
         case otx::client::StorageBox::MAILOUTBOX:
         case otx::client::StorageBox::DRAFT: {
             return factory::MailItem(
-                *this, Widget::api_, primary_id_, id, index, custom);
+                *this, api_, primary_id_, id, index, custom);
         }
         case otx::client::StorageBox::INCOMINGCHEQUE:
         case otx::client::StorageBox::OUTGOINGCHEQUE: {
             return factory::PaymentItem(
-                *this, Widget::api_, primary_id_, id, index, custom);
+                *this, api_, primary_id_, id, index, custom);
         }
         case otx::client::StorageBox::PENDING_SEND: {
             return factory::PendingSend(
-                *this, Widget::api_, primary_id_, id, index, custom);
+                *this, api_, primary_id_, id, index, custom);
         }
 #if OT_BLOCKCHAIN
         case otx::client::StorageBox::BLOCKCHAIN: {
             return factory::BlockchainActivityThreadItem(
-                *this, Widget::api_, primary_id_, id, index, custom);
+                *this, api_, primary_id_, id, index, custom);
         }
 #endif  // OT_BLOCKCHAIN
         case otx::client::StorageBox::SENTPEERREQUEST:
@@ -242,10 +243,11 @@ auto ActivityThread::GetDraft() const noexcept -> UnallocatedCString
 auto ActivityThread::load_contacts(const proto::StorageThread& thread) noexcept
     -> void
 {
-    auto& contacts = const_cast<UnallocatedSet<OTIdentifier>&>(contacts_);
+    auto& contacts =
+        const_cast<UnallocatedSet<identifier::Generic>&>(contacts_);
 
     for (const auto& id : thread.participant()) {
-        contacts.emplace(Widget::api_.Factory().Identifier(id));
+        contacts.emplace(api_.Factory().IdentifierFromBase58(id));
     }
 }
 
@@ -266,7 +268,8 @@ auto ActivityThread::load_thread(const proto::StorageThread& thread) noexcept
 
 auto ActivityThread::new_thread() noexcept -> void
 {
-    auto& contacts = const_cast<UnallocatedSet<OTIdentifier>&>(contacts_);
+    auto& contacts =
+        const_cast<UnallocatedSet<identifier::Generic>&>(contacts_);
     contacts.emplace(threadID_);
 }
 
@@ -280,13 +283,13 @@ auto ActivityThread::Participants() const noexcept -> UnallocatedCString
 
 auto ActivityThread::Pay(
     const UnallocatedCString& amount,
-    const Identifier& sourceAccount,
+    const identifier::Generic& sourceAccount,
     const UnallocatedCString& memo,
     const otx::client::PaymentType type) const noexcept -> bool
 {
-    const auto& unitID = Widget::api_.Storage().AccountContract(sourceAccount);
+    const auto& unitID = api_.Storage().AccountContract(sourceAccount);
 
-    if (unitID->empty()) {
+    if (unitID.empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid account: (")(sourceAccount)(")")
             .Flush();
 
@@ -294,7 +297,7 @@ auto ActivityThread::Pay(
     }
 
     try {
-        const auto contract = Widget::api_.Wallet().UnitDefinition(unitID);
+        const auto contract = api_.Wallet().UnitDefinition(unitID);
         const auto& definition =
             display::GetDefinition(contract->UnitOfAccount());
         try {
@@ -317,15 +320,15 @@ auto ActivityThread::Pay(
 
 auto ActivityThread::Pay(
     const Amount amount,
-    const Identifier& sourceAccount,
+    const identifier::Generic& sourceAccount,
     const UnallocatedCString& memo,
     const otx::client::PaymentType type) const noexcept -> bool
 {
     wait_for_startup();
 
     if (0 >= amount) {
-        const auto contract = Widget::api_.Wallet().UnitDefinition(
-            Widget::api_.Storage().AccountContract(sourceAccount));
+        const auto contract = api_.Wallet().UnitDefinition(
+            api_.Storage().AccountContract(sourceAccount));
         LogError()(OT_PRETTY_CLASS())("Invalid amount: (")(
             amount, contract->UnitOfAccount())(")")
             .Flush();
@@ -435,13 +438,14 @@ auto ActivityThread::process_contact(const Message& in) noexcept -> void
 
     OT_ASSERT(1 < body.size());
 
-    const auto contactID = Widget::api_.Factory().Identifier(body.at(1));
+    const auto contactID =
+        api_.Factory().IdentifierFromHash(body.at(1).Bytes());
     auto changed{false};
 
-    OT_ASSERT(false == contactID->empty());
+    OT_ASSERT(false == contactID.empty());
 
     if (self_contact_ == contactID) {
-        auto name = Widget::api_.Contacts().ContactName(self_contact_);
+        auto name = api_.Contacts().ContactName(self_contact_);
 
         if (auto lock = rLock{recursive_lock_}; me_ != name) {
             std::swap(me_, name);
@@ -466,9 +470,9 @@ auto ActivityThread::process_item(
     const proto::StorageThreadItem& item) noexcept(false) -> ActivityThreadRowID
 {
     const auto id = ActivityThreadRowID{
-        Widget::api_.Factory().Identifier(item.id()),
+        api_.Factory().IdentifierFromBase58(item.id()),
         static_cast<otx::client::StorageBox>(item.box()),
-        Widget::api_.Factory().Identifier(item.account())};
+        api_.Factory().IdentifierFromBase58(item.account())};
     const auto& [itemID, box, account] = id;
     const auto key =
         ActivityThreadSortKey{std::chrono::seconds(item.time()), item.index()};
@@ -495,10 +499,9 @@ auto ActivityThread::process_item(
             [[fallthrough]];
         }
         case otx::client::StorageBox::MAILINBOX: {
-            auto reason =
-                Widget::api_.Factory().PasswordPrompt("Decrypting messages");
-            auto message = Widget::api_.Activity().MailText(
-                primary_id_, itemID, box, reason);
+            auto reason = api_.Factory().PasswordPrompt("Decrypting messages");
+            auto message =
+                api_.Activity().MailText(primary_id_, itemID, box, reason);
             static constexpr auto none = 0ms;
             using Status = std::future_status;
 
@@ -511,16 +514,15 @@ auto ActivityThread::process_item(
             }
         } break;
         case otx::client::StorageBox::BLOCKCHAIN: {
-            const auto txid = Widget::api_.Factory().DataFromBytes(item.txid());
+            const auto txid = api_.Factory().DataFromBytes(item.txid());
             const auto pTx =
-                Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(
-                    txid.asHex());
+                api_.Crypto().Blockchain().LoadTransactionBitcoin(txid.asHex());
             const auto chain = static_cast<blockchain::Type>(item.chain());
 
             if (!pTx) { throw std::runtime_error{"transaction not found"}; }
 
             const auto& tx = *pTx;
-            text = Widget::api_.Crypto().Blockchain().ActivityDescription(
+            text = api_.Crypto().Blockchain().ActivityDescription(
                 primary_id_, chain, tx);
             const auto amount = tx.NetBalanceChange(primary_id_);
             custom.emplace_back(new UnallocatedCString{item.txid()});
@@ -550,11 +552,11 @@ auto ActivityThread::process_messagability(const Message& message) noexcept
 
     OT_ASSERT(3 < body.size());
 
-    const auto nym = Widget::api_.Factory().NymID(body.at(1));
+    const auto nym = api_.Factory().NymIDFromHash(body.at(1).Bytes());
 
     if (nym != primary_id_) { return; }
 
-    const auto contact = Widget::api_.Factory().Identifier(body.at(2));
+    const auto contact = api_.Factory().IdentifierFromHash(body.at(2).Bytes());
 
     if (0 == contacts_.count(contact)) { return; }
 
@@ -571,9 +573,9 @@ auto ActivityThread::process_message_loaded(const Message& message) noexcept
     OT_ASSERT(4 < body.size());
 
     const auto id = ActivityThreadRowID{
-        Widget::api_.Factory().Identifier(body.at(2)),
+        api_.Factory().IdentifierFromHash(body.at(2).Bytes()),
         body.at(3).as<otx::client::StorageBox>(),
-        Widget::api_.Factory().Identifier()};
+        identifier::Generic{}};
     const auto& [itemID, box, account] = id;
 
     if (const auto index = find_index(id); !index.has_value()) { return; }
@@ -641,9 +643,9 @@ auto ActivityThread::process_thread(const Message& message) noexcept -> void
 
     OT_ASSERT(1 < body.size());
 
-    const auto threadID = Widget::api_.Factory().Identifier(body.at(1));
+    const auto threadID = api_.Factory().IdentifierFromHash(body.at(1).Bytes());
 
-    OT_ASSERT(false == threadID->empty());
+    OT_ASSERT(false == threadID.empty());
 
     if (threadID_ != threadID) { return; }
 
@@ -653,8 +655,7 @@ auto ActivityThread::process_thread(const Message& message) noexcept -> void
 auto ActivityThread::refresh_thread() noexcept -> void
 {
     auto thread = proto::StorageThread{};
-    auto loaded =
-        Widget::api_.Activity().Thread(primary_id_, threadID_, thread);
+    auto loaded = api_.Activity().Thread(primary_id_, threadID_, thread);
 
     OT_ASSERT(loaded);
 
@@ -686,7 +687,7 @@ auto ActivityThread::refresh_thread() noexcept -> void
 
 auto ActivityThread::send_cheque(
     const Amount amount,
-    const Identifier& sourceAccount,
+    const identifier::Generic& sourceAccount,
     const UnallocatedCString& memo) const noexcept -> bool
 {
     if (false == validate_account(sourceAccount)) { return false; }
@@ -702,8 +703,8 @@ auto ActivityThread::send_cheque(
     auto displayAmount = UnallocatedCString{};
 
     try {
-        const auto contract = Widget::api_.Wallet().UnitDefinition(
-            Widget::api_.Storage().AccountContract(sourceAccount));
+        const auto contract = api_.Wallet().UnitDefinition(
+            api_.Storage().AccountContract(sourceAccount));
         const auto& definition =
             display::GetDefinition(contract->UnitOfAccount());
         displayAmount = definition.Format(amount);
@@ -714,9 +715,9 @@ auto ActivityThread::send_cheque(
         return false;
     }
 
-    auto task = make_blank<DraftTask>::value(Widget::api_);
+    auto task = make_blank<DraftTask>::value(api_);
     auto& [id, otx] = task;
-    otx = Widget::api_.OTX().SendCheque(
+    otx = api_.OTX().SendCheque(
         primary_id_, sourceAccount, *contacts_.cbegin(), amount, memo);
     const auto taskID = std::get<0>(otx);
 
@@ -728,9 +729,9 @@ auto ActivityThread::send_cheque(
     }
 
     id = ActivityThreadRowID{
-        Identifier::Random(),
+        api_.Factory().IdentifierFromRandom(),
         otx::client::StorageBox::PENDING_SEND,
-        Identifier::Factory()};
+        {}};
     const auto key = ActivityThreadSortKey{Clock::now(), 0};
     static constexpr auto outgoing{true};
     auto custom = CustomData{
@@ -765,10 +766,10 @@ auto ActivityThread::SendDraft() const noexcept -> bool
             return false;
         }
 
-        auto task = make_blank<DraftTask>::value(Widget::api_);
+        auto task = make_blank<DraftTask>::value(api_);
         auto& [id, otx] = task;
-        otx = Widget::api_.OTX().MessageContact(
-            primary_id_, *contacts_.begin(), draft_);
+        otx =
+            api_.OTX().MessageContact(primary_id_, *contacts_.begin(), draft_);
         const auto taskID = std::get<0>(otx);
 
         if (0 == taskID) {
@@ -780,9 +781,9 @@ auto ActivityThread::SendDraft() const noexcept -> bool
         }
 
         id = ActivityThreadRowID{
-            Identifier::Random(),
+            api_.Factory().IdentifierFromRandom(),
             otx::client::StorageBox::DRAFT,
-            Identifier::Factory()};
+            {}};
         const ActivityThreadSortKey key{Clock::now(), 0};
         static constexpr auto outgoing{true};
         auto custom = CustomData{
@@ -840,8 +841,7 @@ auto ActivityThread::set_participants() noexcept -> void
 auto ActivityThread::startup() noexcept -> void
 {
     auto thread = proto::StorageThread{};
-    auto loaded =
-        Widget::api_.Activity().Thread(primary_id_, threadID_, thread);
+    auto loaded = api_.Activity().Thread(primary_id_, threadID_, thread);
 
     if (loaded) {
         load_contacts(thread);
@@ -866,8 +866,7 @@ auto ActivityThread::state_machine() noexcept -> bool
     auto again{false};
 
     for (const auto& id : contacts_) {
-        const auto value =
-            Widget::api_.OTX().CanMessage(primary_id_, id, false);
+        const auto value = api_.OTX().CanMessage(primary_id_, id, false);
 
         switch (value) {
             case otx::client::Messagability::READY: {
@@ -888,7 +887,7 @@ auto ActivityThread::state_machine() noexcept -> bool
 
 auto ActivityThread::ThreadID() const noexcept -> UnallocatedCString
 {
-    return threadID_->str();
+    return threadID_.asBase58(api_.Crypto());
 }
 
 auto ActivityThread::update_display_name() noexcept -> bool
@@ -940,7 +939,7 @@ auto ActivityThread::update_payment_codes() noexcept -> bool
 
     if (1 != contacts_.size()) { OT_FAIL; }
 
-    const auto contact = Widget::api_.Contacts().Contact(*contacts_.cbegin());
+    const auto contact = api_.Contacts().Contact(*contacts_.cbegin());
 
     OT_ASSERT(contact);
 
@@ -964,11 +963,11 @@ auto ActivityThread::update_payment_codes() noexcept -> bool
 }
 
 auto ActivityThread::validate_account(
-    const Identifier& sourceAccount) const noexcept -> bool
+    const identifier::Generic& sourceAccount) const noexcept -> bool
 {
-    const auto owner = Widget::api_.Storage().AccountOwner(sourceAccount);
+    const auto owner = api_.Storage().AccountOwner(sourceAccount);
 
-    if (owner->empty()) {
+    if (owner.empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid account id: (")(
             sourceAccount)(")")
             .Flush();

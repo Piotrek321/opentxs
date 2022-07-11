@@ -16,6 +16,7 @@
 #include <string_view>
 #include <utility>
 
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
@@ -65,9 +66,9 @@ OTMarket::OTMarket(const api::Session& api, const char* szFilename)
     , m_mapBids()
     , m_mapAsks()
     , m_mapOffers()
-    , m_NOTARY_ID(identifier::Notary::Factory())
-    , m_INSTRUMENT_DEFINITION_ID(identifier::UnitDefinition::Factory())
-    , m_CURRENCY_TYPE_ID(identifier::UnitDefinition::Factory())
+    , m_NOTARY_ID()
+    , m_INSTRUMENT_DEFINITION_ID()
+    , m_CURRENCY_TYPE_ID()
     , m_lScale(1)
     , m_lLastSalePrice(0)
     , m_strLastSaleDate()
@@ -86,9 +87,9 @@ OTMarket::OTMarket(const api::Session& api)
     , m_mapBids()
     , m_mapAsks()
     , m_mapOffers()
-    , m_NOTARY_ID(identifier::Notary::Factory())
-    , m_INSTRUMENT_DEFINITION_ID(identifier::UnitDefinition::Factory())
-    , m_CURRENCY_TYPE_ID(identifier::UnitDefinition::Factory())
+    , m_NOTARY_ID()
+    , m_INSTRUMENT_DEFINITION_ID()
+    , m_CURRENCY_TYPE_ID()
     , m_lScale(1)
     , m_lLastSalePrice(0)
     , m_strLastSaleDate()
@@ -147,10 +148,11 @@ auto OTMarket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                        xml->getAttributeValue("instrumentDefinitionID")),
                    strCurrencyTypeID = String::Factory(
                        xml->getAttributeValue("currencyTypeID"));
-
-        m_NOTARY_ID->SetString(strNotaryID);
-        m_INSTRUMENT_DEFINITION_ID->SetString(strInstrumentDefinitionID);
-        m_CURRENCY_TYPE_ID->SetString(strCurrencyTypeID);
+        m_NOTARY_ID = api_.Factory().NotaryIDFromBase58(strNotaryID->Bytes());
+        m_INSTRUMENT_DEFINITION_ID =
+            api_.Factory().UnitIDFromBase58(strInstrumentDefinitionID->Bytes());
+        m_CURRENCY_TYPE_ID =
+            api_.Factory().UnitIDFromBase58(strCurrencyTypeID->Bytes());
 
         LogConsole()(OT_PRETTY_CLASS())("Market. Scale: ")(m_lScale)(".")
             .Flush();
@@ -340,15 +342,16 @@ auto OTMarket::GetNym_OfferList(
 
         const auto& theNotaryID = pOffer->GetNotaryID();
         const auto strNotaryID = String::Factory(theNotaryID);
-        const Identifier& theInstrumentDefinitionID =
+        const identifier::Generic& theInstrumentDefinitionID =
             pOffer->GetInstrumentDefinitionID();
         const auto strInstrumentDefinitionID =
             String::Factory(theInstrumentDefinitionID);
-        const Identifier& theAssetAcctID = pTrade->GetSenderAcctID();
+        const identifier::Generic& theAssetAcctID = pTrade->GetSenderAcctID();
         const auto strAssetAcctID = String::Factory(theAssetAcctID);
-        const Identifier& theCurrencyID = pOffer->GetCurrencyID();
+        const identifier::Generic& theCurrencyID = pOffer->GetCurrencyID();
         const auto strCurrencyID = String::Factory(theCurrencyID);
-        const Identifier& theCurrencyAcctID = pTrade->GetCurrencyAcctID();
+        const identifier::Generic& theCurrencyAcctID =
+            pTrade->GetCurrencyAcctID();
         const auto strCurrencyAcctID = String::Factory(theCurrencyAcctID);
 
         const bool bSelling = pOffer->IsAsk();
@@ -888,7 +891,7 @@ auto OTMarket::LoadMarket() -> bool
     OT_ASSERT(nullptr != GetCron());
     OT_ASSERT(nullptr != GetCron()->GetServerNym());
 
-    auto MARKET_ID = Identifier::Factory(*this);
+    auto MARKET_ID = api_.Factory().Internal().Identifier(*this);
     auto str_MARKET_ID = String::Factory(MARKET_ID);
 
     const char* szFoldername = api_.Internal().Legacy().Market();
@@ -930,7 +933,7 @@ auto OTMarket::SaveMarket(const PasswordPrompt& reason) -> bool
     OT_ASSERT(nullptr != GetCron());
     OT_ASSERT(nullptr != GetCron()->GetServerNym());
 
-    auto MARKET_ID = Identifier::Factory(*this);
+    auto MARKET_ID = api_.Factory().Internal().Identifier(*this);
     auto str_MARKET_ID = String::Factory(MARKET_ID);
 
     const char* szFoldername = api_.Internal().Legacy().Market();
@@ -983,7 +986,7 @@ auto OTMarket::SaveMarket(const PasswordPrompt& reason) -> bool
 // A Market's ID is based on the instrument definition, the currency type, and
 // the scale.
 //
-void OTMarket::GetIdentifier(Identifier& theIdentifier) const
+void OTMarket::GetIdentifier(identifier::Generic& theIdentifier) const
 {
     // In this way we generate a unique ID that will always be consistent
     // for the same instrument definition id, currency ID, and market scale.
@@ -1001,7 +1004,7 @@ void OTMarket::GetIdentifier(Identifier& theIdentifier) const
 
         return out;
     }();
-    theIdentifier.CalculateDigest(preimage->Bytes());
+    theIdentifier = api_.Factory().IdentifierFromPreimage(preimage->Bytes());
 }
 
 // returns 0 if there are no bids. Otherwise returns the value of the highest
@@ -1596,13 +1599,13 @@ void OTMarket::ProcessTrade(
             // set up the transaction items (each transaction may have
             // multiple items... but not in this case.)
             auto pItem1{api_.Factory().InternalSession().Item(
-                *trans1, itemType::marketReceipt, Identifier::Factory())};
+                *trans1, itemType::marketReceipt, {})};
             auto pItem2{api_.Factory().InternalSession().Item(
-                *trans2, itemType::marketReceipt, Identifier::Factory())};
+                *trans2, itemType::marketReceipt, {})};
             auto pItem3{api_.Factory().InternalSession().Item(
-                *trans3, itemType::marketReceipt, Identifier::Factory())};
+                *trans3, itemType::marketReceipt, {})};
             auto pItem4{api_.Factory().InternalSession().Item(
-                *trans4, itemType::marketReceipt, Identifier::Factory())};
+                *trans4, itemType::marketReceipt, {})};
 
             OT_ASSERT(false != bool(pItem1));
             OT_ASSERT(false != bool(pItem2));
@@ -2226,15 +2229,10 @@ void OTMarket::ProcessTrade(
 
                 // Save the four inboxes to storage. (File, DB, wherever
                 // it goes.)
-
-                pFirstAssetAcct.get().SaveInbox(
-                    *theFirstAssetInbox, Identifier::Factory());
-                pFirstCurrencyAcct.get().SaveInbox(
-                    *theFirstCurrencyInbox, Identifier::Factory());
-                pOtherAssetAcct.get().SaveInbox(
-                    *theOtherAssetInbox, Identifier::Factory());
-                pOtherCurrencyAcct.get().SaveInbox(
-                    *theOtherCurrencyInbox, Identifier::Factory());
+                pFirstAssetAcct.get().SaveInbox(*theFirstAssetInbox);
+                pFirstCurrencyAcct.get().SaveInbox(*theFirstCurrencyInbox);
+                pOtherAssetAcct.get().SaveInbox(*theOtherAssetInbox);
+                pOtherCurrencyAcct.get().SaveInbox(*theOtherCurrencyInbox);
 
                 // These correspond to the AddTransaction() calls just
                 // above. The actual receipts are stored in separate
@@ -2312,8 +2310,7 @@ void OTMarket::ProcessTrade(
                     pTempInbox->ReleaseSignatures();
                     pTempInbox->SignContract(*pServerNym, reason);
                     pTempInbox->SaveContract();
-                    pTempInbox->SaveInbox(Identifier::Factory());
-
+                    pTempInbox->SaveInbox();
                     pTempTransaction->SaveBoxReceipt(*pTempInbox);
                 }
                 // This section is identical to the one above, except
@@ -2350,8 +2347,7 @@ void OTMarket::ProcessTrade(
                     pTempInbox->ReleaseSignatures();
                     pTempInbox->SignContract(*pServerNym, reason);
                     pTempInbox->SaveContract();
-                    pTempInbox->SaveInbox(Identifier::Factory());
-
+                    pTempInbox->SaveInbox();
                     pTempTransaction->SaveBoxReceipt(*pTempInbox);
                 }
                 // If either trader is broke, we flag the trade for
@@ -2795,10 +2791,10 @@ void OTMarket::InitMarket() { m_strContractType = String::Factory("MARKET"); }
 
 void OTMarket::Release_Market()
 {
-    m_INSTRUMENT_DEFINITION_ID->clear();
-    m_CURRENCY_TYPE_ID->clear();
+    m_INSTRUMENT_DEFINITION_ID.clear();
+    m_CURRENCY_TYPE_ID.clear();
 
-    m_NOTARY_ID->clear();
+    m_NOTARY_ID.clear();
 
     // Elements of this list are cleaned up automatically.
     if (nullptr != m_pTradeList) {

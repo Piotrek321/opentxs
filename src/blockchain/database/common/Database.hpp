@@ -26,7 +26,6 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -67,6 +66,11 @@ class Header;
 
 class GCS;
 }  // namespace blockchain
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 
 namespace network
 {
@@ -170,7 +174,7 @@ public:
     auto LoadTransaction(const ReadView txid, proto::BlockchainTransaction& out)
         const noexcept -> std::unique_ptr<bitcoin::block::Transaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto LookupTransactions(const PatternID pattern) const noexcept
         -> UnallocatedVector<pTxid>;
     auto ReorgSync(const Chain chain, const Height height) const noexcept

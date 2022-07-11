@@ -120,7 +120,7 @@ class Server final : virtual public internal::Server,
                      public opentxs::internal::StateMachine
 {
 public:
-    auto Accounts() const -> UnallocatedVector<OTIdentifier> final;
+    auto Accounts() const -> UnallocatedVector<identifier::Generic> final;
     auto AdminPassword() const -> const UnallocatedCString& final;
     auto AdminAttempted() const -> bool final;
     auto FinalizeServerCommand(Message& command, const PasswordPrompt& reason)
@@ -169,7 +169,7 @@ public:
     auto InitializeServerCommand(
         const MessageType type,
         const Armored& payload,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const RequestNumber provided,
         const bool withAcknowledgments = true,
         const bool withNymboxHash = true)
@@ -375,7 +375,7 @@ private:
         const TransactionNumber target) -> std::shared_ptr<OTTransaction>;
     auto extract_ledger(
         const Armored& armored,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const identity::Nym& signer) const -> std::unique_ptr<Ledger>;
     auto extract_message(const Armored& armored, const identity::Nym& signer)
         const -> std::unique_ptr<Message>;
@@ -414,24 +414,24 @@ private:
         Ledger& ledger,
         const PasswordPrompt& reason) -> std::shared_ptr<OTPayment>;
     auto init_new_account(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const PasswordPrompt& reason) -> bool;
     auto initialize_server_command(const MessageType type) const
         -> std::unique_ptr<Message>;
     void initialize_server_command(const MessageType type, Message& output)
         const;
     auto is_internal_transfer(const Item& item) const -> bool;
-    auto load_account_inbox(const Identifier& accountID) const
+    auto load_account_inbox(const identifier::Generic& accountID) const
         -> std::unique_ptr<Ledger>;
     auto load_or_create_account_recordbox(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const PasswordPrompt& reason) const -> std::unique_ptr<Ledger>;
     auto load_or_create_payment_inbox(const PasswordPrompt& reason) const
         -> std::unique_ptr<Ledger>;
     void process_accept_pending_reply(
         const Lock& lock,
         const api::session::Client& client,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const Item& acceptItemReceipt,
         const Message& reply) const;
     auto process_incoming_cash(
@@ -528,7 +528,7 @@ private:
         const OTTransaction& inboxTransaction);
     void process_accept_cron_receipt_reply(
         const Lock& lock,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         OTTransaction& inboxTransaction);
     void process_accept_final_receipt_reply(
         const Lock& lock,
@@ -536,16 +536,16 @@ private:
     void process_accept_item_receipt_reply(
         const Lock& lock,
         const api::session::Client& client,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const Message& reply,
         const OTTransaction& inboxTransaction);
     auto process_account_data(
         const Lock& lock,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const String& account,
-        const Identifier& inboxHash,
+        const identifier::Generic& inboxHash,
         const String& inbox,
-        const Identifier& outboxHash,
+        const identifier::Generic& outboxHash,
         const String& outbox,
         const PasswordPrompt& reason) -> bool;
     auto process_account_push(
@@ -556,7 +556,7 @@ private:
     auto process_box_item(
         const Lock& lock,
         const api::session::Client& client,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const proto::OTXPush& push,
         const PasswordPrompt& reason) -> bool;
     auto process_check_nym_response(
@@ -575,7 +575,7 @@ private:
     auto process_get_box_receipt_response(
         const Lock& lock,
         const api::session::Client& client,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const std::shared_ptr<OTTransaction> receipt,
         const String& serialized,
         const BoxType type,
@@ -615,7 +615,7 @@ private:
         const api::session::Client& client,
         const Message& reply,
         const BoxType inbox,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const PasswordPrompt& reason) -> bool;
     auto process_process_inbox_response(
         const Lock& lock,
@@ -666,7 +666,7 @@ private:
         const PasswordPrompt& reason);
     void process_response_transaction_cheque_deposit(
         const api::session::Client& client,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const Message* reply,
         const Item& replyItem,
         const PasswordPrompt& reason);
@@ -769,7 +769,7 @@ private:
         const Message& reply,
         const UpdateHash which = UpdateHash::Remote) -> bool;
     auto update_remote_hash(const Lock& lock, const Message& reply)
-        -> OTIdentifier;
+        -> identifier::Generic;
     auto update_request_number(
         const PasswordPrompt& reason,
         const Lock& contextLock,

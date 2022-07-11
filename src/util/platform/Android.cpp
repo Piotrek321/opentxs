@@ -12,6 +12,8 @@ extern "C" {
 #include <android/log.h>
 }
 
+#include <sstream>
+
 #include "opentxs/util/Allocator.hpp"
 
 namespace opentxs::api::imp
@@ -20,28 +22,43 @@ auto Legacy::use_dot() noexcept -> bool { return false; }
 
 auto Log::print(
     const int level,
-    const UnallocatedCString& text,
-    const UnallocatedCString& thread) noexcept -> void
+    const Console,
+    const std::string_view text,
+    const std::string_view thread) noexcept -> void
 {
-    switch (level) {
-        case 0:
-        case 1: {
-            __android_log_write(ANDROID_LOG_INFO, "OT Output", text.c_str());
-        } break;
-        case 2:
-        case 3: {
-            __android_log_write(ANDROID_LOG_DEBUG, "OT Debug", text.c_str());
-        } break;
-        case 4:
-        case 5: {
-            __android_log_write(
-                ANDROID_LOG_VERBOSE, "OT Verbose", text.c_str());
-        } break;
-        default: {
-            __android_log_write(
-                ANDROID_LOG_UNKNOWN, "OT Unknown", text.c_str());
-        } break;
-    }
+    const auto tag = std::stringstream{"opentxs "} << "(" << thread << ")";
+    const auto nullTerminated = UnallocatedCString{text};
+    const auto prio = [&] {
+        // TODO ANDROID_LOG_ERROR
+
+        switch (level) {
+            case -2: {
+
+                return ANDROID_LOG_FATAL;
+            }
+            case -1: {
+
+                return ANDROID_LOG_WARN;
+            }
+            case 0:
+            case 1: {
+
+                return ANDROID_LOG_INFO;
+            }
+            case 2:
+            case 3: {
+
+                return ANDROID_LOG_VERBOSE;
+            }
+            case 4:
+            case 5:
+            default: {
+
+                return ANDROID_LOG_DEBUG;
+            }
+        }
+    }();
+    __android_log_write(prio, tag.str().c_str(), nullTerminated.c_str());
 }
 }  // namespace opentxs::api::imp
 

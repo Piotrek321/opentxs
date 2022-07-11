@@ -32,6 +32,7 @@
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -39,6 +40,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/network/ServerConnection.hpp"
@@ -138,7 +140,8 @@ ServerConnection::Imp::Imp(
     : zmq_(zmq)
     , api_(api)
     , updates_(updates)
-    , server_id_(api_.Factory().ServerID(contract->ID()->str()))
+    , server_id_(api_.Factory().NotaryIDFromBase58(
+          contract->ID().asBase58(api_.Crypto())))
     , address_type_(zmq.DefaultAddressType())
     , remote_contract_(contract)
     , thread_()

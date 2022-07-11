@@ -465,14 +465,14 @@ auto Seed::GetSeed(
     }
 }
 
-auto Seed::GetSeed(const Identifier& id, const PasswordPrompt& reason)
+auto Seed::GetSeed(const identifier::Generic& id, const PasswordPrompt& reason)
     const noexcept -> opentxs::crypto::Seed
 {
     auto lock = Lock{seed_lock_};
 
     try {
 
-        return get_seed(lock, id.str(), reason);
+        return get_seed(lock, id.asBase58(api_.Crypto()), reason);
     } catch (...) {
 
         return {};
@@ -496,7 +496,7 @@ auto Seed::get_seed(
 
     auto seed = factory::Seed(
         api_, bip39_, symmetric_, factory_, storage_, proto, reason);
-    auto id = seed.ID().str();
+    auto id = seed.ID().asBase58(api_.Crypto());
 
     OT_ASSERT(id == seedID);
 
@@ -668,7 +668,7 @@ auto Seed::new_seed(
     opentxs::crypto::Seed&& seed) const noexcept -> UnallocatedCString
 {
     const auto& id = seed.ID();
-    const auto sID = id.str();
+    const auto sID = id.asBase58(api_.Crypto());
     seeds_.try_emplace(sID, std::move(seed));
 
     if (valid(comment)) { SetSeedComment(id, comment); }
@@ -697,10 +697,10 @@ auto Seed::Passphrase(
 
 auto Seed::publish(const UnallocatedCString& id) const noexcept -> void
 {
-    publish(api_.Factory().Identifier(id));
+    publish(api_.Factory().IdentifierFromBase58(id));
 }
 
-auto Seed::publish(const Identifier& id) const noexcept -> void
+auto Seed::publish(const identifier::Generic& id) const noexcept -> void
 {
     auto message = MakeWork(WorkType::SeedUpdated);
     message.AddFrame(id);
@@ -745,7 +745,7 @@ auto Seed::SeedDescription(UnallocatedCString seedID) const noexcept
     }
 }
 
-auto Seed::SetDefault(const Identifier& id) const noexcept -> bool
+auto Seed::SetDefault(const identifier::Generic& id) const noexcept -> bool
 {
     if (id.empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid id").Flush();
@@ -753,7 +753,7 @@ auto Seed::SetDefault(const Identifier& id) const noexcept -> bool
         return false;
     }
 
-    const auto seedID = id.str();
+    const auto seedID = id.asBase58(api_.Crypto());
 
     if (std::none_of(
             api_.Storage().SeedList().cbegin(),
@@ -770,12 +770,13 @@ auto Seed::SetDefault(const Identifier& id) const noexcept -> bool
     return out;
 }
 
-auto Seed::SetSeedComment(const Identifier& id, const std::string_view comment)
-    const noexcept -> bool
+auto Seed::SetSeedComment(
+    const identifier::Generic& id,
+    const std::string_view comment) const noexcept -> bool
 {
     const auto alias = std::string{comment};
 
-    if (api_.Storage().SetSeedAlias(id.str(), alias)) {
+    if (api_.Storage().SetSeedAlias(id.asBase58(api_.Crypto()), alias)) {
         LogVerbose()(OT_PRETTY_CLASS())("Changed seed comment for ")(
             id)(" to ")(alias)
             .Flush();

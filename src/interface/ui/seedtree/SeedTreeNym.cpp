@@ -39,6 +39,7 @@ SeedTreeNym::SeedTreeNym(
     const SeedTreeItemSortKey& sortKey,
     CustomData& custom) noexcept
     : SeedTreeNymRow(parent, api, rowID, true)
+    , api_(api)
     , index_(sortKey)
     , name_(extract_custom<UnallocatedCString>(custom, 0))
 {

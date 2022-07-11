@@ -50,6 +50,9 @@ namespace opentxs
 template <typename API = api::session::Client>
 class Worker
 {
+public:
+    const API& api_;
+
 protected:
     virtual auto pipeline(network::zeromq::Message&& in) -> void = 0;
     virtual auto state_machine() noexcept -> bool = 0;
@@ -57,7 +60,6 @@ protected:
 protected:
     using Endpoints = UnallocatedVector<UnallocatedCString>;
 
-    const API& api_;
     const std::chrono::milliseconds rate_limit_;
     std::atomic<bool> running_;
 

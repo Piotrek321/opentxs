@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -27,10 +26,9 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -41,16 +39,16 @@ class AccountIndex
 {
 public:
     using Chain = opentxs::blockchain::Type;
-    using Data = std::pair<Chain, OTNymID>;
+    using Data = std::pair<Chain, identifier::Nym>;
 
     auto AccountList(const identifier::Nym& nymID) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto AccountList(const Chain chain) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
-    auto AccountList() const noexcept -> UnallocatedSet<OTIdentifier>;
-    auto Query(const Identifier& account) const noexcept -> Data;
+        -> UnallocatedSet<identifier::Generic>;
+    auto AccountList() const noexcept -> UnallocatedSet<identifier::Generic>;
+    auto Query(const identifier::Generic& account) const noexcept -> Data;
     auto Register(
-        const Identifier& account,
+        const identifier::Generic& account,
         const identifier::Nym& owner,
         Chain chain) const noexcept -> void;
 

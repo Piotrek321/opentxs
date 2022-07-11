@@ -36,12 +36,16 @@ class Output;
 }  // namespace bitcoin
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainTransaction;
 }  // namespace proto
 
-class Identifier;
 class Log;
 // }  // namespace v1
 }  // namespace opentxs
@@ -82,7 +86,8 @@ public:
     virtual auto ForTestingOnlyAddKey(
         const std::size_t index,
         const blockchain::crypto::Key& key) noexcept -> bool = 0;
-    virtual auto IDNormalized() const noexcept -> const Identifier& = 0;
+    virtual auto IDNormalized() const noexcept
+        -> const identifier::Generic& = 0;
     virtual auto MergeMetadata(
         const blockchain::Type chain,
         const Transaction& rhs,

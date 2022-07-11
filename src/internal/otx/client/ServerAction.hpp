@@ -53,7 +53,7 @@ public:
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const UnallocatedCString& agentName,
         std::unique_ptr<OTSmartContract>& contract) const -> Action = 0;
     virtual auto AdjustUsageCredits(
@@ -69,8 +69,8 @@ public:
         std::unique_ptr<OTPaymentPlan>& plan) const -> Action = 0;
     virtual auto CreateMarketOffer(
         const PasswordPrompt& reason,
-        const Identifier& assetAccountID,
-        const Identifier& currencyAccountID,
+        const identifier::Generic& assetAccountID,
+        const identifier::Generic& currencyAccountID,
         const Amount& scale,
         const Amount& increment,
         const std::int64_t quantity,
@@ -92,13 +92,13 @@ public:
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& marketID,
+        const identifier::Generic& marketID,
         const Amount depth) const -> Action = 0;
     virtual auto DownloadMarketRecentTrades(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& marketID) const -> Action = 0;
+        const identifier::Generic& marketID) const -> Action = 0;
     virtual auto DownloadNymMarketOffers(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
@@ -108,8 +108,8 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const Identifier& accountID,
-        const Identifier& basketID,
+        const identifier::Generic& accountID,
+        const identifier::Generic& basketID,
         const bool direction) const -> Action = 0;
     virtual auto IssueBasketCurrency(
         const PasswordPrompt& reason,
@@ -121,20 +121,20 @@ public:
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const TransactionNumber number) const -> Action = 0;
     virtual auto KillPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const TransactionNumber number) const -> Action = 0;
     virtual auto PayDividend(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const UnallocatedCString& memo,
         const Amount amountPerShare) const -> Action = 0;
     virtual auto TriggerClause(
@@ -148,7 +148,7 @@ public:
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& accountID) const -> Action = 0;
+        const identifier::Generic& accountID) const -> Action = 0;
     virtual auto UnregisterNym(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
@@ -157,7 +157,7 @@ public:
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const identifier::Nym& recipientNymID,
         const Amount amount,
         const UnallocatedCString& memo) const -> Action = 0;

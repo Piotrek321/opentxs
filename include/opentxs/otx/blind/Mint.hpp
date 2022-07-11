@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <ctime>
 
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -25,6 +24,7 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -58,7 +58,7 @@ public:
 
     operator bool() const noexcept;
 
-    auto AccountID() const -> OTIdentifier;
+    auto AccountID() const -> identifier::Generic;
     auto Expired() const -> bool;
     auto GetDenomination(std::int32_t nIndex) const -> Amount;
     auto GetDenominationCount() const -> std::int32_t;

@@ -17,6 +17,7 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Contact.hpp"
@@ -24,10 +25,10 @@
 #include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -55,19 +56,20 @@ const UnallocatedMap<identity::wot::claim::SectionType, int>
 
 Contact::Contact(
     const api::session::Client& api,
-    const Identifier& contactID,
+    const identifier::Generic& contactID,
     const SimpleCallback& cb) noexcept
     : ContactType(api, contactID, cb, false)
+    , api_(api)
     , listeners_({
-          {UnallocatedCString{api_.Endpoints().ContactUpdate()},
+          {UnallocatedCString{api.Endpoints().ContactUpdate()},
            new MessageProcessor<Contact>(&Contact::process_contact)},
       })
     , callbacks_()
-    , name_(api_.Contacts().ContactName(contactID))
+    , name_(api.Contacts().ContactName(contactID))
     , payment_code_()
 {
     // NOTE nym_id_ is actually the contact id
-    setup_listeners(listeners_);
+    setup_listeners(api, listeners_);
     startup_ = std::make_unique<std::thread>(&Contact::startup, this);
 
     OT_ASSERT(startup_);
@@ -96,7 +98,7 @@ auto Contact::construct_row(
 
 auto Contact::ContactID() const noexcept -> UnallocatedCString
 {
-    return primary_id_->str();
+    return primary_id_.asBase58(api_.Crypto());
 }
 
 auto Contact::DisplayName() const noexcept -> UnallocatedCString
@@ -153,7 +155,7 @@ auto Contact::process_contact(const opentxs::Contact& contact) noexcept -> void
 
     if (data) {
         for (const auto& section : *data) {
-            auto& type = section.first;
+            const auto& type = section.first;
 
             if (check_type(type)) {
                 auto custom = CustomData{
@@ -176,9 +178,9 @@ auto Contact::process_contact(const Message& message) noexcept -> void
     OT_ASSERT(1 < body.size());
 
     const auto& id = body.at(1);
-    const auto contactID = Widget::api_.Factory().Identifier(id);
+    const auto contactID = api_.Factory().IdentifierFromHash(id.Bytes());
 
-    OT_ASSERT(false == contactID->empty());
+    OT_ASSERT(false == contactID.empty());
 
     if (contactID != primary_id_) { return; }
 
@@ -215,6 +217,7 @@ auto Contact::startup() noexcept -> void
 Contact::~Contact()
 {
     ClearCallbacks();
-    for (auto& it : listeners_) { delete it.second; }
+
+    for (const auto& it : listeners_) { delete it.second; }
 }
 }  // namespace opentxs::ui::implementation

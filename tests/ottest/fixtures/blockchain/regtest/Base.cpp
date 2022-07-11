@@ -5,6 +5,7 @@
 
 #include "ottest/fixtures/blockchain/regtest/Base.hpp"  // IWYU pragma: associated
 
+#include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 #include <atomic>
 #include <chrono>
@@ -55,27 +56,27 @@ namespace ottest
 using namespace opentxs::literals;
 
 Regtest_fixture_base::Regtest_fixture_base(
+    const ot::api::Context& ot,
     const bool waitForHandshake,
     const int clientCount,
     ot::Options minerArgs,
     ot::Options clientArgs)
-    : ot_(ot::Context())
-    , client_args_(std::move(
+    : client_args_(std::move(
           clientArgs.SetBlockchainProfile(opentxs::BlockchainProfile::desktop)
               .AddBlockchainSyncServer(sync_server_main_endpoint_)))
     , client_count_(clientCount)
-    , miner_(ot_.StartClientSession(
+    , miner_(ot.StartClientSession(
           minerArgs.SetBlockchainProfile(ot::BlockchainProfile::server)
               .SetBlockchainWalletEnabled(false),
           0))
-    , sync_server_(ot_.StartClientSession(
+    , sync_server_(ot.StartClientSession(
           ot::Options{}
               .SetBlockchainProfile(ot::BlockchainProfile::server)
               .SetBlockchainWalletEnabled(false)
               .SetBlockchainSyncEnabled(true),
           1))
-    , client_1_(ot_.StartClientSession(client_args_, 2))
-    , client_2_(ot_.StartClientSession(client_args_, 3))
+    , client_1_(ot.StartClientSession(client_args_, 2))
+    , client_2_(ot.StartClientSession(client_args_, 3))
     , miner_startup_([&]() -> auto& {
         if (false == miner_startup_s_.has_value()) {
             miner_startup_s_.emplace(miner_, test_chain_);
@@ -143,10 +144,12 @@ Regtest_fixture_base::Regtest_fixture_base(
 }
 
 Regtest_fixture_base::Regtest_fixture_base(
+    const ot::api::Context& ot,
     const bool waitForHandshake,
     const int clientCount,
     ot::Options clientArgs)
     : Regtest_fixture_base(
+          ot,
           waitForHandshake,
           clientCount,
           ot::Options{},
@@ -192,7 +195,7 @@ auto Regtest_fixture_base::compare_outpoints(
 auto Regtest_fixture_base::compare_outpoints(
     const ot::blockchain::node::Wallet& wallet,
     const ot::identifier::Nym& nym,
-    const ot::Identifier& subaccount,
+    const ot::identifier::Generic& subaccount,
     const TXOState::Data& data) const noexcept -> bool
 {
     auto output{true};
@@ -712,8 +715,8 @@ auto Regtest_fixture_base::TestWallet(
     const auto& network = handle.get();
     const auto& wallet = network.Wallet();
     using Balance = ot::blockchain::Balance;
-    static const auto blankNym = api.Factory().NymID();
-    static const auto blankAccount = api.Factory().Identifier();
+    static const auto blankNym = ot::identifier::Nym{};
+    static const auto blankAccount = ot::identifier::Generic{};
     static const auto noBalance = Balance{0, 0};
     static const auto blankData = TXOState::Data{};
     const auto test2 = [&](const auto& eBalance,

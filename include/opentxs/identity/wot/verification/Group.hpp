@@ -70,7 +70,7 @@ public:
 
     virtual auto AddItem(
         const identifier::Nym& claimOwner,
-        const Identifier& claim,
+        const identifier::Generic& claim,
         const identity::Nym& signer,
         const PasswordPrompt& reason,
         const Item::Type value = Item::Type::Confirm,
@@ -81,7 +81,8 @@ public:
     OPENTXS_NO_EXPORT virtual auto AddItem(
         const identifier::Nym& verifier,
         const Item::SerializedType verification) noexcept -> bool = 0;
-    virtual auto DeleteItem(const Identifier& item) noexcept -> bool = 0;
+    virtual auto DeleteItem(const identifier::Generic& item) noexcept
+        -> bool = 0;
     /// Throws std::out_of_range for invalid position
     virtual auto at(const std::size_t position) noexcept(false)
         -> value_type& = 0;

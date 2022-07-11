@@ -53,6 +53,7 @@ class Settings;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 }  // namespace identifier
@@ -75,7 +76,6 @@ class ServerAction;
 }  // namespace otx
 
 class Flag;
-class Identifier;
 class OTAPI_Exec;
 class OT_API;
 class Options;

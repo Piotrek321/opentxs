@@ -27,6 +27,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -36,7 +37,6 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Thread.hpp"
 
 namespace zmq = opentxs::network::zeromq;
@@ -62,17 +62,18 @@ UnitList::UnitList(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : UnitListList(api, nymID, cb, false)
+    , api_(api)
     , blockchain_balance_cb_(zmq::ListenCallback::Factory(
           [this](const auto& in) { process_blockchain_balance(in); }))
-    , blockchain_balance_(api_.Network().ZeroMQ().DealerSocket(
+    , blockchain_balance_(api.Network().ZeroMQ().DealerSocket(
           blockchain_balance_cb_,
           zmq::socket::Direction::Connect,
           unitListThreadName))
     , listeners_{
-          {api_.Endpoints().AccountUpdate().data(),
+          {api.Endpoints().AccountUpdate().data(),
            new MessageProcessor<UnitList>(&UnitList::process_account)}}
 {
-    setup_listeners(listeners_);
+    setup_listeners(api, listeners_);
     startup_ = std::make_unique<std::thread>(&UnitList::startup, this);
 
     OT_ASSERT(startup_);
@@ -93,14 +94,15 @@ auto UnitList::process_account(const Message& message) noexcept -> void
 
     OT_ASSERT(2 < body.size());
 
-    const auto accountID = api_.Factory().Identifier(body.at(1));
+    const auto accountID =
+        api_.Factory().IdentifierFromHash(body.at(1).Bytes());
 
-    OT_ASSERT(false == accountID->empty());
+    OT_ASSERT(false == accountID.empty());
 
     process_account(accountID);
 }
 
-auto UnitList::process_account(const Identifier& id) noexcept -> void
+auto UnitList::process_account(const identifier::Generic& id) noexcept -> void
 {
     process_unit(api_.Storage().AccountUnit(id));
 }
@@ -134,12 +136,13 @@ auto UnitList::process_unit(const UnitListRowID& id) noexcept -> void
         custom);
 }
 
-auto UnitList::setup_listeners(const ListenerDefinitions& definitions) noexcept
-    -> void
+auto UnitList::setup_listeners(
+    const api::session::Client& api,
+    const ListenerDefinitions& definitions) noexcept -> void
 {
-    Widget::setup_listeners(definitions);
+    Widget::setup_listeners(api, definitions);
     const auto connected =
-        blockchain_balance_->Start(api_.Endpoints().BlockchainBalance().data());
+        blockchain_balance_->Start(api.Endpoints().BlockchainBalance().data());
 
     OT_ASSERT(connected);
 }

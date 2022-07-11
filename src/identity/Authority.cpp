@@ -35,6 +35,7 @@
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Config.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -208,7 +209,8 @@ Authority::Authority(
         throw std::runtime_error("Failed to create master credential");
     }
 
-    if (serialized.nymid() != parent_.Source().NymID()->str()) {
+    if (serialized.nymid() !=
+        parent_.Source().NymID().asBase58(api_.Crypto())) {
         throw std::runtime_error("Invalid nym ID");
     }
 }
@@ -262,7 +264,7 @@ auto Authority::AddChildKeyCredential(
     const crypto::Parameters& nymParameters,
     const opentxs::PasswordPrompt& reason) -> UnallocatedCString
 {
-    auto output = api_.Factory().Identifier();
+    auto output = identifier::Generic{};
     auto revisedParameters{nymParameters};
     revisedParameters.SetCredIndex(index_++);
     std::unique_ptr<credential::internal::Secondary> child{
@@ -281,13 +283,13 @@ auto Authority::AddChildKeyCredential(
             "Failed to instantiate child key credential.")
             .Flush();
 
-        return output->str();
+        return output.asBase58(api_.Crypto());
     }
 
-    output->Assign(child->ID());
+    output.Assign(child->ID());
     key_credentials_.emplace(output, child.release());
 
-    return output->str();
+    return output.asBase58(api_.Crypto());
 }
 
 auto Authority::AddContactCredential(
@@ -477,9 +479,10 @@ auto Authority::create_key_credential(
     Bip32Index& index,
     const opentxs::PasswordPrompt& reason) noexcept(false) -> KeyCredentialItem
 {
-    auto output = std::
-        pair<OTIdentifier, std::unique_ptr<credential::internal::Secondary>>{
-            api.Factory().Identifier(), nullptr};
+    auto output = std::pair<
+        identifier::Generic,
+        std::unique_ptr<credential::internal::Secondary>>{
+        identifier::Generic{}, nullptr};
     auto& [id, pChild] = output;
 
     auto revised{parameters};
@@ -573,7 +576,8 @@ void Authority::extract_child(
     const credential::internal::Base::SerializedType& serialized,
     const proto::KeyMode mode,
     const proto::CredentialRole role,
-    UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>& map) noexcept(false)
+    UnallocatedMap<identifier::Generic, std::unique_ptr<Type>>&
+        map) noexcept(false)
 {
     if (role != serialized.role()) { return; }
 
@@ -605,7 +609,9 @@ auto Authority::get_keypair(
 
         const auto& credential = *pCredential;
 
-        if (is_revoked(id->str(), plistRevokedIDs)) { continue; }
+        if (is_revoked(id.asBase58(api_.Crypto()), plistRevokedIDs)) {
+            continue;
+        }
 
         try {
             return credential.GetKeypair(type, translate(role));
@@ -623,7 +629,8 @@ auto Authority::get_secondary_credential(
 {
     if (is_revoked(strSubID, plistRevokedIDs)) { return nullptr; }
 
-    const auto it = key_credentials_.find(api_.Factory().Identifier(strSubID));
+    const auto it =
+        key_credentials_.find(api_.Factory().IdentifierFromBase58(strSubID));
 
     if (key_credentials_.end() == it) { return nullptr; }
 
@@ -641,7 +648,7 @@ auto Authority::GetContactData(proto::ContactData& contactData) const -> bool
     return true;
 }
 
-auto Authority::GetMasterCredID() const -> OTIdentifier
+auto Authority::GetMasterCredID() const -> identifier::Generic
 {
     OT_ASSERT(master_);
 
@@ -799,9 +806,9 @@ auto Authority::load_child(
     const Serialized& serialized,
     const proto::KeyMode mode,
     const proto::CredentialRole role) noexcept(false)
-    -> UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>
+    -> UnallocatedMap<identifier::Generic, std::unique_ptr<Type>>
 {
-    auto output = UnallocatedMap<OTIdentifier, std::unique_ptr<Type>>{};
+    auto output = UnallocatedMap<identifier::Generic, std::unique_ptr<Type>>{};
 
     if (proto::AUTHORITYMODE_INDEX == serialized.mode()) {
         for (const auto& it : serialized.activechildids()) {
@@ -829,7 +836,7 @@ auto Authority::load_child(
 auto Authority::LoadChildKeyCredential(const String& strSubID) -> bool
 {
 
-    OT_ASSERT(false == parent_.Source().NymID()->empty());
+    OT_ASSERT(false == parent_.Source().NymID().empty());
 
     std::shared_ptr<proto::Credential> child;
     bool loaded =
@@ -995,7 +1002,7 @@ void Authority::RevokeContactCredentials(
     UnallocatedList<UnallocatedCString>& output)
 {
     const auto revoke = [&](const auto& item) -> void {
-        output.push_back(item.first->str());
+        output.push_back(item.first.asBase58(api_.Crypto()));
     };
 
     for_each(contact_credentials_, revoke);
@@ -1006,7 +1013,7 @@ void Authority::RevokeVerificationCredentials(
     UnallocatedList<UnallocatedCString>& output)
 {
     const auto revoke = [&](const auto& item) -> void {
-        output.push_back(item.first->str());
+        output.push_back(item.first.asBase58(api_.Crypto()));
     };
 
     for_each(verification_credentials_, revoke);
@@ -1018,10 +1025,10 @@ auto Authority::Serialize(
     const CredentialIndexModeFlag mode) const -> bool
 {
     credSet.set_version(version_);
-    credSet.set_nymid(parent_.ID().str());
-    credSet.set_masterid(GetMasterCredID()->str());
+    credSet.set_nymid(parent_.ID().asBase58(api_.Crypto()));
+    credSet.set_masterid(GetMasterCredID().asBase58(api_.Crypto()));
     const auto add_active_id = [&](const auto& item) -> void {
-        credSet.add_activechildids(item.first->str());
+        credSet.add_activechildids(item.first.asBase58(api_.Crypto()));
     };
     const auto add_revoked_id = [&](const auto& item) -> void {
         credSet.add_revokedchildids(item.first);
@@ -1225,7 +1232,7 @@ auto Authority::Verify(
 {
     UnallocatedCString signerID(sig.credentialid());
 
-    if (signerID == GetMasterCredID()->str()) {
+    if (signerID == GetMasterCredID().asBase58(api_.Crypto())) {
         LogError()(OT_PRETTY_CLASS())(
             "Master credentials are only allowed to sign other credentials.")
             .Flush();

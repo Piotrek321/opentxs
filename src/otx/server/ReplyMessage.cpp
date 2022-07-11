@@ -14,17 +14,20 @@
 #include "internal/otx/common/Message.hpp"
 #include "internal/otx/common/NumList.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "otx/server/Server.hpp"
 #include "otx/server/UserCommandProcessor.hpp"
 
 namespace opentxs::server
@@ -184,9 +187,11 @@ auto ReplyMessage::HaveContext() const -> bool { return bool(context_); }
 
 auto ReplyMessage::init() -> bool
 {
-    const auto senderNymID = identifier::Nym::Factory(original_.m_strNymID);
+    const auto senderNymID = parent_.server_.API().Factory().NymIDFromBase58(
+        original_.m_strNymID->Bytes());
     const auto purportedServerID =
-        identifier::Notary::Factory(original_.m_strNotaryID);
+        parent_.server_.API().Factory().NotaryIDFromBase58(
+            original_.m_strNotaryID->Bytes());
 
     bool out = UserCommandProcessor::check_server_lock(senderNymID);
 
@@ -207,7 +212,8 @@ auto ReplyMessage::Init() const -> const bool& { return init_; }
 
 auto ReplyMessage::init_nym() -> bool
 {
-    sender_nym_ = wallet_.Nym(identifier::Nym::Factory(original_.m_strNymID));
+    sender_nym_ = wallet_.Nym(parent_.server_.API().Factory().NymIDFromBase58(
+        original_.m_strNymID->Bytes()));
 
     return bool(sender_nym_);
 }
@@ -256,7 +262,7 @@ void ReplyMessage::SetDepth(const std::int64_t depth)
 
 void ReplyMessage::SetEnum(const std::uint8_t value) { message_.enum_ = value; }
 
-void ReplyMessage::SetInboxHash(const Identifier& hash)
+void ReplyMessage::SetInboxHash(const identifier::Generic& hash)
 {
     message_.m_strInboxHash = String::Factory(hash);
 }
@@ -266,12 +272,12 @@ void ReplyMessage::SetInstrumentDefinitionID(const String& id)
     message_.m_strInstrumentDefinitionID = id;
 }
 
-void ReplyMessage::SetNymboxHash(const Identifier& hash)
+void ReplyMessage::SetNymboxHash(const identifier::Generic& hash)
 {
-    hash.GetString(message_.m_strNymboxHash);
+    hash.GetString(parent_.server_.API().Crypto(), message_.m_strNymboxHash);
 }
 
-void ReplyMessage::SetOutboxHash(const Identifier& hash)
+void ReplyMessage::SetOutboxHash(const identifier::Generic& hash)
 {
     message_.m_strOutboxHash = String::Factory(hash);
 }

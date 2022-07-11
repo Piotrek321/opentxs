@@ -14,6 +14,7 @@
 #include "interface/ui/blockchainaccountstatus/BlockchainSubaccount.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -68,6 +69,9 @@ class BlockchainSubaccountSource final : public Combined<
                                              BlockchainAccountStatusSortKey>
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto Name() const noexcept -> UnallocatedCString final
     {
         return key_.second;
@@ -76,7 +80,7 @@ public:
     {
         return primary_id_;
     }
-    auto SourceID() const noexcept -> const Identifier& final
+    auto SourceID() const noexcept -> const identifier::Generic& final
     {
         return row_id_;
     }

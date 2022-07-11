@@ -99,7 +99,7 @@ public:
     auto Alias() const -> UnallocatedCString;
     auto ConsensusHash(
         const otx::context::Base& context,
-        Identifier& theOutput,
+        identifier::Generic& theOutput,
         const PasswordPrompt& reason) const -> bool;
     auto DisplayStatistics(String& contents) const -> bool override;
     auto GetBalance() const -> Amount;
@@ -132,19 +132,19 @@ public:
     // Credit a certain amount from the account (presumably the same amount is
     // being subtracted somewhere)
     auto Credit(const Amount& amount) -> bool;
-    auto GetInboxHash(Identifier& output) -> bool;
-    auto GetOutboxHash(Identifier& output) -> bool;
+    auto GetInboxHash(identifier::Generic& output) -> bool;
+    auto GetOutboxHash(identifier::Generic& output) -> bool;
     auto InitBoxes(const identity::Nym& signer, const PasswordPrompt& reason)
         -> bool;
     // If you pass the identifier in, the inbox hash is recorded there
     auto SaveInbox(Ledger& box) -> bool;
-    auto SaveInbox(Ledger& box, Identifier& hash) -> bool;
+    auto SaveInbox(Ledger& box, identifier::Generic& hash) -> bool;
     // If you pass the identifier in, the outbox hash is recorded there
     auto SaveOutbox(Ledger& box) -> bool;
-    auto SaveOutbox(Ledger& box, Identifier& hash) -> bool;
+    auto SaveOutbox(Ledger& box, identifier::Generic& hash) -> bool;
     void SetAlias(const UnallocatedCString& alias);
-    void SetInboxHash(const Identifier& input);
-    void SetOutboxHash(const Identifier& input);
+    void SetInboxHash(const identifier::Generic& input);
+    void SetOutboxHash(const identifier::Generic& input);
     void SetStashTransNum(const TransactionNumber transNum)
     {
         stashTransNum_ = transNum;
@@ -161,7 +161,7 @@ private:
 
     AccountType acctType_{err_acct};
     // These are all the variables from the account file itself.
-    OTUnitID acctInstrumentDefinitionID_;
+    identifier::UnitDefinition acctInstrumentDefinitionID_;
     OTString balanceDate_;
     OTString balanceAmount_;
     // the Transaction Number of a smart contract running on cron, if this is a
@@ -172,10 +172,10 @@ private:
     // for easy cleanup later when the server is doing some maintenance.
     // Hash of this account's Inbox, so we don't download it more often than
     // necessary.
-    OTIdentifier inboxHash_;
+    identifier::Generic inboxHash_;
     // Hash of this account's Outbox, so we don't download it more often than
     // necessary.
-    OTIdentifier outboxHash_;
+    identifier::Generic outboxHash_;
     UnallocatedCString alias_;
 
     static auto GenerateNewAccount(
@@ -183,7 +183,7 @@ private:
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID,
         const identity::Nym& serverNym,
-        const Identifier& userNymID,
+        const identifier::Nym& userNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const PasswordPrompt& reason,
         AccountType acctType = user,
@@ -192,7 +192,7 @@ private:
     // the damn thing up. Then call this function. It will set nymID for you.
     static auto LoadExistingAccount(
         const api::Session& api,
-        const Identifier& accountId,
+        const identifier::Generic& accountId,
         const identifier::Notary& notaryID) -> Account*;
 
     auto SaveContractWallet(Tag& parent) const -> bool override;
@@ -204,7 +204,7 @@ private:
         const PasswordPrompt& reason) -> bool;
     auto GenerateNewAccount(
         const identity::Nym& server,
-        const Identifier& userNymID,
+        const identifier::Nym& userNymID,
         const identifier::Notary& notaryID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const PasswordPrompt& reason,
@@ -224,22 +224,22 @@ private:
 
     auto save_box(
         Ledger& box,
-        Identifier& hash,
-        bool (Ledger::*save)(Identifier&),
-        void (Account::*set)(const Identifier&)) -> bool;
+        identifier::Generic& hash,
+        bool (Ledger::*save)(identifier::Generic&),
+        void (Account::*set)(const identifier::Generic&)) -> bool;
 
     void UpdateContents(const PasswordPrompt& reason) override;
 
     Account(
         const api::Session& api,
         const identifier::Nym& nymID,
-        const Identifier& accountId,
+        const identifier::Generic& accountId,
         const identifier::Notary& notaryID,
         const String& name);
     Account(
         const api::Session& api,
         const identifier::Nym& nymID,
-        const Identifier& accountId,
+        const identifier::Generic& accountId,
         const identifier::Notary& notaryID);
     Account(
         const api::Session& api,

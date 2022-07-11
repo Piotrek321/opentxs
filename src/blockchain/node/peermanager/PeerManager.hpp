@@ -8,6 +8,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/container/flat_set.hpp>
+#include <boost/container/vector.hpp>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
@@ -189,7 +190,7 @@ public:
     private:
         using Peer = network::blockchain::internal::Peer;
         using Resolver = boost::asio::ip::tcp::resolver;
-        using Addresses = boost::container::flat_set<OTIdentifier>;
+        using Addresses = boost::container::flat_set<identifier::Generic>;
 
         static std::atomic<int> next_id_;
 
@@ -211,12 +212,12 @@ public:
         const blockchain::p2p::bitcoin::Nonce nonce_;
         std::atomic<std::size_t> minimum_peers_;
         UnallocatedMap<int, Peer> peers_;
-        UnallocatedMap<OTIdentifier, int> active_;
+        UnallocatedMap<identifier::Generic, int> active_;
         std::atomic<std::size_t> count_;
         Addresses connected_;
         std::unique_ptr<IncomingConnectionManager> incoming_zmq_;
         std::unique_ptr<IncomingConnectionManager> incoming_tcp_;
-        UnallocatedMap<OTIdentifier, Time> attempt_;
+        UnallocatedMap<identifier::Generic, Time> attempt_;
         Gatekeeper gatekeeper_;
 
         static auto get_preferred_services(
@@ -243,7 +244,7 @@ public:
         auto add_peer(const int id, Endpoint endpoint) noexcept -> int;
         auto adjust_count(int adjustment) noexcept -> void;
         auto previous_failure_timeout(
-            const Identifier& addressID) const noexcept -> bool;
+            const identifier::Generic& addressID) const noexcept -> bool;
         auto peer_factory(Endpoint endpoint, const int id) noexcept -> Peer;
     };
 

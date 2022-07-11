@@ -47,7 +47,6 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -132,7 +131,7 @@ auto NotificationStateData::handle_confirmed_matches(
         pc_display_)(" on ")(print(node_.Chain()))
         .Flush();
 
-    if (general.empty()) { return; }
+    if (0u == general.size()) { return; }
 
     const auto reason = init_keys();
 
@@ -160,7 +159,7 @@ auto NotificationStateData::handle_mempool_matches(
 {
     const auto& [utxo, general] = matches;
 
-    if (general.empty()) { return; }
+    if (0u == general.size()) { return; }
 
     const auto reason = init_keys();
 
@@ -180,15 +179,19 @@ auto NotificationStateData::init_contacts() noexcept -> void
     auto buf = std::array<std::byte, 4096>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
     const auto& api = api_.Internal().Contacts();
-    Vector<OTIdentifier> contacts{&alloc};
-    const auto data = api.ContactList();
-    std::transform(
-        data.begin(),
-        data.end(),
-        std::back_inserter(contacts),
-        [this](const auto& item) {
-            return api_.Factory().Identifier(item.first);
-        });
+    const auto contacts = [&] {
+        auto out = Vector<identifier::Generic>{&alloc};
+        const auto data = api.ContactList();
+        std::transform(
+            data.begin(),
+            data.end(),
+            std::back_inserter(out),
+            [this](const auto& item) {
+                return api_.Factory().IdentifierFromBase58(item.first);
+            });
+
+        return out;
+    }();
 
     for (const auto& id : contacts) {
         const auto contact = api.Contact(id);
@@ -196,13 +199,16 @@ auto NotificationStateData::init_contacts() noexcept -> void
         OT_ASSERT(contact);
 
         for (const auto& remote : contact->PaymentCodes(&alloc)) {
-            // TODO use allocator when we upgrade to c++20
-            std::stringstream prompt{};
-            prompt << "Generate keys for a ";
-            prompt << print(node_.Chain());
-            prompt << " payment code account for ";
-            prompt << api.ContactName(id);
+            const auto prompt = [&] {
+                // TODO use allocator when we upgrade to c++20
+                auto out = std::stringstream{};
+                out << "Generate keys for a ";
+                out << print(node_.Chain());
+                out << " payment code account for ";
+                out << api.ContactName(id);
 
+                return out;
+            }();
             const auto reason = api_.Factory().PasswordPrompt(prompt.str());
             process(remote, reason);
         }
@@ -243,20 +249,23 @@ auto NotificationStateData::process(
         const auto& script = output.Script();
 
         if (script.IsNotification(version, *handle)) {
-            UnallocatedVector<Space> elements{};
+            const auto elements = [&] {
+                auto out = UnallocatedVector<Space>{};
 
-            for (auto i{0u}; i < 3u; ++i) {
-                const auto view = script.MultisigPubkey(i);
+                for (auto i{0u}; i < 3u; ++i) {
+                    const auto view = script.MultisigPubkey(i);
 
-                OT_ASSERT(view.has_value());
+                    OT_ASSERT(view.has_value());
 
-                const auto& value = view.value();
-                const auto* start =
-                    reinterpret_cast<const std::byte*>(value.data());
-                const auto* stop = std::next(start, value.size());
-                elements.emplace_back(start, stop);
-            }
+                    const auto& value = view.value();
+                    const auto* start =
+                        reinterpret_cast<const std::byte*>(value.data());
+                    const auto* stop = std::next(start, value.size());
+                    out.emplace_back(start, stop);
+                }
 
+                return out;
+            }();
             auto sender =
                 handle->DecodeNotificationElements(version, elements, reason);
 

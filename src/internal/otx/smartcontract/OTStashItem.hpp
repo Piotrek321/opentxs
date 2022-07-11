@@ -9,10 +9,21 @@
 
 #include "opentxs/core/String.hpp"
 
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
+{
+// inline namespace v1
+// {
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
+
 namespace opentxs
 {
-class Identifier;
-
 class OTStashItem
 {
     OTString m_strInstrumentDefinitionID;
@@ -32,7 +43,7 @@ public:
         const String& strInstrumentDefinitionID,
         std::int64_t lAmount = 0);
     OTStashItem(
-        const Identifier& theInstrumentDefinitionID,
+        const identifier::Generic& theInstrumentDefinitionID,
         std::int64_t lAmount = 0);
     virtual ~OTStashItem();
 };

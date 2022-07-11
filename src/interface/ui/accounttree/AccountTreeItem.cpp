@@ -56,11 +56,12 @@ AccountTreeItem::AccountTreeItem(
     const AccountCurrencySortKey& sortKey,
     CustomData& custom) noexcept
     : AccountTreeItemRow(parent, api, rowID, true)
+    , api_(api)
     , type_(std::get<1>(sortKey))
     , unit_(extract_custom<UnitType>(custom, 0))
     , display_(display::GetDefinition(unit_))
-    , unit_id_(extract_custom<OTUnitID>(custom, 1))
-    , notary_id_(extract_custom<OTNotaryID>(custom, 2))
+    , unit_id_(extract_custom<identifier::UnitDefinition>(custom, 1))
+    , notary_id_(extract_custom<identifier::Notary>(custom, 2))
     , unit_name_(display_.ShortName())
     , balance_(extract_custom<Amount>(custom, 3))
     , name_(std::get<2>(sortKey))
@@ -103,8 +104,8 @@ auto AccountTreeItem::reindex(
     const auto& [index, type, name] = key;
 
     const auto unit = extract_custom<UnitType>(custom, 0);
-    const auto contract = extract_custom<OTUnitID>(custom, 1);
-    const auto notary = extract_custom<OTNotaryID>(custom, 2);
+    const auto contract = extract_custom<identifier::UnitDefinition>(custom, 1);
+    const auto notary = extract_custom<identifier::Notary>(custom, 2);
     const auto balance = extract_custom<Amount>(custom, 3);
 
     OT_ASSERT(type_ == type);

@@ -26,8 +26,12 @@
 
 namespace opentxs::storage
 {
-Servers::Servers(const Driver& storage, const UnallocatedCString& hash)
-    : Node(storage, hash)
+Servers::Servers(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
+    const Driver& storage,
+    const UnallocatedCString& hash)
+    : Node(crypto, factory, storage, hash)
 {
     if (check_hash(hash)) {
         init(hash);

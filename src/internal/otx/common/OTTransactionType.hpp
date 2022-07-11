@@ -72,16 +72,22 @@ public:
     inline void SetNymID(const identifier::Nym& theID) { m_AcctNymID = theID; }
 
     // Used for: Load an account based on this ID
-    inline auto GetRealAccountID() const -> const Identifier& { return m_ID; }
-    inline void SetRealAccountID(const Identifier& theID) { m_ID = theID; }
+    inline auto GetRealAccountID() const -> const identifier::Generic&
+    {
+        return m_ID;
+    }
+    inline void SetRealAccountID(const identifier::Generic& theID)
+    {
+        m_ID = theID;
+    }
 
     // Used for: Verify this ID on a transaction to make sure it matches the one
     // above.
-    inline auto GetPurportedAccountID() const -> const Identifier&
+    inline auto GetPurportedAccountID() const -> const identifier::Generic&
     {
         return m_AcctID;
     }
-    inline void SetPurportedAccountID(const Identifier& theID)
+    inline void SetPurportedAccountID(const identifier::Generic& theID)
     {
         m_AcctID = theID;
     }
@@ -640,13 +646,13 @@ protected:
 
     // Compare m_AcctID to m_ID after loading it from string or file. They
     // should match, and signature should verify.
-    OTIdentifier m_AcctID;
+    identifier::Generic m_AcctID;
     // Notary ID as used to instantiate the transaction, based on expected
     // NotaryID.
-    OTNotaryID m_NotaryID;
+    identifier::Notary m_NotaryID;
     // Actual NotaryID within the signed portion. (Compare to m_NotaryID upon
     // loading.)
-    OTNotaryID m_AcctNotaryID;
+    identifier::Notary m_AcctNotaryID;
 
     // Update: instead of in the child classes, like OTLedger, OTTransaction,
     // Item, etc, I put the "purported acct ID" and "purported server ID" here
@@ -656,7 +662,7 @@ protected:
     // might be the only reference someone has. They'll want my NymID.)
     // I put this in protected because there are now Get/Set methods...so use
     // them!
-    OTNymID m_AcctNymID;
+    identifier::Nym m_AcctNymID;
     // The server issues this and it must be sent with transaction request.
     TransactionNumber m_lTransactionNum{0};
     TransactionNumber m_lInReferenceToTransaction{0};
@@ -722,13 +728,13 @@ protected:
     explicit OTTransactionType(
         const api::Session& api,
         const identifier::Nym& theNymID,
-        const Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         originType theOriginType = originType::not_applicable);
     explicit OTTransactionType(
         const api::Session& api,
         const identifier::Nym& theNymID,
-        const Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         std::int64_t lTransactionNum,
         originType theOriginType = originType::not_applicable);

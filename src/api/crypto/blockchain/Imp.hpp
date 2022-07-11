@@ -32,7 +32,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
@@ -135,20 +134,20 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::api::crypto::imp
 {
 struct Blockchain::Imp {
-    using IDLock = UnallocatedMap<OTIdentifier, std::mutex>;
+    using IDLock = UnallocatedMap<identifier::Generic, std::mutex>;
 
     auto Account(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain) const noexcept(false)
         -> const opentxs::blockchain::crypto::Account&;
     auto AccountList(const identifier::Nym& nymID) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto AccountList(const opentxs::blockchain::Type chain) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
-    auto AccountList() const noexcept -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
+    auto AccountList() const noexcept -> UnallocatedSet<identifier::Generic>;
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
-        const Identifier& thread,
+        const identifier::Generic& thread,
         const UnallocatedCString& threadItemID) const noexcept
         -> UnallocatedCString;
     virtual auto ActivityDescription(
@@ -162,13 +161,13 @@ struct Blockchain::Imp {
         -> ByteArray;
     auto AssignContact(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const Subchain subchain,
         const Bip32Index index,
-        const Identifier& contactID) const noexcept -> bool;
+        const identifier::Generic& contactID) const noexcept -> bool;
     auto AssignLabel(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const Subchain subchain,
         const Bip32Index index,
         const UnallocatedCString& label) const noexcept -> bool;
@@ -196,15 +195,17 @@ struct Blockchain::Imp {
         const Data& data) const noexcept -> UnallocatedCString;
     auto GetKey(const Key& id) const noexcept(false)
         -> const opentxs::blockchain::crypto::Element&;
-    auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
-        const noexcept(false) -> const opentxs::blockchain::crypto::HD&;
+    auto HDSubaccount(
+        const identifier::Nym& nymID,
+        const identifier::Generic& accountID) const noexcept(false)
+        -> const opentxs::blockchain::crypto::HD&;
     using SyncState = UnallocatedVector<opentxs::network::p2p::State>;
     virtual auto IndexItem(const ReadView bytes) const noexcept -> PatternID;
     virtual auto KeyEndpoint() const noexcept -> std::string_view;
     virtual auto KeyGenerated(
         const opentxs::blockchain::Type chain,
         const identifier::Nym& account,
-        const Identifier& subaccount,
+        const identifier::Generic& subaccount,
         const opentxs::blockchain::crypto::SubaccountType type,
         const opentxs::blockchain::crypto::Subchain subchain) const noexcept
         -> void;
@@ -214,7 +215,8 @@ struct Blockchain::Imp {
     virtual auto LoadTransactionBitcoin(const Txid& txid) const noexcept
         -> std::unique_ptr<
             const opentxs::blockchain::bitcoin::block::Transaction>;
-    auto LookupAccount(const Identifier& id) const noexcept -> AccountData;
+    auto LookupAccount(const identifier::Generic& id) const noexcept
+        -> AccountData;
     virtual auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList;
     auto NewHDSubaccount(
@@ -222,7 +224,7 @@ struct Blockchain::Imp {
         const opentxs::blockchain::crypto::HDProtocol standard,
         const opentxs::blockchain::Type derivationChain,
         const opentxs::blockchain::Type targetChain,
-        const PasswordPrompt& reason) const noexcept -> OTIdentifier;
+        const PasswordPrompt& reason) const noexcept -> identifier::Generic;
     auto NewNym(const identifier::Nym& id) const noexcept -> void;
     auto NewPaymentCodeSubaccount(
         const identifier::Nym& nymID,
@@ -230,8 +232,8 @@ struct Blockchain::Imp {
         const opentxs::PaymentCode& remote,
         const proto::HDPath path,
         const opentxs::blockchain::Type chain,
-        const PasswordPrompt& reason) const noexcept -> OTIdentifier;
-    auto Owner(const Identifier& accountID) const noexcept
+        const PasswordPrompt& reason) const noexcept -> identifier::Generic;
+    auto Owner(const identifier::Generic& accountID) const noexcept
         -> const identifier::Nym&
     {
         return accounts_.Owner(accountID);
@@ -239,7 +241,7 @@ struct Blockchain::Imp {
     auto Owner(const Key& key) const noexcept -> const identifier::Nym&;
     auto PaymentCodeSubaccount(
         const identifier::Nym& nymID,
-        const Identifier& accountID) const noexcept(false)
+        const identifier::Generic& accountID) const noexcept(false)
         -> const opentxs::blockchain::crypto::PaymentCode&;
     auto PaymentCodeSubaccount(
         const identifier::Nym& nymID,
@@ -260,21 +262,21 @@ struct Blockchain::Imp {
         const PasswordPrompt& reason) const noexcept -> bool;
     auto PubkeyHash(const opentxs::blockchain::Type chain, const Data& pubkey)
         const noexcept(false) -> ByteArray;
-    auto RecipientContact(const Key& key) const noexcept -> OTIdentifier;
+    auto RecipientContact(const Key& key) const noexcept -> identifier::Generic;
     auto Release(const Key key) const noexcept -> bool;
     virtual auto ReportScan(
         const opentxs::blockchain::Type chain,
         const identifier::Nym& owner,
         const opentxs::blockchain::crypto::SubaccountType type,
-        const Identifier& account,
+        const identifier::Generic& account,
         const Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void;
-    auto SenderContact(const Key& key) const noexcept -> OTIdentifier;
+    auto SenderContact(const Key& key) const noexcept -> identifier::Generic;
     auto SubaccountList(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain) const noexcept
-        -> UnallocatedSet<OTIdentifier>
+        -> UnallocatedSet<identifier::Generic>
     {
         return accounts_.List(nymID, chain);
     }
@@ -316,7 +318,7 @@ protected:
         -> std::optional<DecodedAddress>;
     auto decode_legacy(const UnallocatedCString& encoded) const noexcept
         -> std::optional<DecodedAddress>;
-    auto get_node(const Identifier& accountID) const noexcept(false)
+    auto get_node(const identifier::Generic& accountID) const noexcept(false)
         -> opentxs::blockchain::crypto::Subaccount&;
     auto init_path(
         const UnallocatedCString& root,
@@ -331,7 +333,7 @@ protected:
         const opentxs::PaymentCode& remote,
         const proto::HDPath path,
         const opentxs::blockchain::Type chain,
-        const PasswordPrompt& reason) const noexcept -> OTIdentifier;
+        const PasswordPrompt& reason) const noexcept -> identifier::Generic;
     auto p2pkh(const opentxs::blockchain::Type chain, const Data& pubkeyHash)
         const noexcept -> UnallocatedCString;
     auto p2sh(const opentxs::blockchain::Type chain, const Data& scriptHash)
@@ -343,7 +345,7 @@ protected:
 
 private:
     virtual auto notify_new_account(
-        const Identifier& id,
+        const identifier::Generic& id,
         const identifier::Nym& owner,
         opentxs::blockchain::Type chain,
         opentxs::blockchain::crypto::SubaccountType type) const noexcept -> void

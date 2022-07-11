@@ -11,14 +11,17 @@
 namespace ottest
 {
 Regtest_fixture_normal::Regtest_fixture_normal(
+    const ot::api::Context& ot,
     const int clientCount,
     ot::Options clientArgs)
-    : Regtest_fixture_base(true, clientCount, std::move(clientArgs))
+    : Regtest_fixture_base(ot, true, clientCount, std::move(clientArgs))
 {
 }
 
-Regtest_fixture_normal::Regtest_fixture_normal(const int clientCount)
-    : Regtest_fixture_normal(clientCount, ot::Options{})
+Regtest_fixture_normal::Regtest_fixture_normal(
+    const ot::api::Context& ot,
+    const int clientCount)
+    : Regtest_fixture_normal(ot, clientCount, ot::Options{})
 {
 }
 }  // namespace ottest

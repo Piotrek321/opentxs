@@ -56,7 +56,7 @@ Base::Base(
     : Signable(api, {}, version, {}, {})
     , parent_(parent)
     , source_(source)
-    , nym_id_(source.NymID()->str())
+    , nym_id_(source.NymID().asBase58(api_.Crypto()))
     , master_id_(masterID)
     , type_(nymParameters.credentialType())
     , role_(role)
@@ -76,11 +76,11 @@ Base::Base(
           serialized.version(),
           {},
           {},
-          api.Factory().Identifier(serialized.id()),
+          api.Factory().IdentifierFromBase58(serialized.id()),
           extract_signatures(serialized))
     , parent_(parent)
     , source_(source)
-    , nym_id_(source.NymID()->str())
+    , nym_id_(source.NymID().asBase58(api_.Crypto()))
     , master_id_(masterID)
     , type_(translate(serialized.type()))
     , role_(translate(serialized.role()))
@@ -143,19 +143,21 @@ auto Base::extract_signatures(const SerializedType& serialized) -> Signatures
     return output;
 }
 
-auto Base::get_master_id(const internal::Primary& master) noexcept
-    -> UnallocatedCString
+auto Base::get_master_id(
+    const api::Session& api,
+    const internal::Primary& master) noexcept -> UnallocatedCString
 {
-    return master.ID()->str();
+    return master.ID().asBase58(api.Crypto());
 }
 
 auto Base::get_master_id(
+    const api::Session& api,
     const proto::Credential& serialized,
     const internal::Primary& master) noexcept(false) -> UnallocatedCString
 {
     const auto& id = serialized.childdata().masterid();
 
-    if (id != master.ID()->str()) {
+    if (id != master.ID().asBase58(api.Crypto())) {
         throw std::runtime_error(
             "Attempting to load credential for incorrect authority");
     }
@@ -163,7 +165,7 @@ auto Base::get_master_id(
     return id;
 }
 
-auto Base::GetID(const Lock& lock) const -> OTIdentifier
+auto Base::GetID(const Lock& lock) const -> identifier::Generic
 {
     OT_ASSERT(verify_write_lock(lock));
 
@@ -173,7 +175,7 @@ auto Base::GetID(const Lock& lock) const -> OTIdentifier
 
     if (idVersion->has_id()) { idVersion->clear_id(); }
 
-    return api_.Factory().InternalSession().Identifier(*idVersion);
+    return api_.Factory().InternalSession().IdentifierFromPreimage(*idVersion);
 }
 
 void Base::init(
@@ -276,7 +278,7 @@ auto Base::SelfSignature(CredentialModeFlag version) const -> Base::Signature
     const auto targetRole{
         (PRIVATE_VERSION == version) ? proto::SIGROLE_PRIVCREDENTIAL
                                      : proto::SIGROLE_PUBCREDENTIAL};
-    const auto self = id_->str();
+    const auto self = id_.asBase58(api_.Crypto());
 
     for (const auto& it : signatures_) {
         if ((it->role() == targetRole) && (it->credentialid() == self)) {
@@ -342,7 +344,7 @@ auto Base::serialize(
         serializedCredential->clear_signature();  // just in case...
     }
 
-    serializedCredential->set_id(id(lock)->str());
+    serializedCredential->set_id(id(lock).asBase58(api_.Crypto()));
     serializedCredential->set_nymid(nym_id_);
 
     return serializedCredential;
@@ -425,7 +427,7 @@ auto Base::Validate() const noexcept -> bool
 auto Base::Verify(
     const proto::Credential& credential,
     const identity::CredentialRole& role,
-    const Identifier& masterID,
+    const identifier::Generic& masterID,
     const proto::Signature& masterSig) const -> bool
 {
     LogError()(OT_PRETTY_CLASS())(

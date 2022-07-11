@@ -17,7 +17,6 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/ByteArray.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -37,6 +36,7 @@ class Client;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -56,8 +56,6 @@ namespace proto
 class PaymentEvent;
 class PaymentWorkflow;
 }  // namespace proto
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -90,7 +88,7 @@ public:
         const AccountActivitySortKey& sortKey,
         CustomData& custom,
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const blockchain::Type chain,
         const ByteArray txid,
         const opentxs::Amount amount,

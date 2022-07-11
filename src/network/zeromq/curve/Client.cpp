@@ -94,7 +94,7 @@ auto Client::set_public_key(const contract::Server& contract) const noexcept
 {
     const auto& key = contract.TransportKey();
 
-    if (CURVE_KEY_BYTES != key.GetSize()) {
+    if (CURVE_KEY_BYTES != key.size()) {
         LogError()(OT_PRETTY_CLASS())("Invalid server key.").Flush();
 
         return false;

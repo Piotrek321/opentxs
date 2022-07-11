@@ -20,7 +20,6 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
@@ -72,13 +71,14 @@ public:
     using AccountData = crypto::Blockchain::AccountData;
 
     auto AccountList(const identifier::Nym& nymID) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto AccountList(const opentxs::blockchain::Type chain) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
-    auto AccountList() const noexcept -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
+    auto AccountList() const noexcept -> UnallocatedSet<identifier::Generic>;
     auto Get(const opentxs::blockchain::Type chain) noexcept
         -> opentxs::blockchain::crypto::Wallet&;
-    auto LookupAccount(const Identifier& id) const noexcept -> AccountData;
+    auto LookupAccount(const identifier::Generic& id) const noexcept
+        -> AccountData;
 
     Wallets(
         const api::Session& api,

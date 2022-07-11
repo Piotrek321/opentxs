@@ -21,7 +21,6 @@
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/interface/ui/Blockchains.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -30,7 +29,6 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -54,7 +52,7 @@ BlockchainSelection::BlockchainSelection(
     const api::session::Client& api,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
-    : BlockchainSelectionList(api, Identifier::Factory(), cb, false)
+    : BlockchainSelectionList(api, {}, cb, false)
     , Worker(api, {})
     , filter_(filter(type))
     , chain_state_([&] {
@@ -77,8 +75,7 @@ auto BlockchainSelection::construct_row(
     const BlockchainSelectionSortKey& index,
     CustomData& custom) const noexcept -> RowPointer
 {
-    return factory::BlockchainSelectionItem(
-        *this, Widget::api_, id, index, custom);
+    return factory::BlockchainSelectionItem(*this, api_, id, index, custom);
 }
 
 auto BlockchainSelection::Disable(const blockchain::Type type) const noexcept
@@ -102,7 +99,7 @@ auto BlockchainSelection::disable(const Message& in) noexcept -> void
 
     const auto chain = body.at(1).as<blockchain::Type>();
     process_state(chain, false);
-    Widget::api_.Network().Blockchain().Disable(chain);
+    api_.Network().Blockchain().Disable(chain);
 }
 
 auto BlockchainSelection::Enable(const blockchain::Type type) const noexcept
@@ -126,7 +123,7 @@ auto BlockchainSelection::enable(const Message& in) noexcept -> void
 
     const auto chain = body.at(1).as<blockchain::Type>();
     process_state(chain, true);
-    Widget::api_.Network().Blockchain().Enable(chain);
+    api_.Network().Blockchain().Enable(chain);
 }
 
 auto BlockchainSelection::EnabledCount() const noexcept -> std::size_t
@@ -277,7 +274,7 @@ auto BlockchainSelection::Set(EnabledCallback&& cb) const noexcept -> void
 
 auto BlockchainSelection::startup() noexcept -> void
 {
-    const auto& api = Widget::api_.Network().Blockchain().Internal();
+    const auto& api = api_.Network().Blockchain().Internal();
 
     for (const auto& chain : filter_) {
         process_state(chain, api.IsEnabled(chain));

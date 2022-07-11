@@ -15,8 +15,6 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -50,6 +48,12 @@ class Outputs;
 }  // namespace bitcoin
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+class Nym;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainTransaction;
@@ -65,11 +69,11 @@ class OPENTXS_EXPORT Transaction
 {
 public:
     virtual auto AssociatedLocalNyms() const noexcept
-        -> UnallocatedVector<OTNymID> = 0;
+        -> UnallocatedVector<identifier::Nym> = 0;
     virtual auto AssociatedRemoteContacts(
         const api::session::Contacts& contacts,
         const identifier::Nym& nym) const noexcept
-        -> UnallocatedVector<OTIdentifier> = 0;
+        -> UnallocatedVector<identifier::Generic> = 0;
     virtual auto BlockPosition() const noexcept
         -> std::optional<std::size_t> = 0;
     virtual auto Chains() const noexcept

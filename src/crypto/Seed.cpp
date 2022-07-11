@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 #include "internal/api/crypto/Symmetric.hpp"
@@ -243,7 +244,7 @@ Seed::Imp::Imp(const api::Factory& factory) noexcept
     , words_(factory.Secret(0))
     , phrase_(factory.Secret(0))
     , entropy_(factory.Secret(0))
-    , id_(Identifier::Factory())
+    , id_()
     , storage_(nullptr)
     , encrypted_words_()
     , encrypted_phrase_()
@@ -425,7 +426,7 @@ Seed::Imp::Imp(
     , words_(factory.Secret(0))
     , phrase_(factory.Secret(0))
     , entropy_(factory.Secret(0))
-    , id_(factory.Identifier(proto.fingerprint()))
+    , id_(factory.IdentifierFromBase58(proto.fingerprint()))
     , storage_(&storage)
     , encrypted_words_(proto.has_words() ? proto.words() : proto::Ciphertext{})
     , encrypted_phrase_(
@@ -561,7 +562,7 @@ auto Seed::Imp::save(const MutableData& data) const noexcept -> bool
 {
     if (nullptr == storage_) { return false; }
 
-    const auto id = id_->str();
+    const auto id = id_.asBase58(Context().Crypto());
     auto proto = SerializeType{};
     proto.set_version(data.version_);
     proto.set_index(data.index_);
@@ -613,7 +614,10 @@ Seed::Seed(Seed&& rhs) noexcept
 
 auto Seed::Entropy() const noexcept -> const Secret& { return imp_->entropy_; }
 
-auto Seed::ID() const noexcept -> const Identifier& { return imp_->id_; }
+auto Seed::ID() const noexcept -> const identifier::Generic&
+{
+    return imp_->id_;
+}
 
 auto Seed::Index() const noexcept -> Bip32Index { return imp_->Index(); }
 

@@ -168,7 +168,8 @@ public:
 
     auto Cleanup() noexcept -> void final;
     using internal::Crypto::Init;
-    auto Init(const api::Factory& factory) noexcept -> void final
+    auto Init(const std::shared_ptr<const api::Factory>& factory) noexcept
+        -> void final
     {
         parent_.Init(factory);
     }

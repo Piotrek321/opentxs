@@ -28,8 +28,12 @@
 
 namespace opentxs::storage
 {
-Seeds::Seeds(const Driver& storage, const UnallocatedCString& hash)
-    : Node(storage, hash)
+Seeds::Seeds(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
+    const Driver& storage,
+    const UnallocatedCString& hash)
+    : Node(crypto, factory, storage, hash)
     , default_seed_()
 {
     if (check_hash(hash)) {

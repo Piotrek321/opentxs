@@ -10,6 +10,7 @@ add_subdirectory(storage)
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/util/AsyncConst.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/BoostPMR.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Editor.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Exclusive.hpp"
@@ -29,7 +30,6 @@ target_sources(
     "Actor.hpp"
     "Allocator.cpp"
     "Allocator.hpp"
-    "AsyncValue.hpp"
     "Backoff.hpp"
     "Blank.hpp"
     "Bytes.cpp"
@@ -71,7 +71,8 @@ target_sources(
 )
 target_include_directories(
   opentxs-common SYSTEM
-  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"
+          "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Allocated.hpp"

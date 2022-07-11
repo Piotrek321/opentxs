@@ -53,16 +53,16 @@ public:
 private:
     using Future = api::session::OTX::Future;
     using TaskMap =
-        UnallocatedMap<OTIdentifier, implementation::DepositPayment>;
+        UnallocatedMap<identifier::Generic, implementation::DepositPayment>;
 
     static auto error_task() -> BackgroundTask;
 
     client::internal::StateMachine& parent_;
     TaskMap tasks_;
     std::mutex unit_lock_;
-    UnallocatedMap<OTUnitID, std::mutex> account_lock_;
+    UnallocatedMap<identifier::UnitDefinition, std::mutex> account_lock_;
 
     auto cleanup() -> bool;
-    auto get_payment_id(const OTPayment& payment) const -> OTIdentifier;
+    auto get_payment_id(const OTPayment& payment) const -> identifier::Generic;
 };
 }  // namespace opentxs::otx::client::implementation

@@ -19,6 +19,7 @@ extern "C" {
 
 #include "internal/core/Core.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/Data.hpp"
 
 namespace opentxs
@@ -60,7 +61,7 @@ auto ByteArray::Imp::Assign(const void* data, const std::size_t size) noexcept
     -> bool
 {
     auto rhs = [&]() -> Vector {
-        if ((data == nullptr) || (size == 0)) {
+        if ((data == nullptr) || (size == 0_uz)) {
 
             return {};
         } else {
@@ -98,7 +99,7 @@ auto ByteArray::Imp::Concatenate(
     const void* data,
     const std::size_t size) noexcept -> bool
 {
-    if ((size == 0) || (nullptr == data)) { return false; }
+    if ((size == 0_uz) || (nullptr == data)) { return false; }
 
     auto temp = Imp{parent_, data, size};
     concatenate(temp.data_);
@@ -289,7 +290,7 @@ auto ByteArray::Imp::Randomize(const std::size_t size) -> bool
 {
     SetSize(size);
 
-    if (size == 0) { return false; }
+    if (size == 0_uz) { return false; }
 
     ::randombytes_buf(data_.data(), size);
 
@@ -322,16 +323,6 @@ auto ByteArray::Imp::spaceship(const opentxs::Data& rhs) const noexcept -> int
     if (lSize > rSize) { return 1; }
 
     return std::memcmp(data_.data(), rhs.data(), data_.size());
-}
-
-auto ByteArray::Imp::str() const -> UnallocatedCString
-{
-    return UnallocatedCString{Bytes()};
-}
-
-auto ByteArray::Imp::str(alloc::Default alloc) const -> CString
-{
-    return CString{Bytes(), alloc};
 }
 
 auto ByteArray::Imp::WriteInto() noexcept -> AllocateOutput

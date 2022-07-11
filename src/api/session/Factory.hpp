@@ -69,6 +69,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/Types.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -187,6 +188,7 @@ namespace proto
 {
 class AsymmetricKey;
 class BlockchainBlockHeader;
+class HDPath;
 class Identifier;
 class PaymentCode;
 class PeerObject;
@@ -249,7 +251,7 @@ public:
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
-        const opentxs::Identifier& requestID,
+        const identifier::Generic& requestID,
         const UnallocatedCString& txid,
         const Amount& amount,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -259,7 +261,7 @@ public:
     auto BailmentReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -427,7 +429,7 @@ public:
     auto ConnectionReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const bool ack,
         const UnallocatedCString& url,
@@ -488,20 +490,66 @@ public:
         const noexcept(false) -> OTEnvelope final;
     auto Envelope(const opentxs::ReadView& serialized) const noexcept(false)
         -> OTEnvelope final;
-    auto Identifier() const -> OTIdentifier final;
-    auto Identifier(const UnallocatedCString& serialized) const
-        -> OTIdentifier final;
-    auto Identifier(const opentxs::String& serialized) const
-        -> OTIdentifier final;
-    auto Identifier(const opentxs::Contract& contract) const
-        -> OTIdentifier final;
-    auto Identifier(const opentxs::Item& item) const -> OTIdentifier final;
-    auto Identifier(const ReadView bytes) const -> OTIdentifier final;
-    auto Identifier(const ProtobufType& proto) const -> OTIdentifier final;
-    auto Identifier(const opentxs::network::zeromq::Frame& bytes) const
-        -> OTIdentifier final;
-    auto Identifier(const proto::Identifier& in) const noexcept
-        -> OTIdentifier final;
+    auto Identifier(const opentxs::Contract& contract, allocator_type alloc)
+        const noexcept -> identifier::Generic final;
+    auto Identifier(const opentxs::Cheque& cheque, allocator_type alloc)
+        const noexcept -> identifier::Generic final;
+    auto Identifier(const opentxs::Item& item, allocator_type alloc)
+        const noexcept -> identifier::Generic final;
+    auto Identifier(
+        const identity::wot::claim::ClaimType type,
+        const proto::HDPath& path,
+        allocator_type alloc) const noexcept -> identifier::Generic final;
+    auto Identifier(const proto::Identifier& in, allocator_type alloc)
+        const noexcept -> identifier::Generic final;
+    auto IdentifierFromBase58(
+        const std::string_view base58,
+        allocator_type alloc) const noexcept -> identifier::Generic final
+    {
+        return primitives_.IdentifierFromBase58(base58, std::move(alloc));
+    }
+    auto IdentifierFromHash(const ReadView bytes, allocator_type alloc)
+        const noexcept -> identifier::Generic final
+    {
+        return primitives_.IdentifierFromHash(bytes, std::move(alloc));
+    }
+    auto IdentifierFromHash(
+        const ReadView bytes,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Generic final
+    {
+        return primitives_.IdentifierFromHash(bytes, type, std::move(alloc));
+    }
+    auto IdentifierFromPreimage(const ReadView preimage, allocator_type alloc)
+        const noexcept -> identifier::Generic final
+    {
+        return primitives_.IdentifierFromPreimage(preimage, std::move(alloc));
+    }
+    auto IdentifierFromPreimage(
+        const ReadView preimage,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Generic final
+    {
+        return primitives_.IdentifierFromPreimage(
+            preimage, type, std::move(alloc));
+    }
+    auto IdentifierFromPreimage(const ProtobufType& proto, allocator_type alloc)
+        const noexcept -> identifier::Generic final;
+    auto IdentifierFromPreimage(
+        const ProtobufType& proto,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Generic final;
+    auto IdentifierFromRandom(allocator_type alloc) const noexcept
+        -> identifier::Generic final
+    {
+        return primitives_.IdentifierFromRandom(std::move(alloc));
+    }
+    auto IdentifierFromRandom(
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Generic final
+    {
+        return primitives_.IdentifierFromRandom(type, std::move(alloc));
+    }
     auto Item(const String& serialized) const
         -> std::unique_ptr<opentxs::Item> final;
     auto Item(const UnallocatedCString& serialized) const
@@ -514,7 +562,7 @@ public:
         const identifier::Nym& theNymID,
         const OTTransaction& theOwner,
         itemType theType,
-        const opentxs::Identifier& pDestinationAcctID) const
+        const identifier::Generic& pDestinationAcctID) const
         -> std::unique_ptr<opentxs::Item> final;
     auto Item(
         const String& strItem,
@@ -524,7 +572,7 @@ public:
     auto Item(
         const OTTransaction& theOwner,
         itemType theType,
-        const opentxs::Identifier& pDestinationAcctID) const
+        const identifier::Generic& pDestinationAcctID) const
         -> std::unique_ptr<opentxs::Item> final;
     auto Keypair(
         const opentxs::crypto::Parameters& nymParameters,
@@ -545,17 +593,17 @@ public:
         const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const -> OTKeypair final;
     auto Ledger(
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID) const
         -> std::unique_ptr<opentxs::Ledger> final;
     auto Ledger(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID) const
         -> std::unique_ptr<opentxs::Ledger> final;
     auto Ledger(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAcctID,
+        const identifier::Generic& theAcctID,
         const identifier::Notary& theNotaryID,
         ledgerType theType,
         bool bCreateFile = false) const
@@ -592,15 +640,103 @@ public:
         const identifier::Nym& serverNym,
         const identifier::UnitDefinition& unit) const noexcept
         -> otx::blind::Mint final;
-    auto NymID() const -> OTNymID final;
-    auto NymID(const UnallocatedCString& serialized) const -> OTNymID final;
-    auto NymID(const opentxs::String& serialized) const -> OTNymID final;
-    auto NymID(const opentxs::network::zeromq::Frame& bytes) const
-        -> OTNymID final;
-    auto NymID(const proto::Identifier& in) const noexcept -> OTNymID final;
-    auto NymID(const opentxs::Identifier& in) const noexcept -> OTNymID final;
+    auto NotaryID(const proto::Identifier& in, allocator_type alloc)
+        const noexcept -> identifier::Notary final;
+    auto NotaryIDConvertSafe(
+        const identifier::Generic& in,
+        allocator_type alloc) const noexcept -> identifier::Notary final;
+    auto NotaryIDFromBase58(const std::string_view base58, allocator_type alloc)
+        const noexcept -> identifier::Notary final
+    {
+        return primitives_.NotaryIDFromBase58(base58, std::move(alloc));
+    }
+    auto NotaryIDFromHash(const ReadView bytes, allocator_type alloc)
+        const noexcept -> identifier::Notary final
+    {
+        return primitives_.NotaryIDFromHash(bytes, std::move(alloc));
+    }
+    auto NotaryIDFromHash(
+        const ReadView bytes,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Notary final
+    {
+        return primitives_.NotaryIDFromHash(bytes, type, std::move(alloc));
+    }
+    auto NotaryIDFromPreimage(const ReadView preimage, allocator_type alloc)
+        const noexcept -> identifier::Notary final
+    {
+        return primitives_.NotaryIDFromPreimage(preimage, std::move(alloc));
+    }
+    auto NotaryIDFromPreimage(
+        const ReadView preimage,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Notary final
+    {
+        return primitives_.NotaryIDFromPreimage(
+            preimage, type, std::move(alloc));
+    }
+    auto NotaryIDFromPreimage(
+        const ProtobufType& proto,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Notary final;
+    auto NotaryIDFromPreimage(const ProtobufType& proto, allocator_type alloc)
+        const noexcept -> identifier::Notary final;
+    auto NotaryIDFromRandom(allocator_type alloc) const noexcept
+        -> identifier::Notary final
+    {
+        return primitives_.NotaryIDFromRandom(std::move(alloc));
+    }
+    auto NotaryIDFromRandom(
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Notary final
+    {
+        return primitives_.NotaryIDFromRandom(type, std::move(alloc));
+    }
+    auto NymID(const proto::Identifier& in, allocator_type alloc) const noexcept
+        -> identifier::Nym final;
+    auto NymIDConvertSafe(const identifier::Generic& in, allocator_type alloc)
+        const noexcept -> identifier::Nym final;
+    auto NymIDFromBase58(const std::string_view base58, allocator_type alloc)
+        const noexcept -> identifier::Nym final
+    {
+        return primitives_.NymIDFromBase58(base58, std::move(alloc));
+    }
+    auto NymIDFromHash(const ReadView bytes, allocator_type alloc)
+        const noexcept -> identifier::Nym final
+    {
+        return primitives_.NymIDFromHash(bytes, std::move(alloc));
+    }
+    auto NymIDFromHash(
+        const ReadView bytes,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Nym final
+    {
+        return primitives_.NymIDFromHash(bytes, type, std::move(alloc));
+    }
     auto NymIDFromPaymentCode(const UnallocatedCString& serialized) const
-        -> OTNymID final;
+        -> identifier::Nym final;
+    auto NymIDFromPreimage(const ReadView preimage, allocator_type alloc)
+        const noexcept -> identifier::Nym final
+    {
+        return primitives_.NymIDFromPreimage(preimage, std::move(alloc));
+    }
+    auto NymIDFromPreimage(
+        const ReadView preimage,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::Nym final
+    {
+        return primitives_.NymIDFromPreimage(preimage, type, std::move(alloc));
+    }
+    auto NymIDFromRandom(allocator_type alloc) const noexcept
+        -> identifier::Nym final
+    {
+        return primitives_.NymIDFromRandom(std::move(alloc));
+    }
+    auto NymIDFromRandom(const identifier::Algorithm type, allocator_type alloc)
+        const noexcept -> identifier::Nym final
+    {
+        return primitives_.NymIDFromRandom(type, std::move(alloc));
+    }
     auto Offer() const -> std::unique_ptr<OTOffer> final;
     auto Offer(
         const identifier::Notary& NOTARY_ID,
@@ -610,7 +746,7 @@ public:
     auto OutbailmentReply(
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -667,9 +803,9 @@ public:
     auto PaymentPlan(
         const identifier::Notary& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-        const opentxs::Identifier& SENDER_ACCT_ID,
+        const identifier::Generic& SENDER_ACCT_ID,
         const identifier::Nym& SENDER_NYM_ID,
-        const opentxs::Identifier& RECIPIENT_ACCT_ID,
+        const identifier::Generic& RECIPIENT_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID) const
         -> std::unique_ptr<OTPaymentPlan> final;
     auto PeerObject(const Nym_p& senderNym, const UnallocatedCString& message)
@@ -738,7 +874,7 @@ public:
     auto ReplyAcknowledgement(
         const Nym_p& nym,
         const identifier::Nym& initiator,
-        const opentxs::Identifier& request,
+        const identifier::Generic& request,
         const identifier::Notary& server,
         const contract::peer::PeerRequestType type,
         const bool& ack,
@@ -777,18 +913,6 @@ public:
         const proto::UnitDefinition serialized) const noexcept(false)
         -> OTSecurityContract final;
     auto ServerContract() const noexcept(false) -> OTServerContract final;
-    auto ServerID() const -> OTNotaryID final;
-    auto ServerID(const UnallocatedCString& serialized) const
-        -> OTNotaryID final;
-    auto ServerID(const opentxs::String& serialized) const -> OTNotaryID final;
-    auto ServerID(const opentxs::network::zeromq::Frame& bytes) const
-        -> OTNotaryID final;
-    auto ServerID(const proto::Identifier& in) const noexcept
-        -> OTNotaryID final;
-    auto ServerID(const opentxs::Identifier& in) const noexcept
-        -> OTNotaryID final;
-    auto ServerID(const google::protobuf::MessageLite& proto) const
-        -> OTIdentifier final;
     auto SignedFile() const -> std::unique_ptr<OTSignedFile> final;
     auto SignedFile(const String& LOCAL_SUBDIR, const String& FILE_NAME) const
         -> std::unique_ptr<OTSignedFile> final;
@@ -849,10 +973,10 @@ public:
     auto Trade(
         const identifier::Notary& notaryID,
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const opentxs::Identifier& assetAcctId,
+        const identifier::Generic& assetAcctId,
         const identifier::Nym& nymID,
         const identifier::UnitDefinition& currencyId,
-        const opentxs::Identifier& currencyAcctId) const
+        const identifier::Generic& currencyAcctId) const
         -> std::unique_ptr<OTTrade> final;
     auto Transaction(const String& strCronItem) const
         -> std::unique_ptr<OTTransactionType> final;
@@ -860,20 +984,20 @@ public:
         -> std::unique_ptr<OTTransaction> final;
     auto Transaction(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         originType theOriginType = originType::not_applicable) const
         -> std::unique_ptr<OTTransaction> final;
     auto Transaction(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         std::int64_t lTransactionNum,
         originType theOriginType = originType::not_applicable) const
         -> std::unique_ptr<OTTransaction> final;
     auto Transaction(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         const std::int64_t& lNumberOfOrigin,
         originType theOriginType,
@@ -892,7 +1016,7 @@ public:
         -> std::unique_ptr<OTTransaction> final;
     auto Transaction(
         const identifier::Nym& theNymID,
-        const opentxs::Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         transactionType theType,
         originType theOriginType = originType::not_applicable,
@@ -904,15 +1028,57 @@ public:
         originType theOriginType = originType::not_applicable,
         std::int64_t lTransactionNum = 0) const
         -> std::unique_ptr<OTTransaction> final;
-    auto UnitID() const -> OTUnitID final;
-    auto UnitID(const UnallocatedCString& serialized) const -> OTUnitID final;
-    auto UnitID(const opentxs::String& serialized) const -> OTUnitID final;
-    auto UnitID(const opentxs::network::zeromq::Frame& bytes) const
-        -> OTUnitID final;
-    auto UnitID(const proto::Identifier& in) const noexcept -> OTUnitID final;
-    auto UnitID(const opentxs::Identifier& in) const noexcept -> OTUnitID final;
-    auto UnitID(const google::protobuf::MessageLite& proto) const
-        -> OTIdentifier final;
+    auto UnitID(const proto::Identifier& in, allocator_type alloc)
+        const noexcept -> identifier::UnitDefinition final;
+    auto UnitIDConvertSafe(const identifier::Generic& in, allocator_type alloc)
+        const noexcept -> identifier::UnitDefinition final;
+    auto UnitIDFromBase58(const std::string_view base58, allocator_type alloc)
+        const noexcept -> identifier::UnitDefinition final
+    {
+        return primitives_.UnitIDFromBase58(base58, std::move(alloc));
+    }
+    auto UnitIDFromHash(const ReadView bytes, allocator_type alloc)
+        const noexcept -> identifier::UnitDefinition final
+    {
+        return primitives_.UnitIDFromHash(bytes, std::move(alloc));
+    }
+    auto UnitIDFromHash(
+        const ReadView bytes,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::UnitDefinition final
+    {
+        return primitives_.UnitIDFromHash(bytes, type, std::move(alloc));
+    }
+    auto UnitIDFromPreimage(const ReadView preimage, allocator_type alloc)
+        const noexcept -> identifier::UnitDefinition final
+    {
+        return primitives_.UnitIDFromPreimage(preimage, std::move(alloc));
+    }
+    auto UnitIDFromPreimage(
+        const ReadView preimage,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::UnitDefinition final
+    {
+        return primitives_.UnitIDFromPreimage(preimage, type, std::move(alloc));
+    }
+    auto UnitIDFromPreimage(const ProtobufType& proto, allocator_type alloc)
+        const noexcept -> identifier::UnitDefinition final;
+    auto UnitIDFromPreimage(
+        const ProtobufType& proto,
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept
+        -> identifier::UnitDefinition final;
+    auto UnitIDFromRandom(allocator_type alloc) const noexcept
+        -> identifier::UnitDefinition final
+    {
+        return primitives_.UnitIDFromRandom(std::move(alloc));
+    }
+    auto UnitIDFromRandom(
+        const identifier::Algorithm type,
+        allocator_type alloc) const noexcept -> identifier::UnitDefinition final
+    {
+        return primitives_.UnitIDFromRandom(type, std::move(alloc));
+    }
     auto UnitDefinition() const noexcept -> OTUnitDefinition final;
     auto UnitDefinition(
         const Nym_p& nym,

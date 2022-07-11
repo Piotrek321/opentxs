@@ -18,7 +18,7 @@ namespace ottest
 {
 auto check_account_activity(
     const User& user,
-    const ot::Identifier& account,
+    const ot::identifier::Generic& account,
     const AccountActivityData& expected) noexcept -> bool
 {
     const auto& widget = user.api_->UI().AccountActivity(user.nym_id_, account);
@@ -143,7 +143,7 @@ auto check_account_activity(
 
 auto init_account_activity(
     const User& user,
-    const ot::Identifier& account,
+    const ot::identifier::Generic& account,
     Counter& counter) noexcept -> void
 {
     user.api_->UI().AccountActivity(

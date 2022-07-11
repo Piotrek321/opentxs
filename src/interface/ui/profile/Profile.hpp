@@ -14,7 +14,10 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
@@ -74,6 +77,8 @@ using ProfileList = List<
 class Profile final : public ProfileList
 {
 public:
+    const api::session::Client& api_;
+
     auto AddClaim(
         const identity::wot::claim::SectionType section,
         const identity::wot::claim::ClaimType type,
@@ -85,6 +90,7 @@ public:
         const UnallocatedCString& lang) const noexcept -> ItemTypeList final;
     auto AllowedSections(const UnallocatedCString& lang) const noexcept
         -> SectionTypeList final;
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto ClearCallbacks() const noexcept -> void final;
     auto Delete(
         const int section,
@@ -97,7 +103,7 @@ public:
     }
     auto ID() const noexcept -> UnallocatedCString final
     {
-        return primary_id_->str();
+        return primary_id_.asBase58(api_.Crypto());
     }
     auto PaymentCode() const noexcept -> UnallocatedCString final;
     auto SetActive(
@@ -151,6 +157,7 @@ private:
     static auto check_type(
         const identity::wot::claim::SectionType type) noexcept -> bool;
     static auto nym_name(
+        const api::session::Crypto& crypto,
         const api::session::Wallet& wallet,
         const identifier::Nym& nymID) noexcept -> UnallocatedCString;
 

@@ -96,8 +96,6 @@ class Widget : virtual public opentxs::ui::Widget
 public:
     using Message = network::zeromq::Message;
 
-    const api::session::Client& api_;
-
     class MessageFunctor
     {
     public:
@@ -147,7 +145,10 @@ public:
 
     auto ClearCallbacks() const noexcept -> void override;
     auto SetCallback(SimpleCallback cb) const noexcept -> void final;
-    auto WidgetID() const noexcept -> OTIdentifier final { return widget_id_; }
+    auto WidgetID() const noexcept -> identifier::Generic final
+    {
+        return widget_id_;
+    }
 
     Widget() = delete;
     Widget(const Widget&) = delete;
@@ -161,15 +162,16 @@ protected:
     using ListenerDefinition = std::pair<UnallocatedCString, MessageFunctor*>;
     using ListenerDefinitions = UnallocatedVector<ListenerDefinition>;
 
-    const OTIdentifier widget_id_;
+    const identifier::Generic widget_id_;
 
     virtual void setup_listeners(
+        const api::session::Client& api,
         const ListenerDefinitions& definitions) noexcept;
     auto UpdateNotify() const noexcept -> void;
 
     Widget(
         const api::session::Client& api,
-        const Identifier& id,
+        const identifier::Generic& id,
         const SimpleCallback& cb = {}) noexcept;
 
 private:

@@ -72,5 +72,5 @@ public:
 private:
     const api::session::Client& api_;
     IdentityManagerQt* parent_;
-    libguarded::ordered_guarded<OTNymID, std::shared_mutex> active_nym_;
+    libguarded::ordered_guarded<identifier::Nym, std::shared_mutex> active_nym_;
 };

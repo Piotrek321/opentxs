@@ -20,6 +20,8 @@
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -44,6 +46,8 @@ namespace opentxs  // NOLINT
 // {
 namespace api
 {
+class Session;
+
 namespace session
 {
 class Client;
@@ -94,7 +98,7 @@ struct make_blank<ui::implementation::AccountActivityRowID> {
     static auto value(const api::Session& api)
         -> ui::implementation::AccountActivityRowID
     {
-        return {api.Factory().Identifier(), proto::PAYMENTEVENTTYPE_ERROR};
+        return {identifier::Generic{}, proto::PAYMENTEVENTTYPE_ERROR};
     }
 };
 }  // namespace opentxs
@@ -125,7 +129,7 @@ class AccountActivity : public AccountActivityList,
 public:
     auto AccountID() const noexcept -> UnallocatedCString final
     {
-        return account_id_->str();
+        return account_id_.asBase58(api_.Crypto());
     }
     auto Balance() const noexcept -> const Amount final
     {
@@ -170,7 +174,7 @@ public:
     }
     using ui::AccountActivity::Send;
     auto Send(
-        [[maybe_unused]] const Identifier& contact,
+        [[maybe_unused]] const identifier::Generic& contact,
         [[maybe_unused]] const Amount& amount,
         [[maybe_unused]] const UnallocatedCString& memo) const noexcept
         -> bool override
@@ -178,7 +182,7 @@ public:
         return false;
     }
     auto Send(
-        [[maybe_unused]] const Identifier& contact,
+        [[maybe_unused]] const identifier::Generic& contact,
         [[maybe_unused]] const UnallocatedCString& amount,
         [[maybe_unused]] const UnallocatedCString& memo,
         [[maybe_unused]] Scale scale) const noexcept -> bool override
@@ -186,7 +190,7 @@ public:
         return false;
     }
     auto Send(
-        [[maybe_unused]] const Identifier& contact,
+        [[maybe_unused]] const identifier::Generic& contact,
         [[maybe_unused]] const UnallocatedCString& amount,
         [[maybe_unused]] const UnallocatedCString& memo,
         [[maybe_unused]] Scale scale,
@@ -261,7 +265,7 @@ protected:
 
     mutable CallbackHolder callbacks_;
     mutable Amount balance_;
-    const OTIdentifier account_id_;
+    const identifier::Generic account_id_;
     const AccountType type_;
     OTUnitDefinition contract_;
     OTServerContract notary_;
@@ -276,7 +280,7 @@ protected:
     AccountActivity(
         const api::session::Client& api,
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const AccountType type,
         const SimpleCallback& cb) noexcept;
 

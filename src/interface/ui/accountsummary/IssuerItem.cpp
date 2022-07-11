@@ -31,6 +31,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -71,6 +72,7 @@ IssuerItem::IssuerItem(
           rowID,
           key,
           false)
+    , api_(api)
     , listeners_({
           {UnallocatedCString{api_.Endpoints().AccountUpdate()},
            new MessageProcessor<IssuerItem>(&IssuerItem::process_account)},
@@ -82,7 +84,7 @@ IssuerItem::IssuerItem(
 {
     OT_ASSERT(issuer_);
 
-    setup_listeners(listeners_);
+    setup_listeners(api_, listeners_);
     startup_ = std::make_unique<std::thread>(&IssuerItem::startup, this);
 
     OT_ASSERT(startup_);
@@ -108,7 +110,7 @@ auto IssuerItem::Name() const noexcept -> UnallocatedCString
     return name_;
 }
 
-void IssuerItem::process_account(const Identifier& accountID) noexcept
+void IssuerItem::process_account(const identifier::Generic& accountID) noexcept
 {
     const auto account = api_.Wallet().Internal().Account(accountID);
 
@@ -130,9 +132,10 @@ void IssuerItem::process_account(const Message& message) noexcept
 
     OT_ASSERT(2 < message.Body().size());
 
-    const auto accountID = api_.Factory().Identifier(body.at(1));
+    const auto accountID =
+        api_.Factory().IdentifierFromHash(body.at(1).Bytes());
 
-    OT_ASSERT(false == accountID->empty());
+    OT_ASSERT(false == accountID.empty());
 
     const auto rowID =
         IssuerItemRowID{accountID, {api_.Storage().AccountUnit(accountID)}};
@@ -143,7 +146,7 @@ void IssuerItem::process_account(const Message& message) noexcept
 
 void IssuerItem::refresh_accounts() noexcept
 {
-    const auto blank = identifier::UnitDefinition::Factory();
+    const auto blank = identifier::UnitDefinition{};
     const auto accounts = issuer_->AccountList(currency_, blank);
     LogDetail()(OT_PRETTY_CLASS())("Loading ")(accounts.size())(" accounts.")
         .Flush();

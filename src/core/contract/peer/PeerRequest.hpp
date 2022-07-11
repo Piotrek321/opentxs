@@ -7,6 +7,8 @@
 
 #include "core/contract/Signable.hpp"
 #include "internal/util/Mutex.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/contract/peer/BailmentNotice.hpp"
 #include "opentxs/core/contract/peer/BailmentRequest.hpp"
 #include "opentxs/core/contract/peer/ConnectionRequest.hpp"
@@ -85,7 +87,7 @@ public:
     }
     auto Name() const noexcept -> UnallocatedCString final
     {
-        return id_->str();
+        return id_.asBase58(api_.Crypto());
     }
     auto Recipient() const -> const identifier::Nym& final
     {
@@ -128,20 +130,20 @@ protected:
 private:
     using ot_super = Signable;
 
-    const OTNymID initiator_;
-    const OTNymID recipient_;
-    const OTNotaryID server_;
-    const OTIdentifier cookie_;
+    const identifier::Nym initiator_;
+    const identifier::Nym recipient_;
+    const identifier::Notary server_;
+    const identifier::Generic cookie_;
     const PeerRequestType type_;
 
     static auto GetID(const api::Session& api, const SerializedType& contract)
-        -> OTIdentifier;
+        -> identifier::Generic;
     static auto FinalizeContract(
         Request& contract,
         const PasswordPrompt& reason) -> bool;
 
     auto contract(const Lock& lock) const -> SerializedType;
-    auto GetID(const Lock& lock) const -> OTIdentifier final;
+    auto GetID(const Lock& lock) const -> identifier::Generic final;
     auto SigVersion(const Lock& lock) const -> SerializedType;
 
     auto update_signature(const Lock& lock, const PasswordPrompt& reason)

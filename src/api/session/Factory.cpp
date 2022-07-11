@@ -36,7 +36,6 @@
 #include "internal/core/Factory.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
-#include "internal/core/identifier/Factory.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
@@ -104,7 +103,6 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Type.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
@@ -214,7 +212,7 @@ auto Factory::BailmentNotice(
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
     const identifier::Notary& serverID,
-    const opentxs::Identifier& requestID,
+    const identifier::Generic& requestID,
     const UnallocatedCString& txid,
     const Amount& amount,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -255,7 +253,7 @@ auto Factory::BailmentNotice(
 auto Factory::BailmentReply(
     const Nym_p& nym,
     const identifier::Nym& initiator,
-    const opentxs::Identifier& request,
+    const identifier::Generic& request,
     const identifier::Notary& server,
     const UnallocatedCString& terms,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -668,7 +666,7 @@ auto Factory::Cheque(
 auto Factory::ConnectionReply(
     const Nym_p& nym,
     const identifier::Nym& initiator,
-    const opentxs::Identifier& request,
+    const identifier::Generic& request,
     const identifier::Notary& server,
     const bool ack,
     const UnallocatedCString& url,
@@ -1020,62 +1018,54 @@ auto Factory::Envelope(const opentxs::ReadView& serialized) const
     return OTEnvelope{opentxs::Factory::Envelope(api_, serialized).release()};
 }
 
-auto Factory::Identifier() const -> OTIdentifier
+auto Factory::Identifier(
+    const opentxs::Contract& contract,
+    allocator_type alloc) const noexcept -> identifier::Generic
 {
-    return Identifier::Factory();
+    return primitives_.Internal().Identifier(contract, std::move(alloc));
 }
 
-auto Factory::Identifier(const UnallocatedCString& serialized) const
-    -> OTIdentifier
+auto Factory::Identifier(const opentxs::Cheque& cheque, allocator_type alloc)
+    const noexcept -> identifier::Generic
 {
-    return Identifier::Factory(serialized);
+    return primitives_.Internal().Identifier(cheque, std::move(alloc));
 }
 
-auto Factory::Identifier(const opentxs::String& serialized) const
-    -> OTIdentifier
+auto Factory::Identifier(const opentxs::Item& item, allocator_type alloc)
+    const noexcept -> identifier::Generic
 {
-    return Identifier::Factory(serialized);
+    return primitives_.Internal().Identifier(item, std::move(alloc));
 }
 
-auto Factory::Identifier(const opentxs::Contract& contract) const
-    -> OTIdentifier
+auto Factory::Identifier(
+    const identity::wot::claim::ClaimType type,
+    const proto::HDPath& path,
+    allocator_type alloc) const noexcept -> identifier::Generic
 {
-    return Identifier::Factory(contract);
+    return primitives_.Internal().Identifier(type, path, std::move(alloc));
 }
 
-auto Factory::Identifier(const opentxs::Item& item) const -> OTIdentifier
+auto Factory::IdentifierFromPreimage(
+    const ProtobufType& proto,
+    allocator_type alloc) const noexcept -> identifier::Generic
 {
-    return Identifier::Factory(item);
+    return primitives_.Internal().IdentifierFromPreimage(
+        proto, std::move(alloc));
 }
 
-auto Factory::Identifier(const ReadView bytes) const -> OTIdentifier
+auto Factory::IdentifierFromPreimage(
+    const ProtobufType& proto,
+    const identifier::Algorithm type,
+    allocator_type alloc) const noexcept -> identifier::Generic
 {
-    auto output = this->Identifier();
-    output->CalculateDigest(bytes);
-
-    return output;
+    return primitives_.Internal().IdentifierFromPreimage(
+        proto, type, std::move(alloc));
 }
 
-auto Factory::Identifier(const ProtobufType& proto) const -> OTIdentifier
+auto Factory::Identifier(const proto::Identifier& in, allocator_type alloc)
+    const noexcept -> identifier::Generic
 {
-    const auto bytes = Data(proto);
-
-    return Identifier(bytes.Bytes());
-}
-
-auto Factory::Identifier(const opentxs::network::zeromq::Frame& bytes) const
-    -> OTIdentifier
-{
-    auto out = Identifier();
-    out->Assign(bytes.data(), bytes.size());
-
-    return out;
-}
-
-auto Factory::Identifier(const proto::Identifier& in) const noexcept
-    -> OTIdentifier
-{
-    return factory::IdentifierGeneric(in);
+    return primitives_.Internal().Identifier(in, std::move(alloc));
 }
 
 auto Factory::instantiate_secp256k1(
@@ -1172,7 +1162,7 @@ auto Factory::Item(
     const identifier::Nym& theNymID,
     const OTTransaction& theOwner,
     itemType theType,
-    const opentxs::Identifier& pDestinationAcctID) const
+    const identifier::Generic& pDestinationAcctID) const
     -> std::unique_ptr<opentxs::Item>
 {
     std::unique_ptr<opentxs::Item> item;
@@ -1208,7 +1198,7 @@ auto Factory::Item(
 
     // This loads up the purported account ID and the user ID.
     if (pItem->LoadContractFromString(strItem)) {
-        const opentxs::Identifier& ACCOUNT_ID = pItem->GetPurportedAccountID();
+        const identifier::Generic& ACCOUNT_ID = pItem->GetPurportedAccountID();
         pItem->SetRealAccountID(ACCOUNT_ID);  // I do this because it's all
                                               // we've got in this case. It's
                                               // what's in the
@@ -1240,7 +1230,7 @@ auto Factory::Item(
 auto Factory::Item(
     const OTTransaction& theOwner,
     itemType theType,
-    const opentxs::Identifier& pDestinationAcctID) const
+    const identifier::Generic& pDestinationAcctID) const
     -> std::unique_ptr<opentxs::Item>
 {
     std::unique_ptr<opentxs::Item> pItem{new opentxs::Item(
@@ -1403,7 +1393,7 @@ auto Factory::Keypair(
 }
 
 auto Factory::Ledger(
-    const opentxs::Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID) const
     -> std::unique_ptr<opentxs::Ledger>
 {
@@ -1415,7 +1405,7 @@ auto Factory::Ledger(
 
 auto Factory::Ledger(
     const identifier::Nym& theNymID,
-    const opentxs::Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID) const
     -> std::unique_ptr<opentxs::Ledger>
 {
@@ -1428,7 +1418,7 @@ auto Factory::Ledger(
 
 auto Factory::Ledger(
     const identifier::Nym& theNymID,
-    const opentxs::Identifier& theAcctID,
+    const identifier::Generic& theAcctID,
     const identifier::Notary& theNotaryID,
     ledgerType theType,
     bool bCreateFile) const -> std::unique_ptr<opentxs::Ledger>
@@ -1558,50 +1548,54 @@ auto Factory::Mint(
     return Mint(otx::blind::CashType::Lucre, notary, serverNym, unit);
 }
 
-auto Factory::NymID() const -> OTNymID { return identifier::Nym::Factory(); }
-
-auto Factory::NymID(const UnallocatedCString& serialized) const -> OTNymID
+auto Factory::NotaryID(const proto::Identifier& in, allocator_type alloc)
+    const noexcept -> identifier::Notary
 {
-    return identifier::Nym::Factory(serialized);
+    return primitives_.Internal().NotaryID(in, std::move(alloc));
 }
 
-auto Factory::NymID(const opentxs::String& serialized) const -> OTNymID
+auto Factory::NotaryIDConvertSafe(
+    const identifier::Generic& in,
+    allocator_type alloc) const noexcept -> identifier::Notary
 {
-    return identifier::Nym::Factory(serialized);
+    return primitives_.Internal().NotaryIDConvertSafe(in, std::move(alloc));
 }
 
-auto Factory::NymID(const opentxs::network::zeromq::Frame& bytes) const
-    -> OTNymID
+auto Factory::NotaryIDFromPreimage(
+    const ProtobufType& proto,
+    const identifier::Algorithm type,
+    allocator_type alloc) const noexcept -> identifier::Notary
 {
-    auto out = NymID();
-    out->Assign(bytes.data(), bytes.size());
-
-    return out;
+    return primitives_.Internal().NotaryIDFromPreimage(
+        proto, type, std::move(alloc));
 }
 
-auto Factory::NymID(const proto::Identifier& in) const noexcept -> OTNymID
+auto Factory::NotaryIDFromPreimage(
+    const ProtobufType& proto,
+    allocator_type alloc) const noexcept -> identifier::Notary
 {
-    return factory::IdentifierNym(in);
+    return primitives_.Internal().NotaryIDFromPreimage(proto, std::move(alloc));
 }
 
-auto Factory::NymID(const opentxs::Identifier& in) const noexcept -> OTNymID
+auto Factory::NymID(const proto::Identifier& in, allocator_type alloc)
+    const noexcept -> identifier::Nym
 {
-    auto out = NymID();
+    return primitives_.Internal().NymID(in, std::move(alloc));
+}
 
-    if ((identifier::Type::nym == in.Type() ||
-         (identifier::Type::generic == in.Type()))) {
-        out->Assign(in);
-    }
-
-    return out;
+auto Factory::NymIDConvertSafe(
+    const identifier::Generic& in,
+    allocator_type alloc) const noexcept -> identifier::Nym
+{
+    return primitives_.Internal().NymIDConvertSafe(in, std::move(alloc));
 }
 
 auto Factory::NymIDFromPaymentCode(const UnallocatedCString& input) const
-    -> OTNymID
+    -> identifier::Nym
 {
     const auto code = PaymentCode(input);
 
-    if (0 == code.Version()) { return NymID(); }
+    if (0 == code.Version()) { return identifier::Nym{}; }
 
     return code.ID();
 }
@@ -1630,7 +1624,7 @@ auto Factory::Offer(
 auto Factory::OutbailmentReply(
     const Nym_p& nym,
     const identifier::Nym& initiator,
-    const opentxs::Identifier& request,
+    const identifier::Generic& request,
     const identifier::Notary& server,
     const UnallocatedCString& terms,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -1789,9 +1783,9 @@ auto Factory::PaymentPlan(
 auto Factory::PaymentPlan(
     const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-    const opentxs::Identifier& SENDER_ACCT_ID,
+    const identifier::Generic& SENDER_ACCT_ID,
     const identifier::Nym& SENDER_NYM_ID,
-    const opentxs::Identifier& RECIPIENT_ACCT_ID,
+    const identifier::Generic& RECIPIENT_ACCT_ID,
     const identifier::Nym& RECIPIENT_NYM_ID) const
     -> std::unique_ptr<OTPaymentPlan>
 {
@@ -2028,7 +2022,7 @@ auto Factory::Purse(
 auto Factory::ReplyAcknowledgement(
     const Nym_p& nym,
     const identifier::Nym& initiator,
-    const opentxs::Identifier& request,
+    const identifier::Generic& request,
     const identifier::Notary& server,
     const contract::peer::PeerRequestType type,
     const bool& ack,
@@ -2171,62 +2165,6 @@ auto Factory::SecurityContract(
 auto Factory::ServerContract() const noexcept(false) -> OTServerContract
 {
     return OTServerContract{opentxs::Factory::ServerContract(api_)};
-}
-
-auto Factory::ServerID() const -> OTNotaryID
-{
-    return identifier::Notary::Factory();
-}
-
-auto Factory::ServerID(const UnallocatedCString& serialized) const -> OTNotaryID
-{
-    return identifier::Notary::Factory(serialized);
-}
-
-auto Factory::ServerID(const opentxs::String& serialized) const -> OTNotaryID
-{
-    return identifier::Notary::Factory(serialized);
-}
-
-auto Factory::ServerID(const opentxs::network::zeromq::Frame& bytes) const
-    -> OTNotaryID
-{
-    auto out = ServerID();
-    out->Assign(bytes.data(), bytes.size());
-
-    return out;
-}
-
-auto Factory::ServerID(const proto::Identifier& in) const noexcept -> OTNotaryID
-{
-    return factory::IdentifierNotary(in);
-}
-
-auto Factory::ServerID(const opentxs::Identifier& in) const noexcept
-    -> OTNotaryID
-{
-    auto out = ServerID();
-
-    if ((identifier::Type::notary == in.Type() ||
-         (identifier::Type::generic == in.Type()))) {
-        out->Assign(in);
-    }
-
-    return out;
-}
-
-auto Factory::ServerID(const google::protobuf::MessageLite& proto) const
-    -> OTIdentifier
-{
-    const auto id = [&] {
-        const auto bytes = Data(proto);
-        auto out = ServerID();
-        out->CalculateDigest(bytes.Bytes());
-
-        return out;
-    }();
-
-    return Identifier(id->str());
 }
 
 auto Factory::SignedFile() const -> std::unique_ptr<OTSignedFile>
@@ -2387,10 +2325,10 @@ auto Factory::Trade() const -> std::unique_ptr<OTTrade>
 auto Factory::Trade(
     const identifier::Notary& notaryID,
     const identifier::UnitDefinition& instrumentDefinitionID,
-    const opentxs::Identifier& assetAcctId,
+    const identifier::Generic& assetAcctId,
     const identifier::Nym& nymID,
     const identifier::UnitDefinition& currencyId,
-    const opentxs::Identifier& currencyAcctId) const -> std::unique_ptr<OTTrade>
+    const identifier::Generic& currencyAcctId) const -> std::unique_ptr<OTTrade>
 {
     std::unique_ptr<OTTrade> trade;
     trade.reset(new OTTrade(
@@ -2498,7 +2436,7 @@ auto Factory::Transaction(const opentxs::Ledger& theOwner) const
 
 auto Factory::Transaction(
     const identifier::Nym& theNymID,
-    const opentxs::Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID,
     originType theOriginType) const -> std::unique_ptr<OTTransaction>
 {
@@ -2511,7 +2449,7 @@ auto Factory::Transaction(
 
 auto Factory::Transaction(
     const identifier::Nym& theNymID,
-    const opentxs::Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID,
     std::int64_t lTransactionNum,
     originType theOriginType) const -> std::unique_ptr<OTTransaction>
@@ -2533,7 +2471,7 @@ auto Factory::Transaction(
 // and verified against them.
 auto Factory::Transaction(
     const identifier::Nym& theNymID,
-    const opentxs::Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID,
     const std::int64_t& lNumberOfOrigin,
     originType theOriginType,
@@ -2594,7 +2532,7 @@ auto Factory::Transaction(
 
 auto Factory::Transaction(
     const identifier::Nym& theNymID,
-    const opentxs::Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID,
     transactionType theType,
     originType theOriginType /*=originType::not_applicable*/,
@@ -2642,58 +2580,32 @@ auto Factory::UnitDefinition(
     }
 }
 
-auto Factory::UnitID() const -> OTUnitID
+auto Factory::UnitID(const proto::Identifier& in, allocator_type alloc)
+    const noexcept -> identifier::UnitDefinition
 {
-    return identifier::UnitDefinition::Factory();
+    return primitives_.Internal().UnitID(in, std::move(alloc));
 }
 
-auto Factory::UnitID(const UnallocatedCString& serialized) const -> OTUnitID
+auto Factory::UnitIDConvertSafe(
+    const identifier::Generic& in,
+    allocator_type alloc) const noexcept -> identifier::UnitDefinition
 {
-    return identifier::UnitDefinition::Factory(serialized);
+    return primitives_.Internal().UnitIDConvertSafe(in, std::move(alloc));
 }
 
-auto Factory::UnitID(const opentxs::String& serialized) const -> OTUnitID
+auto Factory::UnitIDFromPreimage(
+    const ProtobufType& proto,
+    allocator_type alloc) const noexcept -> identifier::UnitDefinition
 {
-    return identifier::UnitDefinition::Factory(serialized);
+    return primitives_.Internal().UnitIDFromPreimage(proto, std::move(alloc));
 }
 
-auto Factory::UnitID(const opentxs::network::zeromq::Frame& bytes) const
-    -> OTUnitID
+auto Factory::UnitIDFromPreimage(
+    const ProtobufType& proto,
+    const identifier::Algorithm type,
+    allocator_type alloc) const noexcept -> identifier::UnitDefinition
 {
-    auto out = UnitID();
-    out->Assign(bytes.data(), bytes.size());
-
-    return out;
-}
-
-auto Factory::UnitID(const proto::Identifier& in) const noexcept -> OTUnitID
-{
-    return factory::IdentifierUnit(in);
-}
-
-auto Factory::UnitID(const opentxs::Identifier& in) const noexcept -> OTUnitID
-{
-    auto out = UnitID();
-
-    if ((identifier::Type::unitdefinition == in.Type() ||
-         (identifier::Type::generic == in.Type()))) {
-        out->Assign(in);
-    }
-
-    return out;
-}
-
-auto Factory::UnitID(const google::protobuf::MessageLite& proto) const
-    -> OTIdentifier
-{
-    const auto id = [&] {
-        const auto bytes = Data(proto);
-        auto out = UnitID();
-        out->CalculateDigest(bytes.Bytes());
-
-        return out;
-    }();
-
-    return Identifier(id->str());
+    return primitives_.Internal().UnitIDFromPreimage(
+        proto, type, std::move(alloc));
 }
 }  // namespace opentxs::api::session::imp

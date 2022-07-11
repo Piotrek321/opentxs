@@ -63,14 +63,14 @@ struct AccountActivityData {
 
 auto check_account_activity(
     const User& user,
-    const ot::Identifier& account,
+    const ot::identifier::Generic& account,
     const AccountActivityData& expected) noexcept -> bool;
 auto check_account_activity_qt(
     const User& user,
-    const ot::Identifier& account,
+    const ot::identifier::Generic& account,
     const AccountActivityData& expected) noexcept -> bool;
 auto init_account_activity(
     const User& user,
-    const ot::Identifier& account,
+    const ot::identifier::Generic& account,
     Counter& counter) noexcept -> void;
 }  // namespace ottest

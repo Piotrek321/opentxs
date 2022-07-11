@@ -22,7 +22,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/Unit.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/interface/ui/BlockchainStatisticsItem.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -81,6 +80,8 @@ class BlockchainStatisticsItem final
       public std::enable_shared_from_this<BlockchainStatisticsItem>
 {
 public:
+    const api::session::Client& api_;
+
     auto ActivePeers() const noexcept -> std::size_t final
     {
         return active_peers_.load();

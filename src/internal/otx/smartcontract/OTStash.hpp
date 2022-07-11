@@ -27,7 +27,11 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-class Identifier;
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 class OTStashItem;
 class String;
 class Tag;
@@ -73,7 +77,7 @@ public:
     OTStash(const UnallocatedCString& str_stash_name);
     OTStash(const String& strInstrumentDefinitionID, std::int64_t lAmount = 0);
     OTStash(
-        const Identifier& theInstrumentDefinitionID,
+        const identifier::Generic& theInstrumentDefinitionID,
         std::int64_t lAmount = 0);
     virtual ~OTStash();
 };

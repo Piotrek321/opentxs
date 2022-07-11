@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -17,11 +19,20 @@ class Log;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace opentxs
+{
+enum class Console { err, out };
+enum class LogAction { flush, terminate };
+}  // namespace opentxs
+
 namespace opentxs::internal
 {
 class Log
 {
 public:
+    static constexpr auto flush_ = std::byte{0x00};
+    static constexpr auto terminate_ = std::byte{0x01};
+
     static auto Endpoint() noexcept -> const char*;
     static auto SetVerbosity(const int level) noexcept -> void;
     static auto Shutdown() noexcept -> void;

@@ -83,9 +83,6 @@ public:
     auto Extract(std::uint64_t& output, const std::size_t pos = 0) const
         -> bool final;
     auto get_allocator() const noexcept -> allocator_type final;
-    auto GetPointer() const -> const void* final;
-    auto GetSize() const -> std::size_t final;
-    auto IsEmpty() const -> bool final;
     auto IsNull() const -> bool final;
     auto operator==(const Data& rhs) const noexcept -> bool final;
     auto operator!=(const Data& rhs) const noexcept -> bool final;
@@ -94,8 +91,6 @@ public:
     auto operator<=(const Data& rhs) const noexcept -> bool final;
     auto operator>=(const Data& rhs) const noexcept -> bool final;
     auto size() const -> std::size_t final;
-    auto str() const -> UnallocatedCString final;
-    auto str(alloc::Default alloc) const -> CString final;
 
     auto Assign(const Data& source) noexcept -> bool final;
     auto Assign(const ReadView source) noexcept -> bool final;
@@ -163,8 +158,6 @@ public:
 
 private:
     Imp* imp_;
-
-    auto clone() const -> ByteArray* final;
 
     ByteArray(
         std::size_t size,

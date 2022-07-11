@@ -18,6 +18,7 @@
 #include "crypto/HDNode.hpp"
 #include "crypto/bip32/Imp.hpp"
 #include "internal/crypto/Factory.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/HDIndex.hpp"
@@ -128,7 +129,7 @@ auto Bip32::DeserializePublic(
 
 auto Bip32::Internal() noexcept -> internal::Bip32& { return *imp_; }
 
-auto Bip32::SeedID(const ReadView entropy) const -> OTIdentifier
+auto Bip32::SeedID(const ReadView entropy) const -> identifier::Generic
 {
     return imp_->SeedID(entropy);
 }

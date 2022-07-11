@@ -15,8 +15,8 @@
 #include "interface/ui/base/RowType.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -86,6 +86,9 @@ class ContactSubsection final : public Combined<
                                     ContactSectionSortKey>
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto Name(const UnallocatedCString& lang) const noexcept
         -> UnallocatedCString final;
     auto Type() const noexcept -> identity::wot::claim::ClaimType final

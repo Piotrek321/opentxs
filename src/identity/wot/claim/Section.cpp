@@ -281,7 +281,8 @@ auto Section::begin() const -> Section::GroupMap::const_iterator
     return imp_->groups_.cbegin();
 }
 
-auto Section::Claim(const Identifier& item) const -> std::shared_ptr<Item>
+auto Section::Claim(const identifier::Generic& item) const
+    -> std::shared_ptr<Item>
 {
     for (const auto& group : imp_->groups_) {
         OT_ASSERT(group.second);
@@ -294,7 +295,7 @@ auto Section::Claim(const Identifier& item) const -> std::shared_ptr<Item>
     return {};
 }
 
-auto Section::Delete(const Identifier& id) const -> Section
+auto Section::Delete(const identifier::Generic& id) const -> Section
 {
     bool deleted{false};
     auto map = imp_->groups_;
@@ -340,7 +341,7 @@ auto Section::Group(const claim::ClaimType& type) const
     return it->second;
 }
 
-auto Section::HaveClaim(const Identifier& item) const -> bool
+auto Section::HaveClaim(const identifier::Generic& item) const -> bool
 {
     for (const auto& group : imp_->groups_) {
         OT_ASSERT(group.second);

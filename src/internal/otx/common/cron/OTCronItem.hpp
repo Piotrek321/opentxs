@@ -78,7 +78,7 @@ public:
     // To force the Nym to close out the closing number on the receipt.
     auto DropFinalReceiptToInbox(
         const identifier::Nym& NYM_ID,
-        const Identifier& ACCOUNT_ID,
+        const identifier::Generic& ACCOUNT_ID,
         const std::int64_t& lNewTransactionNumber,
         const std::int64_t& lClosingNumber,
         const String& strOrigCronItem,
@@ -227,7 +227,7 @@ public:
 
     virtual auto GetOpeningNumber(const identifier::Nym& theNymID) const
         -> std::int64_t;
-    virtual auto GetClosingNumber(const Identifier& theAcctID) const
+    virtual auto GetClosingNumber(const identifier::Generic& theAcctID) const
         -> std::int64_t;
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
@@ -242,7 +242,7 @@ protected:
                                                            // CLOSING a
                                                            // transaction.
                                                            // (finalReceipt.)
-    OTNymID m_pCancelerNymID;
+    identifier::Nym m_pCancelerNymID;
 
     bool m_bCanceled{false};  // This defaults to false. But if someone
                               // cancels it (BEFORE it is ever activated,
@@ -283,7 +283,7 @@ protected:
         const api::Session& api,
         const identifier::Notary& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-        const Identifier& ACCT_ID,
+        const identifier::Generic& ACCT_ID,
         const identifier::Nym& NYM_ID);
     OTCronItem(const api::Session& api);
 
@@ -292,7 +292,7 @@ private:
 
     OTCron* m_pCron;
     Nym_p serverNym_;
-    OTIdentifier notaryID_;
+    identifier::Generic notaryID_;
     Time m_CREATION_DATE;      // The date, in seconds, when the CronItem was
                                // authorized.
     Time m_LAST_PROCESS_DATE;  // The last time this item was processed.

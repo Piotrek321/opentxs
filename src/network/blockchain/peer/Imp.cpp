@@ -241,7 +241,7 @@ Peer::Imp::Imp(
     OT_ASSERT(address_p_);
 }
 
-auto Peer::Imp::AddressID() const noexcept -> const Identifier&
+auto Peer::Imp::AddressID() const noexcept -> const identifier::Generic&
 {
     return address_.ID();
 }

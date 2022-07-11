@@ -301,21 +301,22 @@ struct ChildObjectData {
 };
 
 // Account activity
-using AccountActivityPrimaryID = OTNymID;
+using AccountActivityPrimaryID = identifier::Nym;
 using AccountActivityExternalInterface = ui::AccountActivity;
 using AccountActivityInternalInterface = ui::internal::AccountActivity;
 /** WorkflowID, state */
-using AccountActivityRowID = std::pair<OTIdentifier, proto::PaymentEventType>;
+using AccountActivityRowID =
+    std::pair<identifier::Generic, proto::PaymentEventType>;
 using AccountActivityRowInterface = ui::BalanceItem;
 using AccountActivityRowInternal = ui::internal::BalanceItem;
 using AccountActivityRowBlank = ui::internal::blank::BalanceItem;
 using AccountActivitySortKey = Time;
 
 // Account list
-using AccountListPrimaryID = OTNymID;
+using AccountListPrimaryID = identifier::Nym;
 using AccountListExternalInterface = ui::AccountList;
 using AccountListInternalInterface = ui::internal::AccountList;
-using AccountListRowID = OTIdentifier;
+using AccountListRowID = identifier::Generic;
 using AccountListRowInterface = ui::AccountListItem;
 using AccountListRowInternal = ui::internal::AccountListItem;
 using AccountListRowBlank = ui::internal::blank::AccountListItem;
@@ -323,26 +324,26 @@ using AccountListRowBlank = ui::internal::blank::AccountListItem;
 using AccountListSortKey = std::pair<UnitType, UnallocatedCString>;
 
 // Account summary
-using AccountSummaryPrimaryID = OTNymID;
+using AccountSummaryPrimaryID = identifier::Nym;
 using AccountSummaryExternalInterface = ui::AccountSummary;
 using AccountSummaryInternalInterface = ui::internal::AccountSummary;
-using AccountSummaryRowID = OTNymID;
+using AccountSummaryRowID = identifier::Nym;
 using AccountSummaryRowInterface = ui::IssuerItem;
 using AccountSummaryRowInternal = ui::internal::IssuerItem;
 using AccountSummaryRowBlank = ui::internal::blank::IssuerItem;
 using AccountSummarySortKey = std::pair<bool, UnallocatedCString>;
 
-using IssuerItemPrimaryID = OTNymID;
+using IssuerItemPrimaryID = identifier::Nym;
 using IssuerItemExternalInterface = AccountSummaryRowInterface;
 using IssuerItemInternalInterface = ui::internal::IssuerItem;
-using IssuerItemRowID = std::pair<OTIdentifier, UnitType>;
+using IssuerItemRowID = std::pair<identifier::Generic, UnitType>;
 using IssuerItemRowInterface = ui::AccountSummaryItem;
 using IssuerItemRowInternal = ui::internal::AccountSummaryItem;
 using IssuerItemRowBlank = ui::internal::blank::AccountSummaryItem;
 using IssuerItemSortKey = UnallocatedCString;
 
 // Account tree
-using AccountTreePrimaryID = OTNymID;
+using AccountTreePrimaryID = identifier::Nym;
 using AccountTreeExternalInterface = ui::AccountTree;
 using AccountTreeInternalInterface = ui::internal::AccountTree;
 using AccountTreeRowID = UnitType;
@@ -355,7 +356,7 @@ using AccountTreeSortKey = std::pair<int, UnallocatedCString>;
 using AccountCurrencyPrimaryID = AccountTreePrimaryID;
 using AccountCurrencyExternalInterface = AccountTreeRowInterface;
 using AccountCurrencyInternalInterface = AccountTreeRowInternal;
-using AccountCurrencyRowID = OTIdentifier;
+using AccountCurrencyRowID = identifier::Generic;
 using AccountCurrencyRowInterface = ui::AccountTreeItem;
 using AccountCurrencyRowInternal = ui::internal::AccountTreeItem;
 using AccountCurrencyRowBlank = ui::internal::blank::AccountTreeItem;
@@ -365,22 +366,22 @@ using AccountCurrencyRowData =
     ChildObjectData<AccountCurrencyRowID, AccountCurrencySortKey>;
 
 // Activity summary
-using ActivitySummaryPrimaryID = OTNymID;
+using ActivitySummaryPrimaryID = identifier::Nym;
 using ActivitySummaryExternalInterface = ui::ActivitySummary;
 using ActivitySummaryInternalInterface = ui::internal::ActivitySummary;
-using ActivitySummaryRowID = OTIdentifier;
+using ActivitySummaryRowID = identifier::Generic;
 using ActivitySummaryRowInterface = ui::ActivitySummaryItem;
 using ActivitySummaryRowInternal = ui::internal::ActivitySummaryItem;
 using ActivitySummaryRowBlank = ui::internal::blank::ActivitySummaryItem;
 using ActivitySummarySortKey = std::pair<Time, UnallocatedCString>;
 
 // Activity thread
-using ActivityThreadPrimaryID = OTNymID;
+using ActivityThreadPrimaryID = identifier::Nym;
 using ActivityThreadExternalInterface = ui::ActivityThread;
 using ActivityThreadInternalInterface = ui::internal::ActivityThread;
 /** item id, box, accountID, taskID */
-using ActivityThreadRowID =
-    std::tuple<OTIdentifier, otx::client::StorageBox, OTIdentifier>;
+using ActivityThreadRowID = std::
+    tuple<identifier::Generic, otx::client::StorageBox, identifier::Generic>;
 using ActivityThreadRowInterface = ui::ActivityThreadItem;
 using ActivityThreadRowInternal = ui::internal::ActivityThreadItem;
 using ActivityThreadRowBlank = ui::internal::blank::ActivityThreadItem;
@@ -389,12 +390,12 @@ using ActivityThreadSortKey = std::pair<Time, std::uint64_t>;
 
 // Blockchain account status
 
-using BlockchainAccountStatusPrimaryID = OTNymID;
+using BlockchainAccountStatusPrimaryID = identifier::Nym;
 using BlockchainAccountStatusExternalInterface = ui::BlockchainAccountStatus;
 using BlockchainAccountStatusInternalInterface =
     ui::internal::BlockchainAccountStatus;
 // NOTE: seed id, local payment code id, or private key id
-using BlockchainAccountStatusRowID = OTIdentifier;
+using BlockchainAccountStatusRowID = identifier::Generic;
 using BlockchainAccountStatusRowInterface = ui::BlockchainSubaccountSource;
 using BlockchainAccountStatusRowInternal =
     ui::internal::BlockchainSubaccountSource;
@@ -409,7 +410,7 @@ using BlockchainSubaccountSourceExternalInterface =
 using BlockchainSubaccountSourceInternalInterface =
     ui::internal::BlockchainSubaccountSource;
 // NOTE: subaccount id
-using BlockchainSubaccountSourceRowID = OTIdentifier;
+using BlockchainSubaccountSourceRowID = identifier::Generic;
 using BlockchainSubaccountSourceRowInterface = ui::BlockchainSubaccount;
 using BlockchainSubaccountSourceRowInternal =
     ui::internal::BlockchainSubaccount;
@@ -433,7 +434,7 @@ using BlockchainSubaccountRowData =
     ChildObjectData<BlockchainSubaccountRowID, BlockchainSubaccountSortKey>;
 
 // Blockchain selection
-using BlockchainSelectionPrimaryID = OTIdentifier;
+using BlockchainSelectionPrimaryID = identifier::Generic;
 using BlockchainSelectionExternalInterface = ui::BlockchainSelection;
 using BlockchainSelectionInternalInterface = ui::internal::BlockchainSelection;
 using BlockchainSelectionRowID = blockchain::Type;
@@ -444,7 +445,7 @@ using BlockchainSelectionRowBlank =
 using BlockchainSelectionSortKey = std::pair<UnallocatedCString, bool>;
 
 // Blockchain statistics
-using BlockchainStatisticsPrimaryID = OTIdentifier;
+using BlockchainStatisticsPrimaryID = identifier::Generic;
 using BlockchainStatisticsExternalInterface = ui::BlockchainStatistics;
 using BlockchainStatisticsInternalInterface =
     ui::internal::BlockchainStatistics;
@@ -456,7 +457,7 @@ using BlockchainStatisticsRowBlank =
 using BlockchainStatisticsSortKey = UnallocatedCString;
 
 // Contact
-using ContactPrimaryID = OTIdentifier;
+using ContactPrimaryID = identifier::Generic;
 using ContactExternalInterface = ui::Contact;
 using ContactInternalInterface = ui::internal::Contact;
 using ContactRowID = identity::wot::claim::SectionType;
@@ -478,17 +479,17 @@ using ContactSectionSortKey = int;
 using ContactSubsectionPrimaryID = ContactSectionPrimaryID;
 using ContactSubsectionExternalInterface = ContactSectionRowInterface;
 using ContactSubsectionInternalInterface = ui::internal::ContactSubsection;
-using ContactSubsectionRowID = OTIdentifier;
+using ContactSubsectionRowID = identifier::Generic;
 using ContactSubsectionRowInterface = ui::ContactItem;
 using ContactSubsectionRowInternal = ui::internal::ContactItem;
 using ContactSubsectionRowBlank = ui::internal::blank::ContactItem;
 using ContactSubsectionSortKey = int;
 
 // Contact list
-using ContactListPrimaryID = OTNymID;
+using ContactListPrimaryID = identifier::Nym;
 using ContactListExternalInterface = ui::ContactList;
 using ContactListInternalInterface = ui::internal::ContactListType;
-using ContactListRowID = OTIdentifier;
+using ContactListRowID = identifier::Generic;
 using ContactListRowInterface = ui::ContactListItem;
 using ContactListRowInternal = ui::internal::ContactListItem;
 using ContactListRowBlank = ui::internal::blank::ContactListItem;
@@ -496,7 +497,7 @@ using ContactListRowBlank = ui::internal::blank::ContactListItem;
 using ContactListSortKey = std::pair<bool, UnallocatedCString>;
 
 // Messagable list
-using MessagableListPrimaryID = OTNymID;
+using MessagableListPrimaryID = identifier::Nym;
 using MessagableExternalInterface = ui::MessagableList;
 using MessagableInternalInterface = ui::internal::MessagableList;
 using MessagableListRowID = ContactListRowID;
@@ -506,17 +507,17 @@ using MessagableListRowBlank = ContactListRowBlank;
 using MessagableListSortKey = ContactListSortKey;
 
 // Nym list
-using NymListPrimaryID = OTIdentifier;
+using NymListPrimaryID = identifier::Generic;
 using NymListExternalInterface = ui::NymList;
 using NymListInternalInterface = ui::internal::NymList;
-using NymListRowID = OTNymID;
+using NymListRowID = identifier::Nym;
 using NymListRowInterface = ui::NymListItem;
 using NymListRowInternal = ui::internal::NymListItem;
 using NymListRowBlank = ui::internal::blank::NymListItem;
 using NymListSortKey = UnallocatedCString;
 
 // Payable list
-using PayablePrimaryID = OTNymID;
+using PayablePrimaryID = identifier::Nym;
 using PayableExternalInterface = ui::PayableList;
 using PayableInternalInterface = ui::internal::PayableList;
 using PayableListRowID = ContactListRowID;
@@ -526,7 +527,7 @@ using PayableListRowBlank = ui::internal::blank::PayableListItem;
 using PayableListSortKey = ContactListSortKey;
 
 // Profile
-using ProfilePrimaryID = OTNymID;
+using ProfilePrimaryID = identifier::Nym;
 using ProfileExternalInterface = ui::Profile;
 using ProfileInternalInterface = ui::internal::Profile;
 using ProfileRowID = identity::wot::claim::SectionType;
@@ -548,18 +549,18 @@ using ProfileSectionSortKey = int;
 using ProfileSubsectionPrimaryID = ProfileSectionPrimaryID;
 using ProfileSubsectionExternalInterface = ProfileSectionRowInterface;
 using ProfileSubsectionInternalInterface = ui::internal::ProfileSubsection;
-using ProfileSubsectionRowID = OTIdentifier;
+using ProfileSubsectionRowID = identifier::Generic;
 using ProfileSubsectionRowInterface = ui::ProfileItem;
 using ProfileSubsectionRowInternal = ui::internal::ProfileItem;
 using ProfileSubsectionRowBlank = ui::internal::blank::ProfileItem;
 using ProfileSubsectionSortKey = int;
 
 // Seed tree
-using SeedTreePrimaryID = OTIdentifier;
+using SeedTreePrimaryID = identifier::Generic;
 using SeedTreeExternalInterface = ui::SeedTree;
 using SeedTreeInternalInterface = ui::internal::SeedTree;
 // seed id
-using SeedTreeRowID = OTIdentifier;
+using SeedTreeRowID = identifier::Generic;
 using SeedTreeRowInterface = ui::SeedTreeItem;
 using SeedTreeRowInternal = ui::internal::SeedTreeItem;
 using SeedTreeRowBlank = ui::internal::blank::SeedTreeItem;
@@ -569,7 +570,7 @@ using SeedTreeSortKey = std::pair<bool, UnallocatedCString>;
 using SeedTreeItemPrimaryID = SeedTreePrimaryID;
 using SeedTreeItemExternalInterface = SeedTreeRowInterface;
 using SeedTreeItemInternalInterface = SeedTreeRowInternal;
-using SeedTreeItemRowID = OTNymID;
+using SeedTreeItemRowID = identifier::Nym;
 using SeedTreeItemRowInterface = ui::SeedTreeNym;
 using SeedTreeItemRowInternal = ui::internal::SeedTreeNym;
 using SeedTreeItemRowBlank = ui::internal::blank::SeedTreeNym;
@@ -579,7 +580,7 @@ using SeedTreeItemRowData =
     ChildObjectData<SeedTreeItemRowID, SeedTreeItemSortKey>;
 
 // Unit list
-using UnitListPrimaryID = OTNymID;
+using UnitListPrimaryID = identifier::Nym;
 using UnitListExternalInterface = ui::UnitList;
 using UnitListInternalInterface = ui::internal::UnitList;
 using UnitListRowID = UnitType;
@@ -654,7 +655,7 @@ struct AccountActivity : virtual public List,
         Scale scale,
         implementation::SendMonitor::Callback cb) const noexcept -> int = 0;
     virtual auto Send(
-        const Identifier& contact,
+        const identifier::Generic& contact,
         const UnallocatedCString& amount,
         const UnallocatedCString& memo,
         Scale scale,
@@ -874,7 +875,7 @@ struct ContactItem : virtual public Row, virtual public ui::ContactItem {
     ~ContactItem() override = default;
 };
 struct ContactListType : virtual public List {
-    virtual auto ID() const noexcept -> const Identifier& = 0;
+    virtual auto ID() const noexcept -> const identifier::Generic& = 0;
     virtual auto last(const implementation::ContactListRowID& id) const noexcept
         -> bool = 0;
 
@@ -1015,7 +1016,7 @@ struct ProfileItem : virtual public Row, virtual public ui::ProfileItem {
 struct SeedTree : virtual public List, virtual public ui::SeedTree {
     struct Callbacks {
         using NymCB = std::function<void(const identifier::Nym&)>;
-        using SeedCB = std::function<void(const Identifier&)>;
+        using SeedCB = std::function<void(const identifier::Generic&)>;
 
         NymCB nym_changed_{};
         SeedCB seed_changed_{};
@@ -1066,9 +1067,9 @@ namespace blank
 struct Widget : virtual public ui::Widget {
     auto ClearCallbacks() const noexcept -> void final {}
     auto SetCallback(SimpleCallback) const noexcept -> void final {}
-    auto WidgetID() const noexcept -> OTIdentifier override
+    auto WidgetID() const noexcept -> identifier::Generic override
     {
-        return Identifier::Factory();
+        return {};
     }
 };
 struct Row : virtual public ui::internal::Row, public Widget {
@@ -1090,7 +1091,7 @@ struct List : virtual public ListType, public Row {
     auto last(const RowIDType&) const noexcept -> bool final { return false; }
     auto Next() const noexcept -> RowType final { return RowType{nullptr}; }
     virtual auto WaitForStartup() const noexcept -> void final { return; }
-    auto WidgetID() const noexcept -> OTIdentifier final
+    auto WidgetID() const noexcept -> identifier::Generic final
     {
         return blank::Widget::WidgetID();
     }
@@ -1301,7 +1302,7 @@ struct BlockchainSubaccount final
           implementation::BlockchainSubaccountRowID> {
     auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto NymID() const noexcept -> const identifier::Nym& final;
-    auto SubaccountID() const noexcept -> const Identifier& final;
+    auto SubaccountID() const noexcept -> const identifier::Generic& final;
 
     auto reindex(
         const implementation::BlockchainSubaccountSourceSortKey&,
@@ -1317,7 +1318,7 @@ struct BlockchainSubaccountSource final
           implementation::BlockchainSubaccountSourceRowID> {
     auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto NymID() const noexcept -> const identifier::Nym& final;
-    auto SourceID() const noexcept -> const Identifier& final;
+    auto SourceID() const noexcept -> const identifier::Generic& final;
     auto Type() const noexcept -> blockchain::crypto::SubaccountType final;
 
     auto reindex(
@@ -1534,7 +1535,7 @@ struct ProfileSection : public List<
     }
 
 private:
-    const OTNymID nym_id_{identifier::Nym::Factory()};
+    const identifier::Nym nym_id_{};
 };
 struct ProfileSubsection : public List<
                                internal::ProfileSubsection,
@@ -1590,7 +1591,7 @@ struct ProfileSubsection : public List<
     }
 
 private:
-    const OTNymID nym_id_{identifier::Nym::Factory()};
+    const identifier::Nym nym_id_{};
 };
 struct SeedTreeItem final : public List<
                                 internal::SeedTreeItem,
@@ -1815,7 +1816,7 @@ auto ActivitySummaryQtModel(ui::internal::ActivitySummary& parent) noexcept
 auto ActivityThreadModel(
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const opentxs::Identifier& threadID,
+    const identifier::Generic& threadID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::ActivityThread>;
 auto ActivityThreadQtModel(ui::internal::ActivityThread& parent) noexcept
@@ -1823,7 +1824,7 @@ auto ActivityThreadQtModel(ui::internal::ActivityThread& parent) noexcept
 auto BlockchainAccountActivityModel(
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const opentxs::Identifier& accountID,
+    const identifier::Generic& accountID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::AccountActivity>;
 auto BlockchainAccountStatusModel(
@@ -1902,7 +1903,7 @@ auto BalanceItem(
     const ui::implementation::AccountActivitySortKey& sortKey,
     ui::implementation::CustomData& custom,
     const identifier::Nym& nymID,
-    const opentxs::Identifier& accountID) noexcept
+    const identifier::Generic& accountID) noexcept
     -> std::shared_ptr<ui::implementation::AccountActivityRowInternal>;
 auto ContactItemWidget(
     const ui::implementation::ContactSubsectionInternalInterface& parent,
@@ -1948,7 +1949,7 @@ auto ContactSubsectionWidget(
 auto CustodialAccountActivityModel(
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const opentxs::Identifier& accountID,
+    const identifier::Generic& accountID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::AccountActivity>;
 auto IssuerItem(

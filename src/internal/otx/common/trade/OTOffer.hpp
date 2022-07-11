@@ -119,7 +119,7 @@ public:
     }
     inline auto GetScale() const -> const Amount& { return m_lScale; }
 
-    inline auto GetCurrencyID() const -> const Identifier&
+    inline auto GetCurrencyID() const -> const identifier::Generic&
     {
         return m_CURRENCY_TYPE_ID;
     }
@@ -152,7 +152,7 @@ public:
                                                   // adding/loading
                                                   // offers.
     // Overridden from Contract.
-    void GetIdentifier(Identifier& theIdentifier) const override;
+    void GetIdentifier(identifier::Generic& theIdentifier) const override;
 
     void InitOffer();
 
@@ -179,7 +179,7 @@ protected:
     // If this offer is actually connected to a trade, it will have a pointer.
     OTTrade* m_pTrade{nullptr};
     // GOLD (Asset) is trading for DOLLARS (Currency).
-    OTIdentifier m_CURRENCY_TYPE_ID;
+    identifier::Generic m_CURRENCY_TYPE_ID;
     bool m_bSelling{false};  // true = ask. false = bid.
     // If a bid, this is the most I will pay. If an ask, this is the least I
     // will sell for. My limit.

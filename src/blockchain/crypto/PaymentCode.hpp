@@ -13,6 +13,7 @@
 #include <functional>
 #include <iosfwd>
 #include <optional>
+#include <string_view>
 
 #include "Proto.hpp"
 #include "blockchain/crypto/Deterministic.hpp"
@@ -110,9 +111,9 @@ public:
     auto Reserve(
         const Subchain type,
         const std::size_t batch,
+        const identifier::Generic& contact,
         const PasswordPrompt& reason,
-        const Identifier& contact,
-        const UnallocatedCString& label,
+        const std::string_view label,
         const Time time) const noexcept -> Batch final;
     auto RootNode(const PasswordPrompt& reason) const noexcept
         -> blockchain::crypto::HDKey final
@@ -129,14 +130,14 @@ public:
         const proto::HDPath& path,
         const opentxs::blockchain::block::Txid& txid,
         const PasswordPrompt& reason,
-        Identifier& id) noexcept(false);
+        identifier::Generic& id) noexcept(false);
     PaymentCode(
         const api::Session& api,
         const api::session::Contacts& contacts,
         const crypto::Account& parent,
         const SerializedType& serialized,
-        Identifier& id,
-        OTIdentifier&& contact) noexcept(false);
+        identifier::Generic& id,
+        identifier::Generic&& contact) noexcept(false);
     PaymentCode(const PaymentCode&) = delete;
     PaymentCode(PaymentCode&&) = delete;
     auto operator=(const PaymentCode&) -> PaymentCode& = delete;
@@ -166,17 +167,18 @@ private:
         incoming_notifications_;
     mutable Latest local_;
     Latest remote_;
-    const OTIdentifier contact_id_;
+    const identifier::Generic contact_id_;
 
     auto account_already_exists(const rLock& lock) const noexcept -> bool final;
-    auto get_contact() const noexcept -> OTIdentifier final
+    auto get_contact() const noexcept -> identifier::Generic final
     {
         return contact_id_;
     }
     auto has_private(const PasswordPrompt& reason) const noexcept -> bool;
     auto save(const rLock& lock) const noexcept -> bool final;
     auto set_deterministic_contact(
-        UnallocatedSet<OTIdentifier>& contacts) const noexcept -> void final
+        UnallocatedSet<identifier::Generic>& contacts) const noexcept
+        -> void final
     {
         contacts.emplace(get_contact());
     }

@@ -28,9 +28,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/interface/ui/AccountActivity.hpp"
@@ -159,12 +157,12 @@ class UI::Imp : public Lockable
 public:
     auto AccountActivity(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback cb) const noexcept
         -> const opentxs::ui::AccountActivity&;
     virtual auto AccountActivityQt(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::AccountActivityQt*
     {
@@ -200,7 +198,8 @@ public:
     {
         return nullptr;
     }
-    auto ActivateUICallback(const Identifier& widget) const noexcept -> void;
+    auto ActivateUICallback(const identifier::Generic& widget) const noexcept
+        -> void;
     auto ActivitySummary(const identifier::Nym& nymID, const SimpleCallback cb)
         const noexcept -> const opentxs::ui::ActivitySummary&;
     virtual auto ActivitySummaryQt(
@@ -212,12 +211,12 @@ public:
     }
     auto ActivityThread(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const SimpleCallback cb) const noexcept
         -> const opentxs::ui::ActivityThread&;
     virtual auto ActivityThreadQt(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::ActivityThreadQt*
     {
@@ -265,11 +264,13 @@ public:
     }
     auto BlockchainUnitID(const opentxs::blockchain::Type chain) const noexcept
         -> const identifier::UnitDefinition&;
-    auto ClearUICallbacks(const Identifier& widget) const noexcept -> void;
-    auto Contact(const Identifier& contactID, const SimpleCallback cb)
+    auto ClearUICallbacks(const identifier::Generic& widget) const noexcept
+        -> void;
+    auto Contact(const identifier::Generic& contactID, const SimpleCallback cb)
         const noexcept -> const opentxs::ui::Contact&;
-    virtual auto ContactQt(const Identifier& contactID, const SimpleCallback cb)
-        const noexcept -> opentxs::ui::ContactQt*
+    virtual auto ContactQt(
+        const identifier::Generic& contactID,
+        const SimpleCallback cb) const noexcept -> opentxs::ui::ContactQt*
     {
         return nullptr;
     }
@@ -322,8 +323,9 @@ public:
     {
         return nullptr;
     }
-    auto RegisterUICallback(const Identifier& widget, const SimpleCallback& cb)
-        const noexcept -> void;
+    auto RegisterUICallback(
+        const identifier::Generic& widget,
+        const SimpleCallback& cb) const noexcept -> void;
     auto SeedTree(const SimpleCallback updateCB) const noexcept
         -> const opentxs::ui::SeedTree&;
     virtual auto SeedTreeQt(const SimpleCallback updateCB) const noexcept
@@ -362,21 +364,22 @@ public:
 
 protected:
     /** NymID, AccountID */
-    using AccountActivityKey = std::pair<OTNymID, OTIdentifier>;
-    using AccountListKey = OTNymID;
+    using AccountActivityKey = std::pair<identifier::Nym, identifier::Generic>;
+    using AccountListKey = identifier::Nym;
     /** NymID, currency*/
-    using AccountSummaryKey = std::pair<OTNymID, UnitType>;
-    using AccountTreeKey = OTNymID;
-    using ActivitySummaryKey = OTNymID;
-    using ActivityThreadKey = std::pair<OTNymID, OTIdentifier>;
-    using BlockchainAccountStatusKey = std::pair<OTNymID, blockchain::Type>;
-    using ContactKey = OTIdentifier;
-    using ContactListKey = OTNymID;
-    using MessagableListKey = OTNymID;
+    using AccountSummaryKey = std::pair<identifier::Nym, UnitType>;
+    using AccountTreeKey = identifier::Nym;
+    using ActivitySummaryKey = identifier::Nym;
+    using ActivityThreadKey = std::pair<identifier::Nym, identifier::Generic>;
+    using BlockchainAccountStatusKey =
+        std::pair<identifier::Nym, blockchain::Type>;
+    using ContactKey = identifier::Generic;
+    using ContactListKey = identifier::Nym;
+    using MessagableListKey = identifier::Nym;
     /** NymID, currency*/
-    using PayableListKey = std::pair<OTNymID, UnitType>;
-    using ProfileKey = OTNymID;
-    using UnitListKey = OTNymID;
+    using PayableListKey = std::pair<identifier::Nym, UnitType>;
+    using ProfileKey = identifier::Nym;
+    using UnitListKey = identifier::Nym;
 
     using AccountActivityPointer =
         std::unique_ptr<opentxs::ui::internal::AccountActivity>;
@@ -456,7 +459,7 @@ protected:
     auto account_activity(
         const Lock& lock,
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const SimpleCallback& cb) const noexcept
         -> AccountActivityMap::mapped_type&;
     auto account_list(
@@ -483,7 +486,7 @@ protected:
     auto activity_thread(
         const Lock& lock,
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const SimpleCallback& cb) const noexcept
         -> ActivityThreadMap::mapped_type&;
     auto contact_list(
@@ -500,7 +503,7 @@ protected:
         const noexcept -> BlockchainStatisticsPointer&;
     auto contact(
         const Lock& lock,
-        const Identifier& contactID,
+        const identifier::Generic& contactID,
         const SimpleCallback& cb) const noexcept -> ContactMap::mapped_type&;
     auto blockchain_account_status(
         const Lock& lock,
@@ -508,7 +511,7 @@ protected:
         const opentxs::blockchain::Type chain,
         const SimpleCallback& cb) const noexcept
         -> BlockchainAccountStatusMap::mapped_type&;
-    auto is_blockchain_account(const Identifier& id) const noexcept
+    auto is_blockchain_account(const identifier::Generic& id) const noexcept
         -> std::optional<opentxs::blockchain::Type>;
     auto messagable_list(
         const Lock& lock,

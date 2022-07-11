@@ -68,7 +68,8 @@ public:
         }
 
         return external_->Start(
-            address.Bytes().str() + ':' + std::to_string(address.Port()));
+            UnallocatedCString{address.Bytes().Bytes()} + ':' +
+            std::to_string(address.Port()));
     }
 
     auto LookupIncomingSocket(const int id) noexcept(false)

@@ -13,8 +13,6 @@
 #include <string_view>
 
 #include "interface/ui/base/List.hpp"
-#include "interface/ui/base/Widget.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Types.hpp"
 #include "opentxs/interface/ui/AccountTreeItem.hpp"
 
@@ -50,6 +48,7 @@ AccountCurrency::AccountCurrency(
           rowID,
           key,
           false)
+    , api_(api)
 {
 }
 
@@ -58,7 +57,7 @@ auto AccountCurrency::construct_row(
     const AccountCurrencySortKey& index,
     CustomData& custom) const noexcept -> RowPointer
 {
-    return factory::AccountTreeItem(*this, Widget::api_, id, index, custom);
+    return factory::AccountTreeItem(*this, api_, id, index, custom);
 }
 
 auto AccountCurrency::Debug() const noexcept -> UnallocatedCString

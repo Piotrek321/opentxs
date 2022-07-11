@@ -15,6 +15,7 @@
 
 #include "Proto.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"

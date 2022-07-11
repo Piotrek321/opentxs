@@ -93,8 +93,7 @@ private:
 };
 
 RPC_fixture::RPC_fixture() noexcept
-    : ot_(ot::Context())
-    , push_([&]() -> auto& {
+    : push_([&]() -> auto& {
         static auto out = RPCPushCounter{ot_};
 
         return out;
@@ -155,7 +154,7 @@ auto RPC_fixture::CreateNym(
 
     OT_ASSERT(nym);
 
-    const auto id = nym->ID().str();
+    const auto id = nym->ID().asBase58(ot_.Crypto());
     auto& nyms = local_nym_map_.at(api.Instance());
     nyms.emplace(id);
 
@@ -167,7 +166,7 @@ auto RPC_fixture::DepositCheques(
     const ot::api::session::Notary& server,
     const ot::UnallocatedCString& nym) const noexcept -> std::size_t
 {
-    return DepositCheques(api, server, api.Factory().NymID(nym));
+    return DepositCheques(api, server, api.Factory().NymIDFromBase58(nym));
 }
 
 auto RPC_fixture::DepositCheques(
@@ -241,7 +240,8 @@ auto RPC_fixture::InitAccountActivityCounter(
     const ot::UnallocatedCString& account,
     Counter& counter) const noexcept -> void
 {
-    InitAccountActivityCounter(api, api.Factory().NymID(nym), account, counter);
+    InitAccountActivityCounter(
+        api, api.Factory().NymIDFromBase58(nym), account, counter);
 }
 
 auto RPC_fixture::InitAccountActivityCounter(
@@ -260,7 +260,7 @@ auto RPC_fixture::InitAccountActivityCounter(
 {
     api.UI().AccountActivity(
         nym,
-        api.Factory().Identifier(account),
+        api.Factory().IdentifierFromBase58(account),
         make_cb(
             counter, ot::UnallocatedCString{u8"account activity "} + account));
 }
@@ -280,7 +280,8 @@ auto RPC_fixture::InitAccountTreeCounter(
         nym,
         make_cb(
             counter,
-            ot::UnallocatedCString{u8"account tree for "} + nym.str()));
+            ot::UnallocatedCString{u8"account tree for "} +
+                nym.asBase58(ot_.Crypto())));
 }
 
 auto RPC_fixture::IssueUnit(
@@ -296,7 +297,7 @@ auto RPC_fixture::IssueUnit(
     return IssueUnit(
         api,
         server,
-        api.Factory().NymID(issuer),
+        api.Factory().NymIDFromBase58(issuer),
         shortname,
         terms,
         unitOfAccount,
@@ -314,7 +315,7 @@ auto RPC_fixture::IssueUnit(
     return IssueUnit(
         api,
         server,
-        api.Factory().NymID(issuer),
+        api.Factory().NymIDFromBase58(issuer),
         shortname,
         terms,
         unitOfAccount,
@@ -388,7 +389,7 @@ auto RPC_fixture::IssueUnit(
     const auto& serverID = server.ID();
     const auto reason = api.Factory().PasswordPrompt(__func__);
     const auto contract = api.Wallet().CurrencyContract(
-        nymID.str(),
+        nymID.asBase58(ot_.Crypto()),
         shortname,
         terms,
         unitOfAccount,
@@ -398,8 +399,9 @@ auto RPC_fixture::IssueUnit(
 
     if (0u == contract->Version()) { return {}; }
 
-    const auto& output = created_units_.emplace_back(contract->ID()->str());
-    const auto unitID = api.Factory().UnitID(output);
+    const auto& output =
+        created_units_.emplace_back(contract->ID().asBase58(ot_.Crypto()));
+    const auto unitID = api.Factory().UnitIDFromBase58(output);
     auto [taskID, future] = api.OTX().IssueUnitDefinition(
         nymID, serverID, unitID, unitOfAccount, "issuer account");
 
@@ -409,8 +411,9 @@ auto RPC_fixture::IssueUnit(
 
     if (ot::otx::LastReplyStatus::MessageSuccess != status) { return {}; }
 
-    const auto& accountID = registered_accounts_[nymID.str()].emplace_back(
-        message->m_strAcctID->Get());
+    const auto& accountID =
+        registered_accounts_[nymID.asBase58(ot_.Crypto())].emplace_back(
+            message->m_strAcctID->Get());
 
     if (accountID.empty()) { return {}; }
 
@@ -436,7 +439,7 @@ auto RPC_fixture::RefreshAccount(
     api.OTX().Refresh();
 
     for (const auto& nym : nyms) {
-        api.OTX().ContextIdle(api.Factory().NymID(nym), server).get();
+        api.OTX().ContextIdle(api.Factory().NymIDFromBase58(nym), server).get();
     }
 }
 
@@ -462,7 +465,8 @@ auto RPC_fixture::RegisterAccount(
     const ot::UnallocatedCString& label) const noexcept
     -> ot::UnallocatedCString
 {
-    return RegisterAccount(api, server, api.Factory().NymID(nym), unit, label);
+    return RegisterAccount(
+        api, server, api.Factory().NymIDFromBase58(nym), unit, label);
 }
 
 auto RPC_fixture::RegisterAccount(
@@ -484,7 +488,7 @@ auto RPC_fixture::RegisterAccount(
     -> ot::UnallocatedCString
 {
     const auto& serverID = server.ID();
-    const auto unitID = api.Factory().UnitID(unit);
+    const auto unitID = api.Factory().UnitIDFromBase58(unit);
     auto [taskID, future] =
         api.OTX().RegisterAccount(nymID, serverID, unitID, label);
 
@@ -495,8 +499,9 @@ auto RPC_fixture::RegisterAccount(
     if (ot::otx::LastReplyStatus::MessageSuccess != status) { return {}; }
 
     RefreshAccount(api, nymID, serverID);
-    const auto& accountID = registered_accounts_[nymID.str()].emplace_back(
-        message->m_strAcctID->Get());
+    const auto& accountID =
+        registered_accounts_[nymID.asBase58(ot_.Crypto())].emplace_back(
+            message->m_strAcctID->Get());
 
     return accountID;
 }
@@ -506,7 +511,7 @@ auto RPC_fixture::RegisterNym(
     const ot::api::session::Notary& server,
     const ot::UnallocatedCString& nymID) const noexcept -> bool
 {
-    return RegisterNym(api, server, api.Factory().NymID(nymID));
+    return RegisterNym(api, server, api.Factory().NymIDFromBase58(nymID));
 }
 
 auto RPC_fixture::RegisterNym(
@@ -545,7 +550,13 @@ auto RPC_fixture::SendCheque(
     Amount amount) const noexcept -> bool
 {
     return SendCheque(
-        api, server, api.Factory().NymID(nym), account, contact, memo, amount);
+        api,
+        server,
+        api.Factory().NymIDFromBase58(nym),
+        account,
+        contact,
+        memo,
+        amount);
 }
 
 auto RPC_fixture::SendCheque(
@@ -570,8 +581,8 @@ auto RPC_fixture::SendCheque(
     Amount amount) const noexcept -> bool
 {
     const auto& serverID = server.ID();
-    const auto accountID = api.Factory().Identifier(account);
-    const auto contactID = api.Factory().Identifier(contact);
+    const auto accountID = api.Factory().IdentifierFromBase58(account);
+    const auto contactID = api.Factory().IdentifierFromBase58(contact);
     auto [taskID, future] =
         api.OTX().SendCheque(nymID, accountID, contactID, amount, memo);
 
@@ -598,7 +609,7 @@ auto RPC_fixture::SendTransfer(
     return SendTransfer(
         api,
         server,
-        api.Factory().NymID(sender),
+        api.Factory().NymIDFromBase58(sender),
         fromAccount,
         toAccount,
         memo,
@@ -633,8 +644,8 @@ auto RPC_fixture::SendTransfer(
     Amount amount) const noexcept -> bool
 {
     const auto& serverID = server.ID();
-    const auto from = api.Factory().Identifier(fromAccount);
-    const auto to = api.Factory().Identifier(toAccount);
+    const auto from = api.Factory().IdentifierFromBase58(fromAccount);
+    const auto to = api.Factory().IdentifierFromBase58(toAccount);
     auto [taskID, future] =
         api.OTX().SendTransfer(nymID, serverID, from, to, amount, memo);
 
@@ -685,7 +696,7 @@ auto RPC_fixture::StartNotarySession(int index) const noexcept
         lNyms.begin(),
         lNyms.end(),
         std::inserter(nyms, nyms.end()),
-        [](const auto& in) { return in->str(); });
+        [this](const auto& in) { return in.asBase58(ot_.Crypto()); });
     auto& seeds = seed_map_.at(instance);
     seeds.emplace(out.Crypto().Seed().DefaultSeed().first);
 

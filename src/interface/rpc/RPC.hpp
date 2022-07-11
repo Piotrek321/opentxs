@@ -55,6 +55,7 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class UnitDefinition;
 }  // namespace identifier
@@ -85,7 +86,6 @@ class SendPayment;
 class AccountData;
 }  // namespace rpc
 
-class Identifier;
 class Options;
 // }  // namespace v1
 }  // namespace opentxs
@@ -120,7 +120,7 @@ private:
     using Result = api::session::OTX::Result;
     using Finish =
         std::function<void(const Result& result, proto::TaskComplete& output)>;
-    using TaskData = std::tuple<Future, Finish, OTNymID>;
+    using TaskData = std::tuple<Future, Finish, identifier::Nym>;
 
     const api::Context& ot_;
     mutable std::mutex task_lock_;
@@ -216,13 +216,13 @@ private:
     auto get_account_balance_blockchain(
         const request::Base& base,
         const std::size_t index,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         UnallocatedVector<AccountData>& balances,
         response::Base::Responses& codes) const noexcept -> void;
     auto get_account_balance_custodial(
         const api::Session& api,
         const std::size_t index,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         UnallocatedVector<AccountData>& balances,
         response::Base::Responses& codes) const noexcept -> void;
     auto get_compatible_accounts(const proto::RPCCommand& command) const
@@ -262,8 +262,9 @@ private:
         -> proto::RPCResponse;
     auto import_server_contract(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
-    auto is_blockchain_account(const request::Base& base, const Identifier& id)
-        const noexcept -> bool;
+    auto is_blockchain_account(
+        const request::Base& base,
+        const identifier::Generic& id) const noexcept -> bool;
     auto is_client_session(std::int32_t instance) const -> bool;
     auto is_server_session(std::int32_t instance) const -> bool;
     auto is_session_valid(std::int32_t instance) const -> bool;

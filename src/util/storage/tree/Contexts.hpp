@@ -14,8 +14,26 @@
 #include "opentxs/util/Container.hpp"
 #include "util/storage/tree/Node.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 namespace proto
 {
 class Context;
@@ -26,17 +44,23 @@ namespace storage
 {
 class Driver;
 class Nym;
+}  // namespace storage
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace opentxs::storage
+{
 class Contexts final : public Node
 {
 public:
     auto Load(
-        const UnallocatedCString& id,
+        const identifier::Nym& id,
         std::shared_ptr<proto::Context>& output,
         UnallocatedCString& alias,
         const bool checking) const -> bool;
 
-    auto Delete(const UnallocatedCString& id) -> bool;
+    auto Delete(const identifier::Nym& id) -> bool;
     auto Store(const proto::Context& data, const UnallocatedCString& alias)
         -> bool;
 
@@ -55,7 +79,10 @@ private:
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
 
-    Contexts(const Driver& storage, const UnallocatedCString& hash);
+    Contexts(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& hash);
 };
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

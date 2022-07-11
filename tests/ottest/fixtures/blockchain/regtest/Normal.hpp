@@ -14,6 +14,11 @@
 // {
 namespace opentxs
 {
+namespace api
+{
+class Context;
+}  // namespace api
+
 class Options;
 }  // namespace opentxs
 // }  // namespace v1
@@ -24,7 +29,10 @@ namespace ottest
 class Regtest_fixture_normal : public Regtest_fixture_base
 {
 protected:
-    Regtest_fixture_normal(const int clientCount);
-    Regtest_fixture_normal(const int clientCount, ot::Options clientArgs);
+    Regtest_fixture_normal(const ot::api::Context& ot, const int clientCount);
+    Regtest_fixture_normal(
+        const ot::api::Context& ot,
+        const int clientCount,
+        ot::Options clientArgs);
 };
 }  // namespace ottest

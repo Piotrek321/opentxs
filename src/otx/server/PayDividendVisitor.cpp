@@ -39,7 +39,7 @@ PayDividendVisitor::PayDividendVisitor(
     const identifier::Notary& theNotaryID,
     const identifier::Nym& theNymID,
     const identifier::UnitDefinition& thePayoutUnitTypeId,
-    const Identifier& theVoucherAcctID,
+    const identifier::Generic& theVoucherAcctID,
     const String& strMemo,
     const Amount& lPayoutPerShare)
     : AccountVisitor(server.API().Wallet(), theNotaryID)
@@ -104,7 +104,7 @@ auto PayDividendVisitor::Trigger(
     bool bReturnValue = false;
 
     auto theVoucher{server_.API().Factory().InternalSession().Cheque(
-        theNotaryID, server_.API().Factory().UnitID())};
+        theNotaryID, identifier::UnitDefinition{})};
 
     OT_ASSERT(false != bool(theVoucher));
 
@@ -209,7 +209,7 @@ auto PayDividendVisitor::Trigger(
         if (!bSent) {
             auto theReturnVoucher{
                 server_.API().Factory().InternalSession().Cheque(
-                    theNotaryID, server_.API().Factory().UnitID())};
+                    theNotaryID, identifier::UnitDefinition{})};
 
             OT_ASSERT(false != bool(theReturnVoucher));
 

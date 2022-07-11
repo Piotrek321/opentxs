@@ -20,8 +20,14 @@ namespace opentxs::storage
 {
 const UnallocatedCString Node::BLANK_HASH = "blankblankblankblankblank";
 
-Node::Node(const Driver& storage, const UnallocatedCString& key)
-    : driver_(storage)
+Node::Node(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
+    const Driver& storage,
+    const UnallocatedCString& key)
+    : crypto_(crypto)
+    , factory_(factory)
+    , driver_(storage)
     , version_(0)
     , original_version_(0)
     , root_(key)

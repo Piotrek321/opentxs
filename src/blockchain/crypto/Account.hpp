@@ -80,16 +80,16 @@ namespace opentxs::blockchain::crypto::implementation
 class Account final : public internal::Account
 {
 public:
-    using Accounts = UnallocatedSet<OTIdentifier>;
+    using Accounts = UnallocatedSet<identifier::Generic>;
 
-    auto AccountID() const noexcept -> const Identifier& final
+    auto AccountID() const noexcept -> const identifier::Generic& final
     {
         return account_id_;
     }
     auto AssociateTransaction(
         const UnallocatedVector<Activity>& unspent,
         const UnallocatedVector<Activity>& spent,
-        UnallocatedSet<OTIdentifier>& contacts,
+        UnallocatedSet<identifier::Generic>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto Chain() const noexcept -> opentxs::blockchain::Type final
     {
@@ -105,7 +105,7 @@ public:
         -> UnallocatedCString final;
     auto GetDepositAddress(
         const blockchain::crypto::AddressStyle style,
-        const Identifier& contact,
+        const identifier::Generic& contact,
         const PasswordPrompt& reason,
         const UnallocatedCString& memo) const noexcept
         -> UnallocatedCString final;
@@ -140,20 +140,20 @@ public:
     {
         return parent_;
     }
-    auto Subaccount(const Identifier& id) const noexcept(false)
+    auto Subaccount(const identifier::Generic& id) const noexcept(false)
         -> const crypto::Subaccount& final;
 
     auto AddHDNode(
         const proto::HDPath& path,
         const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
-        Identifier& id) noexcept -> bool final;
+        identifier::Generic& id) noexcept -> bool final;
     auto AddUpdatePaymentCode(
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
         const PasswordPrompt& reason,
-        Identifier& out) noexcept -> bool final
+        identifier::Generic& out) noexcept -> bool final
     {
         return payment_code_.Construct(
             out, contacts_, local, remote, path, reason);
@@ -164,7 +164,7 @@ public:
         const proto::HDPath& path,
         const opentxs::blockchain::block::Txid& txid,
         const PasswordPrompt& reason,
-        Identifier& out) noexcept -> bool final
+        identifier::Generic& out) noexcept -> bool final
     {
         return payment_code_.Construct(
             out, contacts_, local, remote, path, txid, reason);
@@ -196,9 +196,9 @@ private:
         using const_iterator = typename InterfaceType::const_iterator;
         using value_type = typename InterfaceType::value_type;
 
-        auto all() const noexcept -> UnallocatedSet<OTIdentifier> final
+        auto all() const noexcept -> UnallocatedSet<identifier::Generic> final
         {
-            auto out = UnallocatedSet<OTIdentifier>{};
+            auto out = UnallocatedSet<identifier::Generic>{};
             auto lock = Lock{lock_};
 
             for (const auto& [id, count] : index_) { out.emplace(id); }
@@ -211,7 +211,7 @@ private:
 
             return *nodes_.at(position);
         }
-        auto at(const Identifier& id) const -> const PayloadType& final
+        auto at(const identifier::Generic& id) const -> const PayloadType& final
         {
             auto lock = Lock{lock_};
 
@@ -245,14 +245,15 @@ private:
 
             return *nodes_.at(position);
         }
-        auto at(const Identifier& id) -> PayloadType&
+        auto at(const identifier::Generic& id) -> PayloadType&
         {
             auto lock = Lock{lock_};
 
             return *nodes_.at(index_.at(id));
         }
         template <typename... Args>
-        auto Construct(Identifier& out, const Args&... args) noexcept -> bool
+        auto Construct(identifier::Generic& out, const Args&... args) noexcept
+            -> bool
         {
             auto lock = Lock{lock_};
 
@@ -278,16 +279,16 @@ private:
         Account& parent_;
         mutable std::mutex lock_;
         UnallocatedVector<std::unique_ptr<PayloadType>> nodes_;
-        UnallocatedMap<OTIdentifier, std::size_t> index_;
+        UnallocatedMap<identifier::Generic, std::size_t> index_;
 
         auto add(
             const Lock& lock,
-            const Identifier& id,
+            const identifier::Generic& id,
             std::unique_ptr<PayloadType> node) noexcept -> bool;
         template <typename... Args>
         auto construct(
             const Lock& lock,
-            Identifier& id,
+            identifier::Generic& id,
             const Args&... args) noexcept -> bool
         {
             auto node{
@@ -315,7 +316,7 @@ private:
         static auto get(
             const api::Session& api,
             const crypto::Account& parent,
-            Identifier& id,
+            identifier::Generic& id,
             const Args&... args) noexcept -> std::unique_ptr<ReturnType>;
     };
 
@@ -350,8 +351,8 @@ private:
     const crypto::Wallet& parent_;
     const AccountIndex& account_index_;
     const opentxs::blockchain::Type chain_;
-    const OTNymID nym_id_;
-    const OTIdentifier account_id_;
+    const identifier::Nym nym_id_;
+    const identifier::Generic account_id_;
     HDNodes hd_;
     ImportedNodes imported_;
     NotificationNodes notification_;
@@ -368,7 +369,7 @@ private:
 
     auto find_next_element(
         Subchain subchain,
-        const Identifier& contact,
+        const identifier::Generic& contact,
         const UnallocatedCString& label,
         const PasswordPrompt& reason) const noexcept(false) -> const Element&;
 };

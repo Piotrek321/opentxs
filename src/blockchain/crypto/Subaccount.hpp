@@ -25,7 +25,6 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -93,13 +92,13 @@ public:
     auto AssociateTransaction(
         const UnallocatedVector<Activity>& unspent,
         const UnallocatedVector<Activity>& outgoing,
-        UnallocatedSet<OTIdentifier>& contacts,
+        UnallocatedSet<identifier::Generic>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto Describe() const noexcept -> std::string_view final
     {
         return description_;
     }
-    auto ID() const noexcept -> const Identifier& final { return id_; }
+    auto ID() const noexcept -> const identifier::Generic& final { return id_; }
     auto Internal() const noexcept -> internal::Subaccount& final
     {
         return const_cast<Subaccount&>(*this);
@@ -126,11 +125,11 @@ public:
     auto SetContact(
         const Subchain type,
         const Bip32Index index,
-        const Identifier& id) noexcept(false) -> bool final;
+        const identifier::Generic& id) noexcept(false) -> bool final;
     auto SetLabel(
         const Subchain type,
         const Bip32Index index,
-        const UnallocatedCString& label) noexcept(false) -> bool final;
+        const std::string_view label) noexcept(false) -> bool final;
     auto SetScanProgress(
         const block::Position& progress,
         Subchain type) noexcept -> void override
@@ -177,7 +176,7 @@ protected:
     const crypto::Account& parent_;
     const opentxs::blockchain::Type chain_;
     const SubaccountType type_;
-    const OTIdentifier id_;
+    const identifier::Generic id_;
     const CString description_;
     mutable std::recursive_mutex lock_;
     mutable std::atomic<Revision> revision_;
@@ -196,9 +195,10 @@ protected:
     static auto convert(const UnallocatedVector<Activity>& in) noexcept
         -> internal::ActivityMap;
     static auto describe(
+        const api::Session& api,
         const opentxs::blockchain::Type chain,
         const SubaccountType type,
-        const Identifier& id) noexcept -> CString;
+        const identifier::Generic& id) noexcept -> CString;
 
     virtual auto account_already_exists(const rLock& lock) const noexcept
         -> bool = 0;
@@ -227,14 +227,14 @@ protected:
         const api::Session& api,
         const crypto::Account& parent,
         const SubaccountType type,
-        OTIdentifier&& id,
-        Identifier& out) noexcept;
+        identifier::Generic&& id,
+        identifier::Generic& out) noexcept;
     Subaccount(
         const api::Session& api,
         const crypto::Account& parent,
         const SubaccountType type,
         const SerializedType& serialized,
-        Identifier& out) noexcept(false);
+        identifier::Generic& out) noexcept(false);
 
 private:
     static constexpr auto ActivityVersion = VersionNumber{1};
@@ -243,7 +243,7 @@ private:
     virtual auto check_activity(
         const rLock& lock,
         const UnallocatedVector<Activity>& unspent,
-        UnallocatedSet<OTIdentifier>& contacts,
+        UnallocatedSet<identifier::Generic>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
 
     virtual auto confirm(
@@ -263,10 +263,10 @@ private:
         const api::Session& api,
         const crypto::Account& parent,
         const SubaccountType type,
-        OTIdentifier&& id,
+        identifier::Generic&& id,
         const Revision revision,
         const UnallocatedVector<Activity>& unspent,
         const UnallocatedVector<Activity>& spent,
-        Identifier& out) noexcept;
+        identifier::Generic& out) noexcept;
 };
 }  // namespace opentxs::blockchain::crypto::implementation

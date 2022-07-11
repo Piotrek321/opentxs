@@ -146,7 +146,7 @@ auto Hash::Digest(
     const AllocateOutput destination) const noexcept -> bool
 {
     const auto type = static_cast<opentxs::crypto::HashType>(hash);
-    auto temp = ByteArray{};  // TODO IdentifierEncode should accept ReadView
+    auto temp = ByteArray{};
 
     try {
         if (false == Digest(type, data, temp.WriteInto())) {
@@ -154,7 +154,7 @@ auto Hash::Digest(
             throw std::runtime_error{"failed to calculate hash"};
         }
 
-        const auto encoded = encode_.IdentifierEncode(temp);
+        const auto encoded = encode_.IdentifierEncode(temp.Bytes());
         auto output = destination(encoded.size());
 
         if (false == output.valid(encoded.size())) {

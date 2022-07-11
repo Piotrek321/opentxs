@@ -20,7 +20,6 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -47,6 +46,11 @@ class Account;
 class AccountIndex;
 }  // namespace crypto
 }  // namespace blockchain
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
 
 namespace proto
 {
@@ -96,7 +100,7 @@ public:
         const proto::HDPath& path,
         const crypto::HDProtocol standard,
         const PasswordPrompt& reason,
-        Identifier& id) noexcept -> bool final;
+        identifier::Generic& id) noexcept -> bool final;
 
     Wallet(
         const api::Session& api,
@@ -112,7 +116,7 @@ public:
     ~Wallet() final = default;
 
 private:
-    using Accounts = UnallocatedSet<OTIdentifier>;
+    using Accounts = UnallocatedSet<identifier::Generic>;
 
     const api::crypto::Blockchain& parent_;
     const AccountIndex& account_index_;
@@ -121,7 +125,7 @@ private:
     const opentxs::blockchain::Type chain_;
     mutable std::mutex lock_;
     UnallocatedVector<std::unique_ptr<crypto::Account>> trees_;
-    UnallocatedMap<OTNymID, std::size_t> index_;
+    UnallocatedMap<identifier::Nym, std::size_t> index_;
 
     using crypto::Wallet::at;
     auto at(const Lock& lock, const std::size_t index) const noexcept(false)

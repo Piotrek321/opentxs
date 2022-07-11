@@ -21,6 +21,7 @@
 #include "internal/api/crypto/blockchain/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
+#include "internal/core/Factory.hpp"  // IWYU pragma: keep
 #include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"                // IWYU pragma: keep
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
@@ -40,6 +41,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/Unit.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/interface/ui/AccountCurrency.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -143,15 +145,14 @@ auto AccountTree::construct_row(
     const AccountTreeSortKey& index,
     CustomData& custom) const noexcept -> RowPointer
 {
-    return factory::AccountCurrencyWidget(
-        *this, Widget::api_, id, index, custom);
+    return factory::AccountCurrencyWidget(*this, api_, id, index, custom);
 }
 
 auto AccountTree::Debug() const noexcept -> UnallocatedCString
 {
     auto out = std::stringstream{};
     auto counter{-1};
-    out << "Account tree for " << Owner().str() << '\n';
+    out << "Account tree for " << Owner().asBase58(api_.Crypto()) << '\n';
     auto row = First();
 
     if (row->Valid()) {
@@ -191,21 +192,22 @@ auto AccountTree::load() noexcept -> void
 auto AccountTree::load_blockchain(ChildMap& out, SubscribeSet& subscribe)
     const noexcept -> void
 {
-    const auto& blockchain = Widget::api_.Crypto().Blockchain();
+    const auto& blockchain = api_.Crypto().Blockchain();
 
     for (const auto& account : blockchain.AccountList(primary_id_)) {
         load_blockchain_account(
-            std::move(const_cast<OTIdentifier&>(account)), out, subscribe);
+            std::move(const_cast<identifier::Generic&>(account)),
+            out,
+            subscribe);
     }
 }
 
 auto AccountTree::load_blockchain_account(
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     ChildMap& out,
     SubscribeSet& subscribe) const noexcept -> void
 {
-    const auto [chain, owner] =
-        Widget::api_.Crypto().Blockchain().LookupAccount(id);
+    const auto [chain, owner] = api_.Crypto().Blockchain().LookupAccount(id);
 
     OT_ASSERT(blockchain::Type::Unknown != chain);
     OT_ASSERT(owner == primary_id_);
@@ -219,10 +221,8 @@ auto AccountTree::load_blockchain_account(
     SubscribeSet& subscribe) const noexcept -> void
 {
     load_blockchain_account(
-        OTIdentifier{Widget::api_.Crypto()
-                         .Blockchain()
-                         .Account(primary_id_, chain)
-                         .AccountID()},
+        identifier::Generic{
+            api_.Crypto().Blockchain().Account(primary_id_, chain).AccountID()},
         chain,
         {},
         out,
@@ -230,7 +230,7 @@ auto AccountTree::load_blockchain_account(
 }
 
 auto AccountTree::load_blockchain_account(
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     blockchain::Type chain,
     ChildMap& out,
     SubscribeSet& subscribe) const noexcept -> void
@@ -239,7 +239,7 @@ auto AccountTree::load_blockchain_account(
 }
 
 auto AccountTree::load_blockchain_account(
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     blockchain::Type chain,
     Amount&& balance,
     ChildMap& out,
@@ -261,7 +261,7 @@ auto AccountTree::load_blockchain_account(
     }
     ();
     auto& accountMap = std::get<3>(currencyData);
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     // TODO set sort index
     auto [it, added] = accountMap.try_emplace(
         std::move(id),
@@ -272,12 +272,12 @@ auto AccountTree::load_blockchain_account(
             auto out = CustomData{};
             out.reserve(4);
             out.emplace_back(std::make_unique<UnitType>(type).release());
-            out.emplace_back(
-                std::make_unique<OTUnitID>(blockchain::UnitID(api, chain))
-                    .release());
-            out.emplace_back(
-                std::make_unique<OTNotaryID>(blockchain::NotaryID(api, chain))
-                    .release());
+            out.emplace_back(std::make_unique<identifier::UnitDefinition>(
+                                 blockchain::UnitID(api, chain))
+                                 .release());
+            out.emplace_back(std::make_unique<identifier::Notary>(
+                                 blockchain::NotaryID(api, chain))
+                                 .release());
             out.emplace_back(
                 std::make_unique<Amount>(std::move(balance)).release());
 
@@ -294,24 +294,25 @@ auto AccountTree::load_blockchain_account(
 
 auto AccountTree::load_custodial(ChildMap& out) const noexcept -> void
 {
-    const auto& storage = Widget::api_.Storage();
+    const auto& storage = api_.Storage();
 
     for (const auto& account : storage.AccountsByOwner(primary_id_)) {
         load_custodial_account(
-            std::move(const_cast<OTIdentifier&>(account)), out);
+            std::move(const_cast<identifier::Generic&>(account)), out);
     }
 }
 
-auto AccountTree::load_custodial_account(OTIdentifier&& id, ChildMap& out)
-    const noexcept -> void
+auto AccountTree::load_custodial_account(
+    identifier::Generic&& id,
+    ChildMap& out) const noexcept -> void
 {
-    const auto& wallet = Widget::api_.Wallet();
+    const auto& wallet = api_.Wallet();
     auto account = wallet.Internal().Account(id);
     const auto& contractID = account.get().GetInstrumentDefinitionID();
     const auto contract = wallet.UnitDefinition(contractID);
     load_custodial_account(
         std::move(id),
-        OTUnitID{contractID},
+        identifier::UnitDefinition{contractID},
         contract->UnitOfAccount(),
         account.get().GetBalance(),
         account.get().Alias(),
@@ -319,17 +320,17 @@ auto AccountTree::load_custodial_account(OTIdentifier&& id, ChildMap& out)
 }
 
 auto AccountTree::load_custodial_account(
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     Amount&& balance,
     ChildMap& out) const noexcept -> void
 {
-    const auto& wallet = Widget::api_.Wallet();
+    const auto& wallet = api_.Wallet();
     auto account = wallet.Internal().Account(id);
     const auto& contractID = account.get().GetInstrumentDefinitionID();
     const auto contract = wallet.UnitDefinition(contractID);
     load_custodial_account(
         std::move(id),
-        OTUnitID{contractID},
+        identifier::UnitDefinition{contractID},
         contract->UnitOfAccount(),
         std::move(balance),
         account.get().Alias(),
@@ -337,8 +338,8 @@ auto AccountTree::load_custodial_account(
 }
 
 auto AccountTree::load_custodial_account(
-    OTIdentifier&& id,
-    OTUnitID&& contract,
+    identifier::Generic&& id,
+    identifier::UnitDefinition&& contract,
     UnitType type,
     Amount&& balance,
     UnallocatedCString&& name,
@@ -359,7 +360,7 @@ auto AccountTree::load_custodial_account(
     }
     ();
     auto& accountMap = std::get<3>(currencyData);
-    const auto& api = Widget::api_;
+    const auto& api = api_;
     auto notaryID = api.Storage().AccountServer(id);
     // TODO set sort index
     auto [it, added] = accountMap.try_emplace(
@@ -371,10 +372,12 @@ auto AccountTree::load_custodial_account(
             auto out = CustomData{};
             out.reserve(4);
             out.emplace_back(std::make_unique<UnitType>(type).release());
+            out.emplace_back(std::make_unique<identifier::UnitDefinition>(
+                                 std::move(contract))
+                                 .release());
             out.emplace_back(
-                std::make_unique<OTUnitID>(std::move(contract)).release());
-            out.emplace_back(
-                std::make_unique<OTNotaryID>(std::move(notaryID)).release());
+                std::make_unique<identifier::Notary>(std::move(notaryID))
+                    .release());
             out.emplace_back(
                 std::make_unique<Amount>(std::move(balance)).release());
 
@@ -456,7 +459,7 @@ auto AccountTree::process_blockchain(Message&& message) noexcept -> void
 
     OT_ASSERT(4 < body.size());
 
-    const auto nymID = Widget::api_.Factory().NymID(body.at(2));
+    const auto nymID = api_.Factory().NymIDFromHash(body.at(2).Bytes());
 
     if (nymID != primary_id_) {
         LogInsane()(OT_PRETTY_CLASS())("Update does not apply to this widget")
@@ -486,15 +489,13 @@ auto AccountTree::process_blockchain_balance(Message&& message) noexcept -> void
     OT_ASSERT(3 < body.size());
 
     const auto chain = body.at(1).as<blockchain::Type>();
-    const auto& accountID = Widget::api_.Crypto()
-                                .Blockchain()
-                                .Account(primary_id_, chain)
-                                .AccountID();
+    const auto& accountID =
+        api_.Crypto().Blockchain().Account(primary_id_, chain).AccountID();
     auto subscribe = SubscribeSet{};
     add_children([&] {
         auto out = ChildMap{};
         load_blockchain_account(
-            OTIdentifier{accountID},
+            identifier::Generic{accountID},
             chain,
             factory::Amount(body.at(3)),
             out,
@@ -510,8 +511,8 @@ auto AccountTree::process_custodial(Message&& message) noexcept -> void
 
     OT_ASSERT(2 < body.size());
 
-    const auto& api = Widget::api_;
-    auto id = api.Factory().Identifier(body.at(1));
+    const auto& api = api_;
+    auto id = api.Factory().IdentifierFromHash(body.at(1).Bytes());
     const auto owner = api.Storage().AccountOwner(id);
 
     if (owner != primary_id_) { return; }

@@ -17,7 +17,7 @@ namespace ottest
 {
 auto check_account_activity_qt(
     const User&,
-    const ot::Identifier&,
+    const ot::identifier::Generic&,
     const AccountActivityData&) noexcept -> bool
 {
     return true;
@@ -35,7 +35,7 @@ auto check_account_tree_qt(const User&, const AccountTreeData&) noexcept -> bool
 
 auto check_activity_thread_qt(
     const User&,
-    const ot::Identifier&,
+    const ot::identifier::Generic&,
     const ActivityThreadData&) noexcept -> bool
 {
     return true;

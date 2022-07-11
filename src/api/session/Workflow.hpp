@@ -91,7 +91,7 @@ public:
         const Item& transfer,
         const Message& reply) const -> bool final;
     auto AllocateCash(const identifier::Nym& id, const otx::blind::Purse& purse)
-        const -> OTIdentifier final;
+        const -> identifier::Generic final;
     auto CancelCheque(
         const opentxs::Cheque& cheque,
         const Message& request,
@@ -111,12 +111,12 @@ public:
     auto ConveyTransfer(
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID,
-        const OTTransaction& pending) const -> OTIdentifier final;
+        const OTTransaction& pending) const -> identifier::Generic final;
     auto CreateTransfer(const Item& transfer, const Message& request) const
-        -> OTIdentifier final;
+        -> identifier::Generic final;
     auto DepositCheque(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const opentxs::Cheque& cheque,
         const Message& request,
         const Message* reply) const -> bool final;
@@ -130,45 +130,46 @@ public:
         const Message* reply) const -> bool final;
     auto ImportCheque(
         const identifier::Nym& nymID,
-        const opentxs::Cheque& cheque) const -> OTIdentifier final;
+        const opentxs::Cheque& cheque) const -> identifier::Generic final;
     auto InstantiateCheque(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const -> Cheque final;
+        const identifier::Generic& workflowID) const -> Cheque final;
     auto InstantiatePurse(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const -> Purse final;
+        const identifier::Generic& workflowID) const -> Purse final;
     auto List(
         const identifier::Nym& nymID,
         const otx::client::PaymentWorkflowType type,
         const otx::client::PaymentWorkflowState state) const
-        -> UnallocatedSet<OTIdentifier> final;
-    auto LoadCheque(const identifier::Nym& nymID, const Identifier& chequeID)
-        const -> Cheque final;
+        -> UnallocatedSet<identifier::Generic> final;
+    auto LoadCheque(
+        const identifier::Nym& nymID,
+        const identifier::Generic& chequeID) const -> Cheque final;
     auto LoadChequeByWorkflow(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const -> Cheque final;
+        const identifier::Generic& workflowID) const -> Cheque final;
     auto LoadTransfer(
         const identifier::Nym& nymID,
-        const Identifier& transferID) const -> Transfer final;
+        const identifier::Generic& transferID) const -> Transfer final;
     auto LoadTransferByWorkflow(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const -> Transfer final;
+        const identifier::Generic& workflowID) const -> Transfer final;
     auto LoadWorkflow(
         const identifier::Nym& nymID,
-        const Identifier& workflowID,
+        const identifier::Generic& workflowID,
         proto::PaymentWorkflow& out) const -> bool final;
     auto ReceiveCash(
         const identifier::Nym& receiver,
         const otx::blind::Purse& purse,
-        const Message& message) const -> OTIdentifier final;
+        const Message& message) const -> identifier::Generic final;
     auto ReceiveCheque(
         const identifier::Nym& nymID,
         const opentxs::Cheque& cheque,
-        const Message& message) const -> OTIdentifier final;
+        const Message& message) const -> identifier::Generic final;
     auto SendCash(
         const identifier::Nym& sender,
         const identifier::Nym& recipient,
-        const Identifier& workflowID,
+        const identifier::Generic& workflowID,
         const Message& request,
         const Message* reply) const -> bool final;
     auto SendCheque(
@@ -177,25 +178,26 @@ public:
         const Message* reply) const -> bool final;
     auto WorkflowParty(
         const identifier::Nym& nymID,
-        const Identifier& workflowID,
+        const identifier::Generic& workflowID,
         const int index) const -> const UnallocatedCString final;
     auto WorkflowPartySize(
         const identifier::Nym& nymID,
-        const Identifier& workflowID,
+        const identifier::Generic& workflowID,
         int& partysize) const -> bool final;
     auto WorkflowState(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const
+        const identifier::Generic& workflowID) const
         -> otx::client::PaymentWorkflowState final;
     auto WorkflowType(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const
+        const identifier::Generic& workflowID) const
         -> otx::client::PaymentWorkflowType final;
     auto WorkflowsByAccount(
         const identifier::Nym& nymID,
-        const Identifier& accountID) const
-        -> UnallocatedVector<OTIdentifier> final;
-    auto WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier final;
+        const identifier::Generic& accountID) const
+        -> UnallocatedVector<identifier::Generic> final;
+    auto WriteCheque(const opentxs::Cheque& cheque) const
+        -> identifier::Generic final;
 
     Workflow(
         const api::Session& api,
@@ -266,19 +268,19 @@ private:
 
     auto add_cheque_event(
         const eLock& lock,
-        const UnallocatedCString& nymID,
-        const UnallocatedCString& eventNym,
+        const identifier::Nym& nymID,
+        const identifier::Nym& eventNym,
         proto::PaymentWorkflow& workflow,
         const otx::client::PaymentWorkflowState newState,
         const proto::PaymentEventType newEventType,
         const VersionNumber version,
         const Message& request,
         const Message* reply,
-        const Identifier& account) const -> bool;
+        const identifier::Generic& account) const -> bool;
     auto add_cheque_event(
         const eLock& lock,
-        const UnallocatedCString& nymID,
-        const Identifier& accountID,
+        const identifier::Nym& nymID,
+        const identifier::Generic& accountID,
         proto::PaymentWorkflow& workflow,
         const otx::client::PaymentWorkflowState newState,
         const proto::PaymentEventType newEventType,
@@ -288,126 +290,126 @@ private:
         const Time time = Clock::now()) const -> bool;
     auto add_transfer_event(
         const eLock& lock,
-        const UnallocatedCString& nymID,
-        const UnallocatedCString& eventNym,
+        const identifier::Nym& nymID,
+        const identifier::Nym& eventNym,
         proto::PaymentWorkflow& workflow,
         const otx::client::PaymentWorkflowState newState,
         const proto::PaymentEventType newEventType,
         const VersionNumber version,
         const Message& message,
-        const Identifier& account,
+        const identifier::Generic& account,
         const bool success) const -> bool;
     auto add_transfer_event(
         const eLock& lock,
-        const UnallocatedCString& nymID,
+        const identifier::Nym& nymID,
         const UnallocatedCString& notaryID,
-        const UnallocatedCString& eventNym,
+        const identifier::Nym& eventNym,
         proto::PaymentWorkflow& workflow,
         const otx::client::PaymentWorkflowState newState,
         const proto::PaymentEventType newEventType,
         const VersionNumber version,
         const OTTransaction& receipt,
-        const Identifier& account,
+        const identifier::Generic& account,
         const bool success) const -> bool;
     auto convey_incoming_transfer(
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID,
         const OTTransaction& pending,
-        const UnallocatedCString& senderNymID,
-        const UnallocatedCString& recipientNymID,
-        const Item& transfer) const -> OTIdentifier;
+        const identifier::Nym& senderNymID,
+        const identifier::Nym& recipientNymID,
+        const Item& transfer) const -> identifier::Generic;
     auto convey_internal_transfer(
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID,
         const OTTransaction& pending,
-        const UnallocatedCString& senderNymID,
-        const Item& transfer) const -> OTIdentifier;
+        const identifier::Nym& senderNymID,
+        const Item& transfer) const -> identifier::Generic;
     auto create_cheque(
         const Lock& global,
-        const UnallocatedCString& nymID,
+        const identifier::Nym& nymID,
         const opentxs::Cheque& cheque,
         const otx::client::PaymentWorkflowType workflowType,
         const otx::client::PaymentWorkflowState workflowState,
         const VersionNumber workflowVersion,
         const VersionNumber sourceVersion,
         const VersionNumber eventVersion,
-        const UnallocatedCString& party,
-        const Identifier& account,
+        const identifier::Nym& party,
+        const identifier::Generic& account,
         const Message* message = nullptr) const
-        -> std::pair<OTIdentifier, proto::PaymentWorkflow>;
+        -> std::pair<identifier::Generic, proto::PaymentWorkflow>;
     auto create_transfer(
         const Lock& global,
-        const UnallocatedCString& nymID,
+        const identifier::Nym& nymID,
         const Item& transfer,
         const otx::client::PaymentWorkflowType workflowType,
         const otx::client::PaymentWorkflowState workflowState,
         const VersionNumber workflowVersion,
         const VersionNumber sourceVersion,
         const VersionNumber eventVersion,
-        const UnallocatedCString& party,
-        const Identifier& account,
+        const identifier::Nym& party,
+        const identifier::Generic& account,
         const UnallocatedCString& notaryID,
         const UnallocatedCString& destinationAccountID) const
-        -> std::pair<OTIdentifier, proto::PaymentWorkflow>;
+        -> std::pair<identifier::Generic, proto::PaymentWorkflow>;
     auto extract_transfer_from_pending(const OTTransaction& receipt) const
         -> std::unique_ptr<Item>;
     auto extract_transfer_from_receipt(
         const OTTransaction& receipt,
-        Identifier& depositorNymID) const -> std::unique_ptr<Item>;
+        identifier::Nym& depositorNymID) const -> std::unique_ptr<Item>;
     template <typename T>
     auto get_workflow(
         const Lock& global,
         const UnallocatedSet<otx::client::PaymentWorkflowType>& types,
-        const UnallocatedCString& nymID,
+        const identifier::Nym& nymID,
         const T& source) const -> std::shared_ptr<proto::PaymentWorkflow>;
     auto get_workflow_by_id(
         const UnallocatedSet<otx::client::PaymentWorkflowType>& types,
-        const UnallocatedCString& nymID,
+        const identifier::Nym& nymID,
         const UnallocatedCString& workflowID) const
         -> std::shared_ptr<proto::PaymentWorkflow>;
     auto get_workflow_by_id(
-        const UnallocatedCString& nymID,
+        const identifier::Nym& nymID,
         const UnallocatedCString& workflowID) const
         -> std::shared_ptr<proto::PaymentWorkflow>;
     auto get_workflow_by_source(
         const UnallocatedSet<otx::client::PaymentWorkflowType>& types,
-        const UnallocatedCString& nymID,
+        const identifier::Nym& nymID,
         const UnallocatedCString& sourceID) const
         -> std::shared_ptr<proto::PaymentWorkflow>;
     // Unlocks global after successfully locking the workflow-specific mutex
     auto get_workflow_lock(Lock& global, const UnallocatedCString& id) const
         -> eLock;
     auto isInternalTransfer(
-        const Identifier& sourceAccount,
-        const Identifier& destinationAccount) const -> bool;
+        const identifier::Generic& sourceAccount,
+        const identifier::Generic& destinationAccount) const -> bool;
     auto save_workflow(
-        const UnallocatedCString& nymID,
+        const identifier::Nym& nymID,
         const proto::PaymentWorkflow& workflow) const -> bool;
     auto save_workflow(
-        const UnallocatedCString& nymID,
-        const Identifier& accountID,
+        const identifier::Nym& nymID,
+        const identifier::Generic& accountID,
         const proto::PaymentWorkflow& workflow) const -> bool;
     auto save_workflow(
-        OTIdentifier&& workflowID,
-        const UnallocatedCString& nymID,
-        const Identifier& accountID,
-        const proto::PaymentWorkflow& workflow) const -> OTIdentifier;
+        identifier::Generic&& workflowID,
+        const identifier::Nym& nymID,
+        const identifier::Generic& accountID,
+        const proto::PaymentWorkflow& workflow) const -> identifier::Generic;
     auto save_workflow(
-        std::pair<OTIdentifier, proto::PaymentWorkflow>&& workflowID,
-        const UnallocatedCString& nymID,
-        const Identifier& accountID,
+        std::pair<identifier::Generic, proto::PaymentWorkflow>&& workflowID,
+        const identifier::Nym& nymID,
+        const identifier::Generic& accountID,
         const proto::PaymentWorkflow& workflow) const
-        -> std::pair<OTIdentifier, proto::PaymentWorkflow>;
+        -> std::pair<identifier::Generic, proto::PaymentWorkflow>;
     auto update_activity(
         const identifier::Nym& localNymID,
         const identifier::Nym& remoteNymID,
-        const Identifier& sourceID,
-        const Identifier& workflowID,
+        const identifier::Generic& sourceID,
+        const identifier::Generic& workflowID,
         const otx::client::StorageBox type,
         Time time) const -> bool;
     void update_rpc(
-        const UnallocatedCString& localNymID,
-        const UnallocatedCString& remoteNymID,
+        const identifier::Nym& localNymID,
+        const identifier::Nym& remoteNymID,
         const UnallocatedCString& accountID,
         const proto::AccountEventType type,
         const UnallocatedCString& workflowID,

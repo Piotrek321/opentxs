@@ -25,12 +25,12 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 }  // namespace identifier
 
 class Amount;
-class Identifier;
 class Ledger;
 class NumList;
 class OTTransaction;
@@ -63,7 +63,8 @@ auto VerifyBoxReceiptExists(
     const UnallocatedCString& dataFolder,
     const identifier::Notary& NOTARY_ID,
     const identifier::Nym& NYM_ID,
-    const Identifier& ACCOUNT_ID,  // If for Nymbox (vs inbox/outbox) then
+    const identifier::Generic& ACCOUNT_ID,  // If for Nymbox (vs inbox/outbox)
+                                            // then
     // pass NYM_ID in this field also.
     std::int32_t nBoxType,  // 0/nymbox, 1/inbox, 2/outbox
     const std::int64_t& lTransactionNum) -> bool;

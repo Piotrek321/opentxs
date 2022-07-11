@@ -113,7 +113,7 @@ public:
             ContactCredentialVersion());
     }
     auto Contracts(const UnitType currency, const bool onlyActive) const
-        -> UnallocatedSet<OTIdentifier> final;
+        -> UnallocatedSet<identifier::Generic> final;
     auto EmailAddresses(bool active) const -> UnallocatedCString final;
     auto EncryptionTargets() const noexcept -> NymKeys final;
     auto end() const noexcept -> const_iterator final { return cend(); }
@@ -183,7 +183,7 @@ public:
     auto WriteCredentials() const -> bool final;
 
     auto AddChildKeyCredential(
-        const Identifier& strMasterID,
+        const identifier::Generic& strMasterID,
         const crypto::Parameters& nymParameters,
         const PasswordPrompt& reason) -> UnallocatedCString final;
     auto AddClaim(const Claim& claim, const PasswordPrompt& reason)
@@ -206,7 +206,7 @@ public:
         const bool primary,
         const bool active) -> bool final;
     auto AddPreferredOTServer(
-        const Identifier& id,
+        const identifier::Generic& id,
         const PasswordPrompt& reason,
         const bool primary) -> bool final;
     auto AddPhoneNumber(
@@ -220,8 +220,9 @@ public:
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;
-    auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
-        -> bool final;
+    auto DeleteClaim(
+        const identifier::Generic& id,
+        const PasswordPrompt& reason) -> bool final;
     void SetAlias(const UnallocatedCString& alias) final;
     void SetAliasStartup(const UnallocatedCString& alias) final
     {
@@ -258,7 +259,7 @@ public:
     ~Nym() final = default;
 
 private:
-    using MasterID = OTIdentifier;
+    using MasterID = identifier::Generic;
     using CredentialMap = UnallocatedMap<
         MasterID,
         std::unique_ptr<identity::internal::Authority>>;
@@ -272,7 +273,7 @@ private:
     const api::Session& api_;
     const std::unique_ptr<const identity::Source> source_p_;
     const identity::Source& source_;
-    const OTNymID id_;
+    const identifier::Nym id_;
     const proto::NymMode mode_;
     std::int32_t version_;
     std::uint32_t index_;

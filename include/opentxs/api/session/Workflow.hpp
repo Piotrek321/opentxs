@@ -11,7 +11,6 @@
 
 #include <memory>
 
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -36,9 +35,9 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 class Notary;
-class UnitDefinition;
 }  // namespace identifier
 
 namespace otx
@@ -55,6 +54,8 @@ class PaymentWorkflow;
 class Purse;
 }  // namespace proto
 
+class Cheque;
+class Item;
 class OTTransaction;
 // }  // namespace v1
 }  // namespace opentxs
@@ -175,11 +176,11 @@ public:
         const proto::PaymentWorkflow& workflow) -> Transfer;
     OPENTXS_NO_EXPORT static auto UUID(
         const api::Session& api,
-        const proto::PaymentWorkflow& workflown) -> OTIdentifier;
+        const proto::PaymentWorkflow& workflown) -> identifier::Generic;
     static auto UUID(
         const api::Session& api,
-        const Identifier& notary,
-        const TransactionNumber& number) -> OTIdentifier;
+        const identifier::Generic& notary,
+        const TransactionNumber& number) -> identifier::Generic;
 
     /** Record a failed transfer attempt */
     virtual auto AbortTransfer(
@@ -199,7 +200,7 @@ public:
         const Message& reply) const -> bool = 0;
     virtual auto AllocateCash(
         const identifier::Nym& id,
-        const otx::blind::Purse& purse) const -> OTIdentifier = 0;
+        const otx::blind::Purse& purse) const -> identifier::Generic = 0;
     /** Record a cheque cancellation or cancellation attempt */
     virtual auto CancelCheque(
         const opentxs::Cheque& cheque,
@@ -225,15 +226,15 @@ public:
     virtual auto ConveyTransfer(
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID,
-        const OTTransaction& pending) const -> OTIdentifier = 0;
+        const OTTransaction& pending) const -> identifier::Generic = 0;
     /** Record a new outgoing or internal "sent transfer" (or attempt) workflow
      */
     virtual auto CreateTransfer(const Item& transfer, const Message& request)
-        const -> OTIdentifier = 0;
+        const -> identifier::Generic = 0;
     /** Record a cheque deposit or deposit attempt */
     virtual auto DepositCheque(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const opentxs::Cheque& cheque,
         const Message& request,
         const Message* reply) const -> bool = 0;
@@ -251,50 +252,50 @@ public:
     /** Create a new incoming cheque workflow from an out of band cheque */
     virtual auto ImportCheque(
         const identifier::Nym& nymID,
-        const opentxs::Cheque& cheque) const -> OTIdentifier = 0;
+        const opentxs::Cheque& cheque) const -> identifier::Generic = 0;
     virtual auto InstantiateCheque(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const -> Cheque = 0;
+        const identifier::Generic& workflowID) const -> Cheque = 0;
     virtual auto InstantiatePurse(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const -> Purse = 0;
+        const identifier::Generic& workflowID) const -> Purse = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Workflow& = 0;
     virtual auto List(
         const identifier::Nym& nymID,
         const otx::client::PaymentWorkflowType type,
         const otx::client::PaymentWorkflowState state) const
-        -> UnallocatedSet<OTIdentifier> = 0;
+        -> UnallocatedSet<identifier::Generic> = 0;
     virtual auto LoadCheque(
         const identifier::Nym& nymID,
-        const Identifier& chequeID) const -> Cheque = 0;
+        const identifier::Generic& chequeID) const -> Cheque = 0;
     virtual auto LoadChequeByWorkflow(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const -> Cheque = 0;
+        const identifier::Generic& workflowID) const -> Cheque = 0;
     virtual auto LoadTransfer(
         const identifier::Nym& nymID,
-        const Identifier& transferID) const -> Transfer = 0;
+        const identifier::Generic& transferID) const -> Transfer = 0;
     virtual auto LoadTransferByWorkflow(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const -> Transfer = 0;
+        const identifier::Generic& workflowID) const -> Transfer = 0;
     /** Load a serialized workflow, if it exists*/
     OPENTXS_NO_EXPORT virtual auto LoadWorkflow(
         const identifier::Nym& nymID,
-        const Identifier& workflowID,
+        const identifier::Generic& workflowID,
         proto::PaymentWorkflow& out) const -> bool = 0;
     virtual auto ReceiveCash(
         const identifier::Nym& receiver,
         const otx::blind::Purse& purse,
-        const Message& message) const -> OTIdentifier = 0;
+        const Message& message) const -> identifier::Generic = 0;
     /** Create a new incoming cheque workflow from an OT message */
     virtual auto ReceiveCheque(
         const identifier::Nym& nymID,
         const opentxs::Cheque& cheque,
-        const Message& message) const -> OTIdentifier = 0;
+        const Message& message) const -> identifier::Generic = 0;
     virtual auto SendCash(
         const identifier::Nym& sender,
         const identifier::Nym& recipient,
-        const Identifier& workflowID,
+        const identifier::Generic& workflowID,
         const Message& request,
         const Message* reply) const -> bool = 0;
     /** Record a send or send attempt via an OT notary */
@@ -304,28 +305,28 @@ public:
         const Message* reply) const -> bool = 0;
     virtual auto WorkflowParty(
         const identifier::Nym& nymID,
-        const Identifier& workflowID,
+        const identifier::Generic& workflowID,
         const int index) const -> const UnallocatedCString = 0;
     virtual auto WorkflowPartySize(
         const identifier::Nym& nymID,
-        const Identifier& workflowID,
+        const identifier::Generic& workflowID,
         int& partysize) const -> bool = 0;
     virtual auto WorkflowState(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const
+        const identifier::Generic& workflowID) const
         -> otx::client::PaymentWorkflowState = 0;
     virtual auto WorkflowType(
         const identifier::Nym& nymID,
-        const Identifier& workflowID) const
+        const identifier::Generic& workflowID) const
         -> otx::client::PaymentWorkflowType = 0;
     /** Get a list of workflow IDs relevant to a specified account */
     virtual auto WorkflowsByAccount(
         const identifier::Nym& nymID,
-        const Identifier& accountID) const
-        -> UnallocatedVector<OTIdentifier> = 0;
+        const identifier::Generic& accountID) const
+        -> UnallocatedVector<identifier::Generic> = 0;
     /** Create a new outgoing cheque workflow */
     virtual auto WriteCheque(const opentxs::Cheque& cheque) const
-        -> OTIdentifier = 0;
+        -> identifier::Generic = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Workflow& = 0;

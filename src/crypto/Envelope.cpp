@@ -36,6 +36,8 @@
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/core/identifier/Generic.hpp"  // IWYU pragma: keep
+#include "opentxs/core/identifier/Nym.hpp"      // IWYU pragma: keep
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"

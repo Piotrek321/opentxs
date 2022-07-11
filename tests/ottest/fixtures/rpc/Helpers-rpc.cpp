@@ -5,6 +5,7 @@
 
 #include "ottest/fixtures/rpc/Helpers.hpp"  // IWYU pragma: associated
 
+#include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 #include <algorithm>
 #include <utility>
@@ -28,14 +29,14 @@ auto verify_response_codes(
 
 auto check_account_activity_rpc(
     const User& user,
-    const ot::Identifier& account,
+    const ot::identifier::Generic& account,
     const AccountActivityData& expected) noexcept -> bool
 {
     auto output{true};
     const auto& api = *user.api_;
     const auto index{api.Instance()};
-    const auto command =
-        ot::rpc::request::GetAccountActivity{index, {account.str()}};
+    const auto command = ot::rpc::request::GetAccountActivity{
+        index, {account.asBase58(api.Crypto())}};
     const auto base = ot::Context().RPC(command);
     const auto& response = base->asGetAccountActivity();
     const auto& codes = response.ResponseCodes();
@@ -46,7 +47,8 @@ auto check_account_activity_rpc(
         1,
         (0 == vCount) ? ot::rpc::ResponseCode::none
                       : ot::rpc::ResponseCode::success);
-    output &= verify_account_balance(index, account.str(), expected.balance_);
+    output &= verify_account_balance(
+        index, account.asBase58(api.Crypto()), expected.balance_);
     output &= goodCodes;
     output &= (events.size() == vCount);
 

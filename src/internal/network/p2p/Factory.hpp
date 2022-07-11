@@ -46,6 +46,11 @@ class Server;
 class Unit;
 }  // namespace contract
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace identity
 {
 class Nym;
@@ -74,8 +79,6 @@ namespace zeromq
 class Message;
 }  // namespace zeromq
 }  // namespace network
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -121,7 +124,7 @@ auto BlockchainSyncPublishContract_p(
 auto BlockchainSyncPublishContractReply() noexcept
     -> network::p2p::PublishContractReply;
 auto BlockchainSyncPublishContractReply(
-    const Identifier& id,
+    const identifier::Generic& id,
     const bool success) noexcept -> network::p2p::PublishContractReply;
 auto BlockchainSyncPublishContractReply_p(
     const api::Session& api,
@@ -156,14 +159,14 @@ auto BlockchainSyncQuery(int) noexcept -> network::p2p::Query;
 auto BlockchainSyncQuery_p(int) noexcept
     -> std::unique_ptr<network::p2p::Query>;
 auto BlockchainSyncQueryContract() noexcept -> network::p2p::QueryContract;
-auto BlockchainSyncQueryContract(const Identifier& id) noexcept
+auto BlockchainSyncQueryContract(const identifier::Generic& id) noexcept
     -> network::p2p::QueryContract;
 auto BlockchainSyncQueryContract_p(
     const api::Session& api,
     const ReadView id) noexcept -> std::unique_ptr<network::p2p::QueryContract>;
 auto BlockchainSyncQueryContractReply() noexcept
     -> network::p2p::QueryContractReply;
-auto BlockchainSyncQueryContractReply(const Identifier& id) noexcept
+auto BlockchainSyncQueryContractReply(const identifier::Generic& id) noexcept
     -> network::p2p::QueryContractReply;
 auto BlockchainSyncQueryContractReply(const identity::Nym& payload) noexcept
     -> network::p2p::QueryContractReply;

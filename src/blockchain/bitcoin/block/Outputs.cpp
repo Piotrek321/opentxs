@@ -74,7 +74,7 @@ Outputs::Outputs(const Outputs& rhs) noexcept
 }
 
 auto Outputs::AssociatedLocalNyms(
-    UnallocatedVector<OTNymID>& output) const noexcept -> void
+    UnallocatedVector<identifier::Nym>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(outputs_), std::end(outputs_), [&](const auto& item) {
@@ -83,7 +83,7 @@ auto Outputs::AssociatedLocalNyms(
 }
 
 auto Outputs::AssociatedRemoteContacts(
-    UnallocatedVector<OTIdentifier>& output) const noexcept -> void
+    UnallocatedVector<identifier::Generic>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(outputs_), std::end(outputs_), [&](const auto& item) {

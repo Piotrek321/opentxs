@@ -21,6 +21,8 @@
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -92,7 +94,7 @@ Nym::Nym(
 Nym::Nym(internal::Group& parent, const SerializedType& in) noexcept
     : parent_(parent)
     , version_(in.version())
-    , id_(parent_.API().Factory().NymID(in.nym()))
+    , id_(parent_.API().Factory().NymIDFromBase58(in.nym()))
     , items_(instantiate(*this, in))
 {
 }
@@ -101,7 +103,7 @@ Nym::operator SerializedType() const noexcept
 {
     auto output = SerializedType{};
     output.set_version(version_);
-    output.set_nym(id_->str());
+    output.set_nym(id_.asBase58(Context().Crypto()));
 
     for (const auto& pItem : items_) {
         OT_ASSERT(pItem);
@@ -114,7 +116,7 @@ Nym::operator SerializedType() const noexcept
 }
 
 auto Nym::AddItem(
-    const Identifier& claim,
+    const identifier::Generic& claim,
     const identity::Nym& signer,
     const PasswordPrompt& reason,
     const Item::Type value,
@@ -203,7 +205,7 @@ auto Nym::add_item(Child pCandidate) noexcept -> bool
     return accept;
 }
 
-auto Nym::DeleteItem(const Identifier& id) noexcept -> bool
+auto Nym::DeleteItem(const identifier::Generic& id) noexcept -> bool
 {
     auto output{false};
 

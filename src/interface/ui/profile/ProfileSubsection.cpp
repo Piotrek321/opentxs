@@ -14,13 +14,13 @@
 
 #include "interface/ui/base/Combined.hpp"
 #include "interface/ui/base/Widget.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/identity/wot/claim/Group.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/util/Container.hpp"
@@ -50,6 +50,7 @@ ProfileSubsection::ProfileSubsection(
     const ProfileSectionSortKey& key,
     CustomData& custom) noexcept
     : Combined(api, parent.NymID(), parent.WidgetID(), parent, rowID, key)
+    , api_(api)
     , sequence_(-1)
 {
     startup_ = std::make_unique<std::thread>(
@@ -80,7 +81,8 @@ auto ProfileSubsection::Delete(const UnallocatedCString& claimID) const noexcept
     -> bool
 {
     rLock lock{recursive_lock_};
-    const auto& claim = lookup(lock, Identifier::Factory(claimID));
+    const auto& claim =
+        lookup(lock, api_.Factory().IdentifierFromBase58(claimID));
 
     if (false == claim.Valid()) { return false; }
 
@@ -128,7 +130,8 @@ auto ProfileSubsection::SetActive(
     const bool active) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    const auto& claim = lookup(lock, Identifier::Factory(claimID));
+    const auto& claim =
+        lookup(lock, api_.Factory().IdentifierFromBase58(claimID));
 
     if (false == claim.Valid()) { return false; }
 
@@ -140,7 +143,8 @@ auto ProfileSubsection::SetPrimary(
     const bool primary) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    const auto& claim = lookup(lock, Identifier::Factory(claimID));
+    const auto& claim =
+        lookup(lock, api_.Factory().IdentifierFromBase58(claimID));
 
     if (false == claim.Valid()) { return false; }
 
@@ -152,7 +156,8 @@ auto ProfileSubsection::SetValue(
     const UnallocatedCString& value) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
-    const auto& claim = lookup(lock, Identifier::Factory(claimID));
+    const auto& claim =
+        lookup(lock, api_.Factory().IdentifierFromBase58(claimID));
 
     if (false == claim.Valid()) { return false; }
 

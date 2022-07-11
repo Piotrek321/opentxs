@@ -10,9 +10,10 @@
 #include <atomic>
 #include <future>
 #include <memory>
+#include <type_traits>
+#include <utility>
 
 #include "interface/ui/base/List.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
@@ -26,7 +27,6 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -52,7 +52,7 @@ PayableList::PayableList(
     const SimpleCallback& cb) noexcept
     : PayableListList(api, nymID, cb, false)
     , Worker(api, {})
-    , owner_contact_id_(Widget::api_.Factory().Identifier())  // FIXME wtf
+    , owner_contact_id_()  // FIXME wtf
     , currency_(currency)
 {
     init_executor(
@@ -68,7 +68,7 @@ auto PayableList::construct_row(
 {
     return factory::PayableListItem(
         *this,
-        Widget::api_,
+        api_,
         id,
         index,
         extract_custom<const UnallocatedCString>(custom, 0),
@@ -135,7 +135,7 @@ auto PayableList::process_contact(
 {
     if (owner_contact_id_ == id) { return; }
 
-    const auto contact = Widget::api_.Contacts().Contact(id);
+    const auto contact = api_.Contacts().Contact(id);
 
     if (false == bool(contact)) {
         LogError()(OT_PRETTY_CLASS())("Error: Contact ")(
@@ -168,11 +168,11 @@ auto PayableList::process_contact(const Message& message) noexcept -> void
     OT_ASSERT(1 < body.size());
 
     const auto& id = body.at(1);
-    const auto contactID = Widget::api_.Factory().Identifier(id);
+    const auto contactID = api_.Factory().IdentifierFromHash(id.Bytes());
 
-    OT_ASSERT(false == contactID->empty());
+    OT_ASSERT(false == contactID.empty());
 
-    const auto name = Widget::api_.Contacts().ContactName(contactID);
+    const auto name = api_.Contacts().ContactName(contactID);
     process_contact(contactID, {false, name});
 }
 
@@ -183,23 +183,24 @@ auto PayableList::process_nym(const Message& message) noexcept -> void
     OT_ASSERT(1 < body.size());
 
     const auto& id = body.at(1);
-    const auto nymID = Widget::api_.Factory().NymID(id);
+    const auto nymID = api_.Factory().NymIDFromHash(id.Bytes());
 
-    OT_ASSERT(false == nymID->empty());
+    OT_ASSERT(false == nymID.empty());
 
-    const auto contactID = Widget::api_.Contacts().ContactID(nymID);
-    const auto name = Widget::api_.Contacts().ContactName(contactID);
+    const auto contactID = api_.Contacts().ContactID(nymID);
+    const auto name = api_.Contacts().ContactName(contactID);
     process_contact(contactID, {false, name});
 }
 
 auto PayableList::startup() noexcept -> void
 {
-    const auto contacts = Widget::api_.Contacts().ContactList();
+    const auto contacts = api_.Contacts().ContactList();
     LogDetail()(OT_PRETTY_CLASS())("Loading ")(contacts.size())(" contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {
-        process_contact(Identifier::Factory(id), {false, alias});
+        process_contact(
+            api_.Factory().IdentifierFromBase58(id), {false, alias});
     }
 
     finish_startup();

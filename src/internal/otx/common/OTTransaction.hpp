@@ -193,25 +193,23 @@ except
 it stores the display amount. For example, a transferReceipt for a 5000 clam
 transfer has an effective value of 0 (since the transfer is already done) but it
 has a display amount of 5000.
- OTIdentifier        m_Hash;             // Created while saving abbreviated
-record, loaded back with it, then verified against actual hash when loading
-actual box receipt.
+ identifier::Generic        m_Hash;             // Created while saving
+abbreviated record, loaded back with it, then verified against actual hash when
+loading actual box receipt.
 
  DOES NOT SAVE:
  listOfItems    m_listItems;        // the various items in this transaction.
  Armored   m_ascCancellationRequest; // used by finalReceipt
-//    OTIdentifier    m_ID;            // Account ID. This is in Contract
+//    identifier::Generic    m_ID;            // Account ID. This is in Contract
 (parent class). Here we use it for the REAL ACCOUNT ID (set before loading.)
- OTIdentifier    m_AcctID;        // Compare m_AcctID to m_ID after loading it
-from string or file. They should match, and signature should verify.
- OTIdentifier    m_NotaryID;        // Notary ID as used to instantiate the
-transaction, based on expected NotaryID.
- OTIdentifier    m_AcctNotaryID;    // Actual NotaryID within the signed
-portion. (Compare to m_NotaryID upon loading.)
- OTIdentifier    m_AcctNymID;        // NymID of the user who created this
-item. (In the future, this item
- Armored    m_ascInReferenceTo;    // This item may be in reference to a
-different item
+ identifier::Generic    m_AcctID;        // Compare m_AcctID to m_ID after
+loading it from string or file. They should match, and signature should verify.
+ identifier::Generic    m_NotaryID;        // Notary ID as used to instantiate
+the transaction, based on expected NotaryID. identifier::Generic m_AcctNotaryID;
+// Actual NotaryID within the signed portion. (Compare to m_NotaryID upon
+loading.) identifier::Generic    m_AcctNymID;        // NymID of the user who
+created this item. (In the future, this item Armored    m_ascInReferenceTo; //
+This item may be in reference to a different item
 
  Normally we only save the "purported" values. But in "save to ledger" function
 I only want to save the values
@@ -445,11 +443,11 @@ public:
     /// cheque receipt you actually have to load up the original cheque.)
     auto GetReferenceNumForDisplay() -> std::int64_t;
 
-    auto GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool;
-    auto GetRecipientNymIDForDisplay(Identifier& theReturnID) -> bool;
+    auto GetSenderNymIDForDisplay(identifier::Nym& theReturnID) -> bool;
+    auto GetRecipientNymIDForDisplay(identifier::Nym& theReturnID) -> bool;
 
-    auto GetSenderAcctIDForDisplay(Identifier& theReturnID) -> bool;
-    auto GetRecipientAcctIDForDisplay(Identifier& theReturnID) -> bool;
+    auto GetSenderAcctIDForDisplay(identifier::Generic& theReturnID) -> bool;
+    auto GetRecipientAcctIDForDisplay(identifier::Generic& theReturnID) -> bool;
     auto GetMemo(String& strMemo) -> bool;
 
     inline auto GetDateSigned() const -> Time { return m_DATE_SIGNED; }
@@ -599,15 +597,18 @@ public:
         bool bTransactionWasFailure)
         -> bool;  // false until positively asserted.
 
-    auto GetAccountHash() const -> OTIdentifier { return m_accounthash; }
-    auto GetInboxHash() const -> OTIdentifier { return m_inboxhash; }
-    auto GetOutboxHash() const -> OTIdentifier { return m_outboxhash; }
-    void SetAccountHash(const Identifier& accounthash)
+    auto GetAccountHash() const -> identifier::Generic { return m_accounthash; }
+    auto GetInboxHash() const -> identifier::Generic { return m_inboxhash; }
+    auto GetOutboxHash() const -> identifier::Generic { return m_outboxhash; }
+    void SetAccountHash(const identifier::Generic& accounthash)
     {
         m_accounthash = accounthash;
     }
-    void SetInboxHash(const Identifier& inboxhash) { m_inboxhash = inboxhash; }
-    void SetOutboxHash(const Identifier& outboxhash)
+    void SetInboxHash(const identifier::Generic& inboxhash)
+    {
+        m_inboxhash = inboxhash;
+    }
+    void SetOutboxHash(const identifier::Generic& outboxhash)
     {
         m_outboxhash = outboxhash;
     }
@@ -680,10 +681,10 @@ protected:
     // longer care about this variable at all, and do not save it again, since
     // it can be re-calculated the next time we
     // save again in abbreviated form.
-    OTIdentifier m_Hash;  // todo: make this const and force it to be set during
-                          // construction.
-    Time m_DATE_SIGNED;   // The date, in seconds, when the instrument was
-                          // last signed.
+    identifier::Generic m_Hash;  // todo: make this const and force it to be set
+                                 // during construction.
+    Time m_DATE_SIGNED;       // The date, in seconds, when the instrument was
+                              // last signed.
     transactionType m_Type;   // blank, pending, processInbox,
                               // transfer, deposit, withdrawal,
                               // trade, etc.
@@ -732,9 +733,9 @@ protected:
     // marked as "rejected." All the client has to do is check m_bCancelled
     // to see if it's set to TRUE, and it will know.
     bool m_bCancelled;
-    OTIdentifier m_inboxhash;
-    OTIdentifier m_outboxhash;
-    OTIdentifier m_accounthash;
+    identifier::Generic m_inboxhash;
+    identifier::Generic m_outboxhash;
+    identifier::Generic m_accounthash;
 
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
@@ -752,13 +753,13 @@ private:
     OTTransaction(
         const api::Session& api,
         const identifier::Nym& theNymID,
-        const Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         const originType theOriginType = originType::not_applicable);
     OTTransaction(
         const api::Session& api,
         const identifier::Nym& theNymID,
-        const Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         const std::int64_t lTransactionNum,
         const originType theOriginType = originType::not_applicable);
@@ -769,7 +770,7 @@ private:
     OTTransaction(
         const api::Session& api,
         const identifier::Nym& theNymID,
-        const Identifier& theAccountID,
+        const identifier::Generic& theAccountID,
         const identifier::Notary& theNotaryID,
         const std::int64_t& lNumberOfOrigin,
         const originType theOriginType,

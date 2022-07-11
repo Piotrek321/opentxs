@@ -12,8 +12,6 @@
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -45,8 +43,8 @@ namespace opentxs::otx::client
 class Issuer
 {
 public:
-    using BailmentDetails = std::pair<OTIdentifier, OTBailmentReply>;
-    using ConnectionDetails = std::pair<OTIdentifier, OTConnectionReply>;
+    using BailmentDetails = std::pair<identifier::Generic, OTBailmentReply>;
+    using ConnectionDetails = std::pair<identifier::Generic, OTConnectionReply>;
 
     enum class RequestStatus : std::int32_t {
         All = -1,
@@ -61,7 +59,7 @@ public:
     virtual auto AccountList(
         const UnitType type,
         const identifier::UnitDefinition& unitID) const
-        -> UnallocatedSet<OTIdentifier> = 0;
+        -> UnallocatedSet<identifier::Generic> = 0;
     virtual auto BailmentInitiated(
         const identifier::UnitDefinition& unitID) const -> bool = 0;
     virtual auto BailmentInstructions(
@@ -78,12 +76,13 @@ public:
     virtual auto GetRequests(
         const contract::peer::PeerRequestType type,
         const RequestStatus state = RequestStatus::All) const
-        -> UnallocatedSet<std::tuple<OTIdentifier, OTIdentifier, bool>> = 0;
+        -> UnallocatedSet<
+            std::tuple<identifier::Generic, identifier::Generic, bool>> = 0;
     virtual auto IssuerID() const -> const identifier::Nym& = 0;
     virtual auto LocalNymID() const -> const identifier::Nym& = 0;
     virtual auto Paired() const -> bool = 0;
     virtual auto PairingCode() const -> const UnallocatedCString& = 0;
-    virtual auto PrimaryServer() const -> OTNotaryID = 0;
+    virtual auto PrimaryServer() const -> identifier::Notary = 0;
     virtual auto RequestTypes() const
         -> UnallocatedSet<contract::peer::PeerRequestType> = 0;
     virtual auto Serialize(proto::Issuer&) const -> bool = 0;
@@ -93,23 +92,23 @@ public:
     virtual void AddAccount(
         const UnitType type,
         const identifier::UnitDefinition& unitID,
-        const Identifier& accountID) = 0;
+        const identifier::Generic& accountID) = 0;
     virtual auto AddReply(
         const contract::peer::PeerRequestType type,
-        const Identifier& requestID,
-        const Identifier& replyID) -> bool = 0;
+        const identifier::Generic& requestID,
+        const identifier::Generic& replyID) -> bool = 0;
     virtual auto AddRequest(
         const contract::peer::PeerRequestType type,
-        const Identifier& requestID) -> bool = 0;
+        const identifier::Generic& requestID) -> bool = 0;
     virtual auto RemoveAccount(
         const UnitType type,
         const identifier::UnitDefinition& unitID,
-        const Identifier& accountID) -> bool = 0;
+        const identifier::Generic& accountID) -> bool = 0;
     virtual void SetPaired(const bool paired) = 0;
     virtual void SetPairingCode(const UnallocatedCString& code) = 0;
     virtual auto SetUsed(
         const contract::peer::PeerRequestType type,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         const bool isUsed = true) -> bool = 0;
 
     Issuer(const Issuer&) = delete;

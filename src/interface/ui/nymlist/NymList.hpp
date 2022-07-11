@@ -13,6 +13,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -72,6 +73,8 @@ using NymListList = List<
 class NymList final : public NymListList, public Worker<api::session::Client>
 {
 public:
+    auto API() const noexcept -> const api::Session& final { return api_; }
+
     NymList(const api::session::Client& api, const SimpleCallback& cb) noexcept;
     NymList() = delete;
     NymList(const NymList&) = delete;
@@ -103,7 +106,7 @@ private:
         CustomData& custom) const noexcept -> RowPointer final;
 
     auto load() noexcept -> void;
-    auto load(OTNymID&& id) noexcept -> void;
+    auto load(identifier::Nym&& id) noexcept -> void;
     auto process_new_nym(Message&& in) noexcept -> void;
     auto process_nym_changed(Message&& in) noexcept -> void;
     auto startup() noexcept -> void;

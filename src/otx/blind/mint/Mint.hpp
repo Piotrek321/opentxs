@@ -16,8 +16,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/util/Container.hpp"
@@ -70,7 +68,7 @@ namespace opentxs::otx::blind
 class Mint::Imp : public otx::blind::internal::Mint
 {
 public:
-    auto AccountID() const -> OTIdentifier override;
+    auto AccountID() const -> identifier::Generic override;
     auto Expired() const -> bool override { return {}; }
     auto GetDenomination(std::int32_t) const -> Amount override { return {}; }
     auto GetDenominationCount() const -> std::int32_t override { return {}; }

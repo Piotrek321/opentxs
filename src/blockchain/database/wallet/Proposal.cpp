@@ -16,6 +16,7 @@
 #include "internal/blockchain/database/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
@@ -26,17 +27,18 @@ using Direction = storage::lmdb::LMDB::Dir;
 constexpr auto table_{Table::Proposals};
 
 struct Proposal::Imp {
-    auto CompletedProposals() const noexcept -> UnallocatedSet<OTIdentifier>
+    auto CompletedProposals() const noexcept
+        -> UnallocatedSet<identifier::Generic>
     {
         auto lock = Lock{lock_};
 
         return finished_proposals_;
     }
-    auto Exists(const Identifier& id) const noexcept -> bool
+    auto Exists(const identifier::Generic& id) const noexcept -> bool
     {
         return lmdb_.Exists(table_, id.Bytes());
     }
-    auto LoadProposal(const Identifier& id) const noexcept
+    auto LoadProposal(const identifier::Generic& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>
     {
         return load_proposal(id);
@@ -60,7 +62,7 @@ struct Proposal::Imp {
     }
 
     auto AddProposal(
-        const Identifier& id,
+        const identifier::Generic& id,
         const proto::BlockchainTransactionProposal& tx) noexcept -> bool
     {
         try {
@@ -83,7 +85,8 @@ struct Proposal::Imp {
             return false;
         }
     }
-    auto CancelProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool
+    auto CancelProposal(MDB_txn* tx, const identifier::Generic& id) noexcept
+        -> bool
     {
         if (lmdb_.Delete(table_, id.Bytes(), tx)) {
             LogVerbose()(OT_PRETTY_CLASS())("proposal ")(id)(" cancelled ")
@@ -97,7 +100,8 @@ struct Proposal::Imp {
             return false;
         }
     }
-    auto FinishProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool
+    auto FinishProposal(MDB_txn* tx, const identifier::Generic& id) noexcept
+        -> bool
     {
         const auto out = CancelProposal(tx, id);
         auto lock = Lock{lock_};
@@ -105,8 +109,8 @@ struct Proposal::Imp {
 
         return out;
     }
-    auto ForgetProposals(const UnallocatedSet<OTIdentifier>& ids) noexcept
-        -> bool
+    auto ForgetProposals(
+        const UnallocatedSet<identifier::Generic>& ids) noexcept -> bool
     {
         auto lock = Lock{lock_};
 
@@ -127,13 +131,13 @@ struct Proposal::Imp {
     auto operator=(Imp&&) -> Imp& = delete;
 
 private:
-    using FinishedProposals = UnallocatedSet<OTIdentifier>;
+    using FinishedProposals = UnallocatedSet<identifier::Generic>;
 
     const storage::lmdb::LMDB& lmdb_;
     mutable std::mutex lock_;
     mutable FinishedProposals finished_proposals_;
 
-    auto load_proposal(const Identifier& id) const noexcept
+    auto load_proposal(const identifier::Generic& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>
     {
         auto out = std::optional<proto::BlockchainTransactionProposal>{};
@@ -153,42 +157,44 @@ Proposal::Proposal(const storage::lmdb::LMDB& lmdb) noexcept
 }
 
 auto Proposal::AddProposal(
-    const Identifier& id,
+    const identifier::Generic& id,
     const proto::BlockchainTransactionProposal& tx) noexcept -> bool
 {
     return imp_->AddProposal(id, tx);
 }
 
-auto Proposal::CancelProposal(MDB_txn* tx, const Identifier& id) noexcept
-    -> bool
+auto Proposal::CancelProposal(
+    MDB_txn* tx,
+    const identifier::Generic& id) noexcept -> bool
 {
     return imp_->CancelProposal(tx, id);
 }
 
 auto Proposal::CompletedProposals() const noexcept
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     return imp_->CompletedProposals();
 }
 
-auto Proposal::Exists(const Identifier& id) const noexcept -> bool
+auto Proposal::Exists(const identifier::Generic& id) const noexcept -> bool
 {
     return imp_->Exists(id);
 }
 
-auto Proposal::FinishProposal(MDB_txn* tx, const Identifier& id) noexcept
-    -> bool
+auto Proposal::FinishProposal(
+    MDB_txn* tx,
+    const identifier::Generic& id) noexcept -> bool
 {
     return imp_->FinishProposal(tx, id);
 }
 
-auto Proposal::ForgetProposals(const UnallocatedSet<OTIdentifier>& ids) noexcept
-    -> bool
+auto Proposal::ForgetProposals(
+    const UnallocatedSet<identifier::Generic>& ids) noexcept -> bool
 {
     return imp_->ForgetProposals(ids);
 }
 
-auto Proposal::LoadProposal(const Identifier& id) const noexcept
+auto Proposal::LoadProposal(const identifier::Generic& id) const noexcept
     -> std::optional<proto::BlockchainTransactionProposal>
 {
     return imp_->LoadProposal(id);

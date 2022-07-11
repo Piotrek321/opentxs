@@ -44,7 +44,7 @@ class OPENTXS_EXPORT Base : virtual public opentxs::contract::Signable
 public:
     virtual auto asString(const bool asPrivate = false) const
         -> UnallocatedCString = 0;
-    virtual auto CredentialID() const -> const Identifier& = 0;
+    virtual auto CredentialID() const -> const identifier::Generic& = 0;
     virtual auto hasCapability(const NymCapability& capability) const
         -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept

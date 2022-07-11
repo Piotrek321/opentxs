@@ -10,7 +10,10 @@
 namespace ottest
 {
 Regtest_fixture_sync_client::Regtest_fixture_sync_client()
-    : Regtest_fixture_normal(1, ot::Options{}.SetBlockchainWalletEnabled(false))
+    : Regtest_fixture_normal(
+          ot_,
+          1,
+          ot::Options{}.SetBlockchainWalletEnabled(false))
 {
 }
 }  // namespace ottest

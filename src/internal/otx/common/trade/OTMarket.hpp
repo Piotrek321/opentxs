@@ -39,6 +39,7 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -50,7 +51,6 @@ class TradeListMarket;
 
 class Account;
 class Armored;
-class Identifier;
 class OTCron;
 class OTOffer;
 class OTTrade;
@@ -176,7 +176,7 @@ public:
     }
     auto GetTotalAvailableAssets() -> Amount;
 
-    void GetIdentifier(Identifier& theIdentifier) const override;
+    void GetIdentifier(identifier::Generic& theIdentifier) const override;
 
     inline void SetCronPointer(OTCron& theCron) { m_pCron = &theCron; }
     inline auto GetCron() -> OTCron* { return m_pCron; }
@@ -219,17 +219,18 @@ private:
     mapOfOffersTrnsNum m_mapOffers;  // All of the offers on a single list,
                                      // ordered by transaction number.
 
-    OTNotaryID m_NOTARY_ID;  // Always store this in any object that's
-                             // associated with a specific server.
+    identifier::Notary m_NOTARY_ID;  // Always store this in any object that's
+                                     // associated with a specific server.
 
     // Every market involves a certain instrument definition being traded in a
     // certain
     // currency.
-    OTUnitID m_INSTRUMENT_DEFINITION_ID;  // This is the GOLD market. (Say.)
-                                          // | (GOLD
-                                          // for
-    OTUnitID m_CURRENCY_TYPE_ID;  // Gold is trading for DOLLARS.        |
-                                  // DOLLARS, for example.)
+    identifier::UnitDefinition m_INSTRUMENT_DEFINITION_ID;  // This is the GOLD
+                                                            // market. (Say.) |
+                                                            // (GOLD for
+    identifier::UnitDefinition m_CURRENCY_TYPE_ID;  // Gold is trading for
+                                                    // DOLLARS.        |
+                                                    // DOLLARS, for example.)
 
     // Each Offer on the market must have a minimum increment that this divides
     // equally into.

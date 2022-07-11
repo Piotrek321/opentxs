@@ -29,8 +29,12 @@
 
 namespace opentxs::storage
 {
-Credentials::Credentials(const Driver& storage, const UnallocatedCString& hash)
-    : Node(storage, hash)
+Credentials::Credentials(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
+    const Driver& storage,
+    const UnallocatedCString& hash)
+    : Node(crypto, factory, storage, hash)
 {
     if (check_hash(hash)) {
         init(hash);

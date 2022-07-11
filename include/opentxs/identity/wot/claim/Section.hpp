@@ -27,6 +27,12 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace identity
 {
 namespace wot
@@ -44,8 +50,6 @@ namespace proto
 class ContactData;
 class ContactSection;
 }  // namespace proto
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -62,11 +66,11 @@ public:
 
     auto AddItem(const std::shared_ptr<Item>& item) const -> Section;
     auto begin() const -> GroupMap::const_iterator;
-    auto Claim(const Identifier& item) const -> std::shared_ptr<Item>;
-    auto Delete(const Identifier& id) const -> Section;
+    auto Claim(const identifier::Generic& item) const -> std::shared_ptr<Item>;
+    auto Delete(const identifier::Generic& id) const -> Section;
     auto end() const -> GroupMap::const_iterator;
     auto Group(const claim::ClaimType& type) const -> std::shared_ptr<Group>;
-    auto HaveClaim(const Identifier& item) const -> bool;
+    auto HaveClaim(const identifier::Generic& item) const -> bool;
     auto Serialize(AllocateOutput destination, const bool withIDs = false) const
         -> bool;
     OPENTXS_NO_EXPORT auto SerializeTo(

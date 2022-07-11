@@ -76,6 +76,7 @@ namespace server
 class Server;
 }  // namespace server
 
+class Item;
 class Ledger;
 class OTTransaction;
 class PasswordPrompt;
@@ -95,7 +96,7 @@ public:
     // account label, resync nym
     using ExtraArgs = std::pair<UnallocatedCString, bool>;
 
-    virtual auto Accounts() const -> UnallocatedVector<OTIdentifier> = 0;
+    virtual auto Accounts() const -> UnallocatedVector<identifier::Generic> = 0;
     virtual auto AdminPassword() const -> const UnallocatedCString& = 0;
     virtual auto AdminAttempted() const -> bool = 0;
     virtual auto FinalizeServerCommand(

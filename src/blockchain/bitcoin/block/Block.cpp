@@ -38,7 +38,6 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/core/ByteArray.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"

@@ -43,7 +43,7 @@ auto activity_thread_send_message(
 
 auto check_activity_thread(
     const User& user,
-    const ot::Identifier& contact,
+    const ot::identifier::Generic& contact,
     const ActivityThreadData& expected) noexcept -> bool
 {
     const auto& widget = user.api_->UI().ActivityThread(user.nym_id_, contact);

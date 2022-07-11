@@ -20,12 +20,11 @@
 #include <type_traits>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "2_Factory.hpp"
-#include "internal/core/Factory.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
@@ -36,6 +35,7 @@
 #include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/UniqueQueue.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -157,8 +157,8 @@ StateMachine::StateMachine(
     std::atomic<TaskID>& nextTaskID,
     const UniqueQueue<CheckNymTask>& missingnyms,
     const UniqueQueue<CheckNymTask>& outdatednyms,
-    const UniqueQueue<OTNotaryID>& missingservers,
-    const UniqueQueue<OTUnitID>& missingUnitDefinitions,
+    const UniqueQueue<identifier::Notary>& missingservers,
+    const UniqueQueue<identifier::UnitDefinition>& missingUnitDefinitions,
     const PasswordPrompt& reason)
     : opentxs::internal::StateMachine([this] { return state_machine(); })
     , payment_tasks_(*this)
@@ -397,7 +397,7 @@ auto StateMachine::deposit_cheque(
 {
     const auto& [unitID, accountID, payment] = task;
 
-    OT_ASSERT(false == accountID->empty());
+    OT_ASSERT(false == accountID.empty());
     OT_ASSERT(payment);
 
     if ((false == payment->IsCheque()) && (false == payment->IsVoucher())) {
@@ -436,9 +436,9 @@ auto StateMachine::deposit_cheque_wrapper(
 
     OT_ASSERT(payment);
 
-    auto depositServer = identifier::Notary::Factory();
-    auto depositUnitID = identifier::UnitDefinition::Factory();
-    auto depositAccount = Identifier::Factory();
+    auto depositServer = identifier::Notary{};
+    auto depositUnitID = identifier::UnitDefinition{};
+    auto depositAccount = identifier::Generic{};
     output = deposit_cheque(task, param);
 
     if (false == output) {
@@ -461,7 +461,7 @@ auto StateMachine::download_mint(
 auto StateMachine::download_nym(const TaskID taskID, const CheckNymTask& id)
     const -> bool
 {
-    OT_ASSERT(false == id->empty());
+    OT_ASSERT(false == id.empty());
 
     otx::context::Server::ExtraArgs args{};
 
@@ -505,7 +505,7 @@ auto StateMachine::download_server(
     const TaskID taskID,
     const DownloadContractTask& contractID) const -> bool
 {
-    OT_ASSERT(false == contractID->empty());
+    OT_ASSERT(false == contractID.empty());
 
     DO_OPERATION(DownloadContract, contractID);
 
@@ -520,7 +520,7 @@ auto StateMachine::download_unit_definition(
     const TaskID taskID,
     const DownloadUnitDefinitionTask& id) const -> bool
 {
-    OT_ASSERT(false == id->empty());
+    OT_ASSERT(false == id.empty());
 
     DO_OPERATION(DownloadContract, id);
 
@@ -539,7 +539,7 @@ auto StateMachine::find_contract(
     U& unknown,
     const bool skipExisting) const -> bool
 {
-    if (load_contract<T>(targetID.get())) {
+    if (load_contract<T>(targetID)) {
         if (skipExisting) {
             LogVerbose()(OT_PRETTY_CLASS())("Contract ")(
                 targetID)(" exists in the wallet.")
@@ -659,10 +659,16 @@ auto StateMachine::issue_unit_definition(
             OT_ASSERT(result.second);
 
             const auto& reply = *result.second;
-            const auto accountID = Identifier::Factory(reply.m_strAcctID);
+            const auto accountID = client_.Factory().IdentifierFromBase58(
+                reply.m_strAcctID->Bytes());
             {
                 auto nym = client_.Wallet().mutable_Nym(op_.NymID(), reason_);
-                nym.AddContract(unitID->str(), advertise, true, true, reason_);
+                nym.AddContract(
+                    unitID.asBase58(client_.Crypto()),
+                    advertise,
+                    true,
+                    true,
+                    reason_);
             }
         }
 
@@ -757,8 +763,8 @@ auto StateMachine::message_nym(const TaskID taskID, const MessageTask& task)
     const -> bool
 {
     const auto& [recipient, text, setID] = task;
-    auto messageID = Identifier::Factory();
-    auto updateID = [&](const Identifier& in) -> void {
+    auto messageID = identifier::Generic{};
+    auto updateID = [&](const identifier::Generic& in) -> void {
         messageID = in;
         const auto& pID = std::get<2>(task);
 
@@ -769,12 +775,12 @@ auto StateMachine::message_nym(const TaskID taskID, const MessageTask& task)
         }
     };
 
-    OT_ASSERT(false == recipient->empty());
+    OT_ASSERT(false == recipient.empty());
 
     DO_OPERATION(SendMessage, recipient, String::Factory(text), updateID);
 
     if (success) {
-        if (false == messageID->empty()) {
+        if (false == messageID.empty()) {
             LogVerbose()(OT_PRETTY_CLASS())("Sent message: ")(messageID)
                 .Flush();
             associate_message_id(messageID, taskID);
@@ -791,7 +797,7 @@ auto StateMachine::pay_nym(const TaskID taskID, const PaymentTask& task) const
 {
     const auto& [recipient, payment] = task;
 
-    OT_ASSERT(false == recipient->empty());
+    OT_ASSERT(false == recipient.empty());
 
     DO_OPERATION(ConveyPayment, recipient, payment);
 
@@ -803,7 +809,7 @@ auto StateMachine::pay_nym_cash(const TaskID taskID, const PayCashTask& task)
 {
     const auto& [recipient, workflowID] = task;
 
-    OT_ASSERT(false == recipient->empty());
+    OT_ASSERT(false == recipient.empty());
 
     DO_OPERATION(SendCash, recipient, workflowID);
 
@@ -814,7 +820,7 @@ auto StateMachine::process_inbox(
     const TaskID taskID,
     const ProcessInboxTask& id) const -> bool
 {
-    OT_ASSERT(false == id->empty());
+    OT_ASSERT(false == id.empty());
 
     DO_OPERATION(UpdateAccount, id);
 
@@ -827,7 +833,7 @@ auto StateMachine::publish_server_contract(
 {
     const auto& id = task.first;
 
-    OT_ASSERT(false == id->empty());
+    OT_ASSERT(false == id.empty());
 
     DO_OPERATION(PublishContract, id);
 
@@ -858,8 +864,8 @@ auto StateMachine::queue_contracts(
 
 auto StateMachine::queue_nyms() -> bool
 {
-    const auto blank = client_.Factory().ServerID();
-    auto nymID = client_.Factory().NymID();
+    const auto blank = identifier::Notary{};
+    auto nymID = identifier::Nym{};
 
     while (get_nym_fetch(op_.ServerID()).Pop(task_id_, nymID)) {
         SM_SHUTDOWN();
@@ -886,7 +892,7 @@ auto StateMachine::register_account(
 {
     const auto& [label, unitID] = task;
 
-    OT_ASSERT(false == unitID->empty());
+    OT_ASSERT(false == unitID.empty());
 
     try {
         client_.Wallet().UnitDefinition(unitID);
@@ -1134,8 +1140,8 @@ auto StateMachine::write_and_send_cheque(
 {
     const auto& [accountID, recipient, value, memo, validFrom, validTo] = task;
 
-    OT_ASSERT(false == accountID->empty());
-    OT_ASSERT(false == recipient->empty());
+    OT_ASSERT(false == accountID.empty());
+    OT_ASSERT(false == recipient.empty());
 
     if (0 >= value) {
         LogError()(OT_PRETTY_CLASS())("Invalid amount.").Flush();

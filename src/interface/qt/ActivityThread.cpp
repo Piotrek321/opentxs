@@ -16,12 +16,12 @@
 #include "interface/qt/DraftValidator.hpp"
 #include "interface/ui/activitythread/ActivityThreadItem.hpp"
 #include "internal/interface/ui/UI.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "util/Polarity.hpp"  // IWYU pragma: keep
 
@@ -145,7 +145,8 @@ auto ActivityThreadQt::pay(
 {
     return imp_->parent_.Pay(
         amount.toStdString(),
-        Identifier::Factory(sourceAccount.toStdString()),
+        imp_->parent_.API().Factory().IdentifierFromBase58(
+            sourceAccount.toStdString()),
         memo.toStdString(),
         otx::client::PaymentType::Cheque);
 }

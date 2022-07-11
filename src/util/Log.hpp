@@ -5,9 +5,13 @@
 
 #pragma once
 
+#include <cs_plain_guarded.h>
+#include <cs_shared_guarded.h>
 #include <atomic>
 #include <cstddef>
 #include <mutex>
+#include <optional>
+#include <shared_mutex>
 #include <sstream>
 #include <string_view>
 #include <thread>
@@ -18,10 +22,6 @@
 #include "internal/util/Log.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -41,15 +41,28 @@ class error_code;
 namespace opentxs
 {
 struct Log::Imp final : public internal::Log {
-    struct Logger {
+    class Logger
+    {
+    public:
         using Source = std::pair<OTZMQPushSocket, std::stringstream>;
         using SourceMap = UnallocatedMap<int, Source>;
 
+        std::atomic_int session_{-1};
         std::atomic_int verbosity_{-1};
+
+        auto get() const noexcept -> Ticket;
+
+        auto CreateBuffer() noexcept -> std::pair<int, SourceMap::iterator>;
+        auto DestroyBuffer(int index) noexcept -> void;
+        auto Start() noexcept -> void;
+        auto Stop() noexcept -> void;
+
+    private:
+        using Gate = std::optional<Gatekeeper>;
+
         std::atomic_int index_{-1};
-        Gatekeeper running_{};
-        std::mutex lock_{};
-        SourceMap map_{};
+        libguarded::plain_guarded<SourceMap> map_{};
+        libguarded::shared_guarded<Gate, std::shared_mutex> gate_{};
     };
 
     static Logger logger_;
@@ -60,6 +73,7 @@ struct Log::Imp final : public internal::Log {
     auto operator()(const boost::system::error_code& error) const noexcept
         -> const opentxs::Log&;
 
+    [[noreturn]] auto Abort() const noexcept -> void;
     [[noreturn]] auto Assert(
         const char* file,
         const std::size_t line,
@@ -83,6 +97,13 @@ private:
 
     static auto get_buffer(UnallocatedCString& id) noexcept -> Logger::Source&;
 
-    auto send(const bool terminate) const noexcept -> void;
+    auto send(
+        const LogAction action = LogAction::flush,
+        const Console console = Console::err) const noexcept -> void;
+    auto send(
+        const Ticket&,
+        const LogAction action = LogAction::flush,
+        const Console console = Console::err) const noexcept -> void;
+    [[noreturn]] auto wait_for_terminate() const noexcept -> void;
 };
 }  // namespace opentxs

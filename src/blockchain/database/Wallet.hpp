@@ -38,8 +38,6 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -94,6 +92,7 @@ class HeaderOracle;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -111,7 +110,6 @@ class LMDB;
 }  // namespace storage
 
 class Data;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -123,9 +121,7 @@ class Wallet
 public:
     using Parent = database::Wallet;
     using NodeID = Parent::NodeID;
-    using pNodeID = Parent::pNodeID;
     using SubchainIndex = Parent::SubchainIndex;
-    using pSubchainIndex = Parent::pSubchainIndex;
     using ElementID = Parent::ElementID;
     using ElementMap = Parent::ElementMap;
     using Pattern = Parent::Pattern;
@@ -148,20 +144,21 @@ public:
         const bitcoin::block::Transaction& transaction,
         TXOs& txoCreated) const noexcept -> bool;
     auto AddOutgoingTransaction(
-        const Identifier& proposalID,
+        const identifier::Generic& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const bitcoin::block::Transaction& transaction) const noexcept -> bool;
     auto AddProposal(
-        const Identifier& id,
+        const identifier::Generic& id,
         const proto::BlockchainTransactionProposal& tx) const noexcept -> bool;
     auto AdvanceTo(const block::Position& pos) const noexcept -> bool;
-    auto CancelProposal(const Identifier& id) const noexcept -> bool;
-    auto CompletedProposals() const noexcept -> UnallocatedSet<OTIdentifier>;
+    auto CancelProposal(const identifier::Generic& id) const noexcept -> bool;
+    auto CompletedProposals() const noexcept
+        -> UnallocatedSet<identifier::Generic>;
     auto FinalizeReorg(
         storage::lmdb::LMDB::Transaction& tx,
         const block::Position& pos) const noexcept -> bool;
-    auto ForgetProposals(const UnallocatedSet<OTIdentifier>& ids) const noexcept
-        -> bool;
+    auto ForgetProposals(
+        const UnallocatedSet<identifier::Generic>& ids) const noexcept -> bool;
     auto GetBalance() const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner) const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner, const NodeID& node)
@@ -175,7 +172,7 @@ public:
         alloc::Default alloc) const noexcept -> Vector<UTXO>;
     auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& node,
+        const identifier::Generic& node,
         node::TxoState type,
         alloc::Default alloc) const noexcept -> Vector<UTXO>;
     auto GetOutputs(
@@ -189,7 +186,7 @@ public:
     auto GetPosition() const noexcept -> block::Position;
     auto GetSubchainID(
         const NodeID& balanceNode,
-        const crypto::Subchain subchain) const noexcept -> pSubchainIndex;
+        const crypto::Subchain subchain) const noexcept -> SubchainIndex;
     auto GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>;
     auto GetTransactions(const identifier::Nym& account) const noexcept
         -> UnallocatedVector<block::pTxid>;
@@ -201,12 +198,12 @@ public:
         const crypto::Subchain subchain,
         alloc::Default alloc) const noexcept -> Vector<UTXO>;
     auto GetWalletHeight() const noexcept -> block::Height;
-    auto LoadProposal(const Identifier& id) const noexcept
+    auto LoadProposal(const identifier::Generic& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>;
     auto LoadProposals() const noexcept
         -> UnallocatedVector<proto::BlockchainTransactionProposal>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto PublishBalance() const noexcept -> void;
     auto ReorgTo(
         const Lock& headerOracleLock,
@@ -218,7 +215,7 @@ public:
         const UnallocatedVector<block::Position>& reorg) const noexcept -> bool;
     auto ReserveUTXO(
         const identifier::Nym& spender,
-        const Identifier& proposal,
+        const identifier::Generic& proposal,
         node::internal::SpendPolicy& policy) const noexcept
         -> std::optional<UTXO>;
     auto SubchainAddElements(

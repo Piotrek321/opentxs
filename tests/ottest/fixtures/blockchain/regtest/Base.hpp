@@ -15,6 +15,7 @@
 #include <tuple>
 
 #include "ottest/fixtures/blockchain/TXOState.hpp"
+#include "ottest/fixtures/common/Base.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace ottest
@@ -31,7 +32,7 @@ struct TXOState;
 
 namespace ottest
 {
-class Regtest_fixture_base : virtual public ::testing::Test
+class Regtest_fixture_base : virtual public Base
 {
 public:
     static auto MaturationInterval() noexcept -> ot::blockchain::block::Height;
@@ -60,7 +61,6 @@ protected:
     static std::optional<BlockchainStartup> client_1_startup_s_;
     static std::optional<BlockchainStartup> client_2_startup_s_;
 
-    const ot::api::Context& ot_;
     const ot::Options client_args_;
     const int client_count_;
     const ot::api::session::Client& miner_;
@@ -102,10 +102,12 @@ protected:
     auto Start(const ot::api::session::Client& instance) noexcept -> bool;
 
     Regtest_fixture_base(
+        const ot::api::Context& ot,
         const bool waitForHandshake,
         const int clientCount,
         ot::Options clientArgs);
     Regtest_fixture_base(
+        const ot::api::Context& ot,
         const bool waitForHandshake,
         const int clientCount,
         ot::Options minerArgs,
@@ -154,7 +156,7 @@ private:
     auto compare_outpoints(
         const ot::blockchain::node::Wallet& wallet,
         const ot::identifier::Nym& nym,
-        const ot::Identifier& subaccount,
+        const ot::identifier::Generic& subaccount,
         const TXOState::Data& data) const noexcept -> bool;
     auto compare_outpoints(
         const ot::blockchain::node::TxoState type,

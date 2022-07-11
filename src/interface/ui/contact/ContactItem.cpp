@@ -38,6 +38,7 @@ ContactItem::ContactItem(
     const ContactSubsectionSortKey& sortKey,
     CustomData& custom) noexcept
     : ContactItemRow(parent, api, rowID, true)
+    , api_(api)
     , item_{new identity::wot::claim::Item(
           extract_custom<identity::wot::claim::Item>(custom))}
 {

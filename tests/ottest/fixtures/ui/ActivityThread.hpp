@@ -53,11 +53,11 @@ auto activity_thread_send_message(
     const ot::UnallocatedCString& messasge) noexcept -> bool;
 auto check_activity_thread(
     const User& user,
-    const ot::Identifier& contact,
+    const ot::identifier::Generic& contact,
     const ActivityThreadData& expected) noexcept -> bool;
 auto check_activity_thread_qt(
     const User& user,
-    const ot::Identifier& contact,
+    const ot::identifier::Generic& contact,
     const ActivityThreadData& expected) noexcept -> bool;
 auto init_activity_thread(
     const User& user,

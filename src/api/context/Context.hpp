@@ -175,7 +175,7 @@ private:
     std::unique_ptr<api::internal::Log> log_;
     std::unique_ptr<network::Asio> asio_;
     std::unique_ptr<api::Crypto> crypto_;
-    std::unique_ptr<api::Factory> factory_;
+    std::shared_ptr<api::Factory> factory_;
     std::unique_ptr<api::Legacy> legacy_;
     std::unique_ptr<api::network::ZAP> zap_;
     UnallocatedCString profile_id_;

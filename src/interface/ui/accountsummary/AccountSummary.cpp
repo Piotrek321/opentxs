@@ -14,12 +14,12 @@
 
 #include "interface/ui/base/List.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/otx/client/Issuer.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -27,6 +27,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/network/Types.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -54,17 +55,18 @@ AccountSummary::AccountSummary(
     const UnitType currency,
     const SimpleCallback& cb) noexcept
     : AccountSummaryList(api, nymID, cb, false)
+    , api_(api)
     , listeners_({
-          {api_.Endpoints().IssuerUpdate().data(),
+          {api.Endpoints().IssuerUpdate().data(),
            new MessageProcessor<AccountSummary>(
                &AccountSummary::process_issuer)},
-          {api_.Endpoints().ServerUpdate().data(),
+          {api.Endpoints().ServerUpdate().data(),
            new MessageProcessor<AccountSummary>(
                &AccountSummary::process_server)},
-          {api_.Endpoints().ConnectionStatus().data(),
+          {api.Endpoints().ConnectionStatus().data(),
            new MessageProcessor<AccountSummary>(
                &AccountSummary::process_connection)},
-          {api_.Endpoints().NymDownload().data(),
+          {api.Endpoints().NymDownload().data(),
            new MessageProcessor<AccountSummary>(&AccountSummary::process_nym)},
       })
     , currency_{currency}
@@ -72,7 +74,7 @@ AccountSummary::AccountSummary(
     , server_issuer_map_{}
     , nym_server_map_{}
 {
-    setup_listeners(listeners_);
+    setup_listeners(api, listeners_);
     startup_ = std::make_unique<std::thread>(&AccountSummary::startup, this);
 
     OT_ASSERT(startup_);
@@ -99,7 +101,7 @@ auto AccountSummary::extract_key(
 
     const auto serverID = issuer->PrimaryServer();
 
-    if (serverID->empty()) { return output; }
+    if (serverID.empty()) { return output; }
 
     try {
         const auto server = api_.Wallet().Server(serverID);
@@ -112,7 +114,7 @@ auto AccountSummary::extract_key(
         return output;
     }
 
-    switch (api_.ZMQ().Status(serverID->str())) {
+    switch (api_.ZMQ().Status(serverID.asBase58(api_.Crypto()))) {
         case network::ConnectionState::ACTIVE: {
             state = true;
         } break;
@@ -132,7 +134,7 @@ void AccountSummary::process_connection(const Message& message) noexcept
 
     OT_ASSERT(2 < body.size());
 
-    const auto id = api_.Factory().ServerID(body.at(1));
+    const auto id = api_.Factory().NotaryIDFromHash(body.at(1).Bytes());
     process_server(id);
 }
 
@@ -150,11 +152,11 @@ void AccountSummary::process_issuer(const Message& message) noexcept
 
     OT_ASSERT(2 < body.size());
 
-    const auto nymID = api_.Factory().NymID(body.at(1));
-    const auto issuerID = api_.Factory().NymID(body.at(2));
+    const auto nymID = api_.Factory().NymIDFromHash(body.at(1).Bytes());
+    const auto issuerID = api_.Factory().NymIDFromHash(body.at(2).Bytes());
 
-    OT_ASSERT(false == nymID->empty());
-    OT_ASSERT(false == issuerID->empty());
+    OT_ASSERT(false == nymID.empty());
+    OT_ASSERT(false == issuerID.empty());
 
     if (nymID != primary_id_) { return; }
 
@@ -167,7 +169,7 @@ void AccountSummary::process_nym(const Message& message) noexcept
 
     OT_ASSERT(1 < message.Body().size());
 
-    const auto nymID = api_.Factory().NymID(message.Body_at(1));
+    const auto nymID = api_.Factory().NymIDFromHash(message.Body_at(1).Bytes());
     sLock lock(shared_lock_);
     const auto it = nym_server_map_.find(nymID);
 
@@ -186,9 +188,9 @@ void AccountSummary::process_server(const Message& message) noexcept
 
     OT_ASSERT(1 < body.size());
 
-    const auto serverID = api_.Factory().ServerID(body.at(1));
+    const auto serverID = api_.Factory().NotaryIDFromHash(body.at(1).Bytes());
 
-    OT_ASSERT(false == serverID->empty());
+    OT_ASSERT(false == serverID.empty());
 
     process_server(serverID);
 }

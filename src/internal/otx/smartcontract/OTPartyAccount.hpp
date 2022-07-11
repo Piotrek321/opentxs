@@ -12,26 +12,33 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 
-namespace opentxs
+// NOLINTBEGIN(modernize-concat-nested-namespaces)
+namespace opentxs  // NOLINT
 {
+// inline namespace v1
+// {
 namespace api
 {
-namespace session
-{
-class Wallet;
-}  // namespace session
-
-class Wallet;
+class Session;
 }  // namespace api
 
-class Identifier;
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 class OTAgent;
 class OTParty;
 class OTScript;
 class OTSmartContract;
 class PasswordPrompt;
 class Tag;
+// }  // namespace v1
+}  // namespace opentxs
+// NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace opentxs
+{
 // Each party has a list of accounts. Just as the agent, depending on context,
 // MAY
 // have an unowned-but-useful pointer to its active Nym, similarly a
@@ -102,7 +109,7 @@ public:
     auto GetAuthorizedAgent() -> OTAgent*;
     auto LoadAccount() -> SharedAccount;
     auto IsAccount(const Account& theAccount) -> bool;
-    auto IsAccountByID(const Identifier& theAcctID) const -> bool;
+    auto IsAccountByID(const identifier::Generic& theAcctID) const -> bool;
     auto VerifyOwnership() const -> bool;  // I have a ptr
                                            // to my
     // owner (party), as well as to the actual account. I will ask him to
@@ -134,17 +141,17 @@ public:
         bool bSpecifyInstrumentDefinitionID = false) const;
 
     OTPartyAccount(
-        const api::session::Wallet& wallet,
+        const api::Session& api,
         const UnallocatedCString& dataFolder);
     OTPartyAccount(
-        const api::session::Wallet& wallet,
+        const api::Session& api,
         const UnallocatedCString& dataFolder,
         const UnallocatedCString& str_account_name,
         const String& strAgentName,
         Account& theAccount,
         std::int64_t lClosingTransNo);
     OTPartyAccount(
-        const api::session::Wallet& wallet,
+        const api::Session& api,
         const UnallocatedCString& dataFolder,
         const String& strName,
         const String& strAgentName,
@@ -160,7 +167,7 @@ public:
     virtual ~OTPartyAccount();
 
 private:
-    const api::session::Wallet& wallet_;
+    const api::Session& api_;
     const UnallocatedCString data_folder_{""};
     OTParty* m_pForParty;  // When being added to a party, this pointer will be
                            // set.

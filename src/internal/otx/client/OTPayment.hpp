@@ -145,11 +145,12 @@ public:
     // a given asset account.)
     auto GetClosingNum(
         TransactionNumber& lOutput,
-        const Identifier& theAcctID,
+        const identifier::Generic& theAcctID,
         const PasswordPrompt& reason) const -> bool;
-    auto GetInstrumentDefinitionID(Identifier& theOutput) const -> bool;
+    auto GetInstrumentDefinitionID(identifier::Generic& theOutput) const
+        -> bool;
     auto GetMemo(String& strOutput) const -> bool;
-    auto GetNotaryID(Identifier& theOutput) const -> bool;
+    auto GetNotaryID(identifier::Generic& theOutput) const -> bool;
     // Only works for payment plans and smart contracts. Gets the opening
     // transaction number for a given Nym, if applicable. (Or closing number for
     // a given asset account.)
@@ -162,12 +163,13 @@ public:
         strOutput.Set(m_strPayment->Get());
         return true;
     }
-    auto GetRecipientAcctID(Identifier& theOutput) const -> bool;
+    auto GetRecipientAcctID(identifier::Generic& theOutput) const -> bool;
     auto GetRecipientNymID(identifier::Nym& theOutput) const -> bool;
-    auto GetRemitterAcctID(Identifier& theOutput) const -> bool;
+    auto GetRemitterAcctID(identifier::Generic& theOutput) const -> bool;
     auto GetRemitterNymID(identifier::Nym& theOutput) const -> bool;
-    auto GetSenderAcctID(Identifier& theOutput) const -> bool;
-    auto GetSenderAcctIDForDisplay(Identifier& theOutput) const -> bool;
+    auto GetSenderAcctID(identifier::Generic& theOutput) const -> bool;
+    auto GetSenderAcctIDForDisplay(identifier::Generic& theOutput) const
+        -> bool;
     auto GetSenderNymID(identifier::Nym& theOutput) const -> bool;
     auto GetSenderNymIDForDisplay(identifier::Nym& theOutput) const -> bool;
     auto GetTransactionNum(TransactionNumber& lOutput) const -> bool;
@@ -250,19 +252,19 @@ protected:
     // NOT be considered available. Use the accessing methods below. These
     // values are not ALL always available, depending on the payment instrument
     // type. Different payment instruments support different temp values.
-    OTIdentifier m_InstrumentDefinitionID;
-    OTIdentifier m_NotaryID;
-    OTNymID m_SenderNymID;
-    OTIdentifier m_SenderAcctID;
-    OTNymID m_RecipientNymID;
-    OTIdentifier m_RecipientAcctID;
+    identifier::Generic m_InstrumentDefinitionID;
+    identifier::Generic m_NotaryID;
+    identifier::Nym m_SenderNymID;
+    identifier::Generic m_SenderAcctID;
+    identifier::Nym m_RecipientNymID;
+    identifier::Generic m_RecipientAcctID;
     // A voucher (cashier's cheque) has the "bank" as the sender. Whereas the
     // Nym who actually purchased the voucher is the remitter.
-    OTNymID m_RemitterNymID;
+    identifier::Nym m_RemitterNymID;
     // A voucher (cashier's cheque) has the "bank"s account as the sender acct.
     // Whereas the account that was originally used to purchase the voucher is
     // the remitter account.
-    OTIdentifier m_RemitterAcctID;
+    identifier::Generic m_RemitterAcctID;
     Time m_VALID_FROM;  // Temporary values. Not always available.
     Time m_VALID_TO;    // Temporary values. Not always available.
 

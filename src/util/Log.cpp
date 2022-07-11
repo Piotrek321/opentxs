@@ -15,7 +15,6 @@
 #include <chrono>
 #include <cstdlib>
 #include <cstring>
-#include <future>
 #include <memory>
 #include <thread>
 
@@ -23,7 +22,6 @@
 #include "internal/otx/common/StringXML.hpp"
 #include "internal/otx/common/util/Common.hpp"
 #include "internal/util/Log.hpp"
-#include "internal/util/Mutex.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -68,13 +66,74 @@ auto Log::SetVerbosity(const int level) noexcept -> void
 auto Log::Shutdown() noexcept -> void
 {
     static auto& logger = opentxs::Log::Imp::logger_;
-    logger.running_.shutdown();
-    auto lock = Lock{logger.lock_};
-    logger.map_.clear();
+    logger.Stop();
 }
 
-auto Log::Start() noexcept -> void {}
+auto Log::Start() noexcept -> void
+{
+    static auto& logger = opentxs::Log::Imp::logger_;
+    logger.Start();
+}
 }  // namespace opentxs::internal
+
+namespace opentxs
+{
+auto Log::Imp::Logger::get() const noexcept -> Ticket
+{
+    auto handle = gate_.lock_shared();
+
+    assert(handle->has_value());
+
+    return handle->value().get();
+}
+
+auto Log::Imp::Logger::CreateBuffer() noexcept
+    -> std::pair<int, SourceMap::iterator>
+{
+    auto handle = map_.lock();
+    auto& map = *handle;
+    const auto index = ++logger_.index_;
+    auto [it, added] = map.try_emplace(
+        index,
+        [] {
+            using Direction = opentxs::network::zeromq::socket::Direction;
+            auto out = Context().ZMQ().PushSocket(Direction::Connect);
+            const auto rc = out->Start(internal::Log::Endpoint());
+
+            assert(rc);
+
+            return out;
+        }(),
+        std::stringstream{});
+
+    assert(added);
+
+    return std::make_pair(index, it);
+}
+
+auto Log::Imp::Logger::DestroyBuffer(int i) noexcept -> void
+{
+    map_.lock()->erase(i);
+}
+
+auto Log::Imp::Logger::Start() noexcept -> void
+{
+    auto handle = gate_.lock();
+    handle->reset();
+    handle->emplace();
+    ++session_;
+}
+
+auto Log::Imp::Logger::Stop() noexcept -> void
+{
+    if (auto handle = gate_.lock(); handle->has_value()) {
+        handle->value().shutdown();
+        handle->reset();
+    }
+
+    map_.lock()->clear();
+}
+}  // namespace opentxs
 
 namespace opentxs
 {
@@ -84,6 +143,12 @@ Log::Imp::Imp(const int logLevel, opentxs::Log& parent) noexcept
     : level_(logLevel)
     , parent_(parent)
 {
+}
+
+auto Log::Imp::Abort() const noexcept -> void
+{
+    send(LogAction::terminate, Console::err);
+    wait_for_terminate();
 }
 
 auto Log::Imp::active() const noexcept -> bool
@@ -96,7 +161,7 @@ auto Log::Imp::Assert(
     const std::size_t line,
     const char* message) const noexcept -> void
 {
-    if (auto done = logger_.running_.get(); false == done) {
+    if (auto ticket = logger_.get(); false == ticket) {
         auto id = UnallocatedCString{};
         auto& [socket, buffer] = get_buffer(id);
         buffer = std::stringstream{};
@@ -109,21 +174,55 @@ auto Log::Imp::Assert(
         buffer << "\n" << boost::stacktrace::stacktrace();
     }
 
-    send(true);
-    abort();
+    Abort();
 }
 
-auto Log::Imp::Flush() const noexcept -> void { send(false); }
+auto Log::Imp::Flush() const noexcept -> void
+{
+    const auto console = [&] {
+        switch (level_) {
+            case 0: {
+
+                return Console::out;
+            }
+            default: {
+
+                return Console::err;
+            }
+        }
+    }();
+    const auto action = [&] {
+        switch (level_) {
+            case -2: {
+
+                return LogAction::terminate;
+            }
+            default: {
+
+                return LogAction::flush;
+            }
+        }
+    }();
+    send(action, console);
+}
 
 auto Log::Imp::get_buffer(UnallocatedCString& out) noexcept -> Logger::Source&
 {
     struct Buffer {
         const std::thread::id id_;
         const UnallocatedCString text_;
-        const int index_;
-        Logger::SourceMap::iterator source_;
+        int session_;
+        std::pair<int, Logger::SourceMap::iterator> source_;
 
-        Buffer() noexcept
+        auto Refresh() noexcept -> void
+        {
+            if (auto session = logger_.session_.load(); session != session_) {
+                source_ = logger_.CreateBuffer();
+                session_ = session;
+            }
+        }
+
+        Buffer(int session) noexcept
             : id_(std::this_thread::get_id())
             , text_([&] {
                 auto buf = std::stringstream{};
@@ -131,41 +230,20 @@ auto Log::Imp::get_buffer(UnallocatedCString& out) noexcept -> Logger::Source&
 
                 return buf.str();
             }())
-            , index_(++logger_.index_)
-            , source_([&] {
-                auto lock = Lock{logger_.lock_};
-                auto [it, added] = logger_.map_.try_emplace(
-                    index_,
-                    [] {
-                        using Direction = zmq::socket::Direction;
-                        auto out =
-                            Context().ZMQ().PushSocket(Direction::Connect);
-                        const auto started =
-                            out->Start(internal::Log::Endpoint());
-
-                        assert(started);
-
-                        return out;
-                    }(),
-                    std::stringstream{});
-                assert(added);
-
-                return it;
-            }())
+            , session_(session)
+            , source_(logger_.CreateBuffer())
         {
         }
 
-        ~Buffer()
-        {
-            auto lock = Lock{logger_.lock_};
-            logger_.map_.erase(index_);
-        }
+        ~Buffer() { logger_.DestroyBuffer(source_.first); }
     };
 
-    static thread_local auto buffer = Buffer{};
+    static thread_local auto buffer = Buffer{logger_.session_};
+    // NOTE this makes logging work if the Context is shutdown then restarted
+    buffer.Refresh();
     out = buffer.text_;
 
-    return buffer.source_->second;
+    return buffer.source_.second->second;
 }
 
 auto Log::Imp::operator()(const std::string_view in) const noexcept
@@ -175,7 +253,7 @@ auto Log::Imp::operator()(const std::string_view in) const noexcept
 
     auto id = UnallocatedCString{};
 
-    if (auto done = logger_.running_.get(); false == done) {
+    if (auto ticket = logger_.get(); false == ticket) {
         std::get<1>(get_buffer(id)) << in;
     }
 
@@ -189,39 +267,43 @@ auto Log::Imp::operator()(const boost::system::error_code& error) const noexcept
 
     auto id = UnallocatedCString{};
 
-    if (auto done = logger_.running_.get(); false == done) {
+    if (auto ticket = logger_.get(); false == ticket) {
         std::get<1>(get_buffer(id)) << error.message();
     }
 
     return parent_;
 }
 
-auto Log::Imp::send(const bool terminate) const noexcept -> void
+auto Log::Imp::send(const LogAction action, const Console console)
+    const noexcept -> void
 {
-    if (auto done = logger_.running_.get(); false == done) {
-        auto id = UnallocatedCString{};
-        auto& [socket, buffer] = get_buffer(id);
+    if (auto ticket = logger_.get(); false == ticket) {
+        send(ticket, action, console);
+    }
+}
+
+auto Log::Imp::send(
+    const Ticket&,
+    const LogAction action,
+    const Console console) const noexcept -> void
+{
+    auto id = UnallocatedCString{};
+    auto& [socket, buffer] = get_buffer(id);
+    // TODO c++20
+    socket->Send([&](const auto& buf) {
         auto message = zmq::Message{};
         message.StartBody();
         message.AddFrame(level_);
-        message.AddFrame(buffer.str());
+        message.AddFrame(buf.str());
         message.AddFrame(id);
-        auto promise = std::promise<void>{};
-        auto future = promise.get_future();
-        const auto* pPromise = &promise;
+        message.AddFrame(action);
+        message.AddFrame(console);
 
-        if (terminate) {
-            message.AddFrame(&pPromise, sizeof(pPromise));
-        } else {
-            promise.set_value();
-        }
+        return message;
+    }(buffer));
+    buffer = std::stringstream{};
 
-        socket->Send(std::move(message));
-        buffer = std::stringstream{};
-        future.wait_for(10s);
-    }
-
-    if (terminate) { abort(); }
+    if (LogAction::terminate == action) { wait_for_terminate(); }
 }
 
 auto Log::Imp::Trace(
@@ -229,7 +311,7 @@ auto Log::Imp::Trace(
     const std::size_t line,
     const char* message) const noexcept -> void
 {
-    if (auto done = logger_.running_.get(); false == done) {
+    if (auto ticket = logger_.get(); false == ticket) {
         UnallocatedCString id{};
         auto& [socket, buffer] = get_buffer(id);
         buffer = std::stringstream{};
@@ -240,9 +322,14 @@ auto Log::Imp::Trace(
         if (nullptr != message) { buffer << ": " << message; }
 
         buffer << "\n" << PrintStackTrace();
+        send(ticket);
     }
+}
 
-    send(false);
+auto Log::Imp::wait_for_terminate() const noexcept -> void
+{
+    Sleep(10s);
+    std::abort();
 }
 }  // namespace opentxs
 
@@ -401,45 +488,25 @@ auto Log::operator()(const Armored& in) const noexcept -> const Log&
     return operator()(in.Get());
 }
 
-auto Log::operator()(const OTIdentifier& in) const noexcept -> const Log&
-{
-    return operator()(in.get());
-}
-
-auto Log::operator()(const Identifier& in) const noexcept -> const Log&
+auto Log::operator()(const identifier::Generic& in) const noexcept -> const Log&
 {
     if (false == imp_->active()) { return *this; }
 
-    return (*imp_)(in.str());
-}
-
-auto Log::operator()(const OTNymID& in) const noexcept -> const Log&
-{
-    return operator()(in.get());
+    return (*imp_)(in.asBase58(Context().Crypto()));
 }
 
 auto Log::operator()(const identifier::Nym& in) const noexcept -> const Log&
 {
     if (false == imp_->active()) { return *this; }
 
-    return (*imp_)(in.str());
-}
-
-auto Log::operator()(const OTNotaryID& in) const noexcept -> const Log&
-{
-    return operator()(in.get());
+    return (*imp_)(in.asBase58(Context().Crypto()));
 }
 
 auto Log::operator()(const identifier::Notary& in) const noexcept -> const Log&
 {
     if (false == imp_->active()) { return *this; }
 
-    return (*imp_)(in.str());
-}
-
-auto Log::operator()(const OTUnitID& in) const noexcept -> const Log&
-{
-    return operator()(in.get());
+    return (*imp_)(in.asBase58(Context().Crypto()));
 }
 
 auto Log::operator()(const identifier::UnitDefinition& in) const noexcept
@@ -447,7 +514,7 @@ auto Log::operator()(const identifier::UnitDefinition& in) const noexcept
 {
     if (false == imp_->active()) { return *this; }
 
-    return (*imp_)(in.str());
+    return (*imp_)(in.asBase58(Context().Crypto()));
 }
 
 auto Log::operator()(const Time in) const noexcept -> const Log&
@@ -515,6 +582,13 @@ Log::~Log()
 
 namespace opentxs
 {
+auto LogAbort() noexcept -> Log&
+{
+    static auto logger = Log{-2};
+
+    return logger;
+}
+
 auto LogConsole() noexcept -> Log&
 {
     static auto logger = Log{0};

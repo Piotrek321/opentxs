@@ -25,6 +25,7 @@ namespace opentxs  // NOLINT
 namespace proto
 {
 class ContactData;
+class HDPath;
 class Nym;
 class Signature;
 }  // namespace proto

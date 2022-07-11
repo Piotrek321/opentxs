@@ -81,6 +81,7 @@ auto Multiplex::BestRoot(bool& primaryOutOfSync) -> UnallocatedCString
     try {
         localRoot.reset(new storage::Root(
             asio_,
+            crypto_,
             factory_,
             *this,
             bestHash,
@@ -100,6 +101,7 @@ auto Multiplex::BestRoot(bool& primaryOutOfSync) -> UnallocatedCString
         try {
             localRoot.reset(new storage::Root(
                 asio_,
+                crypto_,
                 factory_,
                 *this,
                 rootHash,
@@ -317,6 +319,7 @@ void Multiplex::migrate_primary(
     auto bucket = Flag::Factory(false);
     root.reset(new storage::Root(
         asio_,
+        crypto_,
         factory_,
         *this,
         rootHash,

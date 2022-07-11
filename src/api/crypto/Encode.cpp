@@ -13,12 +13,14 @@
 #include <memory>
 #include <regex>
 #include <sstream>
+#include <stdexcept>
 #include <string_view>
 
 #include "base58/base58.h"
 #include "base64/base64.h"
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -137,31 +139,53 @@ auto Encode::DataDecode(const UnallocatedCString& input) const
     return "";
 }
 
-auto Encode::IdentifierEncode(const void* data, const std::size_t size) const
-    -> UnallocatedCString
+auto Encode::IdentifierEncode(const ReadView input) const -> UnallocatedCString
 {
-    if (0 == size) { return {}; }
+    try {
+        if (false == valid(input)) { throw std::runtime_error{"empty input"}; }
 
-    auto preimage = ByteArray{static_cast<const std::byte*>(data), size};
-    auto checksum = ByteArray{};
-    auto hash = crypto_.Hash().Digest(
-        opentxs::crypto::HashType::Sha256DC,
-        preimage.Bytes(),
-        checksum.WriteInto());
+        static constexpr auto checksumBytes = 4_uz;
+        const auto checksum = [&] {
+            auto out = ByteArray{};
+            const auto rc = crypto_.Hash().Digest(
+                opentxs::crypto::HashType::Sha256DC, input, out.WriteInto());
 
-    OT_ASSERT(4 == checksum.size());
-    OT_ASSERT(hash);
+            if (false == rc) {
+                throw std::runtime_error{"failed to calculate checksum"};
+            }
 
-    preimage += checksum;
+            return out;
+        }();
 
-    return bitcoin_base58::EncodeBase58(
-        static_cast<const unsigned char*>(preimage.data()),
-        static_cast<const unsigned char*>(preimage.data()) + preimage.size());
-}
+        OT_ASSERT(checksumBytes == checksum.size());
 
-auto Encode::IdentifierEncode(const Data& input) const -> UnallocatedCString
-{
-    return IdentifierEncode(input.data(), input.size());
+        const auto size = input.size();
+        const auto preimage = [&] {
+            auto out = ByteArray{};
+            out.SetSize(checksumBytes + size);
+            auto rc = copy(input, preallocated(size, out.data()));
+
+            OT_ASSERT(rc);
+
+            rc = copy(
+                checksum.Bytes(),
+                preallocated(
+                    checksumBytes,
+                    std::next(static_cast<std::byte*>(out.data()), size)));
+
+            OT_ASSERT(rc);
+
+            return out;
+        }();
+
+        return bitcoin_base58::EncodeBase58(
+            static_cast<const unsigned char*>(preimage.data()),
+            static_cast<const unsigned char*>(preimage.data()) +
+                preimage.size());
+    } catch (...) {
+
+        return {};
+    }
 }
 
 auto Encode::IdentifierEncode(const Secret& input) const -> UnallocatedCString
@@ -188,8 +212,7 @@ auto Encode::IdentifierEncode(const Secret& input) const -> UnallocatedCString
         static_cast<const unsigned char*>(preimage.data()) + preimage.size());
 }
 
-auto Encode::IdentifierDecode(const UnallocatedCString& input) const
-    -> UnallocatedCString
+auto Encode::IdentifierDecode(const ReadView input) const -> UnallocatedCString
 {
     const auto sanitized{SanatizeBase58(input)};
     auto vector = UnallocatedVector<unsigned char>{};
@@ -251,10 +274,12 @@ auto Encode::RandomFilename() const -> UnallocatedCString
     return Nonce(16)->Get();
 }
 
-auto Encode::SanatizeBase58(const UnallocatedCString& input) const
-    -> UnallocatedCString
+auto Encode::SanatizeBase58(std::string_view input) const -> UnallocatedCString
 {
-    return std::regex_replace(input, std::regex("[^1-9A-HJ-NP-Za-km-z]"), "");
+    // TODO replace std::regex with better alternative
+
+    return std::regex_replace(
+        UnallocatedCString{input}, std::regex("[^1-9A-HJ-NP-Za-km-z]"), "");
 }
 
 auto Encode::SanatizeBase64(const UnallocatedCString& input) const

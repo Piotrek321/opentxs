@@ -28,7 +28,7 @@
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Generic.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -338,8 +338,8 @@ auto HD::Path() const noexcept -> const UnallocatedCString
 
     if (path_) {
         if (path_->has_root()) {
-            auto root = Identifier::Factory();
-            root->SetString(path_->root());
+            const auto root =
+                api_.Factory().IdentifierFromBase58(path_->root());
             path->Concatenate(String::Factory(root));
 
             for (const auto& it : path_->child()) {

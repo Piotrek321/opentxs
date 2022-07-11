@@ -38,7 +38,7 @@ public:
         -> SharedPimpl<BlockchainSubaccount> = 0;
     virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto Next() const noexcept -> SharedPimpl<BlockchainSubaccount> = 0;
-    virtual auto SourceID() const noexcept -> const Identifier& = 0;
+    virtual auto SourceID() const noexcept -> const identifier::Generic& = 0;
     virtual auto Type() const noexcept
         -> blockchain::crypto::SubaccountType = 0;
 

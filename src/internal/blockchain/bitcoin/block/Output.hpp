@@ -18,8 +18,6 @@
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -42,13 +40,18 @@ class Script;
 }  // namespace bitcoin
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+class Nym;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainTransactionOutput;
 }  // namespace proto
 
 class Amount;
-class Identifier;
 class Log;
 // }  // namespace v1
 }  // namespace opentxs
@@ -62,9 +65,10 @@ public:
     using SerializeType = proto::BlockchainTransactionOutput;
 
     virtual auto AssociatedLocalNyms(
-        UnallocatedVector<OTNymID>& output) const noexcept -> void = 0;
+        UnallocatedVector<identifier::Nym>& output) const noexcept -> void = 0;
     virtual auto AssociatedRemoteContacts(
-        UnallocatedVector<OTIdentifier>& output) const noexcept -> void = 0;
+        UnallocatedVector<identifier::Generic>& output) const noexcept
+        -> void = 0;
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Output> = 0;
     virtual auto ExtractElements(const cfilter::Type style) const noexcept
@@ -102,8 +106,10 @@ public:
         -> void = 0;
     virtual auto SetMinedPosition(
         const blockchain::block::Position& pos) noexcept -> void = 0;
-    virtual auto SetPayee(const Identifier& contact) noexcept -> void = 0;
-    virtual auto SetPayer(const Identifier& contact) noexcept -> void = 0;
+    virtual auto SetPayee(const identifier::Generic& contact) noexcept
+        -> void = 0;
+    virtual auto SetPayer(const identifier::Generic& contact) noexcept
+        -> void = 0;
     virtual auto SetState(node::TxoState state) noexcept -> void = 0;
     virtual auto SetValue(const blockchain::Amount& value) noexcept -> void = 0;
 

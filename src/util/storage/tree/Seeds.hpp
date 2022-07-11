@@ -21,6 +21,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
 namespace proto
 {
 class Seed;
@@ -76,6 +86,10 @@ private:
         const UnallocatedCString& id) -> void;
     auto serialize() const -> proto::StorageSeeds;
 
-    Seeds(const Driver& storage, const UnallocatedCString& hash);
+    Seeds(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

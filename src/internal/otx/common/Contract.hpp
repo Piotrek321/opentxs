@@ -69,10 +69,11 @@ namespace opentxs
 class Contract
 {
 public:
-    virtual auto CalculateContractID(Identifier& newID) const -> void;
+    virtual auto CalculateContractID(identifier::Generic& newID) const -> void;
     auto GetFilename(String& strFilename) const -> void;
     auto GetIdentifier(String& theIdentifier) const -> void;
-    virtual auto GetIdentifier(Identifier& theIdentifier) const -> void;
+    virtual auto GetIdentifier(identifier::Generic& theIdentifier) const
+        -> void;
     auto GetName(String& strName) const -> void
     {
         strName.Set(m_strName->Get());
@@ -113,7 +114,7 @@ protected:
     OTString m_strFilename;
 
     /** Hash of the contract, including signatures. (the "raw file") */
-    OTIdentifier m_ID;
+    identifier::Generic m_ID;
 
     /** The Unsigned Clear Text (XML contents without signatures.) */
     OTStringXML m_xmlUnsigned;
@@ -270,7 +271,7 @@ protected:
     file, which changes! So my copies of the account file and wallet file are
     the only records of that account ID which is a giant std::int64_t number. */
     virtual auto VerifyContractID() const -> bool;
-    virtual void CalculateAndSetContractID(Identifier& newID);
+    virtual void CalculateAndSetContractID(identifier::Generic& newID);
 
     virtual auto VerifySigAuthent(const identity::Nym& theNym) const -> bool;
     auto VerifySignature(
@@ -294,10 +295,12 @@ protected:
         const String& foldername,
         const String& filename,
         const String& strID);
-    explicit Contract(const api::Session& api, const Identifier& theID);
+    explicit Contract(
+        const api::Session& api,
+        const identifier::Generic& theID);
     explicit Contract(const api::Session& api, const String& strID);
 
 private:
-    auto SetIdentifier(const Identifier& theID) -> void;
+    auto SetIdentifier(const identifier::Generic& theID) -> void;
 };
 }  // namespace opentxs

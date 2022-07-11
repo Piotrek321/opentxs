@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -18,6 +17,11 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 namespace identity
 {
 namespace credential
@@ -46,7 +50,7 @@ public:
     virtual auto asString() const noexcept -> OTString = 0;
     virtual auto Description() const noexcept -> OTString = 0;
     virtual auto Type() const noexcept -> identity::SourceType = 0;
-    virtual auto NymID() const noexcept -> OTNymID = 0;
+    virtual auto NymID() const noexcept -> identifier::Nym = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(
         proto::NymIDSource& serialized) const noexcept -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto Verify(

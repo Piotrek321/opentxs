@@ -81,8 +81,8 @@ public:
 private:
     friend otx::Reply;
 
-    const OTNymID recipient_;
-    const OTNotaryID server_;
+    const identifier::Nym recipient_;
+    const identifier::Notary server_;
     const otx::ServerReplyType type_;
     const bool success_;
     const RequestNumber number_;
@@ -92,7 +92,7 @@ private:
         const api::Session& api,
         const proto::ServerReply serialized) -> Nym_p;
 
-    auto GetID(const Lock& lock) const -> OTIdentifier final;
+    auto GetID(const Lock& lock) const -> identifier::Generic final;
     auto full_version(const Lock& lock) const -> proto::ServerReply;
     auto id_version(const Lock& lock) const -> proto::ServerReply;
     auto Name() const noexcept -> UnallocatedCString final { return {}; }

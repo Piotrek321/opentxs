@@ -14,6 +14,8 @@
 #include "Proto.tpp"
 #include "internal/identity/Nym.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/core/PaymentCode.hpp"
@@ -24,7 +26,6 @@
 #include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -58,7 +59,7 @@ NymData::NymData(const NymData& rhs)
 }
 
 auto NymData::AddChildKeyCredential(
-    const Identifier& strMasterID,
+    const identifier::Generic& strMasterID,
     const crypto::Parameters& nymParameters,
     const PasswordPrompt& reason) -> UnallocatedCString
 {
@@ -70,8 +71,9 @@ auto NymData::AddClaim(const Claim& claim, const PasswordPrompt& reason) -> bool
     return nym().AddClaim(claim, reason);
 }
 
-auto NymData::DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
-    -> bool
+auto NymData::DeleteClaim(
+    const identifier::Generic& id,
+    const PasswordPrompt& reason) -> bool
 {
     return nym().DeleteClaim(id, reason);
 }
@@ -83,9 +85,9 @@ auto NymData::AddContract(
     const bool active,
     const PasswordPrompt& reason) -> bool
 {
-    auto id = factory_.UnitID(instrumentDefinitionID);
+    auto id = factory_.UnitIDFromBase58(instrumentDefinitionID);
 
-    if (id->empty()) {
+    if (id.empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid instrument definition id.")
             .Flush();
 
@@ -142,7 +144,8 @@ auto NymData::AddPreferredOTServer(
         return false;
     }
 
-    return nym().AddPreferredOTServer(factory_.ServerID(id), reason, primary);
+    return nym().AddPreferredOTServer(
+        factory_.NotaryIDFromBase58(id), reason, primary);
 }
 
 auto NymData::AddSocialMediaProfile(
@@ -212,7 +215,7 @@ auto NymData::HaveContract(
 
         OT_ASSERT(claim);
 
-        const auto value = factory_.UnitID(claim->Value());
+        const auto value = factory_.UnitIDFromBase58(claim->Value());
 
         if (false == (instrumentDefinitionID == value)) { continue; }
 
@@ -252,7 +255,7 @@ auto NymData::PhoneNumbers(bool active) const -> UnallocatedCString
 
 auto NymData::PreferredOTServer() const -> UnallocatedCString
 {
-    return data().PreferredOTServer()->str();
+    return data().PreferredOTServer().asBase58(Context().Crypto());
 }
 
 auto NymData::PrintContactData() const -> UnallocatedCString

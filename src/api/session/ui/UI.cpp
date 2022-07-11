@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "api/session/ui/Imp-base.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -25,7 +26,7 @@ UI::UI(std::unique_ptr<Imp> imp) noexcept
 
 auto UI::AccountActivity(
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const SimpleCallback cb) const noexcept
     -> const opentxs::ui::AccountActivity&
 {
@@ -34,7 +35,7 @@ auto UI::AccountActivity(
 
 auto UI::AccountActivityQt(
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const SimpleCallback cb) const noexcept -> opentxs::ui::AccountActivityQt*
 {
     return imp_->AccountActivityQt(nymID, accountID, cb);
@@ -81,7 +82,8 @@ auto UI::AccountTreeQt(const identifier::Nym& nym, const SimpleCallback cb)
     return imp_->AccountTreeQt(nym, cb);
 }
 
-auto UI::ActivateUICallback(const Identifier& widget) const noexcept -> void
+auto UI::ActivateUICallback(const identifier::Generic& widget) const noexcept
+    -> void
 {
     imp_->ActivateUICallback(widget);
 }
@@ -101,7 +103,7 @@ auto UI::ActivitySummaryQt(
 
 auto UI::ActivityThread(
     const identifier::Nym& nymID,
-    const Identifier& threadID,
+    const identifier::Generic& threadID,
     const SimpleCallback cb) const noexcept
     -> const opentxs::ui::ActivityThread&
 {
@@ -110,7 +112,7 @@ auto UI::ActivityThread(
 
 auto UI::ActivityThreadQt(
     const identifier::Nym& nymID,
-    const Identifier& threadID,
+    const identifier::Generic& threadID,
     const SimpleCallback cb) const noexcept -> opentxs::ui::ActivityThreadQt*
 {
     return imp_->ActivityThreadQt(nymID, threadID, cb);
@@ -186,19 +188,21 @@ auto UI::BlockchainUnitID(const opentxs::blockchain::Type chain) const noexcept
     return imp_->BlockchainUnitID(chain);
 }
 
-auto UI::ClearUICallbacks(const Identifier& widget) const noexcept -> void
+auto UI::ClearUICallbacks(const identifier::Generic& widget) const noexcept
+    -> void
 {
     imp_->ClearUICallbacks(widget);
 }
 
-auto UI::Contact(const Identifier& contactID, const SimpleCallback cb)
+auto UI::Contact(const identifier::Generic& contactID, const SimpleCallback cb)
     const noexcept -> const opentxs::ui::Contact&
 {
     return imp_->Contact(contactID, cb);
 }
 
-auto UI::ContactQt(const Identifier& contactID, const SimpleCallback cb)
-    const noexcept -> opentxs::ui::ContactQt*
+auto UI::ContactQt(
+    const identifier::Generic& contactID,
+    const SimpleCallback cb) const noexcept -> opentxs::ui::ContactQt*
 {
     return imp_->ContactQt(contactID, cb);
 }
@@ -274,8 +278,9 @@ auto UI::ProfileQt(const identifier::Nym& nymID, const SimpleCallback cb)
     return imp_->ProfileQt(nymID, cb);
 }
 
-auto UI::RegisterUICallback(const Identifier& widget, const SimpleCallback& cb)
-    const noexcept -> void
+auto UI::RegisterUICallback(
+    const identifier::Generic& widget,
+    const SimpleCallback& cb) const noexcept -> void
 {
     imp_->RegisterUICallback(widget, cb);
 }

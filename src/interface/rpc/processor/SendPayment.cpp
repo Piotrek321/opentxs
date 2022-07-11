@@ -26,6 +26,7 @@
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/interface/rpc/PaymentType.hpp"
 #include "opentxs/interface/rpc/ResponseCode.hpp"
@@ -34,7 +35,6 @@
 #include "opentxs/interface/rpc/response/Base.hpp"
 #include "opentxs/interface/rpc/response/SendPayment.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs::rpc::implementation
@@ -87,7 +87,7 @@ auto RPC::send_payment_blockchain(
             in, response::Base::Responses{{0, code}}, std::move(tasks));
     };
 
-    const auto id = api.Factory().Identifier(in.SourceAccount());
+    const auto id = api.Factory().IdentifierFromBase58(in.SourceAccount());
     const auto& blockchain = api.Crypto().Blockchain();
     const auto data = blockchain.LookupAccount(id);
     const auto& [chain, owner] = data;
@@ -133,15 +133,16 @@ auto RPC::send_payment_custodial(
     const request::SendPayment& in) const noexcept
     -> std::unique_ptr<response::Base>
 {
-    const auto contact = api.Factory().Identifier(in.RecipientContact());
-    const auto source = api.Factory().Identifier(in.SourceAccount());
+    const auto contact =
+        api.Factory().IdentifierFromBase58(in.RecipientContact());
+    const auto source = api.Factory().IdentifierFromBase58(in.SourceAccount());
     auto tasks = response::Base::Tasks{};
     const auto reply = [&](const auto code) {
         return std::make_unique<response::SendPayment>(
             in, response::Base::Responses{{0, code}}, std::move(tasks));
     };
 
-    if (contact->empty()) { return reply(ResponseCode::invalid); }
+    if (contact.empty()) { return reply(ResponseCode::invalid); }
 
     if (auto c = api.Contacts().Contact(contact); false == bool(c)) {
 
@@ -150,10 +151,7 @@ auto RPC::send_payment_custodial(
 
     const auto sender = api.Storage().AccountOwner(source);
 
-    if (sender->empty()) {
-
-        return reply(ResponseCode::account_owner_not_found);
-    }
+    if (sender.empty()) { return reply(ResponseCode::account_owner_not_found); }
 
     const auto& otx = api.OTX();
 
@@ -204,7 +202,7 @@ auto RPC::send_payment_custodial(
         }
         case PaymentType::transfer: {
             const auto destination =
-                api.Factory().Identifier(in.DestinationAccount());
+                api.Factory().IdentifierFromBase58(in.DestinationAccount());
             const auto notary = api.Storage().AccountServer(source);
             auto [taskID, future] = otx.SendTransfer(
                 sender, notary, source, destination, in.Amount(), in.Memo());

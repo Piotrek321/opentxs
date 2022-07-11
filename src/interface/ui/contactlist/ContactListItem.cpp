@@ -12,8 +12,9 @@
 #include <utility>
 
 #include "internal/interface/ui/UI.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -43,6 +44,7 @@ ContactListItem::ContactListItem(
     const ContactListRowID& rowID,
     const ContactListSortKey& key) noexcept
     : ContactListItemRow(parent, api, rowID, true)
+    , api_(api)
     , key_(key)
     , section_()
 {
@@ -65,7 +67,7 @@ auto ContactListItem::calculate_section(const Lock& lock) const noexcept
 
 auto ContactListItem::ContactID() const noexcept -> UnallocatedCString
 {
-    return row_id_->str();
+    return row_id_.asBase58(api_.Crypto());
 }
 
 auto ContactListItem::DisplayName() const noexcept -> UnallocatedCString

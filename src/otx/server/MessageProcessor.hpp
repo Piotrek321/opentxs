@@ -21,7 +21,6 @@
 #include "internal/util/Lockable.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/ByteArray.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -129,7 +128,7 @@ private:
     mutable std::mutex counter_lock_;
     mutable int drop_incoming_;
     mutable int drop_outgoing_;
-    UnallocatedMap<OTNymID, ConnectionData> active_connections_;
+    UnallocatedMap<identifier::Nym, ConnectionData> active_connections_;
     mutable std::shared_mutex connection_map_lock_;
 
     static auto get_connection(

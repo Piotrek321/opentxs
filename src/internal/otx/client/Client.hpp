@@ -11,7 +11,6 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/core/identifier/Identifier.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -78,45 +77,54 @@ auto operator<(
 
 namespace opentxs::otx::client
 {
-using CheckNymTask = OTNymID;
+using CheckNymTask = identifier::Nym;
 /** DepositPaymentTask: unit id, accountID, payment */
-using DepositPaymentTask =
-    std::tuple<OTUnitID, OTIdentifier, std::shared_ptr<const OTPayment>>;
-using DownloadContractTask = OTNotaryID;
-using DownloadMintTask = std::pair<OTUnitID, int>;
+using DepositPaymentTask = std::tuple<
+    identifier::UnitDefinition,
+    identifier::Generic,
+    std::shared_ptr<const OTPayment>>;
+using DownloadContractTask = identifier::Notary;
+using DownloadMintTask = std::pair<identifier::UnitDefinition, int>;
 using DownloadNymboxTask = OT_DownloadNymboxType;
-using DownloadUnitDefinitionTask = OTUnitID;
+using DownloadUnitDefinitionTask = identifier::UnitDefinition;
 using GetTransactionNumbersTask = OT_GetTransactionNumbersType;
 /** IssueUnitDefinitionTask: unit definition id, account label, claim */
 using IssueUnitDefinitionTask =
-    std::tuple<OTUnitID, UnallocatedCString, UnitType>;
+    std::tuple<identifier::UnitDefinition, UnallocatedCString, UnitType>;
 /** MessageTask: recipientID, message */
 using MessageTask =
-    std::tuple<OTNymID, UnallocatedCString, std::shared_ptr<SetID>>;
+    std::tuple<identifier::Nym, UnallocatedCString, std::shared_ptr<SetID>>;
 /** PayCashTask: recipientID, workflow ID */
-using PayCashTask = std::pair<OTNymID, OTIdentifier>;
+using PayCashTask = std::pair<identifier::Nym, identifier::Generic>;
 /** PaymentTask: recipientID, payment */
-using PaymentTask = std::pair<OTNymID, std::shared_ptr<const OTPayment>>;
+using PaymentTask =
+    std::pair<identifier::Nym, std::shared_ptr<const OTPayment>>;
 /** PeerReplyTask: targetNymID, peer reply, peer request */
-using PeerReplyTask = std::tuple<OTNymID, OTPeerReply, OTPeerRequest>;
+using PeerReplyTask = std::tuple<identifier::Nym, OTPeerReply, OTPeerRequest>;
 /** PeerRequestTask: targetNymID, peer request */
-using PeerRequestTask = std::pair<OTNymID, OTPeerRequest>;
-using ProcessInboxTask = OTIdentifier;
-using PublishServerContractTask = std::pair<OTNotaryID, bool>;
+using PeerRequestTask = std::pair<identifier::Nym, OTPeerRequest>;
+using ProcessInboxTask = identifier::Generic;
+using PublishServerContractTask = std::pair<identifier::Notary, bool>;
 /** RegisterAccountTask: account label, unit definition id */
-using RegisterAccountTask = std::pair<UnallocatedCString, OTUnitID>;
+using RegisterAccountTask =
+    std::pair<UnallocatedCString, identifier::UnitDefinition>;
 using RegisterNymTask = bool;
 /** SendChequeTask: sourceAccountID, targetNymID, value, memo, validFrom,
  * validTo
  */
-using SendChequeTask =
-    std::tuple<OTIdentifier, OTNymID, Amount, UnallocatedCString, Time, Time>;
+using SendChequeTask = std::tuple<
+    identifier::Generic,
+    identifier::Nym,
+    Amount,
+    UnallocatedCString,
+    Time,
+    Time>;
 /** SendTransferTask: source account, destination account, amount, memo
  */
-using SendTransferTask =
-    std::tuple<OTIdentifier, OTIdentifier, Amount, UnallocatedCString>;
+using SendTransferTask = std::
+    tuple<identifier::Generic, identifier::Generic, Amount, UnallocatedCString>;
 /** WithdrawCashTask: Account ID, amount*/
-using WithdrawCashTask = std::pair<OTIdentifier, Amount>;
+using WithdrawCashTask = std::pair<identifier::Generic, Amount>;
 }  // namespace opentxs::otx::client
 
 namespace std
@@ -169,8 +177,8 @@ struct make_blank<otx::client::DepositPaymentTask> {
         -> otx::client::DepositPaymentTask
     {
         return {
-            make_blank<OTUnitID>::value(api),
-            make_blank<OTIdentifier>::value(api),
+            make_blank<identifier::UnitDefinition>::value(api),
+            make_blank<identifier::Generic>::value(api),
             nullptr};
     }
 };
@@ -178,7 +186,7 @@ template <>
 struct make_blank<otx::client::DownloadMintTask> {
     static auto value(const api::Session& api) -> otx::client::DownloadMintTask
     {
-        return {make_blank<OTUnitID>::value(api), 0};
+        return {make_blank<identifier::UnitDefinition>::value(api), 0};
     }
 };
 template <>
@@ -186,14 +194,17 @@ struct make_blank<otx::client::IssueUnitDefinitionTask> {
     static auto value(const api::Session& api)
         -> otx::client::IssueUnitDefinitionTask
     {
-        return {make_blank<OTUnitID>::value(api), "", UnitType::Error};
+        return {
+            make_blank<identifier::UnitDefinition>::value(api),
+            "",
+            UnitType::Error};
     }
 };
 template <>
 struct make_blank<otx::client::MessageTask> {
     static auto value(const api::Session& api) -> otx::client::MessageTask
     {
-        return {make_blank<OTNymID>::value(api), "", nullptr};
+        return {make_blank<identifier::Nym>::value(api), "", nullptr};
     }
 };
 template <>
@@ -201,15 +212,15 @@ struct make_blank<otx::client::PayCashTask> {
     static auto value(const api::Session& api) -> otx::client::PayCashTask
     {
         return {
-            make_blank<OTNymID>::value(api),
-            make_blank<OTIdentifier>::value(api)};
+            make_blank<identifier::Nym>::value(api),
+            make_blank<identifier::Generic>::value(api)};
     }
 };
 template <>
 struct make_blank<otx::client::PaymentTask> {
     static auto value(const api::Session& api) -> otx::client::PaymentTask
     {
-        return {make_blank<OTNymID>::value(api), nullptr};
+        return {make_blank<identifier::Nym>::value(api), nullptr};
     }
 };
 template <>
@@ -217,7 +228,7 @@ struct make_blank<otx::client::PeerReplyTask> {
     static auto value(const api::Session& api) -> otx::client::PeerReplyTask
     {
         return {
-            make_blank<OTNymID>::value(api),
+            make_blank<identifier::Nym>::value(api),
             api.Factory().PeerReply(),
             api.Factory().PeerRequest()};
     }
@@ -226,7 +237,9 @@ template <>
 struct make_blank<otx::client::PeerRequestTask> {
     static auto value(const api::Session& api) -> otx::client::PeerRequestTask
     {
-        return {make_blank<OTNymID>::value(api), api.Factory().PeerRequest()};
+        return {
+            make_blank<identifier::Nym>::value(api),
+            api.Factory().PeerRequest()};
     }
 };
 template <>
@@ -234,7 +247,7 @@ struct make_blank<otx::client::PublishServerContractTask> {
     static auto value(const api::Session& api)
         -> otx::client::PublishServerContractTask
     {
-        return {make_blank<OTNotaryID>::value(api), false};
+        return {make_blank<identifier::Notary>::value(api), false};
     }
 };
 template <>
@@ -242,7 +255,7 @@ struct make_blank<otx::client::RegisterAccountTask> {
     static auto value(const api::Session& api)
         -> otx::client::RegisterAccountTask
     {
-        return {"", make_blank<OTUnitID>::value(api)};
+        return {"", make_blank<identifier::UnitDefinition>::value(api)};
     }
 };
 template <>
@@ -250,8 +263,8 @@ struct make_blank<otx::client::SendChequeTask> {
     static auto value(const api::Session& api) -> otx::client::SendChequeTask
     {
         return {
-            make_blank<OTIdentifier>::value(api),
-            make_blank<OTNymID>::value(api),
+            make_blank<identifier::Generic>::value(api),
+            make_blank<identifier::Nym>::value(api),
             0,
             "",
             Clock::now(),
@@ -263,8 +276,8 @@ struct make_blank<otx::client::SendTransferTask> {
     static auto value(const api::Session& api) -> otx::client::SendTransferTask
     {
         return {
-            make_blank<OTIdentifier>::value(api),
-            make_blank<OTIdentifier>::value(api),
+            make_blank<identifier::Generic>::value(api),
+            make_blank<identifier::Generic>::value(api),
             0,
             ""};
     }
@@ -273,7 +286,7 @@ template <>
 struct make_blank<otx::client::WithdrawCashTask> {
     static auto value(const api::Session& api) -> otx::client::WithdrawCashTask
     {
-        return {make_blank<OTIdentifier>::value(api), 0};
+        return {make_blank<identifier::Generic>::value(api), 0};
     }
 };
 }  // namespace opentxs
@@ -296,13 +309,13 @@ struct Operation {
         const identifier::Nym& recipient,
         const std::shared_ptr<const OTPayment> payment) -> bool = 0;
     virtual auto DepositCash(
-        const Identifier& depositAccountID,
+        const identifier::Generic& depositAccountID,
         blind::Purse&& purse) -> bool = 0;
     virtual auto DepositCheque(
-        const Identifier& depositAccountID,
+        const identifier::Generic& depositAccountID,
         const std::shared_ptr<Cheque> cheque) -> bool = 0;
     virtual auto DownloadContract(
-        const Identifier& ID,
+        const identifier::Generic& ID,
         const contract::Type type = contract::Type::invalid) -> bool = 0;
     virtual auto GetFuture() -> Future = 0;
     virtual auto IssueUnitDefinition(
@@ -319,7 +332,7 @@ struct Operation {
     virtual auto RequestAdmin(const String& password) -> bool = 0;
     virtual auto SendCash(
         const identifier::Nym& recipient,
-        const Identifier& workflowID) -> bool = 0;
+        const identifier::Generic& workflowID) -> bool = 0;
     virtual auto SendMessage(
         const identifier::Nym& recipient,
         const String& message,
@@ -332,8 +345,8 @@ struct Operation {
         const identifier::Nym& targetNymID,
         const OTPeerRequest peerrequest) -> bool = 0;
     virtual auto SendTransfer(
-        const Identifier& sourceAccountID,
-        const Identifier& destinationAccountID,
+        const identifier::Generic& sourceAccountID,
+        const identifier::Generic& destinationAccountID,
         const Amount& amount,
         const String& memo) -> bool = 0;
     virtual void SetPush(const bool enabled) = 0;
@@ -349,9 +362,11 @@ struct Operation {
         const otx::OperationType type,
         const identifier::Nym& targetNymID,
         const otx::context::Server::ExtraArgs& args = {}) -> bool = 0;
-    virtual auto UpdateAccount(const Identifier& accountID) -> bool = 0;
-    virtual auto WithdrawCash(const Identifier& accountID, const Amount& amount)
+    virtual auto UpdateAccount(const identifier::Generic& accountID)
         -> bool = 0;
+    virtual auto WithdrawCash(
+        const identifier::Generic& accountID,
+        const Amount& amount) -> bool = 0;
 
     virtual ~Operation() = default;
 };

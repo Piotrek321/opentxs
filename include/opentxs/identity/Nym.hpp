@@ -13,11 +13,10 @@
 
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -39,6 +38,7 @@ class Parameters;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 class UnitDefinition;
 }  // namespace identifier
@@ -73,6 +73,7 @@ class Signature;
 class PasswordPrompt;
 class PaymentCode;
 class Signature;
+class String;
 class Tag;
 // }  // namespace v1
 }  // namespace opentxs
@@ -84,9 +85,10 @@ class OPENTXS_EXPORT Nym
 {
 public:
     using KeyTypes = UnallocatedVector<crypto::key::asymmetric::Algorithm>;
-    using AuthorityKeys = std::pair<OTIdentifier, KeyTypes>;
-    using NymKeys = std::pair<OTNymID, UnallocatedVector<AuthorityKeys>>;
-    using key_type = Identifier;
+    using AuthorityKeys = std::pair<identifier::Generic, KeyTypes>;
+    using NymKeys =
+        std::pair<identifier::Nym, UnallocatedVector<AuthorityKeys>>;
+    using key_type = identifier::Generic;
     using value_type = Authority;
     using const_iterator =
         opentxs::iterator::Bidirectional<const Nym, const value_type>;
@@ -112,7 +114,7 @@ public:
     virtual auto ContactCredentialVersion() const -> VersionNumber = 0;
     virtual auto ContactDataVersion() const -> VersionNumber = 0;
     virtual auto Contracts(const UnitType currency, const bool onlyActive) const
-        -> UnallocatedSet<OTIdentifier> = 0;
+        -> UnallocatedSet<identifier::Generic> = 0;
     virtual auto EmailAddresses(bool active = true) const
         -> UnallocatedCString = 0;
     virtual auto EncryptionTargets() const noexcept -> NymKeys = 0;
@@ -189,7 +191,7 @@ public:
     virtual auto VerifyPseudonym() const -> bool = 0;
 
     virtual auto AddChildKeyCredential(
-        const Identifier& strMasterID,
+        const identifier::Generic& strMasterID,
         const crypto::Parameters& nymParameters,
         const PasswordPrompt& reason) -> UnallocatedCString = 0;
     virtual auto AddClaim(const Claim& claim, const PasswordPrompt& reason)
@@ -217,7 +219,7 @@ public:
         const bool primary,
         const bool active) -> bool = 0;
     virtual auto AddPreferredOTServer(
-        const Identifier& id,
+        const identifier::Generic& id,
         const PasswordPrompt& reason,
         const bool primary) -> bool = 0;
     virtual auto AddSocialMediaProfile(
@@ -226,8 +228,9 @@ public:
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool = 0;
-    virtual auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
-        -> bool = 0;
+    virtual auto DeleteClaim(
+        const identifier::Generic& id,
+        const PasswordPrompt& reason) -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Nym& = 0;
     virtual auto SetCommonName(
         const UnallocatedCString& name,

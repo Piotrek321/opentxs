@@ -44,7 +44,7 @@ Element::Element(
     const crypto::Subchain subchain,
     const Bip32Index index,
     const UnallocatedCString label,
-    OTIdentifier&& contact,
+    identifier::Generic&& contact,
     const opentxs::crypto::key::EllipticCurve& key,
     const Time time,
     Transactions&& unconfirmed,
@@ -74,9 +74,7 @@ Element::Element(
     const auto pc =
         (Subchain::Incoming == subchain_) || (Subchain::Outgoing == subchain_);
 
-    if (pc && contact_->empty()) {
-        throw std::runtime_error("Missing contact");
-    }
+    if (pc && contact_.empty()) { throw std::runtime_error("Missing contact"); }
 }
 
 Element::Element(
@@ -87,7 +85,7 @@ Element::Element(
     const crypto::Subchain subchain,
     const Bip32Index index,
     const opentxs::crypto::key::EllipticCurve& key,
-    OTIdentifier&& contact) noexcept(false)
+    identifier::Generic&& contact) noexcept(false)
     : Element(
           api,
           blockchain,
@@ -112,7 +110,7 @@ Element::Element(
     const opentxs::blockchain::Type chain,
     const crypto::Subchain subchain,
     const SerializedType& address,
-    OTIdentifier&& contact) noexcept(false)
+    identifier::Generic&& contact) noexcept(false)
     : Element(
           api,
           blockchain,
@@ -161,7 +159,7 @@ Element::Element(
           chain,
           subchain,
           address,
-          api.Factory().Identifier(address.contact()))
+          api.Factory().IdentifierFromBase58(address.contact()))
 {
 }
 
@@ -200,7 +198,7 @@ auto Element::Confirm(const Txid& tx) noexcept -> bool
     return true;
 }
 
-auto Element::Contact() const noexcept -> OTIdentifier
+auto Element::Contact() const noexcept -> identifier::Generic
 {
     auto lock = rLock{lock_};
 
@@ -252,8 +250,8 @@ auto Element::instantiate(
 }
 
 auto Element::IsAvailable(
-    const Identifier& contact,
-    const UnallocatedCString& memo) const noexcept -> Availability
+    const identifier::Generic& contact,
+    const std::string_view memo) const noexcept -> Availability
 {
     if (0 < confirmed_.size()) { return Availability::Used; }
 
@@ -262,7 +260,7 @@ auto Element::IsAvailable(
     constexpr auto unconfirmedLimit = std::chrono::hours{24 * 7};
     constexpr auto reservedLimit = std::chrono::hours{24 * 2};
     const auto haveMetadata =
-        ((false == contact_->empty()) || (false == label_.empty()));
+        ((false == contact_.empty()) || (false == label_.empty()));
     const auto match =
         haveMetadata && (contact_ == contact) && (label_ == memo);
 
@@ -378,23 +376,23 @@ auto Element::Serialize() const noexcept -> Element::SerializedType
             (DefaultVersion > version_) ? DefaultVersion : version_);
         output.set_index(index_);
         output.set_label(label_);
-        output.set_contact(contact_->str());
+        output.set_contact(contact_.asBase58(api_.Crypto()));
         *output.mutable_key() = key;
         output.set_modified(Clock::to_time_t(timestamp_));
 
         for (const auto& txid : unconfirmed_) {
-            output.add_unconfirmed(txid.str());
+            output.add_unconfirmed(UnallocatedCString{txid.Bytes()});
         }
 
         for (const auto& txid : confirmed_) {
-            output.add_confirmed(txid.str());
+            output.add_confirmed(UnallocatedCString{txid.Bytes()});
         }
     }
 
     return cached_.value();
 }
 
-void Element::SetContact(const Identifier& contact) noexcept
+void Element::SetContact(const identifier::Generic& contact) noexcept
 {
     const auto pc =
         (Subchain::Incoming == subchain_) || (Subchain::Outgoing == subchain_);
@@ -407,7 +405,7 @@ void Element::SetContact(const Identifier& contact) noexcept
     update_element(lock);
 }
 
-void Element::SetLabel(const UnallocatedCString& label) noexcept
+void Element::SetLabel(const std::string_view label) noexcept
 {
     auto lock = rLock{lock_};
     label_ = label;
@@ -416,8 +414,8 @@ void Element::SetLabel(const UnallocatedCString& label) noexcept
 }
 
 void Element::SetMetadata(
-    const Identifier& contact,
-    const UnallocatedCString& label) noexcept
+    const identifier::Generic& contact,
+    const std::string_view label) noexcept
 {
     const auto pc =
         (Subchain::Incoming == subchain_) || (Subchain::Outgoing == subchain_);
@@ -468,7 +466,7 @@ auto Element::Unreserve() noexcept -> bool
 
     timestamp_ = {};
     label_ = {};
-    contact_ = api_.Factory().Identifier();
+    contact_ = identifier::Generic{};
     cached_ = std::nullopt;
 
     return true;

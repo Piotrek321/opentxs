@@ -8,8 +8,12 @@ target_sources(
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/core/identifier/Factory.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/core/identifier/Identifier.hpp"
-    "Base.cpp"
-    "Base.hpp"
+    "Generic.cpp"
+    "Imp.cpp"
+    "Imp.hpp"
+    "Notary.cpp"
+    "Nym.cpp"
+    "UnitDefinition.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Algorithm.hpp"

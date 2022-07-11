@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <memory>
 #include <string_view>
 
@@ -28,7 +29,6 @@ namespace session
 class Storage;
 }  // namespace session
 
-class Crypto;
 class Legacy;
 class Settings;
 }  // namespace api
@@ -56,13 +56,13 @@ auto Context(
     const Options& args,
     PasswordCaller* externalPasswordCallback = nullptr) noexcept
     -> std::unique_ptr<api::internal::Context>;
-auto Legacy(const UnallocatedCString& home) noexcept
+auto Legacy(const std::filesystem::path& home) noexcept
     -> std::unique_ptr<api::Legacy>;
 auto Log(
     const network::zeromq::Context& zmq,
     std::string_view endpoint) noexcept -> std::unique_ptr<api::internal::Log>;
 auto FactoryAPI(const api::Crypto& crypto) noexcept
-    -> std::unique_ptr<api::Factory>;
+    -> std::shared_ptr<api::Factory>;
 auto Settings(const api::Legacy& legacy, const String& path) noexcept
     -> std::unique_ptr<api::Settings>;
 }  // namespace opentxs::factory

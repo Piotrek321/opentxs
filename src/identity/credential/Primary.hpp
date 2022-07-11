@@ -39,6 +39,11 @@ namespace crypto
 class Parameters;
 }  // namespace crypto
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace identity
 {
 namespace internal
@@ -57,7 +62,6 @@ class Signature;
 }  // namespace proto
 
 class Factory;
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -76,7 +80,7 @@ public:
     auto Verify(
         const proto::Credential& credential,
         const identity::CredentialRole& role,
-        const Identifier& masterID,
+        const identifier::Generic& masterID,
         const proto::Signature& masterSig) const -> bool final;
 
     Primary() = delete;

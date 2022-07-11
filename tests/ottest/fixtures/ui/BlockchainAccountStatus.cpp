@@ -16,6 +16,7 @@
 namespace ottest
 {
 auto check_blockchain_subaccounts(
+    const ot::api::Session& api,
     const ot::ui::BlockchainSubaccountSource& widget,
     const ot::UnallocatedVector<BlockchainSubaccountData>& v) noexcept -> bool;
 auto check_blockchain_subchains(
@@ -30,14 +31,14 @@ auto check_blockchain_account_status(
     const ot::blockchain::Type chain,
     const BlockchainAccountStatusData& expected) noexcept -> bool
 {
-    const auto& widget =
-        user.api_->UI().BlockchainAccountStatus(user.nym_id_, chain);
+    const auto& ot = *user.api_;
+    const auto& widget = ot.UI().BlockchainAccountStatus(user.nym_id_, chain);
     auto output{true};
     output &= (widget.Chain() == expected.chain_);
-    output &= (widget.Owner().str() == expected.owner_);
+    output &= (widget.Owner().asBase58(ot.Crypto()) == expected.owner_);
 
     EXPECT_EQ(widget.Chain(), expected.chain_);
-    EXPECT_EQ(widget.Owner().str(), expected.owner_);
+    EXPECT_EQ(widget.Owner().asBase58(ot.Crypto()), expected.owner_);
 
     const auto& v = expected.rows_;
     auto row = widget.First();
@@ -56,12 +57,12 @@ auto check_blockchain_account_status(
 
     for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
         output &= (row->Name() == it->name_);
-        output &= (row->SourceID().str() == it->id_);
+        output &= (row->SourceID().asBase58(ot.Crypto()) == it->id_);
         output &= (row->Type() == it->type_);
-        output &= check_blockchain_subaccounts(row.get(), it->rows_);
+        output &= check_blockchain_subaccounts(ot, row.get(), it->rows_);
 
         EXPECT_EQ(row->Name(), it->name_);
-        EXPECT_EQ(row->SourceID().str(), it->id_);
+        EXPECT_EQ(row->SourceID().asBase58(ot.Crypto()), it->id_);
         EXPECT_EQ(row->Type(), it->type_);
 
         const auto lastVector = std::next(it) == v.end();
@@ -81,6 +82,7 @@ auto check_blockchain_account_status(
 }
 
 auto check_blockchain_subaccounts(
+    const ot::api::Session& api,
     const ot::ui::BlockchainSubaccountSource& widget,
     const ot::UnallocatedVector<BlockchainSubaccountData>& v) noexcept -> bool
 {
@@ -101,11 +103,11 @@ auto check_blockchain_subaccounts(
 
     for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
         output &= (row->Name() == it->name_);
-        output &= (row->SubaccountID().str() == it->id_);
+        output &= (row->SubaccountID().asBase58(api.Crypto()) == it->id_);
         output &= check_blockchain_subchains(row.get(), it->rows_);
 
         EXPECT_EQ(row->Name(), it->name_);
-        EXPECT_EQ(row->SubaccountID().str(), it->id_);
+        EXPECT_EQ(row->SubaccountID().asBase58(api.Crypto()), it->id_);
 
         const auto lastVector = std::next(it) == v.end();
         const auto lastRow = row->Last();

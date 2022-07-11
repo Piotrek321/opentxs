@@ -41,7 +41,6 @@
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -69,6 +68,11 @@ class Position;
 }  // namespace block
 }  // namespace blockchain
 
+namespace identifier
+{
+class Nym;
+}  // namespace identifier
+
 class Log;
 // }  // namespace v1
 }  // namespace opentxs
@@ -79,10 +83,11 @@ namespace opentxs::blockchain::bitcoin::block::implementation
 class Output final : public internal::Output
 {
 public:
-    auto AssociatedLocalNyms(UnallocatedVector<OTNymID>& output) const noexcept
-        -> void final;
+    auto AssociatedLocalNyms(UnallocatedVector<identifier::Nym>& output)
+        const noexcept -> void final;
     auto AssociatedRemoteContacts(
-        UnallocatedVector<OTIdentifier>& output) const noexcept -> void final;
+        UnallocatedVector<identifier::Generic>& output) const noexcept
+        -> void final;
     auto CalculateSize() const noexcept -> std::size_t final;
     auto clone() const noexcept -> std::unique_ptr<internal::Output> final
     {
@@ -156,11 +161,11 @@ public:
     {
         cache_.set_position(pos);
     }
-    auto SetPayee(const Identifier& contact) noexcept -> void final
+    auto SetPayee(const identifier::Generic& contact) noexcept -> void final
     {
         cache_.set_payee(contact);
     }
-    auto SetPayer(const Identifier& contact) noexcept -> void final
+    auto SetPayer(const identifier::Generic& contact) noexcept -> void final
     {
         cache_.set_payer(contact);
     }
@@ -221,8 +226,8 @@ private:
             std::for_each(std::begin(keys_), std::end(keys_), cb);
         }
         auto keys() const noexcept -> UnallocatedVector<crypto::Key>;
-        auto payee() const noexcept -> OTIdentifier;
-        auto payer() const noexcept -> OTIdentifier;
+        auto payee() const noexcept -> identifier::Generic;
+        auto payer() const noexcept -> identifier::Generic;
         auto position() const noexcept -> const blockchain::block::Position&;
         auto state() const noexcept -> node::TxoState;
         auto tags() const noexcept -> UnallocatedSet<node::TxoTag>;
@@ -235,8 +240,8 @@ private:
             const Log& log) noexcept -> bool;
         auto reset_size() noexcept -> void;
         auto set(const blockchain::block::KeyData& data) noexcept -> void;
-        auto set_payee(const Identifier& contact) noexcept -> void;
-        auto set_payer(const Identifier& contact) noexcept -> void;
+        auto set_payee(const identifier::Generic& contact) noexcept -> void;
+        auto set_payer(const identifier::Generic& contact) noexcept -> void;
         auto set_position(const blockchain::block::Position& pos) noexcept
             -> void;
         auto set_state(node::TxoState state) noexcept -> void;
@@ -265,15 +270,15 @@ private:
     private:
         mutable std::mutex lock_{};
         std::optional<std::size_t> size_{};
-        OTIdentifier payee_;
-        OTIdentifier payer_;
+        identifier::Generic payee_;
+        identifier::Generic payer_;
         boost::container::flat_set<crypto::Key> keys_;
         blockchain::block::Position mined_position_;
         node::TxoState state_;
         UnallocatedSet<node::TxoTag> tags_;
 
-        auto set_payee(OTIdentifier&& contact) noexcept -> void;
-        auto set_payer(OTIdentifier&& contact) noexcept -> void;
+        auto set_payee(identifier::Generic&& contact) noexcept -> void;
+        auto set_payer(identifier::Generic&& contact) noexcept -> void;
     };
 
     static const VersionNumber default_version_;

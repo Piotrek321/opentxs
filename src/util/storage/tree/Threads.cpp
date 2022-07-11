@@ -28,9 +28,9 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
@@ -39,11 +39,13 @@
 namespace opentxs::storage
 {
 Threads::Threads(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
     const Driver& storage,
     const UnallocatedCString& hash,
     Mailbox& mailInbox,
     Mailbox& mailOutbox)
-    : Node(storage, hash)
+    : Node(crypto, factory, storage, hash)
     , threads_()
     , mail_inbox_(mailInbox)
     , mail_outbox_(mailOutbox)
@@ -56,8 +58,9 @@ Threads::Threads(
     }
 }
 
-auto Threads::AddIndex(const Data& txid, const Identifier& thread) noexcept
-    -> bool
+auto Threads::AddIndex(
+    const Data& txid,
+    const identifier::Generic& thread) noexcept -> bool
 {
     Lock lock(blockchain_.lock_);
 
@@ -71,7 +74,7 @@ auto Threads::AddIndex(const Data& txid, const Identifier& thread) noexcept
         OT_ASSERT(0 == vector.size());
     } else {
         for (auto i = vector.begin(); i != vector.end();) {
-            if ((*i)->empty()) {
+            if ((*i).empty()) {
                 i = vector.erase(i);
             } else {
                 ++i;
@@ -85,9 +88,9 @@ auto Threads::AddIndex(const Data& txid, const Identifier& thread) noexcept
 }
 
 auto Threads::BlockchainThreadMap(const Data& txid) const noexcept
-    -> UnallocatedVector<OTIdentifier>
+    -> UnallocatedVector<identifier::Generic>
 {
-    auto output = UnallocatedVector<OTIdentifier>{};
+    auto output = UnallocatedVector<identifier::Generic>{};
     Lock lock(blockchain_.lock_);
 
     try {
@@ -122,7 +125,13 @@ auto Threads::create(
     OT_ASSERT(verify_write_lock(lock));
 
     std::unique_ptr<storage::Thread> newThread(new storage::Thread(
-        driver_, id, participants, mail_inbox_, mail_outbox_));
+        crypto_,
+        factory_,
+        driver_,
+        id,
+        participants,
+        mail_inbox_,
+        mail_outbox_));
 
     if (!newThread) {
         std::cerr << __func__ << ": Failed to instantiate thread." << std::endl;
@@ -221,8 +230,8 @@ void Threads::init(const UnallocatedCString& hash)
             auto& data = blockchain_.map_[std::move(txid)];
 
             for (const auto& thread : index->thread()) {
-                auto threadID = Identifier::Factory();
-                threadID->Assign(thread);
+                auto threadID = identifier::Generic{};
+                threadID.Assign(thread);
                 data.emplace(std::move(threadID));
             }
         } catch (const std::exception& e) {
@@ -303,7 +312,14 @@ auto Threads::thread(
 
     if (!node) {
         node.reset(new storage::Thread(
-            driver_, id, hash, alias, mail_inbox_, mail_outbox_));
+            crypto_,
+            factory_,
+            driver_,
+            id,
+            hash,
+            alias,
+            mail_inbox_,
+            mail_outbox_));
 
         if (!node) {
             std::cerr << __func__ << ": Failed to instantiate thread."
@@ -368,8 +384,9 @@ auto Threads::Rename(
     return save(lock);
 }
 
-auto Threads::RemoveIndex(const Data& txid, const Identifier& thread) noexcept
-    -> void
+auto Threads::RemoveIndex(
+    const Data& txid,
+    const identifier::Generic& thread) noexcept -> void
 {
     Lock lock(blockchain_.lock_);
     auto it = blockchain_.map_.find(txid);
@@ -448,9 +465,9 @@ auto Threads::serialize() const -> proto::StorageNymList
         index.set_version(1);
         index.set_txid(UnallocatedCString{txid.Bytes()});
         std::for_each(std::begin(data), std::end(data), [&](const auto& id) {
-            OT_ASSERT(false == id->empty());
+            OT_ASSERT(false == id.empty());
 
-            index.add_thread(UnallocatedCString{id->Bytes()});
+            index.add_thread(UnallocatedCString{id.Bytes()});
         });
 
         OT_ASSERT(static_cast<std::size_t>(index.thread_size()) == data.size());

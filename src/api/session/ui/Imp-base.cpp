@@ -55,7 +55,7 @@ UI::Imp::Imp(
 auto UI::Imp::account_activity(
     const Lock& lock,
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const SimpleCallback& cb) const noexcept -> AccountActivityMap::mapped_type&
 {
     auto key = AccountActivityKey{nymID, accountID};
@@ -88,7 +88,7 @@ auto UI::Imp::account_activity(
 
 auto UI::Imp::AccountActivity(
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const SimpleCallback cb) const noexcept
     -> const opentxs::ui::AccountActivity&
 {
@@ -164,8 +164,8 @@ auto UI::Imp::AccountSummary(
     return *account_summary(lock, nymID, currency, cb);
 }
 
-auto UI::Imp::ActivateUICallback(const Identifier& widget) const noexcept
-    -> void
+auto UI::Imp::ActivateUICallback(
+    const identifier::Generic& widget) const noexcept -> void
 {
     update_manager_.ActivateUICallback(widget);
 }
@@ -238,7 +238,7 @@ auto UI::Imp::ActivitySummary(
 auto UI::Imp::activity_thread(
     const Lock& lock,
     const identifier::Nym& nymID,
-    const Identifier& threadID,
+    const identifier::Generic& threadID,
     const SimpleCallback& cb) const noexcept -> ActivityThreadMap::mapped_type&
 {
     auto key = ActivityThreadKey{nymID, threadID};
@@ -262,7 +262,7 @@ auto UI::Imp::activity_thread(
 
 auto UI::Imp::ActivityThread(
     const identifier::Nym& nymID,
-    const Identifier& threadID,
+    const identifier::Generic& threadID,
     const SimpleCallback cb) const noexcept
     -> const opentxs::ui::ActivityThread&
 {
@@ -381,14 +381,15 @@ auto UI::Imp::BlockchainUnitID(const opentxs::blockchain::Type chain)
     return opentxs::blockchain::UnitID(api_, chain);
 }
 
-auto UI::Imp::ClearUICallbacks(const Identifier& widget) const noexcept -> void
+auto UI::Imp::ClearUICallbacks(const identifier::Generic& widget) const noexcept
+    -> void
 {
     update_manager_.ClearUICallbacks(widget);
 }
 
 auto UI::Imp::contact(
     const Lock& lock,
-    const Identifier& contactID,
+    const identifier::Generic& contactID,
     const SimpleCallback& cb) const noexcept -> ContactMap::mapped_type&
 {
     auto key = ContactKey{contactID};
@@ -409,8 +410,9 @@ auto UI::Imp::contact(
     return it->second;
 }
 
-auto UI::Imp::Contact(const Identifier& contactID, const SimpleCallback cb)
-    const noexcept -> const opentxs::ui::Contact&
+auto UI::Imp::Contact(
+    const identifier::Generic& contactID,
+    const SimpleCallback cb) const noexcept -> const opentxs::ui::Contact&
 {
     auto lock = Lock{lock_};
 
@@ -448,8 +450,8 @@ auto UI::Imp::ContactList(const identifier::Nym& nymID, const SimpleCallback cb)
     return *contact_list(lock, nymID, cb);
 }
 
-auto UI::Imp::is_blockchain_account(const Identifier& id) const noexcept
-    -> std::optional<opentxs::blockchain::Type>
+auto UI::Imp::is_blockchain_account(const identifier::Generic& id)
+    const noexcept -> std::optional<opentxs::blockchain::Type>
 {
     const auto [chain, owner] = blockchain_.LookupAccount(id);
 
@@ -574,7 +576,7 @@ auto UI::Imp::Profile(const identifier::Nym& nymID, const SimpleCallback cb)
 }
 
 auto UI::Imp::RegisterUICallback(
-    const Identifier& widget,
+    const identifier::Generic& widget,
     const SimpleCallback& cb) const noexcept -> void
 {
     update_manager_.RegisterUICallback(widget, cb);

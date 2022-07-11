@@ -117,8 +117,6 @@ protected:
     WalletDescription core_wallet_;
     std::map<std::string, WalletDescription> auxiliary_wallets_;
 
-    virtual void SetUp() override;
-
     auto CreateNym(
         const ot::api::session::Client& api,
         const ot::UnallocatedCString& name,

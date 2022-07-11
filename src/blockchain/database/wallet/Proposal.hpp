@@ -9,7 +9,6 @@
 #include <mutex>
 #include <optional>
 
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -17,6 +16,11 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainTransactionProposal;
@@ -42,20 +46,23 @@ namespace opentxs::blockchain::database::wallet
 class Proposal
 {
 public:
-    auto CompletedProposals() const noexcept -> UnallocatedSet<OTIdentifier>;
-    auto Exists(const Identifier& id) const noexcept -> bool;
-    auto LoadProposal(const Identifier& id) const noexcept
+    auto CompletedProposals() const noexcept
+        -> UnallocatedSet<identifier::Generic>;
+    auto Exists(const identifier::Generic& id) const noexcept -> bool;
+    auto LoadProposal(const identifier::Generic& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>;
     auto LoadProposals() const noexcept
         -> UnallocatedVector<proto::BlockchainTransactionProposal>;
 
     auto AddProposal(
-        const Identifier& id,
+        const identifier::Generic& id,
         const proto::BlockchainTransactionProposal& tx) noexcept -> bool;
-    auto CancelProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool;
-    auto FinishProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool;
-    auto ForgetProposals(const UnallocatedSet<OTIdentifier>& ids) noexcept
+    auto CancelProposal(MDB_txn* tx, const identifier::Generic& id) noexcept
         -> bool;
+    auto FinishProposal(MDB_txn* tx, const identifier::Generic& id) noexcept
+        -> bool;
+    auto ForgetProposals(
+        const UnallocatedSet<identifier::Generic>& ids) noexcept -> bool;
 
     Proposal(const storage::lmdb::LMDB& lmdb) noexcept;
     Proposal() = delete;

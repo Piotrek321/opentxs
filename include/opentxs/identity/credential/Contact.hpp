@@ -53,7 +53,7 @@ public:
         const UnallocatedCString& subtype) -> UnallocatedCString;
     OPENTXS_NO_EXPORT static auto ClaimID(
         const api::Session& api,
-        const proto::Claim& preimage) -> OTIdentifier;
+        const proto::Claim& preimage) -> identifier::Generic;
     OPENTXS_NO_EXPORT static auto asClaim(
         const api::Session& api,
         const String& nymid,

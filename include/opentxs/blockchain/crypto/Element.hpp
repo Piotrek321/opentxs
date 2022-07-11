@@ -9,8 +9,6 @@
 
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Time.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -31,6 +29,11 @@ class Subaccount;
 }  // namespace crypto
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 class ByteArray;
 class PasswordPrompt;
 // }  // namespace v1
@@ -47,7 +50,7 @@ public:
     virtual auto Address(const AddressStyle format) const noexcept
         -> UnallocatedCString = 0;
     virtual auto Confirmed() const noexcept -> Txids = 0;
-    virtual auto Contact() const noexcept -> OTIdentifier = 0;
+    virtual auto Contact() const noexcept -> identifier::Generic = 0;
     virtual auto Index() const noexcept -> Bip32Index = 0;
     virtual auto Internal() const noexcept -> internal::Element& = 0;
     virtual auto Key() const noexcept -> ECKey = 0;

@@ -147,7 +147,7 @@ private:
     // this flag so the caller knows to do so.
     bool m_bShutdownFlag{false};
     // A hash of the server contract
-    OTNotaryID m_notaryID;
+    identifier::Notary m_notaryID;
     // A hash of the public key that signed the server contract
     UnallocatedCString m_strServerNymID;
     // This is the server's own contract, containing its public key and

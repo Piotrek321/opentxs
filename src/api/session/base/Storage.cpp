@@ -19,6 +19,7 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/core/identifier/Generic.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
@@ -115,7 +116,7 @@ auto Storage::start() noexcept -> void
     }
 
     storage.start();
-    storage.UpgradeNyms();
+    storage.Upgrade();
 }
 
 Storage::~Storage() = default;

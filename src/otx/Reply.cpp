@@ -21,6 +21,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/ServerReply.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -34,7 +35,6 @@
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs::otx
@@ -83,7 +83,7 @@ auto Reply::Factory(
     Lock lock(output->lock_);
     output->update_signature(lock, reason);
 
-    OT_ASSERT(false == output->id(lock)->empty());
+    OT_ASSERT(false == output->id(lock).empty());
 
     return output.release();
 }
@@ -165,7 +165,7 @@ auto Reply::Alias() const noexcept -> UnallocatedCString
     return imp_->Alias();
 }
 
-auto Reply::ID() const noexcept -> OTIdentifier { return imp_->ID(); }
+auto Reply::ID() const noexcept -> identifier::Generic { return imp_->ID(); }
 
 auto Reply::Nym() const noexcept -> Nym_p { return imp_->Nym(); }
 
@@ -257,13 +257,13 @@ Reply::Imp::Imp(const api::Session& api, const proto::ServerReply serialized)
           serialized.version(),
           "",
           "",
-          api.Factory().Identifier(serialized.id()),
+          api.Factory().IdentifierFromBase58(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
               : Signatures{})
-    , recipient_(identifier::Nym::Factory(serialized.nym()))
-    , server_(identifier::Notary::Factory(serialized.server()))
+    , recipient_(api_.Factory().NymIDFromBase58(serialized.nym()))
+    , server_(api_.Factory().NotaryIDFromBase58(serialized.server()))
     , type_(translate(serialized.type()))
     , success_(serialized.success())
     , number_(serialized.request())
@@ -292,7 +292,7 @@ auto Reply::Imp::extract_nym(
     const api::Session& api,
     const proto::ServerReply serialized) -> Nym_p
 {
-    const auto serverID = identifier::Notary::Factory(serialized.server());
+    const auto serverID = api.Factory().NotaryIDFromBase58(serialized.server());
 
     try {
         return api.Wallet().Server(serverID)->Nym();
@@ -314,9 +314,10 @@ auto Reply::Imp::full_version(const Lock& lock) const -> proto::ServerReply
     return contract;
 }
 
-auto Reply::Imp::GetID(const Lock& lock) const -> OTIdentifier
+auto Reply::Imp::GetID(const Lock& lock) const -> identifier::Generic
 {
-    return api_.Factory().InternalSession().Identifier(id_version(lock));
+    return api_.Factory().InternalSession().IdentifierFromPreimage(
+        id_version(lock));
 }
 
 auto Reply::Imp::id_version(const Lock& lock) const -> proto::ServerReply
@@ -325,8 +326,8 @@ auto Reply::Imp::id_version(const Lock& lock) const -> proto::ServerReply
     output.set_version(version_);
     output.clear_id();  // Must be blank
     output.set_type(translate(type_));
-    output.set_nym(recipient_->str());
-    output.set_server(server_->str());
+    output.set_nym(recipient_.asBase58(api_.Crypto()));
+    output.set_server(server_.asBase58(api_.Crypto()));
     output.set_request(number_);
     output.set_success(success_);
 
@@ -372,7 +373,7 @@ auto Reply::Imp::serialize(const Lock& lock, proto::ServerReply& output) const
 auto Reply::Imp::signature_version(const Lock& lock) const -> proto::ServerReply
 {
     auto contract = id_version(lock);
-    contract.set_id(id_->str());
+    contract.set_id(id_.asBase58(api_.Crypto()));
 
     return contract;
 }

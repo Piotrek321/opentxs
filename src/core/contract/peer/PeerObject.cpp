@@ -35,7 +35,6 @@
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
@@ -268,12 +267,12 @@ Object::Object(
         } break;
         case (contract::peer::PeerObjectType::Response): {
             if (false == bool(nym_)) {
-                nym_ = api_.Wallet().Nym(
-                    api_.Factory().NymID(serialized.otrequest().recipient()));
+                nym_ = api_.Wallet().Nym(api_.Factory().NymIDFromBase58(
+                    serialized.otrequest().recipient()));
             }
 
-            auto senderNym = api_.Wallet().Nym(
-                api_.Factory().NymID(serialized.otrequest().initiator()));
+            auto senderNym = api_.Wallet().Nym(api_.Factory().NymIDFromBase58(
+                serialized.otrequest().initiator()));
             request_ = api_.Factory().InternalSession().PeerRequest(
                 senderNym, serialized.otrequest());
             reply_ = api_.Factory().InternalSession().PeerReply(

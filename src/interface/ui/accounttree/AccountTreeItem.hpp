@@ -13,6 +13,9 @@
 #include "interface/ui/base/Row.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
@@ -62,14 +65,16 @@ using AccountTreeItemRow =
 class AccountTreeItem : public AccountTreeItemRow
 {
 public:
+    const api::session::Client& api_;
+
     auto AccountID() const noexcept -> UnallocatedCString final
     {
-        return row_id_->str();
+        return row_id_.asBase58(api_.Crypto());
     }
     auto Balance() const noexcept -> Amount final;
     auto ContractID() const noexcept -> UnallocatedCString final
     {
-        return unit_id_->str();
+        return unit_id_.asBase58(api_.Crypto());
     }
     auto DisplayBalance() const noexcept -> UnallocatedCString final;
     auto DisplayUnit() const noexcept -> UnallocatedCString final
@@ -79,7 +84,7 @@ public:
     auto Name() const noexcept -> UnallocatedCString final;
     auto NotaryID() const noexcept -> UnallocatedCString final
     {
-        return notary_id_->str();
+        return notary_id_.asBase58(api_.Crypto());
     }
     auto Type() const noexcept -> AccountType final { return type_; }
     auto Unit() const noexcept -> UnitType final { return unit_; }
@@ -102,8 +107,8 @@ protected:
     const AccountType type_;
     const UnitType unit_;
     const display::Definition& display_;
-    const OTUnitID unit_id_;
-    const OTNotaryID notary_id_;
+    const identifier::UnitDefinition unit_id_;
+    const identifier::Notary notary_id_;
     const UnallocatedCString unit_name_;
 
 private:

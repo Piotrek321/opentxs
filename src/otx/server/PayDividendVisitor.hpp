@@ -46,9 +46,9 @@ namespace opentxs
 class PayDividendVisitor final : public AccountVisitor
 {
     server::Server& server_;
-    const OTNymID nymId_;
-    const OTUnitID payoutUnitTypeId_;
-    const OTIdentifier voucherAcctId_;
+    const identifier::Nym nymId_;
+    const identifier::UnitDefinition payoutUnitTypeId_;
+    const identifier::Generic voucherAcctId_;
     OTString m_pstrMemo;  // contains the original payDividend item from
                           // the payDividend transaction request.
                           // (Stored in the memo field for each
@@ -65,7 +65,10 @@ public:
     {
         return payoutUnitTypeId_;
     }
-    auto GetVoucherAcctID() -> const Identifier& { return voucherAcctId_; }
+    auto GetVoucherAcctID() -> const identifier::Generic&
+    {
+        return voucherAcctId_;
+    }
     auto GetMemo() -> OTString { return m_pstrMemo; }
     auto GetServer() -> server::Server& { return server_; }
     auto GetPayoutPerShare() -> const Amount& { return m_lPayoutPerShare; }
@@ -80,7 +83,7 @@ public:
         const identifier::Notary& theNotaryID,
         const identifier::Nym& theNymID,
         const identifier::UnitDefinition& thePayoutUnitTypeId,
-        const Identifier& theVoucherAcctID,
+        const identifier::Generic& theVoucherAcctID,
         const String& strMemo,
         const Amount& lPayoutPerShare);
     PayDividendVisitor() = delete;

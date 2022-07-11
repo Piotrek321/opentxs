@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "internal/api/FactoryAPI.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
@@ -32,6 +33,7 @@
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -78,7 +80,7 @@ char const* const TypeStringsLedger[] = {
 Ledger::Ledger(
     const api::Session& api,
     const identifier::Nym& theNymID,
-    const Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID)
     : OTTransactionType(api, theNymID, theAccountID, theNotaryID)
     , m_Type(ledgerType::message)
@@ -95,7 +97,7 @@ Ledger::Ledger(
 // will hopefully be loaded up with the rest of it.
 Ledger::Ledger(
     const api::Session& api,
-    const Identifier& theAccountID,
+    const identifier::Generic& theAccountID,
     const identifier::Notary& theNotaryID)
     : OTTransactionType(api)
     , m_Type(ledgerType::message)
@@ -152,7 +154,7 @@ auto Ledger::VerifyAccount(const identity::Nym& theNym) -> bool
         } break;
         default: {
             const auto nLedgerType = static_cast<std::int32_t>(GetType());
-            const auto theNymID = Identifier::Factory(theNym);
+            const auto& theNymID = theNym.ID();
             const auto strNymID = String::Factory(theNymID);
             auto strAccountID = String::Factory();
             GetIdentifier(strAccountID);
@@ -606,23 +608,23 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
 // this.
 // It's more generic but warning: performs less verification.
 //
-auto Ledger::CalculateHash(Identifier& theOutput) const -> bool
+auto Ledger::CalculateHash(identifier::Generic& theOutput) const -> bool
 {
-    theOutput.clear();
+    theOutput = api_.Factory().IdentifierFromPreimage(m_xmlUnsigned->Bytes());
 
-    bool bCalcDigest = theOutput.CalculateDigest(m_xmlUnsigned->Bytes());
-
-    if (false == bCalcDigest) {
-        theOutput.clear();
+    if (theOutput.empty()) {
         LogError()(OT_PRETTY_CLASS())(
             "Failed trying to calculate hash (for a ")(GetTypeString())(").")
             .Flush();
-    }
 
-    return bCalcDigest;
+        return false;
+    } else {
+
+        return true;
+    }
 }
 
-auto Ledger::CalculateInboxHash(Identifier& theOutput) const -> bool
+auto Ledger::CalculateInboxHash(identifier::Generic& theOutput) const -> bool
 {
     if (m_Type != ledgerType::inbox) {
         LogError()(OT_PRETTY_CLASS())("Wrong type.").Flush();
@@ -633,7 +635,7 @@ auto Ledger::CalculateInboxHash(Identifier& theOutput) const -> bool
     return CalculateHash(theOutput);
 }
 
-auto Ledger::CalculateOutboxHash(Identifier& theOutput) const -> bool
+auto Ledger::CalculateOutboxHash(identifier::Generic& theOutput) const -> bool
 {
     if (m_Type != ledgerType::outbox) {
         LogError()(OT_PRETTY_CLASS())("Wrong type.").Flush();
@@ -644,7 +646,7 @@ auto Ledger::CalculateOutboxHash(Identifier& theOutput) const -> bool
     return CalculateHash(theOutput);
 }
 
-auto Ledger::CalculateNymboxHash(Identifier& theOutput) const -> bool
+auto Ledger::CalculateNymboxHash(identifier::Generic& theOutput) const -> bool
 {
     if (m_Type != ledgerType::nymbox) {
         LogError()(OT_PRETTY_CLASS())("Wrong type.").Flush();
@@ -701,7 +703,7 @@ auto Ledger::make_filename(const ledgerType theType) -> std::
         return output;
     }
 
-    two = GetRealNotaryID().str();
+    two = GetRealNotaryID().asBase58(api_.Crypto());
     auto ledgerID = String::Factory();
     GetIdentifier(ledgerID);
 
@@ -730,8 +732,8 @@ auto Ledger::make_filename(const ledgerType theType) -> std::
 
 auto Ledger::save_box(
     const ledgerType type,
-    Identifier& hash,
-    bool (Ledger::*calc)(Identifier&) const) -> bool
+    identifier::Generic& hash,
+    bool (Ledger::*calc)(identifier::Generic&) const) -> bool
 {
     OT_ASSERT(nullptr != calc);
 
@@ -759,13 +761,13 @@ auto Ledger::save_box(
 // If you're going to save this, make sure you sign it first.
 auto Ledger::SaveNymbox() -> bool
 {
-    auto hash = Identifier::Factory();
+    auto hash = identifier::Generic{};
 
     return SaveNymbox(hash);
 }
 
 // If you're going to save this, make sure you sign it first.
-auto Ledger::SaveNymbox(Identifier& hash) -> bool
+auto Ledger::SaveNymbox(identifier::Generic& hash) -> bool
 {
     return save_box(ledgerType::nymbox, hash, &Ledger::CalculateNymboxHash);
 }
@@ -773,13 +775,13 @@ auto Ledger::SaveNymbox(Identifier& hash) -> bool
 // If you're going to save this, make sure you sign it first.
 auto Ledger::SaveInbox() -> bool
 {
-    auto hash = Identifier::Factory();
+    auto hash = identifier::Generic{};
 
     return SaveInbox(hash);
 }
 
 // If you're going to save this, make sure you sign it first.
-auto Ledger::SaveInbox(Identifier& hash) -> bool
+auto Ledger::SaveInbox(identifier::Generic& hash) -> bool
 {
     return save_box(ledgerType::inbox, hash, &Ledger::CalculateInboxHash);
 }
@@ -787,13 +789,13 @@ auto Ledger::SaveInbox(Identifier& hash) -> bool
 // If you're going to save this, make sure you sign it first.
 auto Ledger::SaveOutbox() -> bool
 {
-    auto hash = Identifier::Factory();
+    auto hash = identifier::Generic{};
 
     return SaveOutbox(hash);
 }
 
 // If you're going to save this, make sure you sign it first.
-auto Ledger::SaveOutbox(Identifier& hash) -> bool
+auto Ledger::SaveOutbox(identifier::Generic& hash) -> bool
 {
     return save_box(ledgerType::outbox, hash, &Ledger::CalculateOutboxHash);
 }
@@ -833,7 +835,7 @@ auto Ledger::SaveExpiredBox() -> bool
 
 auto Ledger::generate_ledger(
     const identifier::Nym& theNymID,
-    const Identifier& theAcctID,
+    const identifier::Generic& theAcctID,
     const identifier::Notary& theNotaryID,
     ledgerType theType,
     bool bCreateFile) -> bool
@@ -961,12 +963,12 @@ auto Ledger::generate_ledger(
 }
 
 auto Ledger::GenerateLedger(
-    const Identifier& theAcctID,
+    const identifier::Generic& theAcctID,
     const identifier::Notary& theNotaryID,
     ledgerType theType,
     bool bCreateFile) -> bool
 {
-    auto nymID = api_.Factory().NymID();
+    auto nymID = identifier::Nym{};
 
     if ((ledgerType::inbox == theType) || (ledgerType::outbox == theType)) {
         // Have to look up the NymID here. No way around it. We need that ID.
@@ -990,7 +992,7 @@ auto Ledger::GenerateLedger(
         } else {
             // Must be based on NymID, not AcctID (like Nymbox. But RecordBox
             // can go either way.)
-            nymID = api_.Factory().NymID(theAcctID.str());  // TODO conversion
+            nymID = api_.Factory().Internal().NymIDConvertSafe(theAcctID);
             // In the case of nymbox, and sometimes with recordBox, the acct ID
             // IS the user ID.
         }
@@ -998,7 +1000,7 @@ auto Ledger::GenerateLedger(
         // In the case of paymentInbox, expired box, and nymbox, the acct ID IS
         // the user ID. (Should change it to "owner ID" to make it sound right
         // either way.)
-        nymID = api_.Factory().NymID(theAcctID.str());  // TODO conversion
+        nymID = api_.Factory().Internal().NymIDConvertSafe(theAcctID);
     }
 
     return generate_ledger(nymID, theAcctID, theNotaryID, theType, bCreateFile);
@@ -1006,7 +1008,7 @@ auto Ledger::GenerateLedger(
 
 auto Ledger::CreateLedger(
     const identifier::Nym& theNymID,
-    const Identifier& theAcctID,
+    const identifier::Generic& theAcctID,
     const identifier::Notary& theNotaryID,
     ledgerType theType,
     bool bCreateFile) -> bool
@@ -1448,11 +1450,10 @@ auto Ledger::GenerateBalanceStatement(
     // the account balance, and thus that needs a new balance agreement signed.
     //
     auto pBalanceItem{api_.Factory().InternalSession().Item(
-        theOwner,
-        itemType::balanceStatement,
-        Identifier::Factory())};  // <=== balanceStatement type, with
-                                  // user ID, server ID, account ID,
-                                  // transaction ID.
+        theOwner, itemType::balanceStatement, {})};  // <=== balanceStatement
+                                                     // type, with user ID,
+                                                     // server ID, account ID,
+                                                     // transaction ID.
 
     // The above has an ASSERT, so this this will never actually happen.
     if (false == bool(pBalanceItem)) { return nullptr; }
@@ -1863,9 +1864,11 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             return (-1);
         }
 
-        const auto ACCOUNT_ID = api_.Factory().Identifier(strLedgerAcctID);
-        const auto NOTARY_ID = api_.Factory().ServerID(strLedgerAcctNotaryID);
-        const auto NYM_ID = api_.Factory().NymID(strNymID);
+        const auto ACCOUNT_ID =
+            api_.Factory().IdentifierFromBase58(strLedgerAcctID->Bytes());
+        const auto NOTARY_ID =
+            api_.Factory().NotaryIDFromBase58(strLedgerAcctNotaryID->Bytes());
+        const auto NYM_ID = api_.Factory().NymIDFromBase58(strNymID->Bytes());
 
         SetPurportedAccountID(ACCOUNT_ID);
         SetPurportedNotaryID(NOTARY_ID);

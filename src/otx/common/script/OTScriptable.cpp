@@ -38,6 +38,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Container.hpp"
@@ -791,8 +792,8 @@ auto OTScriptable::GetPartyAccount(UnallocatedCString str_acct_name) const
     return nullptr;
 }
 
-auto OTScriptable::GetPartyAccountByID(const Identifier& theAcctID) const
-    -> OTPartyAccount*
+auto OTScriptable::GetPartyAccountByID(
+    const identifier::Generic& theAcctID) const -> OTPartyAccount*
 {
     for (const auto& it : m_mapParties) {
         OTParty* pParty = it.second;
@@ -837,7 +838,7 @@ auto OTScriptable::FindPartyBasedOnNymIDAsAuthAgent(
 }
 
 auto OTScriptable::FindPartyBasedOnAccountID(
-    const Identifier& theAcctID,
+    const identifier::Generic& theAcctID,
     OTPartyAccount** ppPartyAccount) const -> OTParty*
 {
     for (const auto& it : m_mapParties) {
@@ -2205,21 +2206,16 @@ auto OTScriptable::Compare(OTScriptable& rhs) const -> bool
 // specific data removed. This way, the smart contract will produce a consistent
 // ID even when asset account IDs or Nym IDs have been added to it (which would
 // alter the hash of any normal contract such as an OTUnitDefinition.)
-void OTScriptable::CalculateContractID(Identifier& newID) const
+void OTScriptable::CalculateContractID(identifier::Generic& newID) const
 {
     // Produce a template version of the scriptable.
     auto xmlUnsigned = StringXML::Factory();
-
     Tag tag("scriptable");
-
     UpdateContentsToTag(tag, true);
-
     UnallocatedCString str_result;
     tag.output(str_result);
-
     xmlUnsigned->Concatenate(String::Factory(str_result));
-
-    newID.CalculateDigest(xmlUnsigned->Bytes());
+    newID = api_.Factory().IdentifierFromPreimage(xmlUnsigned->Bytes());
 }
 
 auto vectorToString(const UnallocatedVector<std::int64_t>& v)
@@ -2438,7 +2434,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                     }
 
                     auto* pParty = new OTParty(
-                        api_.Wallet(),
+                        api_,
                         api_.DataFolder(),
                         strName->Exists() ? strName->Get() : "PARTY_ERROR_NAME",
                         strOwnerType->Compare("nym") ? true : false,
@@ -2577,7 +2573,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 // already-loaded parties.
 
                                 auto* pAgent = new OTAgent(
-                                    api_.Wallet(),
+                                    api_,
                                     bRepsHimself,
                                     bIsIndividual,
                                     strAgentName,

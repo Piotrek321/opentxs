@@ -19,6 +19,8 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/TxoState.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -127,8 +129,9 @@ auto Wallet::GetBalance(const identifier::Nym& owner) const noexcept -> Balance
     return db_.GetBalance(owner);
 }
 
-auto Wallet::GetBalance(const identifier::Nym& owner, const Identifier& node)
-    const noexcept -> Balance
+auto Wallet::GetBalance(
+    const identifier::Nym& owner,
+    const identifier::Generic& node) const noexcept -> Balance
 {
     return db_.GetBalance(owner, node);
 }
@@ -165,7 +168,7 @@ auto Wallet::GetOutputs(
 
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
-    const Identifier& subaccount,
+    const identifier::Generic& subaccount,
     alloc::Default alloc) const noexcept -> Vector<UTXO>
 {
     return GetOutputs(owner, subaccount, TxoState::All, alloc);
@@ -173,7 +176,7 @@ auto Wallet::GetOutputs(
 
 auto Wallet::GetOutputs(
     const identifier::Nym& owner,
-    const Identifier& node,
+    const identifier::Generic& node,
     TxoState type,
     alloc::Default alloc) const noexcept -> Vector<UTXO>
 {

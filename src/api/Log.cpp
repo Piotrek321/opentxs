@@ -7,16 +7,14 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "api/Log.hpp"     // IWYU pragma: associated
 
+#include <chrono>
 #include <cstdlib>
-#include <future>
-#include <iostream>
 #include <memory>
 #include <string_view>
 #include <utility>
 
 #include "internal/api/Factory.hpp"
 #include "internal/util/Log.hpp"
-#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -25,6 +23,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/Thread.hpp"
 
 namespace zmq = opentxs::network::zeromq;
@@ -53,40 +52,36 @@ Log::Log(const zmq::Context& zmq, const UnallocatedCString endpoint)
     , publish_socket_(zmq.PublishSocket())
     , publish_{!endpoint.empty()}
 {
-    const auto started = socket_->Start(opentxs::internal::Log::Endpoint());
+    auto rc = socket_->Start(opentxs::internal::Log::Endpoint());
 
-    if (false == started) { abort(); }
+    if (false == rc) { std::abort(); }
 
     if (publish_) {
-        const auto publishStarted = publish_socket_->Start(endpoint);
-        if (false == publishStarted) { abort(); }
+        rc = publish_socket_->Start(endpoint);
+
+        if (false == rc) { std::abort(); }
     }
 }
 
-auto Log::callback(zmq::Message&& message) noexcept -> void
+auto Log::callback(zmq::Message&& in) noexcept -> void
 {
-    if (message.Body().size() < 3) { return; }
+    const auto body = in.Body();
+    const auto level = body.at(0).as<int>();
+    const auto text = body.at(1).Bytes();
+    const auto thread = body.at(2).Bytes();
+    const auto action = body.at(3).as<LogAction>();
+    const auto console = body.at(4).as<Console>();
 
-    const auto& levelFrame = message.Body_at(0);
-    const auto text = UnallocatedCString{message.Body_at(1).Bytes()};
-    const auto id = UnallocatedCString{message.Body_at(2).Bytes()};
+    if (false == text.empty()) {
+        print(level, console, text, thread);
 
-    try {
-        const auto level = levelFrame.as<int>();
-        print(level, text, id);
-    } catch (...) {
-        std::cout << "Invalid level size: " << levelFrame.size() << '\n';
-
-        OT_FAIL;
+        if (publish_) { publish_socket_->Send(std::move(in)); }
     }
 
-    if (message.Body().size() >= 4) {
-        const auto& promiseFrame = message.Body_at(3);
-        auto* pPromise = promiseFrame.as<std::promise<void>*>();
+    if (LogAction::terminate == action) {
+        if (publish_) { Sleep(1s); }
 
-        if (nullptr != pPromise) { pPromise->set_value(); }
+        std::abort();
     }
-
-    if (publish_) { publish_socket_->Send(std::move(message)); }
 }
 }  // namespace opentxs::api::imp

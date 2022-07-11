@@ -23,6 +23,7 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -37,7 +38,6 @@ class Publish;
 }  // namespace zeromq
 }  // namespace network
 
-class Identifier;
 class Message;
 class PasswordPrompt;
 // }  // namespace v1
@@ -51,18 +51,18 @@ class MailCache
 public:
     auto LoadMail(
         const identifier::Nym& nym,
-        const Identifier& id,
+        const identifier::Generic& id,
         const otx::client::StorageBox& box) const noexcept
         -> std::unique_ptr<Message>;
 
     auto CacheText(
         const identifier::Nym& nym,
-        const Identifier& id,
+        const identifier::Generic& id,
         const otx::client::StorageBox box,
         const UnallocatedCString& text) noexcept -> void;
     auto GetText(
         const identifier::Nym& nym,
-        const Identifier& id,
+        const identifier::Generic& id,
         const otx::client::StorageBox box,
         const PasswordPrompt& reason) noexcept
         -> std::shared_future<UnallocatedCString>;

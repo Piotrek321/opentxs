@@ -252,9 +252,9 @@ auto Accounts::Imp::process_nym(Message&& in) noexcept -> bool
 
     OT_ASSERT(1 < body.size());
 
-    const auto id = api_.Factory().NymID(body.at(1));
+    const auto id = api_.Factory().NymIDFromHash(body.at(1).Bytes());
 
-    if (0 == id->size()) { return false; }
+    if (0 == id.size()) { return false; }
 
     return process_nym(id);
 }

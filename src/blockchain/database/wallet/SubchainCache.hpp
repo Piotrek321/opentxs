@@ -24,7 +24,6 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -74,6 +73,7 @@ using Mode = storage::lmdb::LMDB::Mode;
 constexpr auto id_index_{Table::SubchainID};
 constexpr auto last_indexed_{Table::SubchainLastIndexed};
 constexpr auto last_scanned_{Table::SubchainLastScanned};
+constexpr auto match_index_{Table::SubchainMatches};
 constexpr auto pattern_index_{Table::SubchainPatterns};
 constexpr auto patterns_{Table::WalletPatterns};
 constexpr auto subchain_config_{Table::Config};
@@ -82,7 +82,7 @@ class SubchainCache
 {
 public:
     using dbPatterns = robin_hood::unordered_node_set<db::Pattern>;
-    using dbPatternIndex = Set<pPatternID>;
+    using dbPatternIndex = Set<PatternID>;
 
     auto AddPattern(
         const PatternID& id,
@@ -101,7 +101,7 @@ public:
         const crypto::Subchain subchain,
         const cfilter::Type type,
         const VersionNumber version,
-        MDB_txn* tx) noexcept -> pSubchainIndex;
+        MDB_txn* tx) noexcept -> SubchainIndex;
     auto GetLastIndexed(const SubchainIndex& subchain) noexcept
         -> std::optional<Bip32Index>;
     auto GetLastScanned(const SubchainIndex& subchain) noexcept
@@ -128,14 +128,16 @@ private:
     static constexpr auto reserve_ = 1000_uz;
 
     using SubchainIDMap =
-        robin_hood::unordered_node_map<pSubchainIndex, db::SubchainID>;
+        robin_hood::unordered_node_map<SubchainIndex, db::SubchainID>;
     using LastIndexedMap =
-        robin_hood::unordered_flat_map<pSubchainIndex, Bip32Index>;
+        robin_hood::unordered_flat_map<SubchainIndex, Bip32Index>;
     using LastScannedMap =
-        robin_hood::unordered_node_map<pSubchainIndex, db::Position>;
-    using PatternsMap = robin_hood::unordered_node_map<pPatternID, dbPatterns>;
+        robin_hood::unordered_node_map<SubchainIndex, db::Position>;
+    using PatternsMap = robin_hood::unordered_node_map<PatternID, dbPatterns>;
     using PatternIndexMap =
-        robin_hood::unordered_node_map<pSubchainIndex, dbPatternIndex>;
+        robin_hood::unordered_node_map<SubchainIndex, dbPatternIndex>;
+    using MatchIndexMap =
+        robin_hood::unordered_node_map<block::Hash, dbPatternIndex>;
     using Mutex = boost::upgrade_mutex;
 
     const api::Session& api_;
@@ -155,7 +157,7 @@ private:
         const NodeID& subaccount,
         const crypto::Subchain subchain,
         const cfilter::Type type,
-        const VersionNumber version) const noexcept -> pSubchainIndex;
+        const VersionNumber version) const noexcept -> SubchainIndex;
 
     auto load_index(const SubchainIndex& key) noexcept(false)
         -> const db::SubchainID&;

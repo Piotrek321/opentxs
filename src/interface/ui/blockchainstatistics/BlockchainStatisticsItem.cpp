@@ -40,6 +40,7 @@ BlockchainStatisticsItem::BlockchainStatisticsItem(
     const BlockchainStatisticsSortKey& sortKey,
     CustomData& custom) noexcept
     : BlockchainStatisticsItemRow(parent, api, rowID, true)
+    , api_(api)
     , name_(sortKey)
     , header_(extract_custom<blockchain::block::Height>(custom, 0))
     , filter_(extract_custom<blockchain::block::Height>(custom, 1))

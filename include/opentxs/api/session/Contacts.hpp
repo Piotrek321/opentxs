@@ -14,7 +14,6 @@
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Types.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -35,11 +34,11 @@ class Contacts;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
 class Contact;
-class Identifier;
 class PaymentCode;
 // }  // namespace v1
 }  // namespace opentxs
@@ -50,19 +49,22 @@ namespace opentxs::api::session
 class OPENTXS_EXPORT Contacts
 {
 public:
-    virtual auto Contact(const Identifier& id) const
+    virtual auto Contact(const identifier::Generic& id) const
         -> std::shared_ptr<const opentxs::Contact> = 0;
     /** Returns the contact ID for a nym, if it exists */
     virtual auto ContactID(const identifier::Nym& nymID) const
-        -> OTIdentifier = 0;
+        -> identifier::Generic = 0;
     virtual auto ContactList() const -> ObjectList = 0;
-    virtual auto ContactName(const Identifier& contactID) const
+    virtual auto ContactName(const identifier::Generic& contactID) const
         -> UnallocatedCString = 0;
-    virtual auto ContactName(const Identifier& contactID, UnitType currencyHint)
-        const -> UnallocatedCString = 0;
+    virtual auto ContactName(
+        const identifier::Generic& contactID,
+        UnitType currencyHint) const -> UnallocatedCString = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Contacts& = 0;
-    virtual auto Merge(const Identifier& parent, const Identifier& child) const
+    virtual auto Merge(
+        const identifier::Generic& parent,
+        const identifier::Generic& child) const
         -> std::shared_ptr<const opentxs::Contact> = 0;
     virtual auto NewContact(const UnallocatedCString& label) const
         -> std::shared_ptr<const opentxs::Contact> = 0;
@@ -78,14 +80,16 @@ public:
         -> std::shared_ptr<const opentxs::Contact> = 0;
     /** Returns an existing contact ID if it exists, or creates a new one */
     virtual auto NymToContact(const identifier::Nym& nymID) const
-        -> OTIdentifier = 0;
+        -> identifier::Generic = 0;
     /** Returns an existing contact ID if it exists, or creates a new one */
     virtual auto PaymentCodeToContact(
         const PaymentCode& code,
-        const opentxs::blockchain::Type currency) const -> OTIdentifier = 0;
+        const opentxs::blockchain::Type currency) const
+        -> identifier::Generic = 0;
     virtual auto PaymentCodeToContact(
         const UnallocatedCString& code,
-        const opentxs::blockchain::Type currency) const -> OTIdentifier = 0;
+        const opentxs::blockchain::Type currency) const
+        -> identifier::Generic = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Contacts& = 0;

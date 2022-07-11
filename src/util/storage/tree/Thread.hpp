@@ -24,6 +24,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
 namespace proto
 {
 class StorageThreadItem;
@@ -96,6 +106,8 @@ private:
     void upgrade(const Lock& lock);
 
     Thread(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
         const Driver& storage,
         const UnallocatedCString& id,
         const UnallocatedCString& hash,
@@ -103,6 +115,8 @@ private:
         Mailbox& mailInbox,
         Mailbox& mailOutbox);
     Thread(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
         const Driver& storage,
         const UnallocatedCString& id,
         const UnallocatedSet<UnallocatedCString>& participants,

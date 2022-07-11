@@ -15,7 +15,6 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
@@ -54,6 +53,7 @@ class HeaderOracle;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -61,8 +61,6 @@ namespace proto
 {
 class BlockchainTransactionProposal;
 }  // namespace proto
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -72,11 +70,9 @@ namespace opentxs::blockchain::database
 class Wallet
 {
 public:
-    using NodeID = Identifier;
-    using pNodeID = OTIdentifier;
-    using SubchainIndex = Identifier;
-    using pSubchainIndex = OTIdentifier;
-    using SubchainID = std::pair<crypto::Subchain, pNodeID>;
+    using NodeID = identifier::Generic;
+    using SubchainIndex = identifier::Generic;
+    using SubchainID = std::pair<crypto::Subchain, NodeID>;
     using ElementID = std::pair<Bip32Index, SubchainID>;
     using ElementMap = Map<Bip32Index, Vector<Vector<std::byte>>>;
     using Pattern = std::pair<ElementID, Vector<std::byte>>;
@@ -95,7 +91,7 @@ public:
             std::shared_ptr<const bitcoin::block::Output>>;
 
     virtual auto CompletedProposals() const noexcept
-        -> UnallocatedSet<OTIdentifier> = 0;
+        -> UnallocatedSet<identifier::Generic> = 0;
     virtual auto GetBalance() const noexcept -> Balance = 0;
     virtual auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance = 0;
@@ -111,7 +107,7 @@ public:
         alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& node,
+        const identifier::Generic& node,
         node::TxoState type,
         alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetOutputs(
@@ -126,7 +122,7 @@ public:
     virtual auto GetPosition() const noexcept -> block::Position = 0;
     virtual auto GetSubchainID(
         const NodeID& account,
-        const crypto::Subchain subchain) const noexcept -> pSubchainIndex = 0;
+        const crypto::Subchain subchain) const noexcept -> SubchainIndex = 0;
     virtual auto GetTransactions() const noexcept
         -> UnallocatedVector<block::pTxid> = 0;
     virtual auto GetTransactions(const identifier::Nym& account) const noexcept
@@ -140,12 +136,12 @@ public:
         const crypto::Subchain subchain,
         alloc::Default alloc = {}) const noexcept -> Vector<UTXO> = 0;
     virtual auto GetWalletHeight() const noexcept -> block::Height = 0;
-    virtual auto LoadProposal(const Identifier& id) const noexcept
+    virtual auto LoadProposal(const identifier::Generic& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal> = 0;
     virtual auto LoadProposals() const noexcept
         -> UnallocatedVector<proto::BlockchainTransactionProposal> = 0;
     virtual auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> UnallocatedSet<OTIdentifier> = 0;
+        -> UnallocatedSet<identifier::Generic> = 0;
     virtual auto PublishBalance() const noexcept -> void = 0;
     virtual auto SubchainLastIndexed(const SubchainIndex& index) const noexcept
         -> std::optional<Bip32Index> = 0;
@@ -168,19 +164,20 @@ public:
         const bitcoin::block::Transaction& transaction,
         TXOs& txoCreated) noexcept -> bool = 0;
     virtual auto AddOutgoingTransaction(
-        const Identifier& proposalID,
+        const identifier::Generic& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const bitcoin::block::Transaction& transaction) noexcept -> bool = 0;
     virtual auto AddProposal(
-        const Identifier& id,
+        const identifier::Generic& id,
         const proto::BlockchainTransactionProposal& tx) noexcept -> bool = 0;
     virtual auto AdvanceTo(const block::Position& pos) noexcept -> bool = 0;
-    virtual auto CancelProposal(const Identifier& id) noexcept -> bool = 0;
+    virtual auto CancelProposal(const identifier::Generic& id) noexcept
+        -> bool = 0;
     virtual auto FinalizeReorg(
         storage::lmdb::LMDB::Transaction& tx,
         const block::Position& pos) noexcept -> bool = 0;
     virtual auto ForgetProposals(
-        const UnallocatedSet<OTIdentifier>& ids) noexcept -> bool = 0;
+        const UnallocatedSet<identifier::Generic>& ids) noexcept -> bool = 0;
     virtual auto ReorgTo(
         const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
@@ -191,7 +188,7 @@ public:
         const UnallocatedVector<block::Position>& reorg) noexcept -> bool = 0;
     virtual auto ReserveUTXO(
         const identifier::Nym& spender,
-        const Identifier& proposal,
+        const identifier::Generic& proposal,
         node::internal::SpendPolicy& policy) noexcept
         -> std::optional<UTXO> = 0;
     virtual auto StartReorg() noexcept -> storage::lmdb::LMDB::Transaction = 0;

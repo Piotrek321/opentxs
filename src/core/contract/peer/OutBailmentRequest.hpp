@@ -80,8 +80,8 @@ private:
 
     static constexpr auto current_version_ = VersionNumber{4};
 
-    const OTUnitID unit_;
-    const OTNotaryID server_;
+    const identifier::UnitDefinition unit_;
+    const identifier::Notary server_;
     const Amount amount_;
 
     auto clone() const noexcept -> Outbailment* final

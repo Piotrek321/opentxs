@@ -31,7 +31,7 @@ OTStashItem::OTStashItem(
 }
 
 OTStashItem::OTStashItem(
-    const Identifier& theInstrumentDefinitionID,
+    const identifier::Generic& theInstrumentDefinitionID,
     std::int64_t lAmount)
     : m_strInstrumentDefinitionID(String::Factory(theInstrumentDefinitionID))
     , m_lAmount(lAmount)

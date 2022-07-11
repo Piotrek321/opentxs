@@ -11,18 +11,18 @@
 
 #include "internal/otx/common/Instrument.hpp"
 #include "internal/otx/common/NumList.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 
 namespace opentxs
 {
 OTTrackable::OTTrackable(const api::Session& api)
     : Instrument(api)
     , m_lTransactionNum(0)
-    , m_SENDER_ACCT_ID(api_.Factory().Identifier())
-    , m_SENDER_NYM_ID(api_.Factory().NymID())
+    , m_SENDER_ACCT_ID()
+    , m_SENDER_NYM_ID()
 {
     InitTrackable();
 }
@@ -33,8 +33,8 @@ OTTrackable::OTTrackable(
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
     : Instrument(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
     , m_lTransactionNum(0)
-    , m_SENDER_ACCT_ID(api_.Factory().Identifier())
-    , m_SENDER_NYM_ID(api_.Factory().NymID())
+    , m_SENDER_ACCT_ID()
+    , m_SENDER_NYM_ID()
 {
     InitTrackable();
 }
@@ -43,12 +43,12 @@ OTTrackable::OTTrackable(
     const api::Session& api,
     const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-    const Identifier& ACCT_ID,
+    const identifier::Generic& ACCT_ID,
     const identifier::Nym& NYM_ID)
     : Instrument(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
     , m_lTransactionNum(0)
-    , m_SENDER_ACCT_ID(api_.Factory().Identifier())
-    , m_SENDER_NYM_ID(api_.Factory().NymID())
+    , m_SENDER_ACCT_ID()
+    , m_SENDER_NYM_ID()
 {
     InitTrackable();
 
@@ -75,8 +75,8 @@ void OTTrackable::GetAllTransactionNumbers(NumList& numlistOutput) const
 
 void OTTrackable::Release_Trackable()
 {
-    m_SENDER_ACCT_ID->clear();
-    m_SENDER_NYM_ID->clear();
+    m_SENDER_ACCT_ID.clear();
+    m_SENDER_NYM_ID.clear();
 }
 
 void OTTrackable::Release()
@@ -88,7 +88,7 @@ void OTTrackable::Release()
     InitTrackable();
 }
 
-void OTTrackable::SetSenderAcctID(const Identifier& ACCT_ID)
+void OTTrackable::SetSenderAcctID(const identifier::Generic& ACCT_ID)
 {
     m_SENDER_ACCT_ID = ACCT_ID;
 }

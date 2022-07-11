@@ -15,7 +15,9 @@
 #include "interface/ui/base/RowType.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
@@ -85,11 +87,14 @@ class ProfileSection final
     : public Combined<ProfileSectionList, ProfileSectionRow, ProfileSortKey>
 {
 public:
+    const api::session::Client& api_;
+
     auto AddClaim(
         const identity::wot::claim::ClaimType type,
         const UnallocatedCString& value,
         const bool primary,
         const bool active) const noexcept -> bool final;
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto Delete(const int type, const UnallocatedCString& claimID)
         const noexcept -> bool final;
     auto Items(const UnallocatedCString& lang) const noexcept

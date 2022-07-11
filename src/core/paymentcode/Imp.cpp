@@ -49,6 +49,7 @@
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
@@ -92,6 +93,7 @@ PaymentCode::PaymentCode(
     , key_(std::move(key))
 {
     OT_ASSERT(key_);
+    OT_ASSERT(id_.Type() == identifier::Type::nym);
 }
 
 PaymentCode::PaymentCode(const PaymentCode& rhs) noexcept
@@ -105,6 +107,7 @@ PaymentCode::PaymentCode(const PaymentCode& rhs) noexcept
     , id_(rhs.id_)
     , key_(rhs.key_)
 {
+    OT_ASSERT(id_.Type() == identifier::Type::nym);
 }
 
 PaymentCode::operator const crypto::key::Asymmetric&() const noexcept
@@ -201,12 +204,12 @@ auto PaymentCode::asBase58() const noexcept -> UnallocatedCString
         case 1:
         case 2: {
             return api_.Crypto().Encode().IdentifierEncode(
-                api_.Factory().DataFromBytes(base58_preimage()));
+                api_.Factory().DataFromBytes(base58_preimage()).Bytes());
         }
         case 3:
         default: {
             return api_.Crypto().Encode().IdentifierEncode(
-                api_.Factory().DataFromBytes(base58_preimage_v3()));
+                api_.Factory().DataFromBytes(base58_preimage_v3()).Bytes());
         }
     }
 }
@@ -362,11 +365,9 @@ auto PaymentCode::BlindV3(
 auto PaymentCode::calculate_id(
     const api::Session& api,
     const ReadView key,
-    const ReadView code) noexcept -> OTNymID
+    const ReadView code) noexcept -> identifier::Nym
 {
-    auto output = api.Factory().NymID();
-
-    if ((nullptr == key.data()) || (nullptr == code.data())) { return output; }
+    if ((nullptr == key.data()) || (nullptr == code.data())) { return {}; }
 
     auto preimage = api.Factory().Data();
     const auto target{pubkey_size_ + chain_code_size_};
@@ -381,9 +382,7 @@ auto PaymentCode::calculate_id(
     std::memcpy(
         it, code.data(), std::min(code.size(), std::size_t{chain_code_size_}));
 
-    output->CalculateDigest(preimage.Bytes());
-
-    return output;
+    return api.Factory().NymIDFromPreimage(preimage.Bytes());
 }
 
 auto PaymentCode::calculate_mask_v1(

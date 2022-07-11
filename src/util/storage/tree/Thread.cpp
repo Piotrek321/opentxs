@@ -26,13 +26,15 @@
 namespace opentxs::storage
 {
 Thread::Thread(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
     const Driver& storage,
     const UnallocatedCString& id,
     const UnallocatedCString& hash,
     const UnallocatedCString& alias,
     Mailbox& mailInbox,
     Mailbox& mailOutbox)
-    : Node(storage, hash)
+    : Node(crypto, factory, storage, hash)
     , id_(id)
     , alias_(alias)
     , index_(0)
@@ -49,12 +51,14 @@ Thread::Thread(
 }
 
 Thread::Thread(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
     const Driver& storage,
     const UnallocatedCString& id,
     const UnallocatedSet<UnallocatedCString>& participants,
     Mailbox& mailInbox,
     Mailbox& mailOutbox)
-    : Node(storage, Node::BLANK_HASH)
+    : Node(crypto, factory, storage, Node::BLANK_HASH)
     , id_(id)
     , alias_()
     , index_(0)

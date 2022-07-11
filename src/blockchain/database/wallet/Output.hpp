@@ -22,7 +22,6 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
@@ -72,6 +71,7 @@ struct SpendPolicy;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -87,8 +87,6 @@ namespace lmdb
 class LMDB;
 }  // namespace lmdb
 }  // namespace storage
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -99,8 +97,8 @@ using MDB_txn = struct MDB_txn;
 
 namespace opentxs::blockchain::database::wallet
 {
-using AccountID = Identifier;
-using SubchainID = Identifier;
+using AccountID = identifier::Generic;
+using SubchainID = identifier::Generic;
 using Parent = database::Wallet;
 using NodeID = Parent::NodeID;
 using BatchedMatches = Parent::BatchedMatches;
@@ -123,7 +121,7 @@ public:
         alloc::Default alloc) const noexcept -> Vector<UTXO>;
     auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& node,
+        const identifier::Generic& node,
         node::TxoState type,
         alloc::Default alloc) const noexcept -> Vector<UTXO>;
     auto GetOutputs(
@@ -157,16 +155,16 @@ public:
         const bitcoin::block::Transaction& transaction,
         TXOs& txoConsumed) const noexcept -> bool;
     auto AddOutgoingTransaction(
-        const Identifier& proposalID,
+        const identifier::Generic& proposalID,
         const proto::BlockchainTransactionProposal& proposal,
         const bitcoin::block::Transaction& transaction) noexcept -> bool;
     auto AdvanceTo(const block::Position& pos) noexcept -> bool;
-    auto CancelProposal(const Identifier& id) noexcept -> bool;
+    auto CancelProposal(const identifier::Generic& id) noexcept -> bool;
     auto FinalizeReorg(MDB_txn* tx, const block::Position& pos) noexcept
         -> bool;
     auto ReserveUTXO(
         const identifier::Nym& spender,
-        const Identifier& proposal,
+        const identifier::Generic& proposal,
         node::internal::SpendPolicy& policy) noexcept -> std::optional<UTXO>;
     auto StartReorg(
         MDB_txn* tx,

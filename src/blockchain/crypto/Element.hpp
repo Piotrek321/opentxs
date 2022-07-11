@@ -13,10 +13,14 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <string_view>
 
 #include "Proto.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/util/Mutex.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -82,24 +86,28 @@ public:
     auto Address(const blockchain::crypto::AddressStyle format) const noexcept
         -> UnallocatedCString final;
     auto Confirmed() const noexcept -> Txids final;
-    auto Contact() const noexcept -> OTIdentifier final;
+    auto Contact() const noexcept -> identifier::Generic final;
     auto Elements() const noexcept -> UnallocatedSet<ByteArray> final;
     auto elements(const rLock& lock) const noexcept
         -> UnallocatedSet<ByteArray>;
-    auto ID() const noexcept -> const Identifier& final { return parent_.ID(); }
+    auto ID() const noexcept -> const identifier::Generic& final
+    {
+        return parent_.ID();
+    }
     auto IncomingTransactions() const noexcept
         -> UnallocatedSet<UnallocatedCString> final;
     auto Internal() const noexcept -> internal::Element& final
     {
         return const_cast<Element&>(*this);
     }
-    auto IsAvailable(const Identifier& contact, const UnallocatedCString& memo)
-        const noexcept -> Availability final;
+    auto IsAvailable(
+        const identifier::Generic& contact,
+        const std::string_view memo) const noexcept -> Availability final;
     auto Index() const noexcept -> Bip32Index final { return index_; }
     auto Key() const noexcept -> ECKey final;
     auto KeyID() const noexcept -> crypto::Key final
     {
-        return {ID().str(), subchain_, index_};
+        return {ID().asBase58(api_.Crypto()), subchain_, index_};
     }
     auto Label() const noexcept -> UnallocatedCString final;
     auto LastActivity() const noexcept -> Time final;
@@ -122,11 +130,11 @@ public:
 
     auto Confirm(const Txid& tx) noexcept -> bool final;
     auto Reserve(const Time time) noexcept -> bool final;
-    auto SetContact(const Identifier& id) noexcept -> void final;
-    auto SetLabel(const UnallocatedCString& label) noexcept -> void final;
+    auto SetContact(const identifier::Generic& id) noexcept -> void final;
+    auto SetLabel(const std::string_view label) noexcept -> void final;
     auto SetMetadata(
-        const Identifier& contact,
-        const UnallocatedCString& label) noexcept -> void final;
+        const identifier::Generic& contact,
+        const std::string_view label) noexcept -> void final;
     auto Unconfirm(const Txid& tx, const Time time) noexcept -> bool final;
     auto Unreserve() noexcept -> bool final;
 
@@ -138,7 +146,7 @@ public:
         const crypto::Subchain subchain,
         const Bip32Index index,
         const opentxs::crypto::key::EllipticCurve& key,
-        OTIdentifier&& contact) noexcept(false);
+        identifier::Generic&& contact) noexcept(false);
     Element(
         const api::Session& api,
         const api::crypto::Blockchain& blockchain,
@@ -153,7 +161,7 @@ public:
         const opentxs::blockchain::Type chain,
         const crypto::Subchain subchain,
         const SerializedType& address,
-        OTIdentifier&& contact) noexcept(false);
+        identifier::Generic&& contact) noexcept(false);
     Element() = delete;
 
     ~Element() final = default;
@@ -173,7 +181,7 @@ private:
     const crypto::Subchain subchain_;
     const Bip32Index index_;
     UnallocatedCString label_;
-    OTIdentifier contact_;
+    identifier::Generic contact_;
     mutable std::shared_ptr<const opentxs::crypto::key::EllipticCurve> pkey_;
     Time timestamp_;
     Transactions unconfirmed_;
@@ -196,7 +204,7 @@ private:
         const crypto::Subchain subchain,
         const Bip32Index index,
         const UnallocatedCString label,
-        OTIdentifier&& contact,
+        identifier::Generic&& contact,
         const opentxs::crypto::key::EllipticCurve& key,
         const Time time,
         Transactions&& unconfirmed,

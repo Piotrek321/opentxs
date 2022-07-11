@@ -23,7 +23,10 @@
 #include "internal/serialization/protobuf/Contact.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/wot/claim/Attribute.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
@@ -411,8 +414,9 @@ auto Data::AddPhoneNumber(
     return AddItem(item);
 }
 
-auto Data::AddPreferredOTServer(const Identifier& id, const bool primary) const
-    -> Data
+auto Data::AddPreferredOTServer(
+    const identifier::Generic& id,
+    const bool primary) const -> Data
 {
     bool needPrimary{true};
     const claim::SectionType section{claim::SectionType::Communication};
@@ -667,7 +671,7 @@ auto Data::BestSocialMediaProfile(const claim::ClaimType type) const
     return bestProfile;
 }
 
-auto Data::Claim(const Identifier& item) const -> std::shared_ptr<Item>
+auto Data::Claim(const identifier::Generic& item) const -> std::shared_ptr<Item>
 {
     for (const auto& it : imp_->sections_) {
         const auto& section = it.second;
@@ -683,9 +687,9 @@ auto Data::Claim(const Identifier& item) const -> std::shared_ptr<Item>
 }
 
 auto Data::Contracts(const UnitType currency, const bool onlyActive) const
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
-    UnallocatedSet<OTIdentifier> output{};
+    UnallocatedSet<identifier::Generic> output{};
     const claim::SectionType section{claim::SectionType::Contract};
     auto group = Group(section, UnitToClaim(currency));
 
@@ -706,7 +710,7 @@ auto Data::Contracts(const UnitType currency, const bool onlyActive) const
     return output;
 }
 
-auto Data::Delete(const Identifier& id) const -> Data
+auto Data::Delete(const identifier::Generic& id) const -> Data
 {
     bool deleted{false};
     auto map = imp_->sections_;
@@ -776,7 +780,7 @@ auto Data::Group(const claim::SectionType section, const claim::ClaimType type)
     return it->second->Group(type);
 }
 
-auto Data::HaveClaim(const Identifier& item) const -> bool
+auto Data::HaveClaim(const identifier::Generic& item) const -> bool
 {
     for (const auto& section : imp_->sections_) {
         OT_ASSERT(section.second);
@@ -845,18 +849,18 @@ auto Data::PhoneNumbers(bool active) const -> UnallocatedCString
     return output;
 }
 
-auto Data::PreferredOTServer() const -> OTNotaryID
+auto Data::PreferredOTServer() const -> identifier::Notary
 {
     auto group =
         Group(claim::SectionType::Communication, claim::ClaimType::Opentxs);
 
-    if (false == bool(group)) { return identifier::Notary::Factory(); }
+    if (false == bool(group)) { return {}; }
 
     auto claim = group->Best();
 
-    if (false == bool(claim)) { return identifier::Notary::Factory(); }
+    if (false == bool(claim)) { return {}; }
 
-    return identifier::Notary::Factory(claim->Value());
+    return imp_->api_.Factory().NotaryIDFromBase58(claim->Value());
 }
 
 auto Data::PrintContactData(const proto::ContactData& data)

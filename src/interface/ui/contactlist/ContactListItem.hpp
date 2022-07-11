@@ -58,6 +58,8 @@ using ContactListItemRow =
 class ContactListItem : public ContactListItemRow
 {
 public:
+    const api::session::Client& api_;
+
     auto ContactID() const noexcept -> UnallocatedCString final;
     auto DisplayName() const noexcept -> UnallocatedCString final;
     auto ImageURI() const noexcept -> UnallocatedCString final;

@@ -18,6 +18,7 @@
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -159,9 +160,10 @@ namespace opentxs::api::session::imp
 class Wallet : virtual public internal::Wallet, public Lockable
 {
 public:
-    auto Account(const Identifier& accountID) const -> SharedAccount final;
+    auto Account(const identifier::Generic& accountID) const
+        -> SharedAccount final;
     auto AccountPartialMatch(const UnallocatedCString& hint) const
-        -> OTIdentifier final;
+        -> identifier::Generic final;
     auto CreateAccount(
         const identifier::Nym& ownerNymID,
         const identifier::Notary& notaryID,
@@ -170,21 +172,23 @@ public:
         Account::AccountType type,
         TransactionNumber stash,
         const PasswordPrompt& reason) const -> ExclusiveAccount final;
-    auto DefaultNym() const noexcept -> std::pair<OTNymID, std::size_t> final;
-    auto DeleteAccount(const Identifier& accountID) const -> bool final;
+    auto DefaultNym() const noexcept
+        -> std::pair<identifier::Nym, std::size_t> final;
+    auto DeleteAccount(const identifier::Generic& accountID) const
+        -> bool final;
     auto IssuerAccount(const identifier::UnitDefinition& unitID) const
         -> SharedAccount final;
     auto mutable_Account(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const PasswordPrompt& reason,
         const AccountCallback callback) const -> ExclusiveAccount final;
     auto UpdateAccount(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const otx::context::Server&,
         const String& serialized,
         const PasswordPrompt& reason) const -> bool final;
     auto UpdateAccount(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const otx::context::Server&,
         const String& serialized,
         const UnallocatedCString& label,
@@ -195,7 +199,7 @@ public:
         -> std::shared_ptr<const otx::context::Client> override;
     auto ServerContext(
         const identifier::Nym& localNymID,
-        const Identifier& remoteID) const
+        const identifier::Generic& remoteID) const
         -> std::shared_ptr<const otx::context::Server> override;
     auto mutable_ClientContext(
         const identifier::Nym& remoteNymID,
@@ -203,21 +207,21 @@ public:
         -> Editor<otx::context::Client> override;
     auto mutable_ServerContext(
         const identifier::Nym& localNymID,
-        const Identifier& remoteID,
+        const identifier::Generic& remoteID,
         const PasswordPrompt& reason) const
         -> Editor<otx::context::Server> override;
     auto IssuerList(const identifier::Nym& nymID) const
-        -> UnallocatedSet<OTNymID> final;
+        -> UnallocatedSet<identifier::Nym> final;
     auto Issuer(const identifier::Nym& nymID, const identifier::Nym& issuerID)
         const -> std::shared_ptr<const otx::client::Issuer> final;
     auto mutable_Issuer(
         const identifier::Nym& nymID,
         const identifier::Nym& issuerID) const
         -> Editor<otx::client::Issuer> final;
-    auto IsLocalNym(const UnallocatedCString& id) const -> bool final;
+    auto IsLocalNym(const std::string_view id) const -> bool final;
     auto IsLocalNym(const identifier::Nym& id) const -> bool final;
     auto LocalNymCount() const -> std::size_t final;
-    auto LocalNyms() const -> UnallocatedSet<OTNymID> final;
+    auto LocalNyms() const -> Set<identifier::Nym> final;
     auto Nym(
         const identifier::Nym& id,
         const std::chrono::milliseconds& timeout = 0ms) const -> Nym_p final;
@@ -252,25 +256,25 @@ public:
         -> bool final;
     auto PeerReply(
         const identifier::Nym& nym,
-        const Identifier& reply,
+        const identifier::Generic& reply,
         const otx::client::StorageBox& box,
         proto::PeerReply& serialized) const -> bool final;
     auto PeerReply(
         const identifier::Nym& nym,
-        const Identifier& reply,
+        const identifier::Generic& reply,
         const otx::client::StorageBox& box,
         AllocateOutput destination) const -> bool final;
     auto PeerReplyComplete(
         const identifier::Nym& nym,
-        const Identifier& replyOrRequest) const -> bool final;
+        const identifier::Generic& replyOrRequest) const -> bool final;
     auto PeerReplyCreate(
         const identifier::Nym& nym,
         const proto::PeerRequest& request,
         const proto::PeerReply& reply) const -> bool final;
     auto PeerReplyCreateRollback(
         const identifier::Nym& nym,
-        const Identifier& request,
-        const Identifier& reply) const -> bool final;
+        const identifier::Generic& request,
+        const identifier::Generic& reply) const -> bool final;
     auto PeerReplySent(const identifier::Nym& nym) const -> ObjectList final;
     auto PeerReplyIncoming(const identifier::Nym& nym) const
         -> ObjectList final;
@@ -282,28 +286,28 @@ public:
         const -> bool final;
     auto PeerRequest(
         const identifier::Nym& nym,
-        const Identifier& request,
+        const identifier::Generic& request,
         const otx::client::StorageBox& box,
         std::time_t& time,
         proto::PeerRequest& serialized) const -> bool final;
     auto PeerRequest(
         const identifier::Nym& nym,
-        const Identifier& request,
+        const identifier::Generic& request,
         const otx::client::StorageBox& box,
         std::time_t& time,
         AllocateOutput destination) const -> bool final;
     auto PeerRequestComplete(
         const identifier::Nym& nym,
-        const Identifier& reply) const -> bool final;
+        const identifier::Generic& reply) const -> bool final;
     auto PeerRequestCreate(
         const identifier::Nym& nym,
         const proto::PeerRequest& request) const -> bool final;
     auto PeerRequestCreateRollback(
         const identifier::Nym& nym,
-        const Identifier& request) const -> bool final;
+        const identifier::Generic& request) const -> bool final;
     auto PeerRequestDelete(
         const identifier::Nym& nym,
-        const Identifier& request,
+        const identifier::Generic& request,
         const otx::client::StorageBox& box) const -> bool final;
     auto PeerRequestSent(const identifier::Nym& nym) const -> ObjectList final;
     auto PeerRequestIncoming(const identifier::Nym& nym) const
@@ -317,7 +321,7 @@ public:
         const PeerObject& request) const -> bool final;
     auto PeerRequestUpdate(
         const identifier::Nym& nym,
-        const Identifier& request,
+        const identifier::Generic& request,
         const otx::client::StorageBox& box) const -> bool final;
     auto PublishNotary(const identifier::Notary& id) const noexcept
         -> bool final;
@@ -457,23 +461,27 @@ protected:
     void save(
         const PasswordPrompt& reason,
         otx::context::internal::Base* context) const;
-    auto server_to_nym(Identifier& nymOrNotaryID) const -> OTNymID;
+    auto server_to_nym(identifier::Generic& nymOrNotaryID) const
+        -> identifier::Nym;
 
     Wallet(const api::Session& api);
 
 private:
-    using AccountMap = UnallocatedMap<OTIdentifier, AccountLock>;
+    using AccountMap = UnallocatedMap<identifier::Generic, AccountLock>;
     using NymLock =
         std::pair<std::mutex, std::shared_ptr<identity::internal::Nym>>;
-    using NymMap = UnallocatedMap<OTNymID, NymLock>;
+    using NymMap = UnallocatedMap<identifier::Nym, NymLock>;
     using ServerMap =
-        UnallocatedMap<OTNotaryID, std::shared_ptr<contract::Server>>;
-    using UnitMap = UnallocatedMap<OTUnitID, std::shared_ptr<contract::Unit>>;
-    using IssuerID = std::pair<OTIdentifier, OTIdentifier>;
+        UnallocatedMap<identifier::Notary, std::shared_ptr<contract::Server>>;
+    using UnitMap = UnallocatedMap<
+        identifier::UnitDefinition,
+        std::shared_ptr<contract::Unit>>;
+    using IssuerID = std::pair<identifier::Generic, identifier::Generic>;
     using IssuerLock =
         std::pair<std::mutex, std::shared_ptr<otx::client::Issuer>>;
     using IssuerMap = UnallocatedMap<IssuerID, IssuerLock>;
-    using PurseID = std::tuple<OTNymID, OTNotaryID, OTUnitID>;
+    using PurseID = std::
+        tuple<identifier::Nym, identifier::Notary, identifier::UnitDefinition>;
     using PurseMap = UnallocatedMap<
         PurseID,
         std::pair<std::shared_mutex, otx::blind::Purse>>;
@@ -499,7 +507,7 @@ private:
     mutable std::mutex peer_map_lock_;
     mutable UnallocatedMap<UnallocatedCString, std::mutex> peer_lock_;
     mutable std::mutex nymfile_map_lock_;
-    mutable UnallocatedMap<OTIdentifier, std::mutex> nymfile_lock_;
+    mutable UnallocatedMap<identifier::Generic, std::mutex> nymfile_lock_;
     mutable std::mutex purse_lock_;
     mutable PurseMap purse_map_;
     OTZMQPublishSocket account_publisher_;
@@ -525,7 +533,7 @@ private:
         const UnallocatedCString& accountID,
         const UnallocatedCString& hint) const -> UnallocatedCString;
     auto account_factory(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const UnallocatedCString& alias,
         const UnallocatedCString& serialized) const -> opentxs::Account*;
     virtual void instantiate_client_context(
@@ -543,7 +551,7 @@ private:
     {
     }
     virtual auto load_legacy_account(
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const eLock& lock,
         AccountLock& row) const -> bool
     {
@@ -586,8 +594,10 @@ private:
         eLock& lock,
         bool success) const;
     void save(const Lock& lock, otx::client::Issuer* in) const;
-    void save(const eLock& lock, const OTNymID nym, otx::blind::Purse* in)
-        const;
+    void save(
+        const eLock& lock,
+        const identifier::Nym nym,
+        otx::blind::Purse* in) const;
     void save(NymData* nymData, const Lock& lock) const;
     void save(
         const PasswordPrompt& reason,
@@ -603,7 +613,7 @@ private:
     /* Throws std::out_of_range for missing accounts */
     auto account(
         const Lock& lock,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const bool create) const -> AccountLock&;
     auto issuer(
         const identifier::Nym& nymID,

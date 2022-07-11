@@ -40,7 +40,7 @@ class Signable : virtual public opentxs::contract::Signable
 {
 public:
     auto Alias() const noexcept -> UnallocatedCString override;
-    auto ID() const noexcept -> OTIdentifier override;
+    auto ID() const noexcept -> identifier::Generic override;
     auto Nym() const noexcept -> Nym_p override;
     auto Terms() const noexcept -> const UnallocatedCString& override;
     auto Validate() const noexcept -> bool override;
@@ -62,12 +62,12 @@ protected:
     const Nym_p nym_;
     const VersionNumber version_;
     const UnallocatedCString conditions_;
-    const OTIdentifier id_;
+    const identifier::Generic id_;
     Signatures signatures_;
     UnallocatedCString alias_;
 
     auto CheckID(const Lock& lock) const -> bool;
-    virtual auto id(const Lock& lock) const -> OTIdentifier;
+    virtual auto id(const Lock& lock) const -> identifier::Generic;
     virtual auto validate(const Lock& lock) const -> bool = 0;
     virtual auto verify_signature(
         const Lock& lock,
@@ -83,7 +83,7 @@ protected:
     auto update_version(const Lock& lock, const VersionNumber version) noexcept
         -> void;
 
-    virtual auto GetID(const Lock& lock) const -> OTIdentifier = 0;
+    virtual auto GetID(const Lock& lock) const -> identifier::Generic = 0;
 
     Signable(
         const api::Session& api,
@@ -97,7 +97,7 @@ protected:
         const VersionNumber version,
         const UnallocatedCString& conditions,
         const UnallocatedCString& alias,
-        OTIdentifier&& id,
+        identifier::Generic&& id,
         Signatures&& signatures) noexcept;
     Signable(
         const api::Session& api,
@@ -105,7 +105,7 @@ protected:
         const VersionNumber version,
         const UnallocatedCString& conditions,
         const UnallocatedCString& alias,
-        const Identifier& id,
+        const identifier::Generic& id,
         Signatures&& signatures) noexcept;
     Signable(const Signable&) noexcept;
 };

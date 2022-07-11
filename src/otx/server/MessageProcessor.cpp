@@ -328,7 +328,7 @@ auto MessageProcessor::Imp::process_command(
     const proto::ServerRequest& serialized,
     identifier::Nym& nymID) noexcept -> bool
 {
-    const auto allegedNymID = identifier::Nym::Factory(serialized.nym());
+    const auto allegedNymID = api_.Factory().NymIDFromBase58(serialized.nym());
     const auto nym = api_.Wallet().Nym(allegedNymID);
 
     if (false == bool(nym)) {
@@ -533,8 +533,8 @@ auto MessageProcessor::Imp::process_notification(
         return;
     }
 
-    const auto nymID = identifier::Nym::Factory(
-        UnallocatedCString{incoming.Body().at(0).Bytes()});
+    const auto nymID =
+        api_.Factory().NymIDFromBase58(incoming.Body().at(0).Bytes());
     const auto& data = query_connection(nymID);
     const auto& [connection, oldFormat] = data;
 
@@ -629,7 +629,7 @@ auto MessageProcessor::Imp::process_proto(
         return;
     }
 
-    auto nymID = identifier::Nym::Factory();
+    auto nymID = identifier::Nym{};
     const auto valid = process_command(command, nymID);
 
     if (valid && (false == id.empty())) {

@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "interface/ui/activitythread/ActivityThreadItem.hpp"
-#include "interface/ui/base/Widget.hpp"
 #include "internal/api/session/Activity.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/client/OTPayment.hpp"
@@ -21,6 +20,7 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/core/String.hpp"
@@ -167,13 +167,17 @@ auto PaymentItem::extract(
     switch (box) {
         case otx::client::StorageBox::INCOMINGCHEQUE:
         case otx::client::StorageBox::OUTGOINGCHEQUE: {
-            auto message =
-                api.Activity().PaymentText(nym, itemID->str(), account->str());
+            auto message = api.Activity().PaymentText(
+                nym,
+                itemID.asBase58(api.Crypto()),
+                account.asBase58(api.Crypto()));
 
             if (message) { text = *message; }
 
             const auto [cheque, contract] = api.Activity().Internal().Cheque(
-                nym, itemID->str(), account->str());
+                nym,
+                itemID.asBase58(api.Crypto()),
+                account.asBase58(api.Crypto()));
 
             if (cheque) {
                 memo = cheque->GetMemo().Get();
@@ -226,7 +230,7 @@ auto PaymentItem::reindex(
     CustomData& custom) noexcept -> bool
 {
     auto [amount, display, memo, contract] =
-        extract(Widget::api_, nym_id_, row_id_, custom);
+        extract(api_, nym_id_, row_id_, custom);
     auto changed = ActivityThreadItem::reindex(key, custom);
     auto lock = eLock{shared_lock_};
 

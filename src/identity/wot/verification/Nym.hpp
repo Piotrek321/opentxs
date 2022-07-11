@@ -28,13 +28,17 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace identity
 {
 class Nym;
 }  // namespace identity
 
 class Factory;
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -67,13 +71,13 @@ public:
     auto ID() const noexcept -> const identifier::Nym& final { return id_; }
     auto NymID() const noexcept -> const identifier::Nym& final
     {
-        return parent_.External() ? id_.get() : parent_.NymID();
+        return parent_.External() ? id_ : parent_.NymID();
     }
     auto size() const noexcept -> std::size_t final { return items_.size(); }
     auto Version() const noexcept -> VersionNumber final { return version_; }
 
     auto AddItem(
-        const Identifier& claim,
+        const identifier::Generic& claim,
         const identity::Nym& signer,
         const PasswordPrompt& reason,
         const Item::Type value,
@@ -81,7 +85,7 @@ public:
         const Time end,
         const VersionNumber version) noexcept -> bool final;
     auto AddItem(const Item::SerializedType item) noexcept -> bool final;
-    auto DeleteItem(const Identifier& item) noexcept -> bool final;
+    auto DeleteItem(const identifier::Generic& item) noexcept -> bool final;
     auto UpgradeItemVersion(
         const VersionNumber itemVersion,
         VersionNumber& nymVersion) noexcept -> bool final;
@@ -104,7 +108,7 @@ private:
 
     internal::Group& parent_;
     const VersionNumber version_;
-    const OTNymID id_;
+    const identifier::Nym id_;
     Vector items_;
 
     static auto instantiate(

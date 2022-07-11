@@ -77,8 +77,8 @@ public:
 private:
     friend otx::Request;
 
-    const OTNymID initiator_;
-    const OTNotaryID server_;
+    const identifier::Nym initiator_;
+    const identifier::Notary server_;
     const otx::ServerRequestType type_;
     const RequestNumber number_;
     OTFlag include_nym_;
@@ -87,7 +87,7 @@ private:
         const api::Session& api,
         const proto::ServerRequest serialized) -> Nym_p;
 
-    auto GetID(const Lock& lock) const -> OTIdentifier final;
+    auto GetID(const Lock& lock) const -> identifier::Generic final;
     auto full_version(const Lock& lock) const -> proto::ServerRequest;
     auto id_version(const Lock& lock) const -> proto::ServerRequest;
     auto Name() const noexcept -> UnallocatedCString final { return {}; }

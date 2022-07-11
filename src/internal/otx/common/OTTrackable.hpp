@@ -54,7 +54,7 @@ public:
         m_lTransactionNum = lTransactionNum;
     }
 
-    inline auto GetSenderAcctID() const -> const Identifier&
+    inline auto GetSenderAcctID() const -> const identifier::Generic&
     {
         return m_SENDER_ACCT_ID;
     }
@@ -71,12 +71,12 @@ public:
 protected:
     TransactionNumber m_lTransactionNum{0};
     // The asset account the instrument is drawn on.
-    OTIdentifier m_SENDER_ACCT_ID;
+    identifier::Generic m_SENDER_ACCT_ID;
     // This ID must match the user ID on that asset account,
     // AND must verify the instrument's signature with that user's key.
-    OTNymID m_SENDER_NYM_ID;
+    identifier::Nym m_SENDER_NYM_ID;
 
-    void SetSenderAcctID(const Identifier& ACCT_ID);
+    void SetSenderAcctID(const identifier::Generic& ACCT_ID);
     void SetSenderNymID(const identifier::Nym& NYM_ID);
 
     OTTrackable(const api::Session& api);
@@ -88,7 +88,7 @@ protected:
         const api::Session& api,
         const identifier::Notary& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-        const Identifier& ACCT_ID,
+        const identifier::Generic& ACCT_ID,
         const identifier::Nym& NYM_ID);
 };
 }  // namespace opentxs

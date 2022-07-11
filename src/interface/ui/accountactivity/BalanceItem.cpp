@@ -23,6 +23,8 @@
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
@@ -35,7 +37,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -46,7 +47,7 @@ auto BalanceItem(
     const ui::implementation::AccountActivitySortKey& sortKey,
     ui::implementation::CustomData& custom,
     const identifier::Nym& nymID,
-    const Identifier& accountID) noexcept
+    const identifier::Generic& accountID) noexcept
     -> std::shared_ptr<ui::implementation::AccountActivityRowInternal>
 {
 #if OT_BLOCKCHAIN
@@ -114,16 +115,17 @@ BalanceItem::BalanceItem(
     const AccountActivitySortKey& sortKey,
     CustomData& custom,
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const UnallocatedCString& text) noexcept
     : BalanceItemRow(parent, api, rowID, true)
+    , api_(api)
     , nym_id_(nymID)
     , workflow_(recover_workflow(custom).id())
     , type_(extract_type(recover_workflow(custom)))
     , text_(text)
     , time_(sortKey)
-    , account_id_(Identifier::Factory(accountID))
-    , contacts_(extract_contacts(api_, recover_workflow(custom)))
+    , account_id_(accountID)
+    , contacts_(extract_contacts(api, recover_workflow(custom)))
 {
 }
 
@@ -150,8 +152,8 @@ auto BalanceItem::extract_contacts(
 
     for (const auto& party : workflow.party()) {
         const auto contactID =
-            api.Contacts().NymToContact(identifier::Nym::Factory(party));
-        output.emplace_back(contactID->str());
+            api.Contacts().NymToContact(api.Factory().NymIDFromBase58(party));
+        output.emplace_back(contactID.asBase58(api.Crypto()));
     }
 
     return output;
@@ -196,10 +198,10 @@ auto BalanceItem::get_contact_name(const identifier::Nym& nymID) const noexcept
 {
     if (nymID.empty()) { return {}; }
 
-    UnallocatedCString output{nymID.str()};
+    UnallocatedCString output{nymID.asBase58(api_.Crypto())};
     const auto contactID = api_.Contacts().ContactID(nymID);
 
-    if (false == contactID->empty()) {
+    if (false == contactID.empty()) {
         output = api_.Contacts().ContactName(contactID);
     }
 

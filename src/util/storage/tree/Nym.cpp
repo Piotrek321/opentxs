@@ -18,6 +18,7 @@
 #include <StorageNym.pb.h>
 #include <StoragePurse.pb.h>
 #include <functional>
+#include <type_traits>
 
 #include "Proto.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
@@ -27,12 +28,13 @@
 #include "internal/serialization/protobuf/verify/Purse.hpp"
 #include "internal/serialization/protobuf/verify/StorageNym.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Bip47Channels.hpp"
@@ -77,11 +79,13 @@ void Nym::_save(
 }
 
 Nym::Nym(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
     const Driver& storage,
     const UnallocatedCString& id,
     const UnallocatedCString& hash,
     const UnallocatedCString& alias)
-    : Node(storage, hash)
+    : Node(crypto, factory, storage, hash)
     , alias_(alias)
     , nymid_(id)
     , credentials_(Node::BLANK_HASH)
@@ -194,7 +198,7 @@ auto Nym::construct(
     Lock lock(mutex);
 
     if (false == bool(pointer)) {
-        pointer.reset(new T(driver_, root, params...));
+        pointer.reset(new T(crypto_, factory_, driver_, root, params...));
 
         if (!pointer) {
             LogError()(OT_PRETTY_CLASS())("Unable to instantiate.").Flush();
@@ -360,8 +364,8 @@ void Nym::init(const UnallocatedCString& hash)
 
     // Fields added in version 8
     for (const auto& purse : serialized->purse()) {
-        auto server = identifier::Notary::Factory(purse.notary());
-        auto unit = identifier::UnitDefinition::Factory(purse.unit());
+        auto server = factory_.NotaryIDFromBase58(purse.notary());
+        auto unit = factory_.UnitIDFromBase58(purse.unit());
         const auto& pHash = purse.purse().hash();
         PurseID id{std::move(server), std::move(unit)};
         purse_id_.emplace(std::move(id), pHash);
@@ -577,7 +581,7 @@ auto Nym::mutable_Threads() -> Editor<storage::Threads>
 
 auto Nym::mutable_Threads(
     const Data& txid,
-    const Identifier& contact,
+    const identifier::Generic& contact,
     const bool add) -> Editor<storage::Threads>
 {
     auto* threads = this->threads();
@@ -786,9 +790,13 @@ auto Nym::serialize() const -> proto::StorageNym
         const auto& [server, unit] = key;
         auto& purse = *serialized.add_purse();
         purse.set_version(storage_purse_version_);
-        purse.set_notary(server->str());
-        purse.set_unit(unit->str());
-        set_hash(purse.version(), unit->str(), hash, *purse.mutable_purse());
+        purse.set_notary(server.asBase58(crypto_));
+        purse.set_unit(unit.asBase58(crypto_));
+        set_hash(
+            purse.version(),
+            unit.asBase58(crypto_),
+            hash,
+            *purse.mutable_purse());
     }
 
     return serialized;
@@ -902,8 +910,8 @@ auto Nym::Store(const proto::Purse& purse) -> bool
 {
     Lock lock(write_lock_);
     const PurseID id{
-        identifier::Notary::Factory(purse.notary()),
-        identifier::UnitDefinition::Factory(purse.mint())};
+        factory_.NotaryIDFromBase58(purse.notary()),
+        factory_.UnitIDFromBase58(purse.mint())};
     UnallocatedCString hash{};
     const auto output = driver_.StoreProto(purse, hash);
 

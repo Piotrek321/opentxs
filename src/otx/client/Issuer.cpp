@@ -35,6 +35,8 @@
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -42,6 +44,7 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/identity/wot/claim/Group.hpp"
@@ -56,33 +59,37 @@
 namespace opentxs::factory
 {
 auto Issuer(
+    const api::session::Factory& factory,
     const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const proto::Issuer& serialized) -> otx::client::Issuer*
 {
     using ReturnType = otx::client::implementation::Issuer;
 
-    return new ReturnType(wallet, nymID, serialized);
+    return new ReturnType(factory, wallet, nymID, serialized);
 }
 
 auto Issuer(
+    const api::session::Factory& factory,
     const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const identifier::Nym& issuerID) -> otx::client::Issuer*
 {
     using ReturnType = otx::client::implementation::Issuer;
 
-    return new ReturnType(wallet, nymID, issuerID);
+    return new ReturnType(factory, wallet, nymID, issuerID);
 }
 }  // namespace opentxs::factory
 
 namespace opentxs::otx::client::implementation
 {
 Issuer::Issuer(
+    const api::session::Factory& factory,
     const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const identifier::Nym& issuerID)
-    : wallet_(wallet)
+    : factory_(factory)
+    , wallet_(wallet)
     , version_(current_version_)
     , pairing_code_("")
     , paired_(Flag::Factory(false))
@@ -94,15 +101,17 @@ Issuer::Issuer(
 }
 
 Issuer::Issuer(
+    const api::session::Factory& factory,
     const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const proto::Issuer& serialized)
-    : wallet_(wallet)
+    : factory_(factory)
+    , wallet_(wallet)
     , version_(serialized.version())
     , pairing_code_(serialized.pairingcode())
     , paired_(Flag::Factory(serialized.paired()))
     , nym_id_(nymID)
-    , issuer_id_(identifier::Nym::Factory(serialized.id()))
+    , issuer_id_(factory_.NymIDFromBase58(serialized.id()))
     , account_map_()
     , peer_requests_()
 {
@@ -113,8 +122,8 @@ Issuer::Issuer(
         const auto& unitID = it.unitdefinitionid();
         const auto& accountID = it.accountid();
         account_map_[ClaimToUnit(translate(type))].emplace(
-            identifier::UnitDefinition::Factory(unitID),
-            Identifier::Factory(accountID));
+            factory_.UnitIDFromBase58(unitID),
+            factory_.IdentifierFromBase58(accountID));
     }
 
     for (const auto& history : serialized.peerrequests()) {
@@ -122,9 +131,10 @@ Issuer::Issuer(
 
         for (const auto& workflow : history.workflow()) {
             peer_requests_[translate(type)].emplace(
-                Identifier::Factory(workflow.requestid()),
-                std::pair<OTIdentifier, bool>(
-                    Identifier::Factory(workflow.replyid()), workflow.used()));
+                factory_.IdentifierFromBase58(workflow.requestid()),
+                std::pair<identifier::Generic, bool>(
+                    factory_.IdentifierFromBase58(workflow.replyid()),
+                    workflow.used()));
         }
     }
 }
@@ -133,7 +143,8 @@ auto Issuer::toString() const -> UnallocatedCString
 {
     Lock lock(lock_);
     std::stringstream output{};
-    output << "Connected issuer: " << issuer_id_->str() << "\n";
+    output << "Connected issuer: " << issuer_id_.asBase58(Context().Crypto())
+           << "\n";
 
     if (pairing_code_.empty()) {
         output << "* Not paired to this issuer\n";
@@ -156,12 +167,13 @@ auto Issuer::toString() const -> UnallocatedCString
         issuerClaims.Section(identity::wot::claim::SectionType::Contract);
     const auto haveAccounts = bool(contractSection);
 
-    if (serverID->empty()) {
+    if (serverID.empty()) {
         output << "* Issuer nym does not advertise a server.\n";
 
         return output.str();
     } else {
-        output << "* Server ID: " << serverID->str() << "\n";
+        output << "* Server ID: " << serverID.asBase58(Context().Crypto())
+               << "\n";
     }
 
     if (false == bool(haveAccounts)) {
@@ -182,8 +194,7 @@ auto Issuer::toString() const -> UnallocatedCString
 
             const auto& notUsed [[maybe_unused]] = id;
             const auto& claim = *pClaim;
-            const auto unitID =
-                identifier::UnitDefinition::Factory(claim.Value());
+            const auto unitID = factory_.UnitIDFromBase58(claim.Value());
             output << " * "
                    << proto::TranslateItemType(
                           static_cast<std::uint32_t>(claim.Type()))
@@ -194,7 +205,8 @@ auto Issuer::toString() const -> UnallocatedCString
 
             for (const auto& [unit, accountID] : accountSet->second) {
                 if (unit == unitID) {
-                    output << "  * Account ID: " << accountID->str() << "\n";
+                    output << "  * Account ID: "
+                           << accountID.asBase58(Context().Crypto()) << "\n";
                 }
             }
         }
@@ -255,10 +267,10 @@ auto Issuer::toString() const -> UnallocatedCString
 auto Issuer::AccountList(
     const UnitType type,
     const identifier::UnitDefinition& unitID) const
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     Lock lock(lock_);
-    UnallocatedSet<OTIdentifier> output;
+    UnallocatedSet<identifier::Generic> output;
     auto accountSet = account_map_.find(type);
     const bool allUnits = unitID.empty();
 
@@ -274,7 +286,7 @@ auto Issuer::AccountList(
 void Issuer::AddAccount(
     const UnitType type,
     const identifier::UnitDefinition& unitID,
-    const Identifier& accountID)
+    const identifier::Generic& accountID)
 {
     Lock lock(lock_);
     account_map_[type].emplace(unitID, accountID);
@@ -283,8 +295,8 @@ void Issuer::AddAccount(
 auto Issuer::add_request(
     const Lock& lock,
     const contract::peer::PeerRequestType type,
-    const Identifier& requestID,
-    const Identifier& replyID) -> bool
+    const identifier::Generic& requestID,
+    const identifier::Generic& replyID) -> bool
 {
     OT_ASSERT(verify_lock(lock));
 
@@ -299,15 +311,15 @@ auto Issuer::add_request(
     }
 
     peer_requests_[type].emplace(
-        requestID, std::pair<OTIdentifier, bool>(replyID, false));
+        requestID, std::pair<identifier::Generic, bool>(replyID, false));
 
     return true;
 }
 
 auto Issuer::AddReply(
     const contract::peer::PeerRequestType type,
-    const Identifier& requestID,
-    const Identifier& replyID) -> bool
+    const identifier::Generic& requestID,
+    const identifier::Generic& replyID) -> bool
 {
     Lock lock(lock_);
     auto [found, it] = find_request(lock, type, requestID);
@@ -320,7 +332,7 @@ auto Issuer::AddReply(
         return add_request(lock, type, requestID, replyID);
     }
 
-    reply = Identifier::Factory(replyID);
+    reply = replyID;
     used = false;
 
     return true;
@@ -328,11 +340,11 @@ auto Issuer::AddReply(
 
 auto Issuer::AddRequest(
     const contract::peer::PeerRequestType type,
-    const Identifier& requestID) -> bool
+    const identifier::Generic& requestID) -> bool
 {
     Lock lock(lock_);
     // ReplyID is blank because we don't know it yet.
-    auto replyID = Identifier::Factory();
+    auto replyID = identifier::Generic{};
 
     return add_request(lock, type, requestID, replyID);
 }
@@ -375,7 +387,7 @@ auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
 
         if (loaded) {
             const auto requestType =
-                Identifier::Factory(request.bailment().unitid());
+                factory_.IdentifierFromBase58(request.bailment().unitid());
 
             if (unitID == requestType) {
                 ++count;
@@ -428,7 +440,10 @@ auto Issuer::BailmentInstructions(
         }
 
         if (loaded) {
-            if (request.bailment().unitid() != unitID.str()) { continue; }
+            if (request.bailment().unitid() !=
+                unitID.asBase58(Context().Crypto())) {
+                continue;
+            }
 
             auto reply = proto::PeerReply{};
             auto loadedreply = wallet_.Internal().PeerReply(
@@ -611,7 +626,8 @@ auto Issuer::ConnectionInfoInitiated(
 auto Issuer::find_request(
     const Lock& lock,
     const contract::peer::PeerRequestType type,
-    const Identifier& requestID) -> std::pair<bool, Issuer::Workflow::iterator>
+    const identifier::Generic& requestID)
+    -> std::pair<bool, Issuer::Workflow::iterator>
 {
     OT_ASSERT(verify_lock(lock));
 
@@ -624,7 +640,8 @@ auto Issuer::find_request(
 auto Issuer::GetRequests(
     const contract::peer::PeerRequestType type,
     const Issuer::RequestStatus state) const
-    -> UnallocatedSet<std::tuple<OTIdentifier, OTIdentifier, bool>>
+    -> UnallocatedSet<
+        std::tuple<identifier::Generic, identifier::Generic, bool>>
 {
     Lock lock(lock_);
 
@@ -635,11 +652,13 @@ auto Issuer::get_requests(
     const Lock& lock,
     const contract::peer::PeerRequestType type,
     const Issuer::RequestStatus state) const
-    -> UnallocatedSet<std::tuple<OTIdentifier, OTIdentifier, bool>>
+    -> UnallocatedSet<
+        std::tuple<identifier::Generic, identifier::Generic, bool>>
 {
     OT_ASSERT(verify_lock(lock));
 
-    UnallocatedSet<std::tuple<OTIdentifier, OTIdentifier, bool>> output;
+    UnallocatedSet<std::tuple<identifier::Generic, identifier::Generic, bool>>
+        output;
 
     if (Issuer::RequestStatus::None == state) { return output; }
 
@@ -652,7 +671,7 @@ auto Issuer::get_requests(
 
         switch (state) {
             case Issuer::RequestStatus::Unused: {
-                const bool exists = (false == replyID->empty());
+                const bool exists = (false == replyID.empty());
                 const bool unused = (false == used);
 
                 if (exists && unused) {
@@ -660,13 +679,13 @@ auto Issuer::get_requests(
                 }
             } break;
             case Issuer::RequestStatus::Replied: {
-                if (false == replyID->empty()) {
+                if (false == replyID.empty()) {
                     output.emplace(requestID, replyID, used);
                 }
             } break;
             case Issuer::RequestStatus::Requested: {
-                if (replyID->empty()) {
-                    output.emplace(requestID, Identifier::Factory(), false);
+                if (replyID.empty()) {
+                    output.emplace(requestID, identifier::Generic{}, false);
                 }
             } break;
             case Issuer::RequestStatus::All: {
@@ -688,13 +707,13 @@ auto Issuer::PairingCode() const -> const UnallocatedCString&
     return pairing_code_;
 }
 
-auto Issuer::PrimaryServer() const -> OTNotaryID
+auto Issuer::PrimaryServer() const -> identifier::Notary
 {
     Lock lock(lock_);
 
     auto nym = wallet_.Nym(issuer_id_);
 
-    if (false == bool(nym)) { return identifier::Notary::Factory(); }
+    if (false == bool(nym)) { return {}; }
 
     return nym->Claims().PreferredOTServer();
 }
@@ -702,7 +721,7 @@ auto Issuer::PrimaryServer() const -> OTNotaryID
 auto Issuer::RemoveAccount(
     const UnitType type,
     const identifier::UnitDefinition& unitID,
-    const Identifier& accountID) -> bool
+    const identifier::Generic& accountID) -> bool
 {
     Lock lock(lock_);
     auto accountSet = account_map_.find(type);
@@ -736,7 +755,7 @@ auto Issuer::Serialize(proto::Issuer& output) const -> bool
 {
     Lock lock(lock_);
     output.set_version(version_);
-    output.set_id(issuer_id_->str());
+    output.set_id(issuer_id_.asBase58(Context().Crypto()));
     output.set_paired(paired_.get());
     output.set_pairingcode(pairing_code_);
 
@@ -745,8 +764,8 @@ auto Issuer::Serialize(proto::Issuer& output) const -> bool
             auto& map = *output.add_accounts();
             map.set_version(version_);
             map.set_type(translate(UnitToClaim(type)));
-            map.set_unitdefinitionid(unitID->str());
-            map.set_accountid(accountID->str());
+            map.set_unitdefinitionid(unitID.asBase58(Context().Crypto()));
+            map.set_accountid(accountID.asBase58(Context().Crypto()));
         }
     }
 
@@ -759,8 +778,8 @@ auto Issuer::Serialize(proto::Issuer& output) const -> bool
             const auto& [reply, isUsed] = data;
             auto& workflow = *history.add_workflow();
             workflow.set_version(version_);
-            workflow.set_requestid(request->str());
-            workflow.set_replyid(reply->str());
+            workflow.set_requestid(request.asBase58(Context().Crypto()));
+            workflow.set_replyid(reply.asBase58(Context().Crypto()));
             workflow.set_used(isUsed);
         }
     }
@@ -781,7 +800,7 @@ void Issuer::SetPairingCode(const UnallocatedCString& code)
 
 auto Issuer::SetUsed(
     const contract::peer::PeerRequestType type,
-    const Identifier& requestID,
+    const identifier::Generic& requestID,
     const bool isUsed) -> bool
 {
     Lock lock(lock_);

@@ -63,7 +63,7 @@ public:
     virtual auto Version() const noexcept -> VersionNumber = 0;
 
     virtual auto AddItem(
-        const Identifier& claim,
+        const identifier::Generic& claim,
         const identity::Nym& signer,
         const PasswordPrompt& reason,
         const Item::Type value = Item::Type::Confirm,
@@ -71,7 +71,8 @@ public:
         const Time end = {},
         const VersionNumber version = Item::DefaultVersion) noexcept
         -> bool = 0;
-    virtual auto DeleteItem(const Identifier& item) noexcept -> bool = 0;
+    virtual auto DeleteItem(const identifier::Generic& item) noexcept
+        -> bool = 0;
 
     Nym(const Nym&) = delete;
     Nym(Nym&&) = delete;

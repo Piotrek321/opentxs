@@ -16,6 +16,7 @@
 #include "internal/util/Editor.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -27,6 +28,22 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
+namespace identifier
+{
+class Generic;
+class Nym;
+}  // namespace identifier
+
 namespace proto
 {
 class Contact;
@@ -53,7 +70,7 @@ public:
         std::shared_ptr<proto::Contact>& output,
         UnallocatedCString& alias,
         const bool checking) const -> bool;
-    auto NymOwner(UnallocatedCString nym) const -> UnallocatedCString;
+    auto NymOwner(const identifier::Nym& nym) const -> identifier::Generic;
     auto Save() const -> bool;
 
     auto Delete(const UnallocatedCString& id) -> bool;
@@ -80,11 +97,9 @@ private:
     static const VersionNumber MergeIndexVersion{1};
     static const VersionNumber NymIndexVersion{1};
 
-    UnallocatedMap<UnallocatedCString, UnallocatedSet<UnallocatedCString>>
-        merge_;
-    UnallocatedMap<UnallocatedCString, UnallocatedCString> merged_;
-    mutable UnallocatedMap<UnallocatedCString, UnallocatedCString>
-        nym_contact_index_;
+    Map<UnallocatedCString, Set<UnallocatedCString>> merge_;
+    Map<UnallocatedCString, UnallocatedCString> merged_;
+    mutable Map<identifier::Nym, identifier::Generic> nym_contact_index_;
 
     void extract_nyms(const Lock& lock, const proto::Contact& data) const;
     auto nomalize_id(const UnallocatedCString& input) const
@@ -96,6 +111,10 @@ private:
     void reconcile_maps(const Lock& lock, const proto::Contact& data);
     void reverse_merged();
 
-    Contacts(const Driver& storage, const UnallocatedCString& hash);
+    Contacts(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
+        const Driver& storage,
+        const UnallocatedCString& hash);
 };
 }  // namespace opentxs::storage

@@ -16,7 +16,6 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
@@ -29,6 +28,7 @@
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -69,13 +69,13 @@ Account::Account(
     const identifier::Notary& notaryID)
     : OTTransactionType(api)
     , acctType_(err_acct)
-    , acctInstrumentDefinitionID_(api_.Factory().UnitID())
+    , acctInstrumentDefinitionID_()
     , balanceDate_(String::Factory())
     , balanceAmount_(String::Factory())
     , stashTransNum_(0)
     , markForDeletion_(false)
-    , inboxHash_(api_.Factory().Identifier())
-    , outboxHash_(api_.Factory().Identifier())
+    , inboxHash_()
+    , outboxHash_()
     , alias_()
 {
     InitAccount();
@@ -87,13 +87,13 @@ Account::Account(
 Account::Account(const api::Session& api)
     : OTTransactionType(api)
     , acctType_(err_acct)
-    , acctInstrumentDefinitionID_(api_.Factory().UnitID())
+    , acctInstrumentDefinitionID_()
     , balanceDate_(String::Factory())
     , balanceAmount_(String::Factory())
     , stashTransNum_(0)
     , markForDeletion_(false)
-    , inboxHash_(api_.Factory().Identifier())
-    , outboxHash_(api_.Factory().Identifier())
+    , inboxHash_()
+    , outboxHash_()
     , alias_()
 {
     InitAccount();
@@ -102,18 +102,18 @@ Account::Account(const api::Session& api)
 Account::Account(
     const api::Session& api,
     const identifier::Nym& nymID,
-    const Identifier& accountId,
+    const identifier::Generic& accountId,
     const identifier::Notary& notaryID,
     const String& name)
     : OTTransactionType(api, nymID, accountId, notaryID)
     , acctType_(err_acct)
-    , acctInstrumentDefinitionID_(api_.Factory().UnitID())
+    , acctInstrumentDefinitionID_()
     , balanceDate_(String::Factory())
     , balanceAmount_(String::Factory())
     , stashTransNum_(0)
     , markForDeletion_(false)
-    , inboxHash_(api_.Factory().Identifier())
-    , outboxHash_(api_.Factory().Identifier())
+    , inboxHash_()
+    , outboxHash_()
     , alias_(name.Get())
 {
     InitAccount();
@@ -123,17 +123,17 @@ Account::Account(
 Account::Account(
     const api::Session& api,
     const identifier::Nym& nymID,
-    const Identifier& accountId,
+    const identifier::Generic& accountId,
     const identifier::Notary& notaryID)
     : OTTransactionType(api, nymID, accountId, notaryID)
     , acctType_(err_acct)
-    , acctInstrumentDefinitionID_(api_.Factory().UnitID())
+    , acctInstrumentDefinitionID_()
     , balanceDate_(String::Factory())
     , balanceAmount_(String::Factory())
     , stashTransNum_(0)
     , markForDeletion_(false)
-    , inboxHash_(api_.Factory().Identifier())
-    , outboxHash_(api_.Factory().Identifier())
+    , inboxHash_()
+    , outboxHash_()
     , alias_()
 {
     InitAccount();
@@ -149,7 +149,7 @@ auto Account::Alias() const -> UnallocatedCString { return alias_; }
 
 auto Account::ConsensusHash(
     const otx::context::Base& context,
-    Identifier& theOutput,
+    identifier::Generic& theOutput,
     const PasswordPrompt& reason) const -> bool
 {
     auto preimage = ByteArray{};
@@ -168,10 +168,10 @@ auto Account::ConsensusHash(
         LogError()(OT_PRETTY_CLASS())("Missing server id.").Flush();
     }
 
-    auto accountid{api_.Factory().Identifier()};
+    auto accountid{identifier::Generic{}};
     GetIdentifier(accountid);
-    if (false == accountid->empty()) {
-        preimage.Concatenate(accountid->data(), accountid->size());
+    if (false == accountid.empty()) {
+        preimage.Concatenate(accountid.data(), accountid.size());
     } else {
         LogError()(OT_PRETTY_CLASS())("Missing account id.").Flush();
     }
@@ -185,24 +185,26 @@ auto Account::ConsensusHash(
 
     const auto nymfile = context.Internal().Nymfile(reason);
 
-    auto inboxhash{api_.Factory().Identifier()};
-    auto loaded = nymfile->GetInboxHash(accountid->str(), inboxhash);
+    auto inboxhash{identifier::Generic{}};
+    auto loaded =
+        nymfile->GetInboxHash(accountid.asBase58(api_.Crypto()), inboxhash);
     if (false == loaded) {
         const_cast<Account&>(*this).GetInboxHash(inboxhash);
     }
-    if (false == inboxhash->empty()) {
-        preimage.Concatenate(inboxhash->data(), inboxhash->size());
+    if (false == inboxhash.empty()) {
+        preimage.Concatenate(inboxhash.data(), inboxhash.size());
     } else {
         LogError()(OT_PRETTY_CLASS())("Empty inbox hash.").Flush();
     }
 
-    auto outboxhash{api_.Factory().Identifier()};
-    loaded = nymfile->GetOutboxHash(accountid->str(), outboxhash);
+    auto outboxhash{identifier::Generic{}};
+    loaded =
+        nymfile->GetOutboxHash(accountid.asBase58(api_.Crypto()), outboxhash);
     if (false == loaded) {
         const_cast<Account&>(*this).GetOutboxHash(outboxhash);
     }
-    if (false == outboxhash->empty()) {
-        preimage.Concatenate(outboxhash->data(), outboxhash->size());
+    if (false == outboxhash.empty()) {
+        preimage.Concatenate(outboxhash.data(), outboxhash.size());
     } else {
         LogError()(OT_PRETTY_CLASS())("Empty outbox hash.").Flush();
     }
@@ -212,18 +214,18 @@ auto Account::ConsensusHash(
         preimage.Concatenate(&num, sizeof(num));
     }
 
-    theOutput.clear();
+    theOutput = api_.Factory().IdentifierFromPreimage(preimage.Bytes());
 
-    bool bCalcDigest = theOutput.CalculateDigest(preimage.Bytes());
-
-    if (false == bCalcDigest) {
-        theOutput.clear();
+    if (theOutput.empty()) {
         LogError()(OT_PRETTY_CLASS())(
             "Failed trying to calculate hash (for a ")(GetTypeString())(").")
             .Flush();
-    }
 
-    return bCalcDigest;
+        return false;
+    } else {
+
+        return true;
+    }
 }
 
 auto Account::create_box(
@@ -323,9 +325,9 @@ auto Account::LoadOutbox(const identity::Nym& nym) const
 
 auto Account::save_box(
     Ledger& box,
-    Identifier& hash,
-    bool (Ledger::*save)(Identifier&),
-    void (Account::*set)(const Identifier&)) -> bool
+    identifier::Generic& hash,
+    bool (Ledger::*save)(identifier::Generic&),
+    void (Account::*set)(const identifier::Generic&)) -> bool
 {
     if (!IsSameAccount(box)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -347,36 +349,40 @@ auto Account::save_box(
 
 auto Account::SaveInbox(Ledger& box) -> bool
 {
-    auto hash = api_.Factory().Identifier();
+    auto hash = identifier::Generic{};
 
     return SaveInbox(box, hash);
 }
 
-auto Account::SaveInbox(Ledger& box, Identifier& hash) -> bool
+auto Account::SaveInbox(Ledger& box, identifier::Generic& hash) -> bool
 {
     return save_box(box, hash, &Ledger::SaveInbox, &Account::SetInboxHash);
 }
 
 auto Account::SaveOutbox(Ledger& box) -> bool
 {
-    auto hash = api_.Factory().Identifier();
+    auto hash = identifier::Generic{};
 
     return SaveOutbox(box, hash);
 }
 
-auto Account::SaveOutbox(Ledger& box, Identifier& hash) -> bool
+auto Account::SaveOutbox(Ledger& box, identifier::Generic& hash) -> bool
 {
     return save_box(box, hash, &Ledger::SaveOutbox, &Account::SetOutboxHash);
 }
 
-void Account::SetInboxHash(const Identifier& input) { inboxHash_ = input; }
+void Account::SetInboxHash(const identifier::Generic& input)
+{
+    inboxHash_ = input;
+}
 
-auto Account::GetInboxHash(Identifier& output) -> bool
+auto Account::GetInboxHash(identifier::Generic& output) -> bool
 {
     output.clear();
 
-    if (!inboxHash_->empty()) {
-        output.SetString(inboxHash_->str());
+    if (!inboxHash_.empty()) {
+        output = inboxHash_;
+
         return true;
     } else if (
         !GetNymID().empty() && !GetRealAccountID().empty() &&
@@ -395,14 +401,18 @@ auto Account::GetInboxHash(Identifier& output) -> bool
     return false;
 }
 
-void Account::SetOutboxHash(const Identifier& input) { outboxHash_ = input; }
+void Account::SetOutboxHash(const identifier::Generic& input)
+{
+    outboxHash_ = input;
+}
 
-auto Account::GetOutboxHash(Identifier& output) -> bool
+auto Account::GetOutboxHash(identifier::Generic& output) -> bool
 {
     output.clear();
 
-    if (!outboxHash_->empty()) {
-        output.SetString(outboxHash_->str());
+    if (!outboxHash_.empty()) {
+        output = outboxHash_;
+
         return true;
     } else if (
         !GetNymID().empty() && !GetRealAccountID().empty() &&
@@ -590,7 +600,7 @@ void Account::InitAccount()
 // before calling this.
 auto Account::VerifyOwner(const identity::Nym& candidate) const -> bool
 {
-    auto ID_CANDIDATE = api_.Factory().NymID();
+    auto ID_CANDIDATE = identifier::Nym{};
     candidate.GetIdentifier(ID_CANDIDATE);
 
     return m_AcctNymID == ID_CANDIDATE;
@@ -604,7 +614,7 @@ auto Account::VerifyOwnerByID(const identifier::Nym& nymId) const -> bool
 
 auto Account::LoadExistingAccount(
     const api::Session& api,
-    const Identifier& accountId,
+    const identifier::Generic& accountId,
     const identifier::Notary& notaryID) -> Account*
 {
     auto strDataFolder = api.DataFolder();
@@ -661,7 +671,7 @@ auto Account::GenerateNewAccount(
     const identifier::Nym& nymID,
     const identifier::Notary& notaryID,
     const identity::Nym& serverNym,
-    const Identifier& userNymID,
+    const identifier::Nym& userNymID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const PasswordPrompt& reason,
     Account::AccountType acctType,
@@ -693,18 +703,19 @@ message.m_strNotaryID;
  */
 auto Account::GenerateNewAccount(
     const identity::Nym& server,
-    const Identifier& userNymID,
+    const identifier::Nym& userNymID,
     const identifier::Notary& notaryID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const PasswordPrompt& reason,
     Account::AccountType acctType,
     std::int64_t stashTransNum) -> bool
 {
-    auto newID = api_.Factory().Identifier();
+    auto newID = api_.Factory().IdentifierFromRandom();
 
-    if (!newID->Randomize()) {
+    if (newID.empty()) {
         LogError()(OT_PRETTY_CLASS())("Error generating new account ID.")
             .Flush();
+
         return false;
     }
 
@@ -749,11 +760,10 @@ auto Account::GenerateNewAccount(
     if (IsInternalServerAcct()) {
         server.GetIdentifier(m_AcctNymID);
     } else {
-        m_AcctNymID->SetString(String::Factory(userNymID));
+        m_AcctNymID = userNymID;
     }
 
-    acctInstrumentDefinitionID_->SetString(
-        String::Factory(instrumentDefinitionID));
+    acctInstrumentDefinitionID_ = instrumentDefinitionID;
 
     LogDebug()(OT_PRETTY_CLASS())("Creating new account, type: ")(
         instrumentDefinitionID)(".")
@@ -824,13 +834,13 @@ auto Account::DisplayStatistics(String& contents) const -> bool
         .Concatenate(" on date: "sv)
         .Concatenate(balanceDate_)
         .Concatenate("\n accountID: "sv)
-        .Concatenate(GetPurportedAccountID().str())
+        .Concatenate(GetPurportedAccountID().asBase58(api_.Crypto()))
         .Concatenate("\n nymID: "sv)
-        .Concatenate(GetNymID().str())
+        .Concatenate(GetNymID().asBase58(api_.Crypto()))
         .Concatenate("\n notaryID: "sv)
-        .Concatenate(GetPurportedNotaryID().str())
+        .Concatenate(GetPurportedNotaryID().asBase58(api_.Crypto()))
         .Concatenate("\n instrumentDefinitionID: "sv)
-        .Concatenate(acctInstrumentDefinitionID_->str())
+        .Concatenate(acctInstrumentDefinitionID_.asBase58(api_.Crypto()))
         .Concatenate("\n\n"sv);
 
     return true;
@@ -914,13 +924,13 @@ void Account::UpdateContents(const PasswordPrompt& reason)
         tagStash->add_attribute("cronItemNum", std::to_string(stashTransNum_));
         tag.add_tag(tagStash);
     }
-    if (!inboxHash_->empty()) {
+    if (!inboxHash_.empty()) {
         auto strHash = String::Factory(inboxHash_);
         TagPtr tagBox(new Tag("inboxHash"));
         tagBox->add_attribute("value", strHash->Get());
         tag.add_tag(tagBox);
     }
-    if (!outboxHash_->empty()) {
+    if (!outboxHash_.empty()) {
         auto strHash = String::Factory(outboxHash_);
         TagPtr tagBox(new Tag("outboxHash"));
         tagBox->add_attribute("value", strHash->Get());
@@ -990,7 +1000,8 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             String::Factory(xml->getAttributeValue("instrumentDefinitionID"));
 
         if (strAcctAssetType->Exists()) {
-            acctInstrumentDefinitionID_->SetString(strAcctAssetType);
+            acctInstrumentDefinitionID_ =
+                api_.Factory().UnitIDFromBase58(strAcctAssetType->Bytes());
         } else {
             LogError()(OT_PRETTY_CLASS())("Failed: missing "
                                           "instrumentDefinitionID.")
@@ -1002,9 +1013,11 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         auto strNotaryID = String::Factory(xml->getAttributeValue("notaryID"));
         auto strAcctNymID = String::Factory(xml->getAttributeValue("nymID"));
 
-        auto ACCOUNT_ID = api_.Factory().Identifier(strAccountID);
-        auto NOTARY_ID = api_.Factory().ServerID(strNotaryID);
-        auto NYM_ID = api_.Factory().NymID(strAcctNymID);
+        auto ACCOUNT_ID =
+            api_.Factory().IdentifierFromBase58(strAccountID->Bytes());
+        auto NOTARY_ID =
+            api_.Factory().NotaryIDFromBase58(strNotaryID->Bytes());
+        auto NYM_ID = api_.Factory().NymIDFromBase58(strAcctNymID->Bytes());
 
         SetPurportedAccountID(ACCOUNT_ID);
         SetPurportedNotaryID(NOTARY_ID);
@@ -1024,13 +1037,21 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
     } else if (strNodeName->Compare("inboxHash")) {
 
         auto strHash = String::Factory(xml->getAttributeValue("value"));
-        if (strHash->Exists()) { inboxHash_->SetString(strHash); }
+
+        if (strHash->Exists()) {
+            inboxHash_ = api_.Factory().IdentifierFromBase58(strHash->Bytes());
+        }
+
         LogDebug()(OT_PRETTY_CLASS())("Account inboxHash: ")(strHash).Flush();
         retval = 1;
     } else if (strNodeName->Compare("outboxHash")) {
 
         auto strHash = String::Factory(xml->getAttributeValue("value"));
-        if (strHash->Exists()) { outboxHash_->SetString(strHash); }
+
+        if (strHash->Exists()) {
+            outboxHash_ = api_.Factory().IdentifierFromBase58(strHash->Bytes());
+        }
+
         LogDebug()(OT_PRETTY_CLASS())("Account outboxHash: ")(strHash).Flush();
 
         retval = 1;
@@ -1166,8 +1187,8 @@ void Account::Release_Account()
 {
     balanceDate_->Release();
     balanceAmount_->Release();
-    inboxHash_->clear();
-    outboxHash_->clear();
+    inboxHash_.clear();
+    outboxHash_.clear();
 }
 
 void Account::Release()

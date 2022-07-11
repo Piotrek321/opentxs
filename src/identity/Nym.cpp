@@ -46,6 +46,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/Type.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
@@ -108,7 +109,7 @@ auto Factory::Nym(
                         identity::Nym::DefaultVersion));
             const auto blank = identity::wot::claim::Data{
                 api,
-                pSource->NymID()->str(),
+                pSource->NymID().asBase58(api.Crypto()),
                 version,
                 version,
                 identity::wot::claim::Data::SectionMap{}};
@@ -204,6 +205,8 @@ Nym::Nym(
     , m_mapRevokedSets()
     , m_listRevokedIDs()
 {
+    OT_ASSERT(id_.Type() == identifier::Type::nym);
+
     if (false == bool(source_p_)) {
         throw std::runtime_error("Invalid nym id source");
     }
@@ -228,6 +231,8 @@ Nym::Nym(
     , m_listRevokedIDs(
           load_revoked(api_, *this, source_, serialized, m_mapRevokedSets))
 {
+    OT_ASSERT(id_.Type() == identifier::Type::nym);
+
     if (false == bool(source_p_)) {
         throw std::runtime_error("Invalid nym id source");
     }
@@ -278,7 +283,7 @@ auto Nym::add_verification_credential(
 }
 
 auto Nym::AddChildKeyCredential(
-    const Identifier& masterID,
+    const identifier::Generic& masterID,
     const crypto::Parameters& nymParameters,
     const opentxs::PasswordPrompt& reason) -> UnallocatedCString
 {
@@ -330,7 +335,7 @@ auto Nym::AddContract(
     const bool primary,
     const bool active) -> bool
 {
-    const UnallocatedCString id(instrumentDefinitionID.str());
+    const UnallocatedCString id(instrumentDefinitionID.asBase58(api_.Crypto()));
 
     if (id.empty()) { return false; }
 
@@ -442,7 +447,7 @@ auto Nym::AddPhoneNumber(
 }
 
 auto Nym::AddPreferredOTServer(
-    const Identifier& id,
+    const identifier::Generic& id,
     const opentxs::PasswordPrompt& reason,
     const bool primary) -> bool
 {
@@ -578,14 +583,14 @@ auto Nym::Claims() const -> const wot::claim::Data&
 
 auto Nym::CompareID(const identity::Nym& rhs) const -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return rhs.CompareID(id_);
 }
 
 auto Nym::CompareID(const identifier::Nym& rhs) const -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return id_ == rhs;
 }
@@ -599,7 +604,7 @@ auto Nym::ContactCredentialVersion() const -> VersionNumber
 }
 
 auto Nym::Contracts(const UnitType currency, const bool onlyActive) const
-    -> UnallocatedSet<OTIdentifier>
+    -> UnallocatedSet<identifier::Generic>
 {
     eLock lock(shared_lock_);
 
@@ -635,7 +640,7 @@ auto Nym::create_authority(
 }
 
 auto Nym::DeleteClaim(
-    const Identifier& id,
+    const identifier::Generic& id,
     const opentxs::PasswordPrompt& reason) -> bool
 {
     eLock lock(shared_lock_);
@@ -670,7 +675,7 @@ auto Nym::EmailAddresses(bool active) const -> UnallocatedCString
 
 auto Nym::EncryptionTargets() const noexcept -> NymKeys
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
     auto output = NymKeys{id_, {}};
 
     for (const auto& [id, pAuthority] : active_) {
@@ -686,7 +691,7 @@ auto Nym::EncryptionTargets() const noexcept -> NymKeys
 
 void Nym::GetIdentifier(identifier::Nym& theIdentifier) const
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     theIdentifier.Assign(id_);
 }
@@ -694,9 +699,9 @@ void Nym::GetIdentifier(identifier::Nym& theIdentifier) const
 // sets argument based on internal member
 void Nym::GetIdentifier(String& theIdentifier) const
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
-    id_->GetString(theIdentifier);
+    id_.GetString(api_.Crypto(), theIdentifier);
 }
 
 template <typename T>
@@ -731,7 +736,7 @@ auto Nym::get_private_auth_key(
 auto Nym::GetPrivateAuthKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return get_private_auth_key(lock, keytype);
 }
@@ -739,7 +744,7 @@ auto Nym::GetPrivateAuthKey(crypto::key::asymmetric::Algorithm keytype) const
 auto Nym::GetPrivateEncrKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     OT_ASSERT(!active_.empty());
 
@@ -767,7 +772,7 @@ auto Nym::GetPrivateEncrKey(crypto::key::asymmetric::Algorithm keytype) const
 auto Nym::GetPrivateSignKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return get_private_sign_key(lock, keytype);
 }
@@ -837,7 +842,7 @@ auto Nym::get_public_sign_key(
 auto Nym::GetPublicAuthKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     OT_ASSERT(!active_.empty());
 
@@ -865,7 +870,7 @@ auto Nym::GetPublicAuthKey(crypto::key::asymmetric::Algorithm keytype) const
 auto Nym::GetPublicEncrKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     OT_ASSERT(!active_.empty());
 
@@ -909,7 +914,7 @@ auto Nym::GetPublicKeysBySignature(
     // multiple results.)
     std::int32_t nCount = 0;
 
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     for (const auto& it : active_) {
         const identity::Authority* pCredential = it.second.get();
@@ -926,7 +931,7 @@ auto Nym::GetPublicKeysBySignature(
 auto Nym::GetPublicSignKey(crypto::key::asymmetric::Algorithm keytype) const
     -> const crypto::key::Asymmetric&
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return get_public_sign_key(lock, keytype);
 }
@@ -969,7 +974,7 @@ void Nym::init_claims(const eLock& lock) const
 {
     OT_ASSERT(verify_lock(lock));
 
-    const auto nymID{id_->str()};
+    const auto nymID{id_.asBase58(api_.Crypto())};
     const auto dataVersion = ContactDataVersion();
     contact_data_ = std::make_unique<wot::claim::Data>(
         api_, nymID, dataVersion, dataVersion, wot::claim::Data::SectionMap());
@@ -1051,7 +1056,7 @@ auto Nym::load_revoked(
 
             const auto& candidate = *pCandidate;
             auto id{candidate.GetMasterCredID()};
-            output.push_back(id->str());
+            output.push_back(id.asBase58(api.Crypto()));
             revoked.emplace(std::move(id), std::move(pCandidate));
         }
     }
@@ -1148,14 +1153,14 @@ auto Nym::path(const sLock& lock, proto::HDPath& output) const -> bool
 
 auto Nym::Path(proto::HDPath& output) const -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     return path(lock, output);
 }
 
 auto Nym::PathRoot() const -> const UnallocatedCString
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     auto proto = proto::HDPath{};
     if (false == path(lock, proto)) { return ""; }
@@ -1164,7 +1169,7 @@ auto Nym::PathRoot() const -> const UnallocatedCString
 
 auto Nym::PathChildSize() const -> int
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     auto proto = proto::HDPath{};
     if (false == path(lock, proto)) { return 0; }
@@ -1173,7 +1178,7 @@ auto Nym::PathChildSize() const -> int
 
 auto Nym::PathChild(int index) const -> std::uint32_t
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     auto proto = proto::HDPath{};
     if (false == path(lock, proto)) { return 0; }
@@ -1286,10 +1291,9 @@ auto Nym::SerializeCredentialIndex(AllocateOutput destination, const Mode mode)
 auto Nym::SerializeCredentialIndex(Serialized& index, const Mode mode) const
     -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
     index.set_version(version_);
-    auto nymID = String::Factory(id_);
-    index.set_nymid(nymID->Get());
+    index.set_nymid(id_.asBase58(api_.Crypto()));
 
     if (Mode::Abbreviated == mode) {
         index.set_mode(mode_);
@@ -1434,7 +1438,7 @@ auto Nym::SetContactData(
 {
     eLock lock(shared_lock_);
     contact_data_ = std::make_unique<wot::claim::Data>(
-        api_, id_->str(), ContactDataVersion(), data);
+        api_, id_.asBase58(api_.Crypto()), ContactDataVersion(), data);
 
     return set_contact_data(lock, data, reason);
 }
@@ -1478,7 +1482,7 @@ auto Nym::Sign(
     const opentxs::PasswordPrompt& reason,
     const crypto::HashType hash) const -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     bool haveSig = false;
 
@@ -1543,7 +1547,7 @@ auto Nym::TransportKey(Data& pubkey, const opentxs::PasswordPrompt& reason)
 {
     bool found{false};
     auto privateKey = api_.Factory().Secret(0);
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     for (const auto& it : active_) {
         OT_ASSERT(nullptr != it.second);
@@ -1612,8 +1616,7 @@ auto Nym::Verify(const ProtobufType& input, proto::Signature& signature) const
     }
 
     LogError()(OT_PRETTY_CLASS())("all ")(active_.size())(
-        " authorities on nym ")(id_)(" failed to verify "
-                                     "signature")
+        " authorities on nym ")(id_)(" failed to verify signature")
         .Flush();
 
     return false;
@@ -1654,7 +1657,7 @@ auto Nym::VerifyPseudonym() const -> bool
 
 auto Nym::WriteCredentials() const -> bool
 {
-    sLock lock(shared_lock_);
+    auto lock = sLock{shared_lock_};
 
     for (const auto& it : active_) {
         if (!it.second->WriteCredentials()) {

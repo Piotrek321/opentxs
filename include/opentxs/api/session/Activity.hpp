@@ -53,6 +53,7 @@ class Transaction;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -61,7 +62,6 @@ namespace proto
 class StorageThread;
 }  // namespace proto
 
-class Identifier;
 class PasswordPrompt;
 class PeerObject;
 // }  // namespace v1
@@ -78,10 +78,10 @@ public:
         const noexcept -> bool = 0;
     virtual auto AddPaymentEvent(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const otx::client::StorageBox type,
-        const Identifier& itemID,
-        const Identifier& workflowID,
+        const identifier::Generic& itemID,
+        const identifier::Generic& workflowID,
         Time time) const noexcept -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Activity& = 0;
@@ -103,7 +103,7 @@ public:
      */
     virtual auto MailRemove(
         const identifier::Nym& nym,
-        const Identifier& id,
+        const identifier::Generic& id,
         const otx::client::StorageBox box) const noexcept -> bool = 0;
     /**   Retrieve the text from a message
      *
@@ -115,7 +115,7 @@ public:
      */
     virtual auto MailText(
         const identifier::Nym& nym,
-        const Identifier& id,
+        const identifier::Generic& id,
         const otx::client::StorageBox& box,
         const PasswordPrompt& reason) const noexcept
         -> std::shared_future<UnallocatedCString> = 0;
@@ -128,8 +128,8 @@ public:
      */
     virtual auto MarkRead(
         const identifier::Nym& nymId,
-        const Identifier& threadId,
-        const Identifier& itemId) const noexcept -> bool = 0;
+        const identifier::Generic& threadId,
+        const identifier::Generic& itemId) const noexcept -> bool = 0;
     /**   Mark a thread item as unread
      *
      *    \param[in] nymId the identifier of the nym who owns the thread
@@ -139,8 +139,8 @@ public:
      */
     virtual auto MarkUnread(
         const identifier::Nym& nymId,
-        const Identifier& threadId,
-        const Identifier& itemId) const noexcept -> bool = 0;
+        const identifier::Generic& threadId,
+        const identifier::Generic& itemId) const noexcept -> bool = 0;
     /**   Summarize a payment workflow event in human-friendly test form
      *
      *    \param[in] nym the identifier of the nym who owns the thread
@@ -172,17 +172,17 @@ public:
      */
     virtual auto PreloadThread(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         const std::size_t start,
         const std::size_t count,
         const PasswordPrompt& reason) const noexcept -> void = 0;
     OPENTXS_NO_EXPORT virtual auto Thread(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         proto::StorageThread& serialized) const noexcept -> bool = 0;
     virtual auto Thread(
         const identifier::Nym& nymID,
-        const Identifier& threadID,
+        const identifier::Generic& threadID,
         AllocateOutput output) const noexcept -> bool = 0;
     /**   Obtain a list of thread ids for the specified nym
      *

@@ -32,12 +32,12 @@ auto BlockchainSyncQueryContract() noexcept -> network::p2p::QueryContract
     return std::make_unique<ReturnType::Imp>().release();
 }
 
-auto BlockchainSyncQueryContract(const Identifier& id) noexcept
+auto BlockchainSyncQueryContract(const identifier::Generic& id) noexcept
     -> network::p2p::QueryContract
 {
     using ReturnType = network::p2p::QueryContract;
 
-    return std::make_unique<ReturnType::Imp>(id).release();
+    return std::make_unique<ReturnType::Imp>(identifier::Generic{id}).release();
 }
 
 auto BlockchainSyncQueryContract_p(
@@ -56,7 +56,7 @@ namespace opentxs::network::p2p
 class QueryContract::Imp final : public Base::Imp
 {
 public:
-    const OTIdentifier contract_id_;
+    const identifier::Generic contract_id_;
     QueryContract* parent_;
 
     static auto get(const Imp* imp) noexcept -> const Imp&
@@ -88,7 +88,7 @@ public:
 
         out.Internal().AddFrame([&] {
             auto out = proto::Identifier{};
-            contract_id_->Serialize(out);
+            contract_id_.Serialize(out);
 
             return out;
         }());
@@ -98,11 +98,11 @@ public:
 
     Imp() noexcept
         : Base::Imp()
-        , contract_id_(Identifier::Factory())
+        , contract_id_()
         , parent_(nullptr)
     {
     }
-    Imp(OTIdentifier&& id) noexcept
+    Imp(identifier::Generic&& id) noexcept
         : Base::Imp(MessageType::contract_query)
         , contract_id_(std::move(id))
         , parent_(nullptr)
@@ -126,7 +126,7 @@ QueryContract::QueryContract(Imp* imp) noexcept
     imp_->parent_ = this;
 }
 
-auto QueryContract::ID() const noexcept -> const Identifier&
+auto QueryContract::ID() const noexcept -> const identifier::Generic&
 {
     return Imp::get(imp_).contract_id_;
 }

@@ -19,6 +19,7 @@ namespace api
 namespace session
 {
 class Client;
+class Factory;
 class Wallet;
 }  // namespace session
 }  // namespace api
@@ -51,10 +52,12 @@ class Flag;
 namespace opentxs::factory
 {
 auto Issuer(
+    const api::session::Factory& factory,
     const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const proto::Issuer& serialized) -> otx::client::Issuer*;
 auto Issuer(
+    const api::session::Factory& factory,
     const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const identifier::Nym& issuerID) -> otx::client::Issuer*;

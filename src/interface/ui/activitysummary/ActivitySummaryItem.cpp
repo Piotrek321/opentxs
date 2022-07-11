@@ -73,6 +73,7 @@ ActivitySummaryItem::ActivitySummaryItem(
     const Flag& running,
     UnallocatedCString text) noexcept
     : ActivitySummaryItemRow(parent, api, rowID, true)
+    , api_(api)
     , running_(running)
     , nym_id_(nymID)
     , key_(sortKey)
@@ -111,7 +112,10 @@ auto ActivitySummaryItem::find_text(
         case otx::client::StorageBox::MAILINBOX:
         case otx::client::StorageBox::MAILOUTBOX: {
             auto text = api_.Activity().MailText(
-                nym_id_, Identifier::Factory(itemID), box, reason);
+                nym_id_,
+                api_.Factory().IdentifierFromBase58(itemID),
+                box,
+                reason);
             // TODO activity summary should subscribe for updates instead of
             // waiting for decryption
 
@@ -145,7 +149,7 @@ void ActivitySummaryItem::get_text() noexcept
 {
     auto reason = api_.Factory().PasswordPrompt(__func__);
     eLock lock(shared_lock_, std::defer_lock);
-    auto locator = ItemLocator{"", {}, "", api_.Factory().Identifier()};
+    auto locator = ItemLocator{"", {}, "", identifier::Generic{}};
 
     while (running_) {
         if (break_.load()) { return; }
@@ -178,7 +182,7 @@ auto ActivitySummaryItem::LoadItemText(
 {
     const auto& box =
         *static_cast<const otx::client::StorageBox*>(custom.at(1));
-    const auto& thread = *static_cast<const OTIdentifier*>(custom.at(4));
+    const auto& thread = *static_cast<const identifier::Generic*>(custom.at(4));
     const auto& itemID = *static_cast<const UnallocatedCString*>(custom.at(0));
 
     if (otx::client::StorageBox::BLOCKCHAIN == box) {
@@ -207,7 +211,7 @@ void ActivitySummaryItem::startup(CustomData& custom) noexcept
         extract_custom<UnallocatedCString>(custom, 0),
         type_,
         extract_custom<UnallocatedCString>(custom, 2),
-        extract_custom<OTIdentifier>(custom, 4)};
+        extract_custom<identifier::Generic>(custom, 4)};
     newest_item_.Push(++next_task_id_, std::move(locator));
 }
 
@@ -220,7 +224,7 @@ auto ActivitySummaryItem::Text() const noexcept -> UnallocatedCString
 
 auto ActivitySummaryItem::ThreadID() const noexcept -> UnallocatedCString
 {
-    return row_id_->str();
+    return row_id_.asBase58(api_.Crypto());
 }
 
 auto ActivitySummaryItem::Timestamp() const noexcept -> Time

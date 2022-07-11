@@ -14,6 +14,8 @@
 #include "internal/identity/credential/Credential.hpp"
 #include "internal/identity/credential/Types.hpp"
 #include "internal/util/Mutex.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
@@ -74,7 +76,10 @@ public:
 
     auto asString(const bool asPrivate = false) const
         -> UnallocatedCString final;
-    auto CredentialID() const -> const Identifier& final { return id_.get(); }
+    auto CredentialID() const -> const identifier::Generic& final
+    {
+        return id_;
+    }
     auto GetContactData(proto::ContactData& output) const -> bool override
     {
         return false;
@@ -122,7 +127,7 @@ public:
     auto Verify(
         const proto::Credential& credential,
         const identity::CredentialRole& role,
-        const Identifier& masterID,
+        const identifier::Generic& masterID,
         const proto::Signature& masterSig) const -> bool override;
 
     void ReleaseSignatures(const bool onlyPrivate) final;
@@ -144,9 +149,11 @@ protected:
     const identity::CredentialRole role_;
     const crypto::key::asymmetric::Mode mode_;
 
-    static auto get_master_id(const internal::Primary& master) noexcept
-        -> UnallocatedCString;
     static auto get_master_id(
+        const api::Session& api,
+        const internal::Primary& master) noexcept -> UnallocatedCString;
+    static auto get_master_id(
+        const api::Session& api,
         const proto::Credential& serialized,
         const internal::Primary& master) noexcept(false) -> UnallocatedCString;
 
@@ -186,7 +193,7 @@ private:
         -> Signatures;
 
     auto clone() const noexcept -> Base* final { return nullptr; }
-    auto GetID(const Lock& lock) const -> OTIdentifier final;
+    auto GetID(const Lock& lock) const -> identifier::Generic final;
     // Syntax (non cryptographic) validation
     auto isValid(const Lock& lock) const -> bool;
     // Returns the serialized form to prevent unnecessary serializations
@@ -194,7 +201,7 @@ private:
         const -> bool;
     auto Name() const noexcept -> UnallocatedCString final
     {
-        return id_->str();
+        return id_.asBase58(api_.Crypto());
     }
     auto verify_master_signature(const Lock& lock) const -> bool;
 

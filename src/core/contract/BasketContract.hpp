@@ -48,7 +48,7 @@ namespace opentxs::contract::unit::implementation
 class Basket final : public unit::Basket, public contract::implementation::Unit
 {
 public:
-    auto BasketID() const -> OTIdentifier final;
+    auto BasketID() const -> identifier::Generic final;
     auto Currencies() const -> const Subcontracts& final
     {
         return subcontracts_;

@@ -15,7 +15,6 @@
 
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
-#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Container.hpp"
@@ -48,6 +47,7 @@ class Server;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 class Notary;
 class UnitDefinition;
@@ -65,7 +65,7 @@ class OPENTXS_EXPORT OTX
 {
 public:
     using TaskID = int;
-    using MessageID = OTIdentifier;
+    using MessageID = identifier::Generic;
     using Result = std::pair<otx::LastReplyStatus, std::shared_ptr<Message>>;
     using Future = std::shared_future<Result>;
     using BackgroundTask = std::pair<TaskID, Future>;
@@ -75,28 +75,28 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         const UnallocatedCString& instructions,
         const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AcknowledgeNotice(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::Nym& recipientID,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         const bool ack,
         const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AcknowledgeOutbailment(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::Nym& recipientID,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         const UnallocatedCString& details,
         const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AcknowledgeConnection(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const identifier::Nym& recipientID,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         const bool ack,
         const UnallocatedCString& url,
         const UnallocatedCString& login,
@@ -109,11 +109,11 @@ public:
         const OTPayment& payment) const -> otx::client::Depositability = 0;
     virtual auto CanDeposit(
         const identifier::Nym& recipientNymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const OTPayment& payment) const -> otx::client::Depositability = 0;
     virtual auto CanMessage(
         const identifier::Nym& senderNymID,
-        const Identifier& recipientContactID,
+        const identifier::Generic& recipientContactID,
         const bool startIntroductionServer = true) const
         -> otx::client::Messagability = 0;
     virtual auto CheckTransactionNumbers(
@@ -137,14 +137,15 @@ public:
      */
     virtual auto DepositCheques(
         const identifier::Nym& nymID,
-        const UnallocatedSet<OTIdentifier>& chequeIDs) const -> std::size_t = 0;
+        const UnallocatedSet<identifier::Generic>& chequeIDs) const
+        -> std::size_t = 0;
     virtual auto DepositPayment(
         const identifier::Nym& recipientNymID,
         const std::shared_ptr<const OTPayment>& payment) const
         -> BackgroundTask = 0;
     virtual auto DepositPayment(
         const identifier::Nym& recipientNymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const std::shared_ptr<const OTPayment>& payment) const
         -> BackgroundTask = 0;
     /** Used by unit tests */
@@ -217,7 +218,7 @@ public:
         const UnallocatedCString& label = "") const -> BackgroundTask = 0;
     virtual auto MessageContact(
         const identifier::Nym& senderNymID,
-        const Identifier& contactID,
+        const identifier::Generic& contactID,
         const UnallocatedCString& message,
         const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto MessageStatus(const TaskID taskID) const
@@ -227,26 +228,26 @@ public:
         const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const Identifier& requestID,
+        const identifier::Generic& requestID,
         const UnallocatedCString& txid,
         const Amount amount,
         const otx::client::SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto PayContact(
         const identifier::Nym& senderNymID,
-        const Identifier& contactID,
+        const identifier::Generic& contactID,
         std::shared_ptr<const OTPayment> payment) const -> BackgroundTask = 0;
     virtual auto PayContactCash(
         const identifier::Nym& senderNymID,
-        const Identifier& contactID,
-        const Identifier& workflowID) const -> BackgroundTask = 0;
+        const identifier::Generic& contactID,
+        const identifier::Generic& workflowID) const -> BackgroundTask = 0;
     virtual auto ProcessInbox(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& accountID) const -> BackgroundTask = 0;
+        const identifier::Generic& accountID) const -> BackgroundTask = 0;
     virtual auto PublishServerContract(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& contractID) const -> BackgroundTask = 0;
+        const identifier::Generic& contractID) const -> BackgroundTask = 0;
     virtual void Refresh() const = 0;
     virtual auto RefreshCount() const -> std::uint64_t = 0;
     virtual auto RegisterAccount(
@@ -265,11 +266,11 @@ public:
         const bool forcePrimary = false,
         const bool resync = false) const -> BackgroundTask = 0;
     virtual auto SetIntroductionServer(const contract::Server& contract) const
-        -> OTNotaryID = 0;
+        -> identifier::Notary = 0;
     virtual auto SendCheque(
         const identifier::Nym& localNymID,
-        const Identifier& sourceAccountID,
-        const Identifier& recipientContactID,
+        const identifier::Generic& sourceAccountID,
+        const identifier::Generic& recipientContactID,
         const Amount value,
         const UnallocatedCString& memo,
         const Time validFrom = Clock::now(),
@@ -279,15 +280,15 @@ public:
     virtual auto SendExternalTransfer(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& sourceAccountID,
-        const Identifier& targetAccountID,
+        const identifier::Generic& sourceAccountID,
+        const identifier::Generic& targetAccountID,
         const Amount& value,
         const UnallocatedCString& memo) const -> BackgroundTask = 0;
     virtual auto SendTransfer(
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
-        const Identifier& sourceAccountID,
-        const Identifier& targetAccountID,
+        const identifier::Generic& sourceAccountID,
+        const identifier::Generic& targetAccountID,
         const Amount& value,
         const UnallocatedCString& memo) const -> BackgroundTask = 0;
     virtual void StartIntroductionServer(
@@ -297,7 +298,7 @@ public:
     virtual auto WithdrawCash(
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
-        const Identifier& account,
+        const identifier::Generic& account,
         const Amount value) const -> BackgroundTask = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::OTX& = 0;

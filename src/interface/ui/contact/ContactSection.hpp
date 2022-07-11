@@ -19,6 +19,8 @@
 #include "internal/interface/ui/UI.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
@@ -41,6 +43,7 @@ class Client;
 
 namespace identity
 {
+
 namespace wot
 {
 namespace claim
@@ -87,9 +90,12 @@ class ContactSection final
     : public Combined<ContactSectionList, ContactSectionRow, ContactSortKey>
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto ContactID() const noexcept -> UnallocatedCString final
     {
-        return primary_id_->str();
+        return primary_id_.asBase58(api_.Crypto());
     }
     auto Name(const UnallocatedCString& lang) const noexcept
         -> UnallocatedCString final

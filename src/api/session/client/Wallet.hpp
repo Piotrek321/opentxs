@@ -29,6 +29,7 @@ class Wallet;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 }  // namespace identifier
@@ -61,7 +62,6 @@ class Context;
 }  // namespace proto
 
 class Context;
-class Identifier;
 class PasswordPrompt;
 // }  // namespace v1
 }  // namespace opentxs
@@ -82,12 +82,12 @@ public:
         const PasswordPrompt& reason) const -> Editor<otx::context::Base> final;
     auto mutable_ServerContext(
         const identifier::Nym& localNymID,
-        const Identifier& remoteID,
+        const identifier::Generic& remoteID,
         const PasswordPrompt& reason) const
         -> Editor<otx::context::Server> final;
     auto ServerContext(
         const identifier::Nym& localNymID,
-        const Identifier& remoteID) const
+        const identifier::Generic& remoteID) const
         -> std::shared_ptr<const otx::context::Server> final;
 
     Wallet(const api::session::Client& parent);

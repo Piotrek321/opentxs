@@ -242,7 +242,7 @@ auto Client::Lock(
     const identifier::Nym& nymID,
     const identifier::Notary& serverID) const -> std::recursive_mutex&
 {
-    return get_lock({nymID.str(), serverID.str()});
+    return get_lock({nymID.asBase58(crypto_), serverID.asBase58(crypto_)});
 }
 
 auto Client::NewNym(const identifier::Nym& id) const noexcept -> void

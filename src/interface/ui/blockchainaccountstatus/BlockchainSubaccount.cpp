@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "interface/ui/base/List.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 
 namespace opentxs::factory
 {
@@ -46,6 +45,7 @@ BlockchainSubaccount::BlockchainSubaccount(
           rowID,
           key,
           false)
+    , api_(api)
 {
 }
 

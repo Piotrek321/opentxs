@@ -12,7 +12,6 @@
 #include "internal/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -117,7 +116,7 @@ private:
 
     using BlockchainMap =
         robin_hood::unordered_flat_map<opentxs::blockchain::Type, CString>;
-    using BlockchainTransactionsMap = Map<OTNymID, CString>;
+    using BlockchainTransactionsMap = Map<identifier::Nym, CString>;
     using ThreadMap = Map<CString, CString>;
     const int instance_;
     const CString account_update_;

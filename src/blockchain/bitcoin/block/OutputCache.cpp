@@ -11,15 +11,14 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
+#include <type_traits>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::bitcoin::block::implementation
 {
@@ -32,8 +31,8 @@ Output::Cache::Cache(
     UnallocatedSet<node::TxoTag>&& tags) noexcept
     : lock_()
     , size_(std::move(size))
-    , payee_(api.Factory().Identifier())
-    , payer_(api.Factory().Identifier())
+    , payee_()
+    , payer_()
     , keys_(std::move(keys))
     , mined_position_(std::move(minedPosition))
     , state_(state)
@@ -97,7 +96,7 @@ auto Output::Cache::keys() const noexcept -> UnallocatedVector<crypto::Key>
     return output;
 }
 
-auto Output::Cache::payee() const noexcept -> OTIdentifier
+auto Output::Cache::payee() const noexcept -> identifier::Generic
 {
     auto lock = Lock{lock_};
 
@@ -119,14 +118,14 @@ auto Output::Cache::merge(
         }
     }
 
-    if (auto p = rhs.Payer(); payer_->empty() || false == p->empty()) {
+    if (auto p = rhs.Payer(); payer_.empty() || false == p.empty()) {
         set_payer(std::move(p));
         log(OT_PRETTY_CLASS())("setting payer for output ")(index)(" to ")(
             payer_)
             .Flush();
     }
 
-    if (auto p = rhs.Payee(); payee_->empty() || false == p->empty()) {
+    if (auto p = rhs.Payee(); payee_.empty() || false == p.empty()) {
         set_payee(std::move(p));
         log(OT_PRETTY_CLASS())("setting payee for output ")(index)(" to ")(
             payee_)
@@ -141,7 +140,7 @@ auto Output::Cache::merge(
     return true;
 }
 
-auto Output::Cache::payer() const noexcept -> OTIdentifier
+auto Output::Cache::payer() const noexcept -> identifier::Generic
 {
     auto lock = Lock{lock_};
 
@@ -165,8 +164,8 @@ auto Output::Cache::reset_size() noexcept -> void
 auto Output::Cache::set(const blockchain::block::KeyData& data) noexcept -> void
 {
     auto lock = Lock{lock_};
-    const auto havePayee = [&] { return !payee_->empty(); };
-    const auto havePayer = [&] { return !payer_->empty(); };
+    const auto havePayee = [&] { return !payee_.empty(); };
+    const auto havePayer = [&] { return !payer_.empty(); };
 
     for (const auto& key : keys_) {
         if (havePayee() && havePayer()) { return; }
@@ -174,38 +173,40 @@ auto Output::Cache::set(const blockchain::block::KeyData& data) noexcept -> void
         try {
             const auto& [sender, recipient] = data.at(key);
 
-            if (false == sender->empty()) {
-                if (payer_->empty()) { payer_ = sender; }
+            if (false == sender.empty()) {
+                if (payer_.empty()) { payer_ = sender; }
             }
 
-            if (false == recipient->empty()) {
-                if (payee_->empty()) { payee_ = recipient; }
+            if (false == recipient.empty()) {
+                if (payee_.empty()) { payee_ = recipient; }
             }
         } catch (...) {
         }
     }
 }
 
-auto Output::Cache::set_payee(const Identifier& contact) noexcept -> void
+auto Output::Cache::set_payee(const identifier::Generic& contact) noexcept
+    -> void
 {
-    set_payee(OTIdentifier{contact});
+    set_payee(identifier::Generic{contact});
 }
 
-auto Output::Cache::set_payee(OTIdentifier&& contact) noexcept -> void
+auto Output::Cache::set_payee(identifier::Generic&& contact) noexcept -> void
 {
     auto lock = Lock{lock_};
-    payee_->Assign(contact);
+    payee_.Assign(contact);
 }
 
-auto Output::Cache::set_payer(const Identifier& contact) noexcept -> void
+auto Output::Cache::set_payer(const identifier::Generic& contact) noexcept
+    -> void
 {
-    set_payer(OTIdentifier{contact});
+    set_payer(identifier::Generic{contact});
 }
 
-auto Output::Cache::set_payer(OTIdentifier&& contact) noexcept -> void
+auto Output::Cache::set_payer(identifier::Generic&& contact) noexcept -> void
 {
     auto lock = Lock{lock_};
-    payer_->Assign(contact);
+    payer_.Assign(contact);
 }
 
 auto Output::Cache::set_position(

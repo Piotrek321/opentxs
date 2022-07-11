@@ -33,6 +33,7 @@
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Storage.hpp"
@@ -58,7 +59,6 @@
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Thread.hpp"
 
@@ -84,7 +84,7 @@ Contacts::Contacts(const api::session::Client& api)
         auto output = ContactNameMap{};
 
         for (const auto& [id, alias] : api_.Storage().ContactList()) {
-            output.emplace(api_.Factory().Identifier(id), alias);
+            output.emplace(api_.Factory().IdentifierFromBase58(id), alias);
         }
 
         return output;
@@ -129,7 +129,7 @@ auto Contacts::add_contact(const rLock& lock, opentxs::Contact* contact) const
 }
 
 void Contacts::check_identifiers(
-    const Identifier& inputNymID,
+    const identifier::Generic& inputNymID,
     const PaymentCode& paymentCode,
     bool& haveNymID,
     bool& havePaymentCode,
@@ -151,7 +151,7 @@ auto Contacts::check_nyms() noexcept -> void
     auto buf = std::array<std::byte, 4096>{};
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size()};
 
-    Vector<OTIdentifier> contacts{&alloc};
+    Vector<identifier::Generic> contacts{&alloc};
     {
         auto lock = rLock{lock_};
         contacts.reserve(contact_name_map_.size());
@@ -159,7 +159,7 @@ auto Contacts::check_nyms() noexcept -> void
             contacts.emplace_back(key);
         }
     }
-    auto nyms = Vector<OTNymID>{&alloc};
+    auto nyms = Vector<identifier::Nym>{&alloc};
 
     for (const auto& id : contacts) {
         const auto contact = Contact(id);
@@ -181,7 +181,7 @@ auto Contacts::check_nyms() noexcept -> void
     }
 }
 
-auto Contacts::contact(const rLock& lock, const Identifier& id) const
+auto Contacts::contact(const rLock& lock, const identifier::Generic& id) const
     -> std::shared_ptr<const opentxs::Contact>
 {
     if (false == verify_write_lock(lock)) {
@@ -233,7 +233,7 @@ auto Contacts::contact(const rLock& lock, const UnallocatedCString& label) const
     return output;
 }
 
-auto Contacts::Contact(const Identifier& id) const
+auto Contacts::Contact(const identifier::Generic& id) const
     -> std::shared_ptr<const opentxs::Contact>
 {
     auto lock = rLock{lock_};
@@ -241,10 +241,10 @@ auto Contacts::Contact(const Identifier& id) const
     return contact(lock, id);
 }
 
-auto Contacts::ContactID(const identifier::Nym& nymID) const -> OTIdentifier
+auto Contacts::ContactID(const identifier::Nym& nymID) const
+    -> identifier::Generic
 {
-    return api_.Factory().Identifier(
-        api_.Storage().ContactOwnerNym(nymID.str()));
+    return api_.Storage().ContactOwnerNym(nymID);
 }
 
 auto Contacts::ContactList() const -> ObjectList
@@ -252,19 +252,21 @@ auto Contacts::ContactList() const -> ObjectList
     return api_.Storage().ContactList();
 }
 
-auto Contacts::ContactName(const Identifier& id) const -> UnallocatedCString
+auto Contacts::ContactName(const identifier::Generic& id) const
+    -> UnallocatedCString
 {
     return ContactName(id, UnitType::Error);
 }
 
-auto Contacts::ContactName(const Identifier& id, UnitType currencyHint) const
-    -> UnallocatedCString
+auto Contacts::ContactName(const identifier::Generic& id, UnitType currencyHint)
+    const -> UnallocatedCString
 {
     auto alias = UnallocatedCString{};
     const auto fallback = [&](const rLock&) {
         if (false == alias.empty()) { return alias; }
 
-        auto [it, added] = contact_name_map_.try_emplace(id, id.str());
+        auto [it, added] =
+            contact_name_map_.try_emplace(id, id.asBase58(api_.Crypto()));
 
         OT_ASSERT(added);
 
@@ -354,14 +356,14 @@ auto Contacts::import_contacts(const rLock& lock) -> void
     auto nyms = api_.Wallet().NymList();
 
     for (const auto& it : nyms) {
-        const auto nymID = api_.Factory().NymID(it.first);
+        const auto nymID = api_.Factory().NymIDFromBase58(it.first);
 
-        auto contactID = api_.Factory().Identifier();
-        contactID->Assign(nymID->data(), nymID->size());
+        auto contactID =  identifier::Generic{};
+        contactID.Assign(nymID.data(), nymID.size());
 
-        api_.Storage().ContactOwnerNym(nymID->str());
+        api_.Storage().ContactOwnerNym(nymID);
 
-        if (contactID->empty()) {
+        if (contactID.empty()) {
             const auto nym = api_.Wallet().Nym(nymID);
 
             if (false == bool(nym)) {
@@ -400,7 +402,7 @@ void Contacts::init_nym_map(const rLock& lock)
     LogDetail()(OT_PRETTY_CLASS())("Upgrading indices.").Flush();
 
     for (const auto& it : api_.Storage().ContactList()) {
-        const auto& contactID = api_.Factory().Identifier(it.first);
+        const auto& contactID = api_.Factory().IdentifierFromBase58(it.first);
         auto loaded = load_contact(lock, contactID);
 
         if (contact_map_.end() == loaded) {
@@ -431,15 +433,16 @@ void Contacts::init_nym_map(const rLock& lock)
     api_.Storage().ContactSaveIndices();
 }
 
-auto Contacts::load_contact(const rLock& lock, const Identifier& id) const
-    -> Contacts::ContactMap::iterator
+auto Contacts::load_contact(const rLock& lock, const identifier::Generic& id)
+    const -> Contacts::ContactMap::iterator
 {
     if (false == verify_write_lock(lock)) {
         throw std::runtime_error("lock error");
     }
 
     auto serialized = proto::Contact{};
-    const auto loaded = api_.Storage().Load(id.str(), serialized, SILENT);
+    const auto loaded =
+        api_.Storage().Load(id.asBase58(api_.Crypto()), serialized, SILENT);
 
     if (false == loaded) {
         LogDetail()(OT_PRETTY_CLASS())("Unable to load contact ")(id).Flush();
@@ -460,7 +463,9 @@ auto Contacts::load_contact(const rLock& lock, const Identifier& id) const
     return add_contact(lock, contact.release());
 }
 
-auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
+auto Contacts::Merge(
+    const identifier::Generic& parent,
+    const identifier::Generic& child) const
     -> std::shared_ptr<const opentxs::Contact>
 {
     auto lock = rLock{lock_};
@@ -545,8 +550,8 @@ auto Contacts::Merge(const Identifier& parent, const Identifier& child) const
     return parentContact;
 }
 
-auto Contacts::mutable_contact(const rLock& lock, const Identifier& id) const
-    -> std::unique_ptr<Editor<opentxs::Contact>>
+auto Contacts::mutable_contact(const rLock& lock, const identifier::Generic& id)
+    const -> std::unique_ptr<Editor<opentxs::Contact>>
 {
     if (false == verify_write_lock(lock)) {
         throw std::runtime_error("lock error");
@@ -568,7 +573,7 @@ auto Contacts::mutable_contact(const rLock& lock, const Identifier& id) const
     return output;
 }
 
-auto Contacts::mutable_Contact(const Identifier& id) const
+auto Contacts::mutable_Contact(const identifier::Generic& id) const
     -> std::unique_ptr<Editor<opentxs::Contact>>
 {
     auto lock = rLock{lock_};
@@ -590,17 +595,15 @@ auto Contacts::new_contact(
 
     bool haveNymID{false};
     bool havePaymentCode{false};
-    auto inputNymID = identifier::Nym::Factory();
+    auto inputNymID = identifier::Nym{};
     check_identifiers(nymID, code, haveNymID, havePaymentCode, inputNymID);
 
     if (haveNymID) {
-        const auto contactID =
-            api_.Storage().ContactOwnerNym(inputNymID->str());
+        const auto contactID = api_.Storage().ContactOwnerNym(inputNymID);
 
         if (false == contactID.empty()) {
 
-            return update_existing_contact(
-                lock, label, code, api_.Factory().Identifier(contactID));
+            return update_existing_contact(lock, label, code, contactID);
         }
     }
 
@@ -608,7 +611,7 @@ auto Contacts::new_contact(
 
     if (false == bool(newContact)) { return {}; }
 
-    OTIdentifier contactID = newContact->ID();
+    identifier::Generic contactID = newContact->ID();
     newContact.reset();
     auto output = mutable_contact(lock, contactID);
 
@@ -616,7 +619,7 @@ auto Contacts::new_contact(
 
     auto& mContact = output->get();
 
-    if (false == inputNymID->empty()) {
+    if (false == inputNymID.empty()) {
         auto nym = api_.Wallet().Nym(inputNymID);
 
         if (nym) {
@@ -713,11 +716,12 @@ auto Contacts::NewContactFromAddress(
     return newContact;
 }
 
-auto Contacts::NymToContact(const identifier::Nym& nymID) const -> OTIdentifier
+auto Contacts::NymToContact(const identifier::Nym& nymID) const
+    -> identifier::Generic
 {
     const auto contactID = ContactID(nymID);
 
-    if (false == contactID->empty()) { return contactID; }
+    if (false == contactID.empty()) { return contactID; }
 
     // Contact does not yet exist. Create it.
     UnallocatedCString label{""};
@@ -733,13 +737,13 @@ auto Contacts::NymToContact(const identifier::Nym& nymID) const -> OTIdentifier
 
     if (contact) { return contact->ID(); }
 
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
 
     return blank;
 }
 
-auto Contacts::obtain_contact(const rLock& lock, const Identifier& id) const
-    -> Contacts::ContactMap::iterator
+auto Contacts::obtain_contact(const rLock& lock, const identifier::Generic& id)
+    const -> Contacts::ContactMap::iterator
 {
     if (false == verify_write_lock(lock)) {
         throw std::runtime_error("lock error");
@@ -754,9 +758,9 @@ auto Contacts::obtain_contact(const rLock& lock, const Identifier& id) const
 
 auto Contacts::PaymentCodeToContact(
     const UnallocatedCString& serialized,
-    const opentxs::blockchain::Type currency) const -> OTIdentifier
+    const opentxs::blockchain::Type currency) const -> identifier::Generic
 {
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
     const auto code = api_.Factory().PaymentCode(serialized);
 
     if (0 == code.Version()) { return blank; }
@@ -766,14 +770,14 @@ auto Contacts::PaymentCodeToContact(
 
 auto Contacts::PaymentCodeToContact(
     const PaymentCode& code,
-    const opentxs::blockchain::Type currency) const -> OTIdentifier
+    const opentxs::blockchain::Type currency) const -> identifier::Generic
 {
     // NOTE for now we assume that payment codes are always nym id sources. This
     // won't always be true.
 
     const auto id = NymToContact(code.ID());
 
-    if (false == id->empty()) {
+    if (false == id.empty()) {
         auto lock = rLock{lock_};
         auto contactE = mutable_contact(lock, id);
         auto& contact = contactE->get();
@@ -809,8 +813,8 @@ auto Contacts::pipeline(opentxs::network::zeromq::Message&& in) noexcept -> void
         case Work::nymcreated:
         case Work::nymupdated: {
             OT_ASSERT(1 < body.size());
-            auto id = api_.Factory().NymID();
-            id->Assign(body.at(1).Bytes());
+            auto id = identifier::Nym{};
+            id.Assign(body.at(1).Bytes());
 
             const auto nym = api_.Wallet().Nym(id);
 
@@ -883,7 +887,8 @@ void Contacts::save(opentxs::Contact* contact) const
 
     const auto& id = contact->ID();
 
-    if (false == api_.Storage().SetContactAlias(id.str(), contact->Label())) {
+    if (false == api_.Storage().SetContactAlias(
+                     id.asBase58(api_.Crypto()), contact->Label())) {
         LogError()(OT_PRETTY_CLASS())(": Unable to create or save contact.")
             .Flush();
 
@@ -940,14 +945,13 @@ auto Contacts::update(const identity::Nym& nym) const
 
     const auto& nymID = nym.ID();
     auto lock = rLock{lock_};
-    const auto contactIdentifier = api_.Storage().ContactOwnerNym(nymID.str());
-    const auto contactID = api_.Factory().Identifier(contactIdentifier);
+    const auto contactID = api_.Storage().ContactOwnerNym(nymID);
     const auto label = Contact::ExtractLabel(nym);
 
-    if (contactIdentifier.empty()) {
+    if (contactID.empty()) {
         LogDetail()(OT_PRETTY_CLASS())("Nym ")(
-            nymID)(" is not associated with a contact. Creating a "
-                   "new contact named ")(label)
+            nymID)(" is not associated with a contact. Creating a new contact "
+                   "named ")(label)
             .Flush();
         auto code = api_.Factory().PaymentCode(nym.PaymentCode());
         return new_contact(lock, label, nymID, code);
@@ -972,7 +976,8 @@ auto Contacts::update(const identity::Nym& nym) const
 
     OT_ASSERT(output);
 
-    api_.Storage().RelabelThread(output->ID().str(), output->Label());
+    api_.Storage().RelabelThread(
+        output->ID().asBase58(api_.Crypto()), output->Label());
 
     return output;
 }
@@ -981,7 +986,7 @@ auto Contacts::update_existing_contact(
     const rLock& lock,
     const UnallocatedCString& label,
     const PaymentCode& code,
-    const Identifier& contactID) const
+    const identifier::Generic& contactID) const
     -> std::shared_ptr<const opentxs::Contact>
 {
     if (false == verify_write_lock(lock)) {
@@ -1020,10 +1025,9 @@ void Contacts::update_nym_map(
         throw std::runtime_error("lock error");
     }
 
-    const auto contactIdentifier = api_.Storage().ContactOwnerNym(nymID.str());
-    const bool exists = (false == contactIdentifier.empty());
+    const auto contactID = api_.Storage().ContactOwnerNym(nymID);
+    const bool exists = (false == contactID.empty());
     const auto& incomingID = contact.ID();
-    const auto contactID = api_.Factory().Identifier(contactIdentifier);
     const bool same = (incomingID == contactID);
 
     if (exists && (false == same)) {

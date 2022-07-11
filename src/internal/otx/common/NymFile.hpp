@@ -17,10 +17,10 @@ namespace opentxs  // NOLINT
 // {
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
-class Identifier;
 class Message;
 class OTPayment;
 class PasswordPrompt;
@@ -39,10 +39,10 @@ public:
     virtual void DisplayStatistics(String& strOutput) const = 0;
     virtual auto GetInboxHash(
         const UnallocatedCString& acct_id,
-        Identifier& theOutput) const -> bool = 0;  // client-side
+        identifier::Generic& theOutput) const -> bool = 0;  // client-side
     virtual auto GetOutboxHash(
         const UnallocatedCString& acct_id,
-        Identifier& theOutput) const -> bool = 0;  // client-side
+        identifier::Generic& theOutput) const -> bool = 0;  // client-side
     virtual auto GetOutpaymentsByIndex(const std::int32_t nIndex) const
         -> std::shared_ptr<Message> = 0;
     virtual auto GetOutpaymentsByTransNum(
@@ -76,10 +76,10 @@ public:
         const PasswordPrompt& reason) -> bool = 0;
     virtual auto SetInboxHash(
         const UnallocatedCString& acct_id,
-        const Identifier& theInput) -> bool = 0;  // client-side
+        const identifier::Generic& theInput) -> bool = 0;  // client-side
     virtual auto SetOutboxHash(
         const UnallocatedCString& acct_id,
-        const Identifier& theInput) -> bool = 0;  // client-side
+        const identifier::Generic& theInput) -> bool = 0;  // client-side
     virtual void SetUsageCredits(const std::int64_t& lUsage) = 0;
 
     NymFile(const NymFile&) = delete;

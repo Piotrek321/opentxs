@@ -23,6 +23,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace api
+{
+namespace session
+{
+class Factory;
+}  // namespace session
+
+class Crypto;
+}  // namespace api
+
 namespace identifier
 {
 class UnitDefinition;
@@ -86,6 +96,8 @@ private:
     void init(const UnallocatedCString& hash) final;
 
     Notary(
+        const api::Crypto& crypto,
+        const api::session::Factory& factory,
         const Driver& storage,
         const UnallocatedCString& key,
         const UnallocatedCString& id);

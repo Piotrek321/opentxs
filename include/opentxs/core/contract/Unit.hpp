@@ -56,7 +56,7 @@ public:
     virtual auto DisplayStatistics(String& strContents) const -> bool = 0;
     virtual auto EraseAccountRecord(
         const UnallocatedCString& dataFolder,
-        const Identifier& theAcctID) const -> bool = 0;
+        const identifier::Generic& theAcctID) const -> bool = 0;
     using Signable::Serialize;
     OPENTXS_NO_EXPORT virtual auto Serialize(
         SerializedType&,

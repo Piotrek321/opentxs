@@ -181,7 +181,8 @@ auto Crypto::Init() noexcept -> void
     Init_Libsecp256k1();
 }
 
-auto Crypto::Init(const api::Factory& factory) noexcept -> void
+auto Crypto::Init(const std::shared_ptr<const api::Factory>& factory) noexcept
+    -> void
 {
     bip32_.Internal().Init(factory);
 }

@@ -37,7 +37,7 @@ public:
     {
         return *this;
     }
-    virtual auto mutable_Contact(const Identifier& id) const
+    virtual auto mutable_Contact(const identifier::Generic& id) const
         -> std::unique_ptr<Editor<opentxs::Contact>> = 0;
 
     auto Internal() noexcept -> internal::Contacts& final { return *this; }

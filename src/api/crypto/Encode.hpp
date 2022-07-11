@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
+#include <string_view>
 
 #include "internal/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
@@ -47,15 +48,16 @@ public:
     auto DataEncode(const Data& input) const -> UnallocatedCString final;
     auto DataDecode(const UnallocatedCString& input) const
         -> UnallocatedCString final;
-    auto IdentifierEncode(const Data& input) const -> UnallocatedCString final;
-    auto IdentifierDecode(const UnallocatedCString& input) const
+    auto IdentifierEncode(const ReadView input) const
+        -> UnallocatedCString final;
+    auto IdentifierDecode(const ReadView input) const
         -> UnallocatedCString final;
     auto IsBase62(const UnallocatedCString& str) const -> bool final;
     auto Nonce(const std::uint32_t size) const -> OTString final;
     auto Nonce(const std::uint32_t size, Data& rawOutput) const
         -> OTString final;
     auto RandomFilename() const -> UnallocatedCString final;
-    auto SanatizeBase58(const UnallocatedCString& input) const
+    auto SanatizeBase58(std::string_view input) const
         -> UnallocatedCString final;
     auto SanatizeBase64(const UnallocatedCString& input) const
         -> UnallocatedCString final;
@@ -88,7 +90,5 @@ private:
     auto BreakLines(const UnallocatedCString& input) const
         -> UnallocatedCString;
     auto IdentifierEncode(const Secret& input) const -> UnallocatedCString;
-    auto IdentifierEncode(const void* data, const std::size_t size) const
-        -> UnallocatedCString;
 };
 }  // namespace opentxs::api::crypto::imp

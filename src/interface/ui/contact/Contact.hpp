@@ -14,6 +14,7 @@
 #include "interface/ui/base/Widget.hpp"
 #include "internal/interface/ui/UI.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Container.hpp"
@@ -33,6 +34,11 @@ class Client;
 }  // namespace session
 }  // namespace api
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace network
 {
 namespace zeromq
@@ -47,7 +53,6 @@ class Message;
 }  // namespace network
 
 class Contact;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -67,6 +72,9 @@ using ContactType = List<
 class Contact final : public ContactType
 {
 public:
+    const api::session::Client& api_;
+
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto ClearCallbacks() const noexcept -> void final;
     auto ContactID() const noexcept -> UnallocatedCString final;
     auto DisplayName() const noexcept -> UnallocatedCString final;
@@ -76,7 +84,7 @@ public:
 
     Contact(
         const api::session::Client& api,
-        const Identifier& contactID,
+        const identifier::Generic& contactID,
         const SimpleCallback& cb) noexcept;
     Contact() = delete;
     Contact(const Contact&) = delete;

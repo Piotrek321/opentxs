@@ -12,12 +12,14 @@
 #include <utility>
 
 #include "internal/core/Core.hpp"
+#include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/interface/rpc/ResponseCode.hpp"
 #include "opentxs/interface/rpc/request/Base.hpp"
@@ -25,7 +27,6 @@
 #include "opentxs/interface/rpc/response/Base.hpp"
 #include "opentxs/interface/rpc/response/ListAccounts.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::rpc::implementation
 {
@@ -41,9 +42,10 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
 
     try {
         const auto& session = client_session(base);
-        const auto nym = session.Factory().NymID(in.FilterNym());
-        const auto notary = session.Factory().ServerID(in.FilterNotary());
-        const auto unitID = session.Factory().UnitID(in.FilterUnit());
+        const auto nym = session.Factory().NymIDFromBase58(in.FilterNym());
+        const auto notary =
+            session.Factory().NotaryIDFromBase58(in.FilterNotary());
+        const auto unitID = session.Factory().UnitIDFromBase58(in.FilterUnit());
         const auto haveNym = (false == in.FilterNym().empty());
         const auto haveServer = (false == in.FilterNotary().empty());
         const auto haveUnit = (false == in.FilterUnit().empty());
@@ -61,7 +63,9 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
                 ids.begin(),
                 ids.end(),
                 std::inserter(out, out.end()),
-                [](const auto& item) { return item->str(); });
+                [this](const auto& item) {
+                    return item.asBase58(ot_.Crypto());
+                });
 
             return out;
         };
@@ -72,7 +76,9 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
                 ids.begin(),
                 ids.end(),
                 std::inserter(out, out.end()),
-                [](const auto& item) { return item->str(); });
+                [this](const auto& item) {
+                    return item.asBase58(ot_.Crypto());
+                });
 
             return out;
         };
@@ -90,7 +96,9 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
                 ids.begin(),
                 ids.end(),
                 std::inserter(out, out.end()),
-                [](const auto& item) { return item->str(); });
+                [this](const auto& item) {
+                    return item.asBase58(ot_.Crypto());
+                });
 
             return out;
         };
@@ -102,7 +110,9 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
                 ids.begin(),
                 ids.end(),
                 std::inserter(out, out.end()),
-                [](const auto& item) { return item->str(); });
+                [this](const auto& item) {
+                    return item.asBase58(ot_.Crypto());
+                });
 
             return out;
         };
@@ -120,7 +130,9 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
                 ids.begin(),
                 ids.end(),
                 std::inserter(out, out.end()),
-                [](const auto& item) { return item->str(); });
+                [this](const auto& item) {
+                    return item.asBase58(ot_.Crypto());
+                });
 
             return out;
         };
@@ -132,7 +144,9 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
                 ids.begin(),
                 ids.end(),
                 std::inserter(out, out.end()),
-                [](const auto& item) { return item->str(); });
+                [this](const auto& item) {
+                    return item.asBase58(ot_.Crypto());
+                });
 
             return out;
         };
@@ -209,7 +223,9 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
                 bc.begin(),
                 bc.end(),
                 std::back_inserter(ids),
-                [](const auto& item) { return item->str(); });
+                [this](const auto& item) {
+                    return item.asBase58(ot_.Crypto());
+                });
         }
 
         return reply(status(ids));

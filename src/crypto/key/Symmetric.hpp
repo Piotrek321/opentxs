@@ -82,7 +82,7 @@ public:
         const opentxs::crypto::key::symmetric::Algorithm mode =
             opentxs::crypto::key::symmetric::Algorithm::Error,
         const ReadView iv = {}) const -> bool final;
-    auto ID(const PasswordPrompt& reason) const -> OTIdentifier final;
+    auto ID(const PasswordPrompt& reason) const -> identifier::Generic final;
     auto RawKey(const PasswordPrompt& reason, Secret& output) const
         -> bool final;
     auto Serialize(proto::SymmetricKey& output) const -> bool final;

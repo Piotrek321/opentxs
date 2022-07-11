@@ -24,7 +24,6 @@
 #include "opentxs/identity/wot/verification/Nym.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -117,7 +116,7 @@ Group::operator SerializedType() const noexcept
 
 auto Group::AddItem(
     const identifier::Nym& claimOwner,
-    const Identifier& claim,
+    const identifier::Generic& claim,
     const identity::Nym& signer,
     const PasswordPrompt& reason,
     const Item::Type value,
@@ -156,7 +155,7 @@ auto Group::AddItem(
     return get_nym(verifier).AddItem(verification);
 }
 
-auto Group::DeleteItem(const Identifier& item) noexcept -> bool
+auto Group::DeleteItem(const identifier::Generic& item) noexcept -> bool
 {
     auto it = map_.find(item);
 
@@ -201,8 +200,9 @@ auto Group::instantiate(
     return output;
 }
 
-auto Group::Register(const Identifier& id, const identifier::Nym& nym) noexcept
-    -> void
+auto Group::Register(
+    const identifier::Generic& id,
+    const identifier::Nym& nym) noexcept -> void
 {
     parent_.Register(id, external_);
     auto it = map_.find(id);
@@ -214,7 +214,7 @@ auto Group::Register(const Identifier& id, const identifier::Nym& nym) noexcept
     }
 }
 
-auto Group::Unregister(const Identifier& id) noexcept -> void
+auto Group::Unregister(const identifier::Generic& id) noexcept -> void
 {
     parent_.Unregister(id);
     map_.erase(id);

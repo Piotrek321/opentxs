@@ -80,14 +80,14 @@ OTPayment::OTPayment(const api::Session& api)
     , m_lTransactionNum(0)
     , m_lTransNumDisplay(0)
     , m_strMemo(String::Factory())
-    , m_InstrumentDefinitionID(api_.Factory().Identifier())
-    , m_NotaryID(api_.Factory().Identifier())
-    , m_SenderNymID(api_.Factory().NymID())
-    , m_SenderAcctID(api_.Factory().Identifier())
-    , m_RecipientNymID(api_.Factory().NymID())
-    , m_RecipientAcctID(api_.Factory().Identifier())
-    , m_RemitterNymID(api_.Factory().NymID())
-    , m_RemitterAcctID(api_.Factory().Identifier())
+    , m_InstrumentDefinitionID()
+    , m_NotaryID()
+    , m_SenderNymID()
+    , m_SenderAcctID()
+    , m_RecipientNymID()
+    , m_RecipientAcctID()
+    , m_RemitterNymID()
+    , m_RemitterAcctID()
     , m_VALID_FROM()
     , m_VALID_TO()
 {
@@ -105,14 +105,14 @@ OTPayment::OTPayment(const api::Session& api, const String& strPayment)
     , m_lTransactionNum(0)
     , m_lTransNumDisplay(0)
     , m_strMemo(String::Factory())
-    , m_InstrumentDefinitionID(api_.Factory().Identifier())
-    , m_NotaryID(api_.Factory().Identifier())
-    , m_SenderNymID(api_.Factory().NymID())
-    , m_SenderAcctID(api_.Factory().Identifier())
-    , m_RecipientNymID(api_.Factory().NymID())
-    , m_RecipientAcctID(api_.Factory().Identifier())
-    , m_RemitterNymID(api_.Factory().NymID())
-    , m_RemitterAcctID(api_.Factory().Identifier())
+    , m_InstrumentDefinitionID()
+    , m_NotaryID()
+    , m_SenderNymID()
+    , m_SenderAcctID()
+    , m_RecipientNymID()
+    , m_RecipientAcctID()
+    , m_RemitterNymID()
+    , m_RemitterAcctID()
     , m_VALID_FROM()
     , m_VALID_TO()
 {
@@ -281,7 +281,7 @@ auto OTPayment::SetTempValuesFromCheque(const Cheque& theInput) -> bool
                 m_RecipientNymID = theInput.GetRecipientNymID();
             } else {
                 m_bHasRecipient = false;
-                m_RecipientNymID->clear();
+                m_RecipientNymID.clear();
             }
 
             if (theInput.HasRemitter()) {
@@ -290,15 +290,15 @@ auto OTPayment::SetTempValuesFromCheque(const Cheque& theInput) -> bool
                 m_RemitterAcctID = theInput.GetRemitterAcctID();
             } else {
                 m_bHasRemitter = false;
-                m_RemitterNymID->clear();
-                m_RemitterAcctID->clear();
+                m_RemitterNymID.clear();
+                m_RemitterAcctID.clear();
             }
 
             // NOTE: the "Recipient Acct" is NOT KNOWN when cheque is written,
             // but only once the cheque gets deposited. Therefore if type is
             // CHEQUE, then Recipient Acct ID is not set, and attempts to read
             // it will result in failure.
-            m_RecipientAcctID->clear();
+            m_RecipientAcctID.clear();
 
             m_VALID_FROM = theInput.GetValidFrom();
             m_VALID_TO = theInput.GetValidTo();
@@ -433,8 +433,8 @@ void OTPayment::lowLevelSetTempValuesFromPaymentPlan(
     m_RecipientNymID = theInput.GetRecipientNymID();
     m_RecipientAcctID = theInput.GetRecipientAcctID();
 
-    m_RemitterNymID->clear();
-    m_RemitterAcctID->clear();
+    m_RemitterNymID.clear();
+    m_RemitterAcctID.clear();
 
     m_VALID_FROM = theInput.GetValidFrom();
     m_VALID_TO = theInput.GetValidTo();
@@ -518,16 +518,16 @@ void OTPayment::lowLevelSetTempValuesFromSmartContract(
     m_strMemo->Release();  // not used here.
 
     m_NotaryID = theInput.GetNotaryID();
-    m_InstrumentDefinitionID->clear();  // not used here.
+    m_InstrumentDefinitionID.clear();  // not used here.
 
     m_SenderNymID = theInput.GetSenderNymID();
-    m_SenderAcctID->clear();
+    m_SenderAcctID.clear();
 
-    m_RecipientNymID->clear();   // not used here.
-    m_RecipientAcctID->clear();  // not used here.
+    m_RecipientNymID.clear();   // not used here.
+    m_RecipientAcctID.clear();  // not used here.
 
-    m_RemitterNymID->clear();
-    m_RemitterAcctID->clear();
+    m_RemitterNymID.clear();
+    m_RemitterAcctID.clear();
 
     m_VALID_FROM = theInput.GetValidFrom();
     m_VALID_TO = theInput.GetValidTo();
@@ -870,7 +870,7 @@ auto OTPayment::HasTransactionNum(
 
 auto OTPayment::GetClosingNum(
     std::int64_t& lOutput,
-    const Identifier& theAcctID,
+    const identifier::Generic& theAcctID,
     const PasswordPrompt& reason) const -> bool
 {
     lOutput = 0;
@@ -1318,7 +1318,8 @@ auto OTPayment::VerifyCurrentDate(bool& bVerified) -> bool
     return true;
 }
 
-auto OTPayment::GetInstrumentDefinitionID(Identifier& theOutput) const -> bool
+auto OTPayment::GetInstrumentDefinitionID(identifier::Generic& theOutput) const
+    -> bool
 {
     theOutput.clear();
 
@@ -1333,7 +1334,7 @@ auto OTPayment::GetInstrumentDefinitionID(Identifier& theOutput) const -> bool
         case OTPayment::PAYMENT_PLAN:
         case OTPayment::NOTICE:
             theOutput.Assign(m_InstrumentDefinitionID);
-            bSuccess = !m_InstrumentDefinitionID->empty();
+            bSuccess = !m_InstrumentDefinitionID.empty();
             break;
 
         case OTPayment::SMART_CONTRACT:
@@ -1348,7 +1349,7 @@ auto OTPayment::GetInstrumentDefinitionID(Identifier& theOutput) const -> bool
     return bSuccess;
 }
 
-auto OTPayment::GetNotaryID(Identifier& theOutput) const -> bool
+auto OTPayment::GetNotaryID(identifier::Generic& theOutput) const -> bool
 {
     theOutput.clear();
 
@@ -1368,7 +1369,7 @@ auto OTPayment::GetNotaryID(Identifier& theOutput) const -> bool
         case OTPayment::SMART_CONTRACT:
         case OTPayment::NOTICE:
             theOutput.Assign(m_NotaryID);
-            bSuccess = !m_NotaryID->empty();
+            bSuccess = !m_NotaryID.empty();
             break;
 
         default:
@@ -1393,7 +1394,7 @@ auto OTPayment::GetRemitterNymID(identifier::Nym& theOutput) const -> bool
     switch (m_Type) {
         case OTPayment::VOUCHER:
             theOutput.Assign(m_RemitterNymID);
-            bSuccess = !m_RemitterNymID->empty();
+            bSuccess = !m_RemitterNymID.empty();
             break;
 
         default:
@@ -1410,7 +1411,7 @@ auto OTPayment::GetRemitterNymID(identifier::Nym& theOutput) const -> bool
 // whereas the actual account originally used to purchase it is the "remitter"
 // acct.
 //
-auto OTPayment::GetRemitterAcctID(Identifier& theOutput) const -> bool
+auto OTPayment::GetRemitterAcctID(identifier::Generic& theOutput) const -> bool
 {
     theOutput.clear();
 
@@ -1421,7 +1422,7 @@ auto OTPayment::GetRemitterAcctID(Identifier& theOutput) const -> bool
     switch (m_Type) {
         case OTPayment::VOUCHER:
             theOutput.Assign(m_RemitterAcctID);
-            bSuccess = !m_RemitterAcctID->empty();
+            bSuccess = !m_RemitterAcctID.empty();
             break;
 
         default:
@@ -1442,7 +1443,8 @@ auto OTPayment::GetSenderNymIDForDisplay(identifier::Nym& theOutput) const
     return GetSenderNymID(theOutput);
 }
 
-auto OTPayment::GetSenderAcctIDForDisplay(Identifier& theOutput) const -> bool
+auto OTPayment::GetSenderAcctIDForDisplay(identifier::Generic& theOutput) const
+    -> bool
 {
     if (IsVoucher()) { return GetRemitterAcctID(theOutput); }
 
@@ -1465,7 +1467,7 @@ auto OTPayment::GetSenderNymID(identifier::Nym& theOutput) const -> bool
         case OTPayment::SMART_CONTRACT:
         case OTPayment::NOTICE:
             theOutput.Assign(m_SenderNymID);
-            bSuccess = !m_SenderNymID->empty();
+            bSuccess = !m_SenderNymID.empty();
             break;
 
         default:
@@ -1476,7 +1478,7 @@ auto OTPayment::GetSenderNymID(identifier::Nym& theOutput) const -> bool
     return bSuccess;
 }
 
-auto OTPayment::GetSenderAcctID(Identifier& theOutput) const -> bool
+auto OTPayment::GetSenderAcctID(identifier::Generic& theOutput) const -> bool
 {
     theOutput.clear();
 
@@ -1491,7 +1493,7 @@ auto OTPayment::GetSenderAcctID(Identifier& theOutput) const -> bool
         case OTPayment::PAYMENT_PLAN:
         case OTPayment::NOTICE:
             theOutput.Assign(m_SenderAcctID);
-            bSuccess = !m_SenderAcctID->empty();
+            bSuccess = !m_SenderAcctID.empty();
             break;
 
         case OTPayment::SMART_CONTRACT:
@@ -1522,7 +1524,7 @@ auto OTPayment::GetRecipientNymID(identifier::Nym& theOutput) const -> bool
         case OTPayment::NOTICE:
             if (m_bHasRecipient) {
                 theOutput.Assign(m_RecipientNymID);
-                bSuccess = !m_RecipientNymID->empty();
+                bSuccess = !m_RecipientNymID.empty();
             } else {
                 bSuccess = false;
             }
@@ -1541,7 +1543,7 @@ auto OTPayment::GetRecipientNymID(identifier::Nym& theOutput) const -> bool
     return bSuccess;
 }
 
-auto OTPayment::GetRecipientAcctID(Identifier& theOutput) const -> bool
+auto OTPayment::GetRecipientAcctID(identifier::Generic& theOutput) const -> bool
 {
     // NOTE:
     // A cheque HAS NO "Recipient Asset Acct ID", since the recipient's account
@@ -1562,7 +1564,7 @@ auto OTPayment::GetRecipientAcctID(Identifier& theOutput) const -> bool
         case OTPayment::NOTICE:
             if (m_bHasRecipient) {
                 theOutput.Assign(m_RecipientAcctID);
-                bSuccess = !m_RecipientAcctID->empty();
+                bSuccess = !m_RecipientAcctID.empty();
             } else {
                 bSuccess = false;
             }
@@ -1772,8 +1774,8 @@ auto OTPayment::IsCancelledCheque(const PasswordPrompt& reason) -> bool
 
     if (false == IsCheque()) { return false; }
 
-    auto sender = api_.Factory().NymID();
-    auto recipient = api_.Factory().NymID();
+    auto sender = identifier::Nym{};
+    auto recipient = identifier::Nym{};
     Amount amount{0};
 
     if (false == GetSenderNymID(sender)) {
@@ -1870,14 +1872,14 @@ void OTPayment::Release_Payment()
     m_bHasRecipient = false;
     m_bHasRemitter = false;
     m_strMemo->Release();
-    m_InstrumentDefinitionID->clear();
-    m_NotaryID->clear();
-    m_SenderNymID->clear();
-    m_SenderAcctID->clear();
-    m_RecipientNymID->clear();
-    m_RecipientAcctID->clear();
-    m_RemitterNymID->clear();
-    m_RemitterAcctID->clear();
+    m_InstrumentDefinitionID.clear();
+    m_NotaryID.clear();
+    m_SenderNymID.clear();
+    m_SenderAcctID.clear();
+    m_RecipientNymID.clear();
+    m_RecipientAcctID.clear();
+    m_RemitterNymID.clear();
+    m_RemitterAcctID.clear();
 }
 
 auto OTPayment::SetPayment(const String& strPayment) -> bool

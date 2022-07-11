@@ -14,6 +14,7 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
+#include "opentxs/identity/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -40,6 +41,7 @@ class Authority;
 namespace proto
 {
 class AsymmetricKey;
+class HDPath;
 class Signature;
 }  // namespace proto
 
@@ -69,7 +71,8 @@ public:
     virtual auto CalculateHash(
         const crypto::HashType hashType,
         const PasswordPrompt& reason) const noexcept -> ByteArray = 0;
-    virtual auto CalculateID(Identifier& theOutput) const noexcept -> bool = 0;
+    virtual auto CalculateID(identifier::Generic& theOutput) const noexcept
+        -> bool = 0;
     virtual auto CalculateTag(
         const identity::Authority& nym,
         const crypto::key::asymmetric::Algorithm type,
@@ -78,7 +81,7 @@ public:
         Secret& password) const noexcept -> bool = 0;
     virtual auto CalculateTag(
         const Asymmetric& dhKey,
-        const Identifier& credential,
+        const identifier::Generic& credential,
         const PasswordPrompt& reason,
         std::uint32_t& tag) const noexcept -> bool = 0;
     virtual auto CalculateSessionPassword(
@@ -110,7 +113,7 @@ public:
         const GetPreimage input,
         const crypto::SignatureRole role,
         proto::Signature& signature,
-        const Identifier& credential,
+        const identifier::Generic& credential,
         const PasswordPrompt& reason,
         const crypto::HashType hash = crypto::HashType::Error) const noexcept
         -> bool = 0;

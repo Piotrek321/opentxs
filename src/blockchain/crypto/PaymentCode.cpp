@@ -44,7 +44,6 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -57,7 +56,8 @@ auto BlockchainPCSubaccount(
     const proto::HDPath& path,
     const Data& txid,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::PaymentCode>
+    identifier::Generic& id) noexcept
+    -> std::unique_ptr<blockchain::crypto::PaymentCode>
 {
     using ReturnType = blockchain::crypto::implementation::PaymentCode;
 
@@ -77,14 +77,15 @@ auto BlockchainPCSubaccount(
     const api::session::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const proto::Bip47Channel& serialized,
-    Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::PaymentCode>
+    identifier::Generic& id) noexcept
+    -> std::unique_ptr<blockchain::crypto::PaymentCode>
 {
     using ReturnType = blockchain::crypto::implementation::PaymentCode;
     auto contact = contacts.PaymentCodeToContact(
         api.Factory().InternalSession().PaymentCode(serialized.remote()),
         parent.Chain());
 
-    OT_ASSERT(false == contact->empty());
+    OT_ASSERT(false == contact.empty());
 
     try {
 
@@ -104,16 +105,15 @@ auto PaymentCode::GetID(
     const api::Session& api,
     const Chain chain,
     const opentxs::PaymentCode& local,
-    const opentxs::PaymentCode& remote) noexcept -> OTIdentifier
+    const opentxs::PaymentCode& remote) noexcept -> identifier::Generic
 {
-    auto out = api.Factory().Identifier();
+    auto out = identifier::Generic{};
     auto preimage = api.Factory().Data();
     preimage.Assign(&chain, sizeof(chain));
     preimage.Concatenate(local.ID().Bytes());
     preimage.Concatenate(remote.ID().Bytes());
-    out->CalculateDigest(preimage.Bytes());
 
-    return out;
+    return api.Factory().IdentifierFromPreimage(preimage.Bytes());
 }
 }  // namespace opentxs::blockchain::crypto::internal
 
@@ -128,7 +128,7 @@ PaymentCode::PaymentCode(
     const proto::HDPath& path,
     const opentxs::blockchain::block::Txid& txid,
     const PasswordPrompt& reason,
-    Identifier& id) noexcept(false)
+    identifier::Generic& id) noexcept(false)
     : Deterministic(
           api,
           parent,
@@ -161,7 +161,7 @@ PaymentCode::PaymentCode(
         throw std::runtime_error("Invalid path or local payment code");
     }
 
-    if (contact_id_->empty()) { throw std::runtime_error("Missing contact"); }
+    if (contact_id_.empty()) { throw std::runtime_error("Missing contact"); }
 
     init(reason);
     parent_.Internal().FindNym(remote_.get().ID());
@@ -172,8 +172,8 @@ PaymentCode::PaymentCode(
     const api::session::Contacts& contacts,
     const crypto::Account& parent,
     const SerializedType& serialized,
-    Identifier& id,
-    OTIdentifier&& contact) noexcept(false)
+    identifier::Generic& id,
+    identifier::Generic&& contact) noexcept(false)
     : Deterministic(
           api,
           parent,
@@ -199,7 +199,7 @@ PaymentCode::PaymentCode(
                               parent.Chain(),
                               internal_type_,
                               address,
-                              OTIdentifier{fallback})));
+                              identifier::Generic{fallback})));
               }
 
               for (const auto& address : serialized.incoming().address()) {
@@ -214,7 +214,7 @@ PaymentCode::PaymentCode(
                               parent.Chain(),
                               external_type_,
                               address,
-                              OTIdentifier{fallback})));
+                              identifier::Generic{fallback})));
               }
 
               return out;
@@ -247,7 +247,7 @@ PaymentCode::PaymentCode(
           compare_)
     , contact_id_(contacts.PaymentCodeToContact(remote_, chain_))
 {
-    if (contact_id_->empty()) { throw std::runtime_error("Missing contact"); }
+    if (contact_id_.empty()) { throw std::runtime_error("Missing contact"); }
 
     init();
     parent_.Internal().FindNym(remote_.get().ID());
@@ -346,13 +346,13 @@ auto PaymentCode::ReorgNotification(const Txid& tx) const noexcept -> bool
 auto PaymentCode::Reserve(
     const Subchain type,
     const std::size_t batch,
+    const identifier::Generic&,
     const PasswordPrompt& reason,
-    const Identifier&,
-    const UnallocatedCString& label,
+    const std::string_view label,
     const Time time) const noexcept -> Batch
 {
     return Deterministic::Reserve(
-        type, batch, reason, get_contact(), label, time);
+        type, batch, get_contact(), reason, label, time);
 }
 
 auto PaymentCode::save(const rLock& lock) const noexcept -> bool

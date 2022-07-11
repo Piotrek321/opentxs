@@ -64,7 +64,7 @@ public:
 
     auto AddItem(
         const identifier::Nym& claimOwner,
-        const Identifier& claim,
+        const identifier::Generic& claim,
         const identity::Nym& signer,
         const PasswordPrompt& reason,
         const Item::Type value,
@@ -74,7 +74,7 @@ public:
     auto AddItem(
         const identifier::Nym& verifier,
         const Item::SerializedType verification) noexcept -> bool final;
-    auto DeleteItem(const Identifier& item) noexcept -> bool final;
+    auto DeleteItem(const identifier::Generic& item) noexcept -> bool final;
     auto External() noexcept -> verification::Group& final
     {
         return *external_;
@@ -83,8 +83,9 @@ public:
     {
         return *internal_;
     }
-    void Register(const Identifier& id, const bool external) noexcept final;
-    void Unregister(const Identifier& id) noexcept final;
+    void Register(const identifier::Generic& id, const bool external) noexcept
+        final;
+    void Unregister(const identifier::Generic& id) noexcept final;
     auto UpgradeGroupVersion(const VersionNumber groupVersion) noexcept
         -> bool final;
 
@@ -104,10 +105,10 @@ private:
 
     const api::Session& api_;
     const VersionNumber version_;
-    const OTNymID nym_id_;
+    const identifier::Nym nym_id_;
     GroupPointer internal_;
     GroupPointer external_;
-    UnallocatedMap<OTIdentifier, bool> map_;
+    UnallocatedMap<identifier::Generic, bool> map_;
 
     static auto instantiate(
         internal::Set& parent,

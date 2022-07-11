@@ -12,13 +12,13 @@
 #include <iterator>
 #include <optional>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "internal/blockchain/bitcoin/block/Output.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -39,7 +39,7 @@ Input::Cache::Cache(
     , size_(std::move(size))
     , normalized_size_()
     , keys_(std::move(keys))
-    , payer_(api_.Factory().Identifier())
+    , payer_()
 {
 }
 
@@ -180,7 +180,7 @@ auto Input::Cache::net_balance_change(
     return 0;
 }
 
-auto Input::Cache::payer() const noexcept -> OTIdentifier
+auto Input::Cache::payer() const noexcept -> identifier::Generic
 {
     auto lock = rLock{lock_};
 
@@ -198,12 +198,12 @@ auto Input::Cache::set(const blockchain::block::KeyData& data) noexcept -> void
 {
     auto lock = rLock{lock_};
 
-    if (payer_->empty()) {
+    if (payer_.empty()) {
         for (const auto& key : keys_) {
             try {
                 const auto& [sender, recipient] = data.at(key);
 
-                if (recipient->empty()) { continue; }
+                if (recipient.empty()) { continue; }
 
                 payer_ = recipient;
 

@@ -16,7 +16,6 @@
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/ByteArray.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -64,8 +63,13 @@ class Manager;
 }  // namespace node
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+class Nym;
+}  // namespace identifier
+
 class Contact;
-class Identifier;
 class PasswordPrompt;
 class PaymentCode;
 // }  // namespace v1
@@ -87,11 +91,11 @@ public:
     using Subchain = opentxs::blockchain::crypto::Subchain;
     using DecodedAddress =
         std::tuple<ByteArray, Style, UnallocatedSet<Chain>, bool>;
-    using ContactList = UnallocatedSet<OTIdentifier>;
+    using ContactList = UnallocatedSet<identifier::Generic>;
     using Txid = opentxs::blockchain::block::Txid;
     using TxidHex = UnallocatedCString;
     using PatternID = opentxs::blockchain::PatternID;
-    using AccountData = std::pair<Chain, OTNymID>;
+    using AccountData = std::pair<Chain, identifier::Nym>;
 
     // Throws std::out_of_range for invalid chains
     static auto Bip44(Chain chain) noexcept(false) -> Bip44Type;
@@ -104,14 +108,14 @@ public:
     virtual auto Account(const identifier::Nym& nymID, const Chain chain) const
         noexcept(false) -> const opentxs::blockchain::crypto::Account& = 0;
     virtual auto AccountList(const identifier::Nym& nymID) const noexcept
-        -> UnallocatedSet<OTIdentifier> = 0;
+        -> UnallocatedSet<identifier::Generic> = 0;
     virtual auto AccountList(const Chain chain) const noexcept
-        -> UnallocatedSet<OTIdentifier> = 0;
+        -> UnallocatedSet<identifier::Generic> = 0;
     virtual auto AccountList() const noexcept
-        -> UnallocatedSet<OTIdentifier> = 0;
+        -> UnallocatedSet<identifier::Generic> = 0;
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
-        const Identifier& thread,
+        const identifier::Generic& thread,
         const UnallocatedCString& threadItemID) const noexcept
         -> UnallocatedCString = 0;
     virtual auto ActivityDescription(
@@ -121,13 +125,13 @@ public:
         const noexcept -> UnallocatedCString = 0;
     virtual auto AssignContact(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const Subchain subchain,
         const Bip32Index index,
-        const Identifier& label) const noexcept -> bool = 0;
+        const identifier::Generic& label) const noexcept -> bool = 0;
     virtual auto AssignLabel(
         const identifier::Nym& nymID,
-        const Identifier& accountID,
+        const identifier::Generic& accountID,
         const Subchain subchain,
         const Bip32Index index,
         const UnallocatedCString& label) const noexcept -> bool = 0;
@@ -153,7 +157,7 @@ public:
     /// Throws std::out_of_range if the specified account does not exist
     virtual auto HDSubaccount(
         const identifier::Nym& nymID,
-        const Identifier& accountID) const noexcept(false)
+        const identifier::Generic& accountID) const noexcept(false)
         -> const opentxs::blockchain::crypto::HD& = 0;
     virtual auto IndexItem(const ReadView bytes) const noexcept
         -> PatternID = 0;
@@ -165,7 +169,7 @@ public:
     virtual auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
         -> std::unique_ptr<
             const opentxs::blockchain::bitcoin::block::Transaction> = 0;
-    virtual auto LookupAccount(const Identifier& id) const noexcept
+    virtual auto LookupAccount(const identifier::Generic& id) const noexcept
         -> AccountData = 0;
     virtual auto LookupContacts(
         const UnallocatedCString& address) const noexcept -> ContactList = 0;
@@ -175,36 +179,36 @@ public:
         const identifier::Nym& nymID,
         const opentxs::blockchain::crypto::HDProtocol standard,
         const Chain chain,
-        const PasswordPrompt& reason) const noexcept -> OTIdentifier = 0;
+        const PasswordPrompt& reason) const noexcept -> identifier::Generic = 0;
     virtual auto NewHDSubaccount(
         const identifier::Nym& nymID,
         const opentxs::blockchain::crypto::HDProtocol standard,
         const Chain derivationChain,
         const Chain targetChain,
-        const PasswordPrompt& reason) const noexcept -> OTIdentifier = 0;
+        const PasswordPrompt& reason) const noexcept -> identifier::Generic = 0;
     virtual auto NewPaymentCodeSubaccount(
         const identifier::Nym& nymID,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const ReadView& view,
         const Chain chain,
-        const PasswordPrompt& reason) const noexcept -> OTIdentifier = 0;
-    virtual auto Owner(const Identifier& accountID) const noexcept
+        const PasswordPrompt& reason) const noexcept -> identifier::Generic = 0;
+    virtual auto Owner(const identifier::Generic& accountID) const noexcept
         -> const identifier::Nym& = 0;
     virtual auto Owner(const Key& key) const noexcept
         -> const identifier::Nym& = 0;
     /// Throws std::out_of_range if the specified account does not exist
     virtual auto PaymentCodeSubaccount(
         const identifier::Nym& nymID,
-        const Identifier& accountID) const noexcept(false)
+        const identifier::Generic& accountID) const noexcept(false)
         -> const opentxs::blockchain::crypto::PaymentCode& = 0;
     virtual auto RecipientContact(const Key& key) const noexcept
-        -> OTIdentifier = 0;
+        -> identifier::Generic = 0;
     virtual auto Release(const Key key) const noexcept -> bool = 0;
     virtual auto SenderContact(const Key& key) const noexcept
-        -> OTIdentifier = 0;
+        -> identifier::Generic = 0;
     virtual auto SubaccountList(const identifier::Nym& nymID, const Chain chain)
-        const noexcept -> UnallocatedSet<OTIdentifier> = 0;
+        const noexcept -> UnallocatedSet<identifier::Generic> = 0;
     virtual auto Unconfirm(
         const Key key,
         const opentxs::blockchain::block::Txid& tx,

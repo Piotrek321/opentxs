@@ -39,7 +39,7 @@ std::unique_ptr<ScanListener> Regtest_payment_code::listener_bob_p_{};
 namespace ottest
 {
 Regtest_payment_code::Regtest_payment_code()
-    : Regtest_fixture_normal(2)
+    : Regtest_fixture_normal(ot_, 2)
     , api_server_1_(ot::Context().StartNotarySession(0))
     , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
     , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
@@ -124,7 +124,7 @@ Regtest_payment_code::Regtest_payment_code()
         set_introduction_server(miner_, server_1_);
         auto cb = [](User& user) {
             const auto& api = *user.api_;
-            const auto& nymID = user.nym_id_.get();
+            const auto& nymID = user.nym_id_;
             const auto reason = api.Factory().PasswordPrompt(__func__);
             api.Crypto().Blockchain().NewHDSubaccount(
                 nymID,
@@ -158,11 +158,15 @@ auto Regtest_payment_code::CheckContactID(
         api.Factory().PaymentCode(paymentcode), test_chain_);
 
     EXPECT_EQ(n2c, p2c);
-    EXPECT_EQ(p2c->str(), local.Contact(remote.name_).str());
+    EXPECT_EQ(
+        p2c.asBase58(ot_.Crypto()),
+        local.Contact(remote.name_).asBase58(ot_.Crypto()));
 
     auto output{true};
     output &= (n2c == p2c);
-    output &= (p2c->str() == local.Contact(remote.name_).str());
+    output &=
+        (p2c.asBase58(ot_.Crypto()) ==
+         local.Contact(remote.name_).asBase58(ot_.Crypto()));
 
     return output;
 }

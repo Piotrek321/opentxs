@@ -32,9 +32,11 @@
 namespace opentxs::storage
 {
 PaymentWorkflows::PaymentWorkflows(
+    const api::Crypto& crypto,
+    const api::session::Factory& factory,
     const Driver& storage,
     const UnallocatedCString& hash)
-    : Node(storage, hash)
+    : Node(crypto, factory, storage, hash)
     , archived_()
     , item_workflow_map_()
     , account_workflow_map_()

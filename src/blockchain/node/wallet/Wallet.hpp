@@ -49,8 +49,6 @@
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -91,6 +89,7 @@ class Mempool;
 
 namespace identifier
 {
+class Generic;
 class Nym;
 }  // namespace identifier
 
@@ -111,8 +110,6 @@ namespace proto
 {
 class BlockchainTransactionProposal;
 }  // namespace proto
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -135,8 +132,9 @@ public:
     auto GetBalance() const noexcept -> Balance final;
     auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance final;
-    auto GetBalance(const identifier::Nym& owner, const Identifier& subaccount)
-        const noexcept -> Balance final;
+    auto GetBalance(
+        const identifier::Nym& owner,
+        const identifier::Generic& subaccount) const noexcept -> Balance final;
     auto GetBalance(const crypto::Key& key) const noexcept -> Balance final;
     auto GetOutputs(alloc::Default alloc = alloc::System()) const noexcept
         -> Vector<UTXO> final;
@@ -153,12 +151,12 @@ public:
         -> Vector<UTXO> final;
     auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& subaccount,
+        const identifier::Generic& subaccount,
         alloc::Default alloc = alloc::System()) const noexcept
         -> Vector<UTXO> final;
     auto GetOutputs(
         const identifier::Nym& owner,
-        const Identifier& subaccount,
+        const identifier::Generic& subaccount,
         TxoState type,
         alloc::Default alloc = alloc::System()) const noexcept
         -> Vector<UTXO> final;

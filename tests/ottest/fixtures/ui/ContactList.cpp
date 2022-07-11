@@ -40,11 +40,15 @@ auto check_contact_list(
         const auto& index = it->contact_id_index_;
 
         if (it->check_contact_id_) {
-            const auto match = (row->ContactID() == user.Contact(index).str());
+            const auto match =
+                (row->ContactID() ==
+                 user.Contact(index).asBase58(user.api_->Crypto()));
 
             output &= match;
 
-            EXPECT_EQ(row->ContactID(), user.Contact(index).str());
+            EXPECT_EQ(
+                row->ContactID(),
+                user.Contact(index).asBase58(user.api_->Crypto()));
         } else {
             const auto set = user.SetContact(index, row->ContactID());
             const auto exists = (false == user.Contact(index).empty());
@@ -105,11 +109,15 @@ auto check_messagable_list(
         const auto& index = it->contact_id_index_;
 
         if (it->check_contact_id_) {
-            const auto match = (row->ContactID() == user.Contact(index).str());
+            const auto match =
+                (row->ContactID() ==
+                 user.Contact(index).asBase58(user.api_->Crypto()));
 
             output &= match;
 
-            EXPECT_EQ(row->ContactID(), user.Contact(index).str());
+            EXPECT_EQ(
+                row->ContactID(),
+                user.Contact(index).asBase58(user.api_->Crypto()));
         } else {
             const auto set = user.SetContact(index, row->ContactID());
             const auto exists = (false == user.Contact(index).empty());

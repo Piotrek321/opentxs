@@ -16,6 +16,8 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/StorageItems.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/identifier/Notary.hpp"          // IWYU pragma: keep
+#include "opentxs/core/identifier/UnitDefinition.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/Plugin.hpp"
@@ -35,11 +37,11 @@
 namespace opentxs::storage
 {
 Tree::Tree(
+    const api::Crypto& crypto,
     const api::session::Factory& factory,
     const Driver& storage,
     const UnallocatedCString& hash)
-    : Node(storage, hash)
-    , factory_(factory)
+    : Node(crypto, factory, storage, hash)
     , account_root_(Node::BLANK_HASH)
     , contact_root_(Node::BLANK_HASH)
     , credential_root_(Node::BLANK_HASH)
@@ -74,8 +76,7 @@ Tree::Tree(
 }
 
 Tree::Tree(const Tree& rhs)
-    : Node(rhs.driver_, "")
-    , factory_(rhs.factory_)
+    : Node(rhs.crypto_, rhs.factory_, rhs.driver_, "")
     , account_root_(Node::BLANK_HASH)
     , contact_root_(Node::BLANK_HASH)
     , credential_root_(Node::BLANK_HASH)
@@ -152,7 +153,7 @@ auto Tree::get_child(
     Lock lock(mutex);
 
     if (false == bool(pointer)) {
-        pointer.reset(new T(driver_, hash, params...));
+        pointer.reset(new T(crypto_, factory_, driver_, hash, params...));
 
         if (false == bool(pointer)) {
             LogError()(OT_PRETTY_CLASS())("Unable to instantiate.").Flush();
@@ -277,7 +278,7 @@ auto Tree::mutable_Notary(const UnallocatedCString& id)
 
 auto Tree::mutable_Nyms() -> Editor<storage::Nyms>
 {
-    return get_editor<storage::Nyms>(nym_lock_, nyms_, nym_root_, factory_);
+    return get_editor<storage::Nyms>(nym_lock_, nyms_, nym_root_);
 }
 
 auto Tree::mutable_Seeds() -> Editor<storage::Seeds>
@@ -309,7 +310,7 @@ auto Tree::notary(const UnallocatedCString& id) const -> storage::Notary*
 
 auto Tree::nyms() const -> storage::Nyms*
 {
-    return get_child<storage::Nyms>(nym_lock_, nyms_, nym_root_, factory_);
+    return get_child<storage::Nyms>(nym_lock_, nyms_, nym_root_);
 }
 
 auto Tree::save(const Lock& lock) const -> bool

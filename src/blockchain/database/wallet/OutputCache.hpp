@@ -85,13 +85,12 @@ constexpr auto subchains_{Table::SubchainOutputs};
 
 using Dir = storage::lmdb::LMDB::Dir;
 using Mode = storage::lmdb::LMDB::Mode;
-using SubchainID = Identifier;
-using pSubchainID = OTIdentifier;
+using SubchainID = identifier::Generic;
 using States = UnallocatedVector<node::TxoState>;
 using Matches = UnallocatedVector<block::Outpoint>;
 using Outpoints = robin_hood::unordered_node_set<block::Outpoint>;
-using NymBalances = UnallocatedMap<OTNymID, Balance>;
-using Nyms = robin_hood::unordered_node_set<OTNymID>;
+using NymBalances = UnallocatedMap<identifier::Nym, Balance>;
+using Nyms = robin_hood::unordered_node_set<identifier::Nym>;
 
 auto all_states() noexcept -> const States&;
 
@@ -197,13 +196,13 @@ private:
         block::Outpoint,
         std::unique_ptr<bitcoin::block::Output>>
         outputs_;
-    robin_hood::unordered_node_map<OTIdentifier, Outpoints> accounts_;
+    robin_hood::unordered_node_map<identifier::Generic, Outpoints> accounts_;
     robin_hood::unordered_node_map<crypto::Key, Outpoints> keys_;
-    robin_hood::unordered_node_map<OTNymID, Outpoints> nyms_;
+    robin_hood::unordered_node_map<identifier::Nym, Outpoints> nyms_;
     Nyms nym_list_;
     robin_hood::unordered_node_map<block::Position, Outpoints> positions_;
     robin_hood::unordered_node_map<node::TxoState, Outpoints> states_;
-    robin_hood::unordered_node_map<OTIdentifier, Outpoints> subchains_;
+    robin_hood::unordered_node_map<identifier::Generic, Outpoints> subchains_;
     bool populated_;
 
     auto get_position() const noexcept -> const db::Position&;

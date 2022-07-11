@@ -65,7 +65,7 @@ public:
     virtual auto Verify(
         const proto::Credential& credential,
         const identity::CredentialRole& role,
-        const Identifier& masterID,
+        const identifier::Generic& masterID,
         const proto::Signature& masterSig) const -> bool = 0;
 
     auto Internal() noexcept -> internal::Base& final { return *this; }

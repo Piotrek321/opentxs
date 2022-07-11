@@ -7,10 +7,12 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <functional>
+#include <string_view>
 
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Allocated.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -21,8 +23,6 @@ namespace identifier
 {
 class Notary;
 }  // namespace identifier
-
-using OTNotaryID = Pimpl<identifier::Notary>;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -30,65 +30,32 @@ using OTNotaryID = Pimpl<identifier::Notary>;
 namespace std
 {
 template <>
-struct OPENTXS_EXPORT hash<opentxs::OTNotaryID> {
+struct OPENTXS_EXPORT hash<opentxs::identifier::Notary> {
     auto operator()(const opentxs::identifier::Notary& data) const noexcept
         -> std::size_t;
 };
 
 template <>
-struct OPENTXS_EXPORT less<opentxs::OTNotaryID> {
+struct OPENTXS_EXPORT less<opentxs::identifier::Notary> {
     auto operator()(
-        const opentxs::OTNotaryID& lhs,
-        const opentxs::OTNotaryID& rhs) const -> bool;
+        const opentxs::identifier::Notary& lhs,
+        const opentxs::identifier::Notary& rhs) const -> bool;
 };
 }  // namespace std
 
-namespace opentxs
-{
-OPENTXS_EXPORT auto operator==(
-    const OTNotaryID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator!=(
-    const OTNotaryID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator<(
-    const OTNotaryID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator>(
-    const OTNotaryID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator<=(
-    const OTNotaryID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-OPENTXS_EXPORT auto operator>=(
-    const OTNotaryID& lhs,
-    const opentxs::Identifier& rhs) noexcept -> bool;
-}  // namespace opentxs
-
 namespace opentxs::identifier
 {
-class OPENTXS_EXPORT Notary : virtual public opentxs::Identifier
+class OPENTXS_EXPORT Notary : virtual public identifier::Generic
 {
 public:
-    static auto Factory() -> OTNotaryID;
-    static auto Factory(const UnallocatedCString& rhs) -> OTNotaryID;
-    static auto Factory(const String& rhs) -> OTNotaryID;
+    OPENTXS_NO_EXPORT Notary(Imp* imp) noexcept;
+    Notary(allocator_type alloc = {}) noexcept;
+    Notary(const Notary& rhs, allocator_type alloc = {}) noexcept;
+    Notary(Notary&& rhs) noexcept;
+    Notary(Notary&& rhs, allocator_type alloc) noexcept;
+    auto operator=(const Notary& rhs) noexcept -> Notary&;
+    auto operator=(Notary&& rhs) noexcept -> Notary&;
 
-    Notary(const Notary&) = delete;
-    Notary(Notary&&) = delete;
-    auto operator=(const Notary&) -> Notary& = delete;
-    auto operator=(Notary&&) -> Notary& = delete;
-
-    ~Notary() override = default;
-
-protected:
-    Notary() = default;
-
-private:
-    friend OTNotaryID;
-
-#ifndef _WIN32
-    auto clone() const -> Notary* override = 0;
-#endif
+    ~Notary() override;
 };
 }  // namespace opentxs::identifier

@@ -21,6 +21,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -32,10 +33,12 @@
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/interface/ui/Profile.hpp"
 #include "opentxs/interface/ui/ProfileSection.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template struct std::pair<int, opentxs::UnallocatedCString>;
 
@@ -68,15 +71,16 @@ Profile::Profile(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : ProfileList(api, nymID, cb, false)
+    , api_(api)
     , listeners_({
           {api_.Endpoints().NymDownload().data(),
            new MessageProcessor<Profile>(&Profile::process_nym)},
       })
     , callbacks_()
-    , name_(nym_name(api_.Wallet(), nymID))
+    , name_(nym_name(api_.Crypto(), api_.Wallet(), nymID))
     , payment_code_()
 {
-    setup_listeners(listeners_);
+    setup_listeners(api_, listeners_);
     startup_ = std::make_unique<std::thread>(&Profile::startup, this);
 
     OT_ASSERT(startup_);
@@ -216,11 +220,12 @@ auto Profile::DisplayName() const noexcept -> UnallocatedCString
 }
 
 auto Profile::nym_name(
+    const api::session::Crypto& crypto,
     const api::session::Wallet& wallet,
     const identifier::Nym& nymID) noexcept -> UnallocatedCString
 {
     for (const auto& [id, name] : wallet.NymList()) {
-        if (nymID.str() == id) { return name; }
+        if (nymID.asBase58(crypto) == id) { return name; }
     }
 
     return {};
@@ -290,9 +295,9 @@ void Profile::process_nym(const Message& message) noexcept
 
     OT_ASSERT(1 < message.Body().size());
 
-    const auto nymID = api_.Factory().NymID(message.Body_at(1));
+    const auto nymID = api_.Factory().NymIDFromHash(message.Body_at(1).Bytes());
 
-    OT_ASSERT(false == nymID->empty());
+    OT_ASSERT(false == nymID.empty());
 
     if (nymID != primary_id_) { return; }
 
@@ -372,6 +377,6 @@ Profile::~Profile()
 {
     ClearCallbacks();
 
-    for (auto& it : listeners_) { delete it.second; }
+    for (const auto& it : listeners_) { delete it.second; }
 }
 }  // namespace opentxs::ui::implementation

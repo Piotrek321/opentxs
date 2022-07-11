@@ -19,8 +19,8 @@ using dequeOfBasketItems = UnallocatedDeque<BasketItem*>;
 class BasketItem
 {
 public:
-    OTIdentifier SUB_CONTRACT_ID;
-    OTIdentifier SUB_ACCOUNT_ID;
+    identifier::Generic SUB_CONTRACT_ID;
+    identifier::Generic SUB_ACCOUNT_ID;
     TransactionNumber lMinimumTransferAmount{0};
     // lClosingTransactionNo:
     // Used when EXCHANGING a basket (NOT USED when first creating one.)

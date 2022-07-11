@@ -51,6 +51,11 @@ class Bulk;
 }  // namespace database
 }  // namespace blockchain
 
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class BlockchainTransaction;
@@ -88,7 +93,7 @@ public:
     auto LoadTransaction(const ReadView txid, proto::BlockchainTransaction& out)
         const noexcept -> std::unique_ptr<bitcoin::block::Transaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> UnallocatedSet<OTIdentifier>;
+        -> UnallocatedSet<identifier::Generic>;
     auto LookupTransactions(const PatternID pattern) const noexcept
         -> UnallocatedVector<pTxid>;
     auto StoreTransaction(const bitcoin::block::Transaction& tx) const noexcept
@@ -111,9 +116,9 @@ public:
 
 private:
     using ContactToElement =
-        UnallocatedMap<OTIdentifier, UnallocatedSet<ByteArray>>;
+        UnallocatedMap<identifier::Generic, UnallocatedSet<ByteArray>>;
     using ElementToContact =
-        UnallocatedMap<ByteArray, UnallocatedSet<OTIdentifier>>;
+        UnallocatedMap<ByteArray, UnallocatedSet<identifier::Generic>>;
     using TransactionToPattern =
         UnallocatedMap<pTxid, UnallocatedSet<PatternID>>;
     using PatternToTransaction =
@@ -134,6 +139,7 @@ private:
         const Lock& lock,
         const UnallocatedSet<ByteArray>& existing,
         const UnallocatedSet<ByteArray>& incoming,
-        const Identifier& contactID) const noexcept -> UnallocatedVector<pTxid>;
+        const identifier::Generic& contactID) const noexcept
+        -> UnallocatedVector<pTxid>;
 };
 }  // namespace opentxs::blockchain::database::common

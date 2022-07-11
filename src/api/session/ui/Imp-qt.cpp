@@ -77,7 +77,7 @@ auto ImpQt::Blank::get(const std::size_t columns) noexcept
 
 auto ImpQt::AccountActivityQt(
     const identifier::Nym& nymID,
-    const Identifier& accountID,
+    const identifier::Generic& accountID,
     const SimpleCallback cb) const noexcept -> opentxs::ui::AccountActivityQt*
 {
     auto lock = Lock{lock_};
@@ -187,7 +187,7 @@ auto ImpQt::ActivitySummaryQt(
 
 auto ImpQt::ActivityThreadQt(
     const identifier::Nym& nymID,
-    const Identifier& threadID,
+    const identifier::Generic& threadID,
     const SimpleCallback cb) const noexcept -> opentxs::ui::ActivityThreadQt*
 {
     auto lock = Lock{lock_};
@@ -277,8 +277,9 @@ auto ImpQt::BlockchainStatisticsQt(const SimpleCallback cb) const noexcept
     return blockchain_statistics_qt_.get();
 }
 
-auto ImpQt::ContactQt(const Identifier& contactID, const SimpleCallback cb)
-    const noexcept -> opentxs::ui::ContactQt*
+auto ImpQt::ContactQt(
+    const identifier::Generic& contactID,
+    const SimpleCallback cb) const noexcept -> opentxs::ui::ContactQt*
 {
     auto lock = Lock{lock_};
     auto key = ContactKey{contactID};

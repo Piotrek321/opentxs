@@ -41,6 +41,7 @@ class Session;
 
 namespace identifier
 {
+class Generic;
 class Notary;
 class Nym;
 }  // namespace identifier
@@ -64,7 +65,6 @@ class AccountList;
 }  // namespace internal
 }  // namespace otx
 
-class Identifier;
 class NumList;
 class OTParty;
 class OTScript;
@@ -240,7 +240,7 @@ public:
         const std::int64_t& lOpeningTransNo,
         const std::int64_t& lClosingTransNo,
         const identifier::Nym& theNymID,
-        const Identifier& theAcctID);
+        const identifier::Generic& theAcctID);
 
     //
     // HIGH LEVEL
@@ -346,7 +346,7 @@ public:
         const std::int64_t& lAmount,  // negative amount here means UNstash.
                                       // Positive
                                       // means STASH.
-        const Identifier& PARTY_ACCT_ID,
+        const identifier::Generic& PARTY_ACCT_ID,
         const identifier::Nym& PARTY_NYM_ID,
         OTStash& theStash,
         const PasswordPrompt& reason) -> bool;
@@ -362,7 +362,7 @@ public:
 
     auto GetOpeningNumber(const identifier::Nym& theNymID) const
         -> std::int64_t override;
-    auto GetClosingNumber(const Identifier& theAcctID) const
+    auto GetClosingNumber(const identifier::Generic& theAcctID) const
         -> std::int64_t override;
     // return -1 if error, 0 if nothing, and 1 if the node was processed.
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
@@ -413,8 +413,8 @@ private:
     // Todo: convert existing payment plan and markets to use this system since
     // it is much cleaner.
     //
-    //    OTIdentifier    m_RECIPIENT_ACCT_ID;
-    //    OTIdentifier    m_RECIPIENT_NYM_ID;
+    //    identifier::Generic    m_RECIPIENT_ACCT_ID;
+    //    identifier::Generic    m_RECIPIENT_NYM_ID;
     // This is where the scripts inside the smart contract can stash money,
     // after it starts operating.
     //
@@ -454,9 +454,9 @@ private:
     // it is also nearly identically copied in OTPaymentPlan.
     auto MoveFunds(
         const std::int64_t& lAmount,
-        const Identifier& SOURCE_ACCT_ID,
+        const identifier::Generic& SOURCE_ACCT_ID,
         const identifier::Nym& SENDER_NYM_ID,
-        const Identifier& RECIPIENT_ACCT_ID,
+        const identifier::Generic& RECIPIENT_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID,
         const PasswordPrompt& reason) -> bool;
 

@@ -33,6 +33,7 @@
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"  // IWYU pragma: keep
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/util/Log.hpp"
@@ -44,10 +45,10 @@ Deterministic::Deterministic(
     const api::Session& api,
     const crypto::Account& parent,
     const SubaccountType type,
-    OTIdentifier&& id,
+    identifier::Generic&& id,
     const proto::HDPath path,
     ChainData&& data,
-    Identifier& out) noexcept
+    identifier::Generic& out) noexcept
     : Subaccount(api, parent, type, std::move(id), out)
     , path_(path)
     , data_(std::move(data))
@@ -66,7 +67,7 @@ Deterministic::Deterministic(
     const Bip32Index internal,
     const Bip32Index external,
     ChainData&& data,
-    Identifier& out) noexcept(false)
+    identifier::Generic& out) noexcept(false)
     : Subaccount(api, parent, type, serialized.common(), out)
     , path_(serialized.path())
     , data_(std::move(data))
@@ -110,8 +111,8 @@ auto Deterministic::ChainData::Get(Subchain type) noexcept(false)
 auto Deterministic::accept(
     const rLock& lock,
     const Subchain type,
-    const Identifier& contact,
-    const UnallocatedCString& label,
+    const identifier::Generic& contact,
+    const std::string_view label,
     const Time time,
     const Bip32Index index,
     Batch& generated,
@@ -144,8 +145,8 @@ auto Deterministic::BalanceElement(const Subchain type, const Bip32Index index)
 auto Deterministic::check(
     const rLock& lock,
     const Subchain type,
-    const Identifier& contact,
-    const UnallocatedCString& label,
+    const identifier::Generic& contact,
+    const std::string_view label,
     const Time time,
     const Bip32Index candidate,
     const PasswordPrompt& reason,
@@ -229,7 +230,7 @@ auto Deterministic::check(
 auto Deterministic::check_activity(
     const rLock& lock,
     const UnallocatedVector<Activity>& unspent,
-    UnallocatedSet<OTIdentifier>& contacts,
+    UnallocatedSet<identifier::Generic>& contacts,
     const PasswordPrompt& reason) const noexcept -> bool
 {
     set_deterministic_contact(contacts);
@@ -291,37 +292,37 @@ auto Deterministic::confirm(
     const Subchain type,
     const Bip32Index index) noexcept -> void
 {
-    try {
-        auto& used = used_.at(type);
-        if (index >= used) {
-            static const auto blank = api_.Factory().Identifier();
-            auto allElementsUsed = [&]() {
-                for (auto i{index}; i > used; --i) {
-                    const auto& element = this->element(lock, type, i - 1u);
+    const auto checkUsed = [&] {
+        try {
+            auto& used = used_.at(type);
 
-                    if (Status::Used !=
-                        element.Internal().IsAvailable(blank, "")) {
-                        return false;
-                    }
-                }
-                return true;
-            };
+            if (index < used) { return; }
 
-            if (allElementsUsed()) {
-                for (auto i{index}; i < generated_.at(type); ++i) {
-                    const auto& element = this->element(lock, type, i);
-                    if (Status::Used ==
-                        element.Internal().IsAvailable(blank, ""))
-                        used = std::max(used, i + 1u);
-                    else
-                        break;
+            static const auto blank = identifier::Generic{};
+
+            for (auto i{index}; i > used; --i) {
+                const auto& element = this->element(lock, type, i - 1u);
+
+                if (Status::Used != element.Internal().IsAvailable(blank, "")) {
+                    return;
                 }
             }
-        }
-    } catch (...) {
-        LogError()(OT_PRETTY_CLASS())("invalid subchain or index").Flush();
-    }
 
+            for (auto i{index}; i < generated_.at(type); ++i) {
+                const auto& element = this->element(lock, type, i);
+
+                if (Status::Used == element.Internal().IsAvailable(blank, "")) {
+                    used = std::max(used, i + 1u);
+                } else {
+
+                    return;
+                }
+            }
+        } catch (...) {
+            LogError()(OT_PRETTY_CLASS())("invalid subchain or index").Flush();
+        }
+    };
+    checkUsed();
     auto generated = Batch{};
     const auto reason = api_.Factory().PasswordPrompt(
         "Generate account keys for wallet scanning.");
@@ -370,12 +371,12 @@ auto Deterministic::element(
 auto Deterministic::extract_contacts(
     const Bip32Index index,
     const AddressMap& map,
-    UnallocatedSet<OTIdentifier>& contacts) noexcept -> void
+    UnallocatedSet<identifier::Generic>& contacts) noexcept -> void
 {
     try {
         auto contact = map.at(index)->Contact();
 
-        if (false == contact->empty()) { contacts.emplace(std::move(contact)); }
+        if (false == contact.empty()) { contacts.emplace(std::move(contact)); }
     } catch (...) {
     }
 }
@@ -498,9 +499,9 @@ auto Deterministic::generate_next(
     return generate(lock, type, generated_.at(type), reason);
 }
 
-auto Deterministic::get_contact() const noexcept -> OTIdentifier
+auto Deterministic::get_contact() const noexcept -> identifier::Generic
 {
-    static const auto blank = api_.Factory().Identifier();
+    static const auto blank = identifier::Generic{};
 
     return blank;
 }
@@ -646,13 +647,22 @@ auto Deterministic::need_lookahead(const rLock& lock, const Subchain type)
 auto Deterministic::Reserve(
     const Subchain type,
     const PasswordPrompt& reason,
-    const Identifier& contact,
-    const UnallocatedCString& label,
+    const std::string_view label,
     const Time time) const noexcept -> std::optional<Bip32Index>
 {
-    auto batch = Reserve(type, 1u, reason, contact, label, time);
+    return Reserve(type, identifier::Generic{}, reason, label, time);
+}
 
-    if (0u == batch.size()) { return std::nullopt; }
+auto Deterministic::Reserve(
+    const Subchain type,
+    const identifier::Generic& contact,
+    const PasswordPrompt& reason,
+    const std::string_view label,
+    const Time time) const noexcept -> std::optional<Bip32Index>
+{
+    auto batch = Reserve(type, 1_uz, contact, reason, label, time);
+
+    if (batch.empty()) { return std::nullopt; }
 
     return batch.front();
 }
@@ -661,8 +671,18 @@ auto Deterministic::Reserve(
     const Subchain type,
     const std::size_t batch,
     const PasswordPrompt& reason,
-    const Identifier& contact,
-    const UnallocatedCString& label,
+    const std::string_view label = {},
+    const Time time = Clock::now()) const noexcept -> Batch
+{
+    return Reserve(type, batch, identifier::Generic{}, reason, label, time);
+}
+
+auto Deterministic::Reserve(
+    const Subchain type,
+    const std::size_t batch,
+    const identifier::Generic& contact,
+    const PasswordPrompt& reason,
+    const std::string_view label,
     const Time time) const noexcept -> Batch
 {
     auto output = Batch{};
@@ -739,14 +759,14 @@ auto Deterministic::set_metadata(
     const rLock& lock,
     const Subchain subchain,
     const Bip32Index index,
-    const Identifier& contact,
-    const UnallocatedCString& label) const noexcept -> void
+    const identifier::Generic& contact,
+    const std::string_view label) const noexcept -> void
 {
-    const auto blank = api_.Factory().Identifier();
+    const auto blank = identifier::Generic{};
 
     try {
         auto& data = data_.Get(subchain);
-        const auto& id = data.set_contact_ ? contact : blank.get();
+        const auto& id = data.set_contact_ ? contact : blank;
         data.map_.at(index)->Internal().SetMetadata(id, label);
     } catch (...) {
     }
@@ -783,8 +803,8 @@ auto Deterministic::use_next(
     const rLock& lock,
     const Subchain type,
     const PasswordPrompt& reason,
-    const Identifier& contact,
-    const UnallocatedCString& label,
+    const identifier::Generic& contact,
+    const std::string_view label,
     const Time time,
     Batch& generated) const noexcept -> std::optional<Bip32Index>
 {

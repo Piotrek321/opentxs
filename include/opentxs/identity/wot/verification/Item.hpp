@@ -15,13 +15,16 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace identifier
+{
+class Generic;
+}  // namespace identifier
+
 namespace proto
 {
 class Signature;
 class Verification;
 }  // namespace proto
-
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -41,9 +44,9 @@ public:
     OPENTXS_NO_EXPORT virtual operator SerializedType() const noexcept = 0;
 
     virtual auto Begin() const noexcept -> Time = 0;
-    virtual auto ClaimID() const noexcept -> const Identifier& = 0;
+    virtual auto ClaimID() const noexcept -> const identifier::Generic& = 0;
     virtual auto End() const noexcept -> Time = 0;
-    virtual auto ID() const noexcept -> const Identifier& = 0;
+    virtual auto ID() const noexcept -> const identifier::Generic& = 0;
     virtual auto Signature() const noexcept -> const proto::Signature& = 0;
     virtual auto Valid() const noexcept -> Validity = 0;
     virtual auto Value() const noexcept -> Type = 0;
