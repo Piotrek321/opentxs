@@ -546,6 +546,26 @@ find_package(
   REQUIRED
 )
 
+string(
+  REGEX
+    MATCH
+    "[0-9]*"
+    OPENSSL_MAJOR
+    "${OPENSSL_VERSION}"
+)
+
+if("${OPENSSL_MAJOR}"
+   GREATER_EQUAL
+   3
+)
+  if(OT_CASH_USING_LUCRE)
+    message(
+      WARNING
+        "Lucre is not compatible with OpenSSL 3. You will receive runtime errors when attempting to use blinded instruments"
+    )
+  endif()
+endif()
+
 if(OT_CRYPTO_USING_LIBSECP256K1 AND NOT OT_BUNDLED_SECP256K1)
   find_package(unofficial-secp256k1 REQUIRED)
 endif()
