@@ -2249,7 +2249,7 @@ auto Wallet::process_p2p_response(
                         throw std::runtime_error{
                             UnallocatedCString{
                                 "unsupported or unknown contract type: "} +
-                                    print(type).data()};
+                            print(type).data()};
                     }
                 }
 

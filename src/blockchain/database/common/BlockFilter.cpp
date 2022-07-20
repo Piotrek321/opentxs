@@ -8,7 +8,6 @@
 #include "blockchain/database/common/BlockFilter.hpp"  // IWYU pragma: associated
 
 #include <BlockchainFilterHeader.pb.h>
-
 #include <google/protobuf/arena.h>  // IWYU pragma: keep
 #include <array>
 #include <cstddef>

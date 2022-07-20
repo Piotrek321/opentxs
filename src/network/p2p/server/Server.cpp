@@ -24,7 +24,6 @@
 #include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
-#include "internal/network/zeromq/Thread.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -386,7 +385,7 @@ auto Server::Start(
         imp_->update_public_endpoint_ = publicUpdate;
     }
 
-    imp_->thread_->Modify(imp_->sync_.ID(), [this](auto& socket) {
+    imp_->zmq_.Internal().Modify(imp_->sync_.ID(), [this](auto& socket) {
         const auto& endpointPublic = imp_->sync_public_endpoint_;
         const auto& endpointLocal = imp_->sync_endpoint_;
         const auto& endpointPublish = imp_->update_endpoint_;

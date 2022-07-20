@@ -15,13 +15,13 @@
 #include <string_view>
 #include <tuple>
 
+#include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
 #include "ottest/fixtures/blockchain/BlockListener.hpp"
 #include "ottest/fixtures/blockchain/Common.hpp"
 #include "ottest/fixtures/blockchain/WalletListener.hpp"
 #include "ottest/fixtures/common/User.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 
 namespace ottest
 {
@@ -421,341 +421,341 @@ auto Regtest_fixture_simple::WaitForSynchro(
     }
 }
 
+auto Regtest_fixture_simple::GetDisplayBalance(
+    opentxs::Amount value) const noexcept -> std::string
+{
+    return opentxs::blockchain::internal::Format(test_chain_, value);
+}
 
-    auto Regtest_fixture_simple::GetDisplayBalance(
-            opentxs::Amount value) const noexcept -> std::string
-    {
-        return opentxs::blockchain::internal::Format(test_chain_, value);
-    }
-
-    auto Regtest_fixture_simple::GetWalletAddress(const User& user) const noexcept
+auto Regtest_fixture_simple::GetWalletAddress(const User& user) const noexcept
     -> std::string
-    {
-        return GetHDAccount(user)
-                .BalanceElement(opentxs::blockchain::crypto::Subchain::Internal, 0)
-                .Address(opentxs::blockchain::crypto::AddressStyle::P2PKH);
-    }
+{
+    return GetHDAccount(user)
+        .BalanceElement(opentxs::blockchain::crypto::Subchain::Internal, 0)
+        .Address(opentxs::blockchain::crypto::AddressStyle::P2PKH);
+}
 
-    auto Regtest_fixture_simple::GetWalletName(const User& user) const noexcept
+auto Regtest_fixture_simple::GetWalletName(const User& user) const noexcept
     -> std::string
-    {
-        return user.nym_->Alias();
-    }
+{
+    return user.nym_->Alias();
+}
 
-    auto Regtest_fixture_simple::GetTransactions(const User& user) const noexcept
+auto Regtest_fixture_simple::GetTransactions(const User& user) const noexcept
     -> opentxs::UnallocatedVector<opentxs::blockchain::block::pTxid>
-    {
-        const auto& network =
-                user.api_->Network().Blockchain().GetChain(test_chain_);
-        const auto& wallet = network.get().Wallet();
+{
+    const auto& network =
+        user.api_->Network().Blockchain().GetChain(test_chain_);
+    const auto& wallet = network.get().Wallet();
 
-        return wallet.GetTransactions();
-    }
+    return wallet.GetTransactions();
+}
 
-    void Regtest_fixture_simple::MineTransaction(
-            const User& user,
-            const opentxs::blockchain::block::pTxid& transactions_to_confirm,
-            Height& current_height)
-    {
-        std::vector<Transaction> transactions;
+void Regtest_fixture_simple::MineTransaction(
+    const User& user,
+    const opentxs::blockchain::block::pTxid& transactions_to_confirm,
+    Height& current_height)
+{
+    std::vector<Transaction> transactions;
 
-        auto send_transaction =
-                user.api_->Crypto().Blockchain().LoadTransactionBitcoin(
-                        transactions_to_confirm);
-        /*transactions_ptxid_*/transactions_.emplace_back(send_transaction->ID());
-        transactions.emplace_back(std::move(send_transaction));
+    auto send_transaction =
+        user.api_->Crypto().Blockchain().LoadTransactionBitcoin(
+            transactions_to_confirm);
+    /*transactions_ptxid_*/ transactions_.emplace_back(send_transaction->ID());
+    transactions.emplace_back(std::move(send_transaction));
 
-        Mine(current_height++, transactions.size(), default_, transactions);
+    Mine(current_height++, transactions.size(), default_, transactions);
 
-        send_transactions_.emplace_back(std::move(transactions[0]));
-    }
+    send_transactions_.emplace_back(std::move(transactions[0]));
+}
 
-    void Regtest_fixture_simple::SendCoins(
-            const User& receiver,
-            const User& sender,
-            Height& current_height,
-            const int coins_to_send)
-    {
-        const auto& network =
-                sender.api_->Network().Blockchain().GetChain(test_chain_);
+void Regtest_fixture_simple::SendCoins(
+    const User& receiver,
+    const User& sender,
+    Height& current_height,
+    const int coins_to_send)
+{
+    const auto& network =
+        sender.api_->Network().Blockchain().GetChain(test_chain_);
 
-        const ot::UnallocatedCString memo_outgoing = "test";
+    const ot::UnallocatedCString memo_outgoing = "test";
 
-        const auto address = GetNextBlockchainAddress(receiver);
+    const auto address = GetNextBlockchainAddress(receiver);
 
-        std::cout << sender.name_ + " send " << coins_to_send << " to "
-                  << receiver.name_ << " address: " << address << std::endl;
+    std::cout << sender.name_ + " send " << coins_to_send << " to "
+              << receiver.name_ << " address: " << address << std::endl;
 
-        const auto& network_receiver =
-                receiver.api_->Network().Blockchain().GetChain(test_chain_);
-        auto output_size =
-                network_receiver.get().Wallet()
-                        .GetOutputs(
-                                receiver.nym_->ID(), blockchain::node::TxoState::ConfirmedNew)
-                        .size();
-        auto future = network.get().SendToAddress(
-                sender.nym_id_, address, coins_to_send, memo_outgoing);
-        // We need to confirm send transaction, so it is available after restore
-        MineTransaction(sender, future.get().second, current_height);
-        WaitForOutputs(receiver, send_transactions_, output_size);
-    }
+    const auto& network_receiver =
+        receiver.api_->Network().Blockchain().GetChain(test_chain_);
+    auto output_size =
+        network_receiver.get()
+            .Wallet()
+            .GetOutputs(
+                receiver.nym_->ID(), blockchain::node::TxoState::ConfirmedNew)
+            .size();
+    auto future = network.get().SendToAddress(
+        sender.nym_id_, address, coins_to_send, memo_outgoing);
+    // We need to confirm send transaction, so it is available after restore
+    MineTransaction(sender, future.get().second, current_height);
+    WaitForOutputs(receiver, send_transactions_, output_size);
+}
 
-    auto Regtest_fixture_simple::WaitForOutputs(
-            const User& receiver,
-            std::vector<Transaction>& transactions,
-            const size_t output_size) -> void
-    {
-        const auto& network =
-                receiver.api_->Network().Blockchain().GetChain(test_chain_);
+auto Regtest_fixture_simple::WaitForOutputs(
+    const User& receiver,
+    std::vector<Transaction>& transactions,
+    const size_t output_size) -> void
+{
+    const auto& network =
+        receiver.api_->Network().Blockchain().GetChain(test_chain_);
 
-        auto begin = std::chrono::steady_clock::now();
-        auto now = begin;
-        auto end = begin + wait_time_limit_;
+    auto begin = std::chrono::steady_clock::now();
+    auto now = begin;
+    auto end = begin + wait_time_limit_;
 
-        for (auto& transaction : transactions) {
-            while (now < end) {
-                auto wallet_transactions = network.get().Wallet().GetTransactions();
+    for (auto& transaction : transactions) {
+        while (now < end) {
+            auto wallet_transactions = network.get().Wallet().GetTransactions();
 
-                if (std::find(
-                        wallet_transactions.begin(),
-                        wallet_transactions.end(),
-                        transaction->ID()) != wallet_transactions.end()) {
+            if (std::find(
+                    wallet_transactions.begin(),
+                    wallet_transactions.end(),
+                    transaction->ID()) != wallet_transactions.end()) {
 
-                    auto wallet_outputs = network.get().Wallet().GetOutputs(
-                            receiver.nym_->ID(),
-                            blockchain::node::TxoState::ConfirmedNew);
+                auto wallet_outputs = network.get().Wallet().GetOutputs(
+                    receiver.nym_->ID(),
+                    blockchain::node::TxoState::ConfirmedNew);
 
-                    if (output_size + 1 == wallet_outputs.size()) {
-                        ot::LogConsole()("WaitForOutputs found all outputs ")(
-                                wallet_outputs.size())
-                                .Flush();
-                        break;
-                    }
+                if (output_size + 1 == wallet_outputs.size()) {
+                    ot::LogConsole()("WaitForOutputs found all outputs ")(
+                        wallet_outputs.size())
+                        .Flush();
+                    break;
                 }
-
-                std::this_thread::sleep_for(std::chrono::seconds(1));
             }
-        }
 
-        now = std::chrono::steady_clock::now();
-        EXPECT_LT(now, end);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
     }
 
-    Amount Regtest_fixture_simple::CalculateFee(
-            const std::vector<Transaction>& send_transactions,
-            std::vector<std::unique_ptr<
-                    const opentxs::blockchain::bitcoin::block::Transaction>>&
-            loaded_transactions) const
-    {
-        // TODO is there a way to get all transaction from blockchain/wallet
-        // etc? Because currently we base on our test fixture
+    now = std::chrono::steady_clock::now();
+    EXPECT_LT(now, end);
+}
 
-        Amount outputs_value, inputs_value, fee;
-        for (const auto& send_transaction : send_transactions) {
-            for (const auto& output : send_transaction->Outputs())
-                outputs_value += output.Value();
+Amount Regtest_fixture_simple::CalculateFee(
+    const std::vector<Transaction>& send_transactions,
+    std::vector<std::unique_ptr<
+        const opentxs::blockchain::bitcoin::block::Transaction>>&
+        loaded_transactions) const
+{
+    // TODO is there a way to get all transaction from blockchain/wallet
+    // etc? Because currently we base on our test fixture
 
-            for (std::size_t i = 0; i < send_transaction->Inputs().size(); ++i) {
-                auto previousOutput =
-                        send_transaction->Inputs().at(i).PreviousOutput();
+    Amount outputs_value, inputs_value, fee;
+    for (const auto& send_transaction : send_transactions) {
+        for (const auto& output : send_transaction->Outputs())
+            outputs_value += output.Value();
 
-                auto& output =
-                        loaded_transactions[i]->Outputs().at(previousOutput.Index());
-                inputs_value += output.Value();
-            }
+        for (std::size_t i = 0; i < send_transaction->Inputs().size(); ++i) {
+            auto previousOutput =
+                send_transaction->Inputs().at(i).PreviousOutput();
+
+            auto& output =
+                loaded_transactions[i]->Outputs().at(previousOutput.Index());
+            inputs_value += output.Value();
         }
-
-        fee = inputs_value - outputs_value;
-        ot::LogConsole()("Calculated fee: " + GetDisplayBalance(fee)).Flush();
-
-        return fee;
     }
+
+    fee = inputs_value - outputs_value;
+    ot::LogConsole()("Calculated fee: " + GetDisplayBalance(fee)).Flush();
+
+    return fee;
+}
+std::vector<
+    std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>>
+Regtest_fixture_simple::CollectTransactionsForFeeCalculations(
+    const User& user,
+    const std::vector<Transaction>& send_transactions,
+    const Transactions& all_transactions) const
+{
     std::vector<
-            std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>>
-    Regtest_fixture_simple::CollectTransactionsForFeeCalculations(
-            const User& user,
-            const std::vector<Transaction>& send_transactions,
-            const Transactions& all_transactions) const
-    {
-        std::vector<
-                std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>>
-                loaded_transactions;
+        std::unique_ptr<const opentxs::blockchain::bitcoin::block::Transaction>>
+        loaded_transactions;
 
-        for (const auto& send_transaction : send_transactions) {
-            for (const auto& input : send_transaction->Inputs()) {
-                auto prevOutTrxId = input.PreviousOutput().TxidAsHex();
+    for (const auto& send_transaction : send_transactions) {
+        for (const auto& input : send_transaction->Inputs()) {
+            auto prevOutTrxId = input.PreviousOutput().TxidAsHex();
 
-                auto iter = std::find_if(
-                        all_transactions.begin(),
-                        all_transactions.end(),
-                        [&prevOutTrxId](const auto& transaction) {
-                            return transaction.asHex() == prevOutTrxId;
-                        });
+            auto iter = std::find_if(
+                all_transactions.begin(),
+                all_transactions.end(),
+                [&prevOutTrxId](const auto& transaction) {
+                    return transaction.asHex() == prevOutTrxId;
+                });
 
-                if (iter != all_transactions.end()) {
-                    auto loaded_transaction =
-                            user.api_->Crypto().Blockchain().LoadTransactionBitcoin(
-                                    prevOutTrxId);
+            if (iter != all_transactions.end()) {
+                auto loaded_transaction =
+                    user.api_->Crypto().Blockchain().LoadTransactionBitcoin(
+                        prevOutTrxId);
 
-                    if (!loaded_transaction)
-                        throw std::runtime_error("Cannot load transaction");
-                    loaded_transactions.push_back(std::move(loaded_transaction));
+                if (!loaded_transaction)
+                    throw std::runtime_error("Cannot load transaction");
+                loaded_transactions.push_back(std::move(loaded_transaction));
 
-                } else
-                    ot::LogConsole()(
-                            "No matching transaction found in all transaction for "
-                            "output id: " +
-                            prevOutTrxId)
-                            .Flush();
-            }
+            } else
+                ot::LogConsole()(
+                    "No matching transaction found in all transaction for "
+                    "output id: " +
+                    prevOutTrxId)
+                    .Flush();
         }
-        return loaded_transactions;
+    }
+    return loaded_transactions;
+}
+
+void Regtest_fixture_simple::CollectOutputs(
+    const User& user,
+    OutputsSet& all_outputs,
+    std::map<TxoState, std::size_t>& number_of_outputs_per_type) const
+{
+    const auto& network =
+        user.api_->Network().Blockchain().GetChain(test_chain_);
+    const auto& wallet = network.get().Wallet();
+
+    auto all_types = {
+        TxoState::Immature,
+        TxoState::ConfirmedSpend,
+        TxoState::UnconfirmedSpend,
+        TxoState::ConfirmedNew,
+        TxoState::UnconfirmedNew,
+        TxoState::OrphanedSpend,
+        TxoState::OrphanedNew};
+    for (const auto& type : all_types) {
+        number_of_outputs_per_type[type] = wallet.GetOutputs(type).size();
     }
 
-    void Regtest_fixture_simple::CollectOutputs(
-            const User& user,
-            OutputsSet& all_outputs,
-            std::map<TxoState, std::size_t>& number_of_outputs_per_type) const
-    {
-        const auto& network =
-                user.api_->Network().Blockchain().GetChain(test_chain_);
-        const auto& wallet = network.get().Wallet();
+    for (auto& output : wallet.GetOutputs(TxoState::All))
+        all_outputs.insert(std::move(output));
+}
 
-        auto all_types = {
-                TxoState::Immature,
-                TxoState::ConfirmedSpend,
-                TxoState::UnconfirmedSpend,
-                TxoState::ConfirmedNew,
-                TxoState::UnconfirmedNew,
-                TxoState::OrphanedSpend,
-                TxoState::OrphanedNew};
-        for (const auto& type : all_types) {
-            number_of_outputs_per_type[type] = wallet.GetOutputs(type).size();
-        }
+void Regtest_fixture_simple::ValidateOutputs(
+    const User& user,
+    const std::set<UTXO>& outputs_to_compare,
+    const std::map<TxoState, std::size_t>&
+        number_of_outputs_per_type_to_compare) const
+{
+    std::set<UTXO> outputs;
+    std::map<TxoState, std::size_t> number_of_outputs_per_type;
 
-        for (auto& output : wallet.GetOutputs(TxoState::All))
-            all_outputs.insert(std::move(output));
+    CollectOutputs(user, outputs, number_of_outputs_per_type);
+
+    EXPECT_EQ(
+        number_of_outputs_per_type_to_compare, number_of_outputs_per_type);
+
+    EXPECT_EQ(outputs_to_compare.size(), outputs.size());
+
+    std::cout << "Comparing outputs\n";
+    compare_outputs(outputs_to_compare, outputs);
+    std::cout << "Comparison finished.\n";
+}
+
+void Regtest_fixture_simple::MineBlocksForUsers(
+    std::vector<std::reference_wrapper<const User>>& users,
+    Height& target_height,
+    const int& number_of_blocks_to_mine)
+{
+    for (const auto& user : users) {
+        MineBlocks(
+            user,
+            target_height,
+            number_of_blocks_to_mine,
+            transaction_in_block_,
+            amount_in_transaction_);
+        target_height += number_of_blocks_to_mine;
     }
-
-    void Regtest_fixture_simple::ValidateOutputs(
-            const User& user,
-            const std::set<UTXO>& outputs_to_compare,
-            const std::map<TxoState, std::size_t>&
-            number_of_outputs_per_type_to_compare) const
-    {
-        std::set<UTXO> outputs;
-        std::map<TxoState, std::size_t> number_of_outputs_per_type;
-
-        CollectOutputs(user, outputs, number_of_outputs_per_type);
-
-        EXPECT_EQ(
-                number_of_outputs_per_type_to_compare, number_of_outputs_per_type);
-
-        EXPECT_EQ(outputs_to_compare.size(), outputs.size());
-
-        std::cout << "Comparing outputs\n";
-        compare_outputs(outputs_to_compare, outputs);
-        std::cout << "Comparison finished.\n";
-    }
-
-    void Regtest_fixture_simple::MineBlocksForUsers(
-            std::vector<std::reference_wrapper<const User>>& users,
-            Height& target_height,
-            const int& number_of_blocks_to_mine)
-    {
-        for (const auto& user : users) {
-            MineBlocks(
-                    user,
-                    target_height,
-                    number_of_blocks_to_mine,
-                    transaction_in_block_,
-                    amount_in_transaction_);
-            target_height += number_of_blocks_to_mine;
-        }
-        advance_blockchain(users, target_height);
-    }
-    auto Regtest_fixture_simple::GetHeight(const User& user) const noexcept
+    advance_blockchain(users, target_height);
+}
+auto Regtest_fixture_simple::GetHeight(const User& user) const noexcept
     -> opentxs::blockchain::block::Height
-    {
-        const auto& network =
-                user.api_->Network().Blockchain().GetChain(test_chain_);
-        const auto& wallet = network.get().Wallet();
+{
+    const auto& network =
+        user.api_->Network().Blockchain().GetChain(test_chain_);
+    const auto& wallet = network.get().Wallet();
 
-        return wallet.Height();
+    return wallet.Height();
+}
+
+void Regtest_fixture_simple::compare_outputs(
+    const std::set<UTXO>& pre_reboot_outputs,
+    const std::set<UTXO>& post_reboot_outputs) const
+{
+    auto iter = post_reboot_outputs.begin();
+    for (const auto& [outpoint, output] : pre_reboot_outputs) {
+        EXPECT_EQ(iter->first, outpoint);
+        EXPECT_EQ(iter->second->Value(), output->Value());
+        EXPECT_TRUE(
+            iter->second->Script().CompareScriptElements(output->Script()));
+        iter++;
+    }
+}
+
+void Regtest_fixture_simple::advance_blockchain(
+    std::vector<std::reference_wrapper<const User>>& users,
+    Height& target_height)
+{
+    std::vector<std::unique_ptr<ScanListener>> scan_listeners;
+    std::vector<std::unique_ptr<std::future<void>>> external_scan_listeners;
+    std::vector<std::unique_ptr<std::future<void>>> internal_scan_listeners;
+
+    for (const auto& user : users) {
+        auto scan_listener = std::make_unique<ScanListener>(*user.get().api_);
+        scan_listeners.push_back(std::move(scan_listener));
     }
 
-    void Regtest_fixture_simple::compare_outputs(
-            const std::set<UTXO>& pre_reboot_outputs,
-            const std::set<UTXO>& post_reboot_outputs) const
-    {
-        auto iter = post_reboot_outputs.begin();
-        for (const auto& [outpoint, output] : pre_reboot_outputs) {
-            EXPECT_EQ(iter->first, outpoint);
-            EXPECT_EQ(iter->second->Value(), output->Value());
-            EXPECT_TRUE(
-                    iter->second->Script().CompareScriptElements(output->Script()));
-            iter++;
-        }
+    auto height = target_height + static_cast<int>(MaturationInterval());
+
+    for (std::size_t i = 0; i < users.size(); ++i) {
+        external_scan_listeners.push_back(
+            std::make_unique<std::future<void>>(scan_listeners[i]->get_future(
+                GetHDAccount(users[i]), Subchain::External, height)));
+        internal_scan_listeners.push_back(
+            std::make_unique<std::future<void>>(scan_listeners[i]->get_future(
+                GetHDAccount(users[i]), Subchain::Internal, height)));
     }
 
-    void Regtest_fixture_simple::advance_blockchain(
-            std::vector<std::reference_wrapper<const User>>& users,
-            Height& target_height)
-    {
-        std::vector<std::unique_ptr<ScanListener>> scan_listeners;
-        std::vector<std::unique_ptr<std::future<void>>> external_scan_listeners;
-        std::vector<std::unique_ptr<std::future<void>>> internal_scan_listeners;
+    MineBlocks(target_height, static_cast<int>(MaturationInterval()));
 
-        for (const auto& user : users) {
-            auto scan_listener = std::make_unique<ScanListener>(*user.get().api_);
-            scan_listeners.push_back(std::move(scan_listener));
-        }
-
-        auto height = target_height + static_cast<int>(MaturationInterval());
-
-        for (std::size_t i = 0; i < users.size(); ++i) {
-            external_scan_listeners.push_back(
-                    std::make_unique<std::future<void>>(scan_listeners[i]->get_future(
-                            GetHDAccount(users[i]), Subchain::External, height)));
-            internal_scan_listeners.push_back(
-                    std::make_unique<std::future<void>>(scan_listeners[i]->get_future(
-                            GetHDAccount(users[i]), Subchain::Internal, height)));
-        }
-
-        MineBlocks(target_height, static_cast<int>(MaturationInterval()));
-
-        for (std::size_t i = 0; i < users.size(); ++i) {
-            EXPECT_TRUE(scan_listeners[i]->wait(*external_scan_listeners[i]));
-            EXPECT_TRUE(scan_listeners[i]->wait(*internal_scan_listeners[i]));
-        }
-
-        target_height += static_cast<int>(MaturationInterval());
+    for (std::size_t i = 0; i < users.size(); ++i) {
+        EXPECT_TRUE(scan_listeners[i]->wait(*external_scan_listeners[i]));
+        EXPECT_TRUE(scan_listeners[i]->wait(*internal_scan_listeners[i]));
     }
 
-    void Regtest_fixture_round_robin::SetUp()
-    {
-        Regtest_fixture_simple::SetUp();
+    target_height += static_cast<int>(MaturationInterval());
+}
 
-        EXPECT_TRUE(Start());
-        EXPECT_TRUE(Connect());
+void Regtest_fixture_round_robin::SetUp()
+{
+    Regtest_fixture_simple::SetUp();
 
-        auto [user_core, success_core] = CreateClient(
-                opentxs::Options{},
-                instance_++,
-                core_wallet_.name_,
-                core_wallet_.words_,
-                address_);
-        EXPECT_TRUE(success_core);
+    EXPECT_TRUE(Start());
+    EXPECT_TRUE(Connect());
 
-        for (auto& entry : auxiliary_wallets_) {
-            auto& user_to_create = entry.second;
-            auto [user, success] = CreateClient(
-                    opentxs::Options{},
-                    instance_++,
-                    user_to_create.name_,
-                    user_to_create.words_,
-                    address_);
-            EXPECT_TRUE(success);
-        }
+    auto [user_core, success_core] = CreateClient(
+        opentxs::Options{},
+        instance_++,
+        core_wallet_.name_,
+        core_wallet_.words_,
+        address_);
+    EXPECT_TRUE(success_core);
+
+    for (auto& entry : auxiliary_wallets_) {
+        auto& user_to_create = entry.second;
+        auto [user, success] = CreateClient(
+            opentxs::Options{},
+            instance_++,
+            user_to_create.name_,
+            user_to_create.words_,
+            address_);
+        EXPECT_TRUE(success);
     }
+}
 }  // namespace ottest

@@ -19,11 +19,11 @@
 #include <type_traits>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/crypto/Symmetric.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/util/LogMacros.hpp"

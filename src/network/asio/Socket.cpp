@@ -113,7 +113,7 @@ auto Socket::Receive(
     return Imp::Get(imp_).Receive(id, type, bytes);
 }
 
-    auto Socket::Transmit(const ReadView notify, const ReadView data) noexcept
+auto Socket::Transmit(const ReadView notify, const ReadView data) noexcept
     -> bool
 {
     return Imp::Get(imp_).Transmit(notify, data);

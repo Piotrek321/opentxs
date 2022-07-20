@@ -17,7 +17,6 @@
 
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
-#include "internal/network/zeromq/Thread.hpp"
 #include "internal/network/zeromq/message/Message.hpp"  // IWYU pragma: keep
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
@@ -287,19 +286,13 @@ auto Pipeline::Imp::BatchID() const noexcept -> std::size_t
 auto Pipeline::Imp::bind(
     SocketID id,
     const std::string_view endpoint,
-    std::function<Message(bool)> notify) const noexcept
-    -> std::pair<bool, std::future<bool>>
+    std::function<Message(bool)> notify) const noexcept -> bool
 {
     const auto done = gate_.get();
 
-    if (done) {
-        auto null = std::promise<bool>{};
-        null.set_value(false);
+    if (done) { return false; }
 
-        return std::make_pair(false, null.get_future());
-    }
-
-    return thread_->Modify(
+    context_.Internal().Modify(
         id,
         [ep = CString{endpoint},
          extra = std::move(notify),
@@ -308,13 +301,15 @@ auto Pipeline::Imp::bind(
 
             if (extra) { cb.Process(extra(value)); }
         });
+
+    return true;
 }
 
 auto Pipeline::Imp::BindSubscriber(
     const std::string_view endpoint,
     std::function<Message(bool)> notify) const noexcept -> bool
 {
-    return bind(sub_.ID(), endpoint, std::move(notify)).first;
+    return bind(sub_.ID(), endpoint, std::move(notify));
 }
 
 auto Pipeline::Imp::Close() const noexcept -> bool
@@ -331,19 +326,13 @@ auto Pipeline::Imp::Close() const noexcept -> bool
 auto Pipeline::Imp::connect(
     SocketID id,
     const std::string_view endpoint,
-    std::function<Message(bool)> notify) const noexcept
-    -> std::pair<bool, std::future<bool>>
+    std::function<Message(bool)> notify) const noexcept -> bool
 {
     const auto done = gate_.get();
 
-    if (done) {
-        auto null = std::promise<bool>{};
-        null.set_value(false);
+    if (done) { return false; }
 
-        return std::make_pair(false, null.get_future());
-    }
-
-    return thread_->Modify(
+    context_.Internal().Modify(
         id,
         [ep = CString{endpoint},
          extra = std::move(notify),
@@ -352,13 +341,15 @@ auto Pipeline::Imp::connect(
 
             if (extra) { cb.Process(extra(value)); }
         });
+
+    return true;
 }
 
 auto Pipeline::Imp::ConnectDealer(
     const std::string_view endpoint,
     std::function<Message(bool)> notify) const noexcept -> bool
 {
-    return connect(dealer_.ID(), endpoint, std::move(notify)).first;
+    return connect(dealer_.ID(), endpoint, std::move(notify));
 }
 
 auto Pipeline::Imp::ConnectionIDDealer() const noexcept -> std::size_t
@@ -397,7 +388,7 @@ auto Pipeline::Imp::ExtraSocket(std::size_t index) noexcept(false)
 auto Pipeline::Imp::PullFrom(const std::string_view endpoint) const noexcept
     -> bool
 {
-    return connect(pull_.ID(), endpoint).first;
+    return connect(pull_.ID(), endpoint);
 }
 
 auto Pipeline::Imp::Push(zeromq::Message&& msg) const noexcept -> bool
@@ -433,7 +424,7 @@ auto Pipeline::Imp::SetCallback(Callback&& cb) const noexcept -> void
 auto Pipeline::Imp::SubscribeTo(const std::string_view endpoint) const noexcept
     -> bool
 {
-    return connect(sub_.ID(), endpoint).first;
+    return connect(sub_.ID(), endpoint);
 }
 
 Pipeline::Imp::~Imp() { Close(); }

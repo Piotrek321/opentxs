@@ -358,7 +358,7 @@ auto Contacts::import_contacts(const rLock& lock) -> void
     for (const auto& it : nyms) {
         const auto nymID = api_.Factory().NymIDFromBase58(it.first);
 
-        auto contactID =  identifier::Generic{};
+        auto contactID = identifier::Generic{};
         contactID.Assign(nymID.data(), nymID.size());
 
         api_.Storage().ContactOwnerNym(nymID);

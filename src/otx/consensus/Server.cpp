@@ -27,6 +27,7 @@
 #include <string_view>
 #include <type_traits>
 
+#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/StateMachine.hpp"
@@ -36,7 +37,6 @@
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/otx/Types.hpp"

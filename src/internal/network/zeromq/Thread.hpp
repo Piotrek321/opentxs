@@ -39,8 +39,6 @@ public:
     virtual auto ID() const noexcept -> std::thread::id = 0;
 
     virtual auto Alloc() noexcept -> alloc::Resource* = 0;
-    virtual auto Modify(SocketID socket, ModifyCallback cb) noexcept
-        -> std::pair<bool, std::future<bool>> = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
     virtual ~Thread() = default;

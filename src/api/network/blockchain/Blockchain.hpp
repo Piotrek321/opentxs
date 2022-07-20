@@ -187,8 +187,8 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
         [[maybe_unused]] const std::string_view syncEndpoint,
         [[maybe_unused]] const std::string_view publicSyncEndpoint,
         [[maybe_unused]] const std::string_view updateEndpoint,
-        [[maybe_unused]] const std::string_view publicUpdateEndpoint)
-        const -> bool
+        [[maybe_unused]] const std::string_view publicUpdateEndpoint) const
+        -> bool
     {
         return {};
     }

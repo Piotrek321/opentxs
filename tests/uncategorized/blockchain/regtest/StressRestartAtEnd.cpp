@@ -3,10 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.ko
 
+#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
+
 #include <gtest/gtest.h>
 #include <chrono>
 #include <thread>
-#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
 
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -105,7 +106,7 @@ TEST_F(Restart_fixture, send_multiple_transactions_remove_user_compare)
     EXPECT_EQ(GetBalance(user_alice_after_reboot), sender_balance);
 
     auto loaded_transactions = CollectTransactionsForFeeCalculations(
-        user_alice, send_transactions_, /*transactions_ptxid_*/transactions_);
+        user_alice, send_transactions_, /*transactions_ptxid_*/ transactions_);
     auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
     EXPECT_EQ(

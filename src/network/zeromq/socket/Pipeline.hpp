@@ -155,12 +155,10 @@ private:
     auto bind(
         SocketID id,
         const std::string_view endpoint,
-        std::function<Message(bool)> notify = {}) const noexcept
-        -> std::pair<bool, std::future<bool>>;
+        std::function<Message(bool)> notify = {}) const noexcept -> bool;
     auto connect(
         SocketID id,
         const std::string_view endpoint,
-        std::function<Message(bool)> notify = {}) const noexcept
-        -> std::pair<bool, std::future<bool>>;
+        std::function<Message(bool)> notify = {}) const noexcept -> bool;
 };
 }  // namespace opentxs::network::zeromq

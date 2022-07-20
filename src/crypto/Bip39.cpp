@@ -19,7 +19,6 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
-#include "2_Factory.hpp"
 
 #include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"

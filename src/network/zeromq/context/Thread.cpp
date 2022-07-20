@@ -10,135 +10,148 @@
 #include "network/zeromq/context/Thread.hpp"  // IWYU pragma: associated
 
 #include <zmq.h>
-#include <algorithm>
 #include <cassert>
 #include <cerrno>
 #include <chrono>
-#include <cstddef>
+#include <cstdlib>
 #include <functional>
 #include <iostream>
-#include <iterator>
-#include <memory>
 #include <thread>
-#include <type_traits>
 #include <utility>
 
+#include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Pool.hpp"
-#include "internal/network/zeromq/socket/Factory.hpp"
+#include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "internal/util/Signals.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Container.hpp"
-#include "opentxs/util/Time.hpp"
-#include "opentxs/util/Types.hpp"
-#include "util/ScopeGuard.hpp"
 #include "util/Thread.hpp"
 
 namespace opentxs::network::zeromq::context
 {
-Thread::Thread(zeromq::internal::Pool& parent) noexcept
-    : parent_(parent)
-    , shutdown_(false)
-    , null_(factory::ZMQSocketNull())
-    , alloc_()
-    , gate_()
-    , thread_()
-    , data_(&alloc_)
-    , idle_(true)
-    , thread_name_()
+Thread::Items::Items(alloc::Default alloc) noexcept
+    : items_(alloc)
+    , data_(alloc)
 {
 }
 
-auto Thread::Add(
-    BatchID id,
-    StartArgs&& args,
-    const std::string_view threadName) noexcept -> bool
+Thread::Items::Items(Items&& rhs) noexcept
+    : items_(rhs.items_.get_allocator())
+    , data_(rhs.data_.get_allocator())
 {
-    const auto ticket = gate_.get();
+    swap(items_, rhs.items_);
+    swap(data_, rhs.data_);
+}
 
-    if (ticket) { return false; }
+Thread::Items::~Items() = default;
+}  // namespace opentxs::network::zeromq::context
 
-    auto sockets = [&] {
-        auto out = ThreadStartArgs{};
-        std::transform(
-            args.begin(), args.end(), std::back_inserter(out), [](auto& val) {
-                auto& [sID, socket, cb] = val;
+namespace opentxs::network::zeromq::context
+{
+using namespace std::literals;
 
-                return std::make_pair(socket, std::move(cb));
-            });
+Thread::Thread(
+    zeromq::internal::Pool& parent,
+    std::string_view endpoint) noexcept
+    : parent_(parent)
+    , alloc_()
+    , shutdown_(false)
+    , control_([&] {
+        auto out = parent_.Parent().Internal().RawSocket(socket::Type::Pull);
+        const auto rc = out.Connect(endpoint.data());
+
+        assert(rc);
 
         return out;
-    }();
-    parent_.UpdateIndex(id, std::move(args));
-    data_.modify_detach([data = std::move(sockets)](auto& guarded) {
-        for (auto [socket, cb] : data) {
-            assert(cb);
+    }())
+    , data_([&] {
+        auto out = Items{std::addressof(alloc_)};
+        auto& item = out.items_.emplace_back();
+        item.socket = control_.Native();
+        item.events = ZMQ_POLLIN;
+        out.data_.emplace_back([](auto&&) { std::abort(); });
 
-            guarded.data_.emplace_back(std::move(cb));
-            auto& s = guarded.items_.emplace_back();
-            s.socket = socket->Native();
-            s.events = ZMQ_POLLIN;
+        assert(out.items_.size() == out.data_.size());
 
-            assert(guarded.items_.size() == guarded.data_.size());
-        }
-    });
-    thread_name_ = threadName;
-    start();
-
-    return true;
+        return out;
+    }())
+    , thread_name_()
+    , thread_(&Thread::run, this)
+{
 }
 
 auto Thread::join() noexcept -> void
 {
-    if (thread_.handle_.joinable()) { thread_.handle_.join(); }
+    if (thread_.joinable()) { thread_.join(); }
 }
 
-auto Thread::Modify(SocketID socket, ModifyCallback cb) noexcept -> AsyncResult
+auto Thread::modify(Message&& message) noexcept -> void
 {
-    const auto ticket = gate_.get();
+    const auto body = message.Body();
 
-    if (ticket) { return {}; }
+    switch (body.at(0).as<Operation>()) {
+        case Operation::add_socket: {
+            const auto batch = body.at(1).as<BatchID>();
+            const auto threadname = body.at(2).Bytes();
 
-    if (!cb) {
-        std::cerr << (OT_PRETTY_CLASS()) << "invalid callback" << std::endl;
+            for (auto [socket, cb] : parent_.GetStartArgs(batch)) {
+                assert(cb);
 
-        return {};
-    }
+                data_.data_.emplace_back(std::move(cb));
+                auto& s = data_.items_.emplace_back();
+                s.socket = socket->Native();
+                s.events = ZMQ_POLLIN;
 
-    auto promise = std::make_shared<std::promise<bool>>();
-    auto output = std::make_pair(true, promise->get_future());
-    data_.modify_detach([=](auto& data) {
-        if (null_.ID() == socket) {
-            try {
-                cb(null_);
-                promise->set_value(true);
-            } catch (...) {
-                promise->set_value(false);
+                assert(data_.items_.size() == data_.data_.size());
             }
-        } else {
-            promise->set_value(parent_.DoModify(socket, cb));
-        }
-    });
 
-    return output;
+            thread_name_ = threadname;
+        } break;
+        case Operation::remove_socket: {
+            const auto batch = body.at(1).as<BatchID>();
+            const auto set = parent_.GetStopArgs(batch);
+            auto s = data_.items_.begin();
+            auto c = data_.data_.begin();
+
+            while ((s != data_.items_.end()) && (c != data_.data_.end())) {
+                auto* socket = s->socket;
+
+                if (0_uz == set.count(socket)) {
+                    ++s;
+                    ++c;
+                } else {
+                    s = data_.items_.erase(s);
+                    c = data_.data_.erase(c);
+                }
+            }
+
+            assert(data_.items_.size() == data_.data_.size());
+        } break;
+        case Operation::change_socket: {
+            const auto socketID = body.at(1).as<SocketID>();
+            parent_.DoModify(socketID);
+        } break;
+        default: {
+            std::abort();
+        }
+    }
 }
 
-auto Thread::poll(Items& data) noexcept -> void
+auto Thread::poll() noexcept -> void
 {
-    auto post = ScopeGuard{[this] { idle_.store(true); }};
-
-    if ((0u == data.items_.size()) || shutdown_) {
-        thread_.running_ = false;
-
-        return;
-    }
+    if (!thread_name_.empty()) { SetThisThreadsName(thread_name_); }
 
     static constexpr auto timeout = 100ms;
     const auto events = ::zmq_poll(
-        data.items_.data(),
-        static_cast<int>(data.items_.size()),
+        data_.items_.data(),
+        static_cast<int>(data_.items_.size()),
         timeout.count());
 
     if (0 > events) {
@@ -151,31 +164,56 @@ auto Thread::poll(Items& data) noexcept -> void
         return;
     }
 
-    const auto& v = data.items_;
-    auto c = data.data_.begin();
+    const auto& v = data_.items_;
+    auto c = data_.data_.begin();
+    auto i = 0_uz;
+    auto modify{false};
 
-    for (auto s = v.begin(), end = v.end(); s != end; ++s, ++c) {
+    for (auto s = v.begin(), end = v.end(); s != end; ++s, ++c, ++i) {
         const auto& item = *s;
 
         if (ZMQ_POLLIN != item.revents) { continue; }
 
-        const auto& socket = item.socket;
-        auto message = Message{};
+        switch (i) {
+            case 0_uz: {
+                // NOTE control socket
+                modify = true;
+            } break;
+            default: {
+                // NOTE regular sockets
+                const auto& socket = item.socket;
+                auto message = Message{};
 
-        if (receive_message(socket, message)) {
-            const auto& callback = *c;
+                if (receive_message(socket, message)) {
+                    const auto& callback = *c;
 
-            try {
-                callback(std::move(message));
-            } catch (...) {
+                    try {
+                        callback(std::move(message));
+                    } catch (...) {
+                    }
+                }
             }
         }
+    }
+
+    // NOTE wait until we are no longer iterating over the vectors before adding
+    // or removing items
+    if (modify) {
+        assert(false == v.empty());
+
+        auto* socket = v.begin()->socket;
+        auto message = Message{};
+        const auto rc = receive_message(socket, message);
+
+        assert(rc);
+
+        this->modify(std::move(message));
     }
 }
 
 auto Thread::receive_message(void* socket, Message& message) noexcept -> bool
 {
-    bool receiving{true};
+    auto receiving{true};
 
     while (receiving) {
         auto& frame = message.AddFrame();
@@ -221,89 +259,22 @@ auto Thread::receive_message(void* socket, Message& message) noexcept -> bool
     return true;
 }
 
-auto Thread::Remove(BatchID id, UnallocatedVector<socket::Raw*>&& data) noexcept
-    -> std::future<bool>
-{
-    auto p = std::make_shared<std::promise<bool>>();
-    auto future = p->get_future();
-    data_.modify_detach(
-        [this, id, sockets = std::move(data), promise = std::move(p)](
-            auto& guarded) {
-            const auto set = [&] {
-                auto out = UnallocatedSet<void*>{};
-                std::transform(
-                    sockets.begin(),
-                    sockets.end(),
-                    std::inserter(out, out.end()),
-                    [](auto* socket) { return socket->Native(); });
-
-                return out;
-            }();
-            auto s = guarded.items_.begin();
-            auto c = guarded.data_.begin();
-
-            while ((s != guarded.items_.end()) && (c != guarded.data_.end())) {
-                auto* socket = s->socket;
-
-                if (0u == set.count(socket)) {
-                    ++s;
-                    ++c;
-                } else {
-                    s = guarded.items_.erase(s);
-                    c = guarded.data_.erase(c);
-                }
-            }
-
-            assert(guarded.items_.size() == guarded.data_.size());
-
-            parent_.UpdateIndex(id);
-            promise->set_value(true);
-        });
-
-    return future;
-}
-
 auto Thread::run() noexcept -> void
 {
     Signals::Block();
 
-    if (!thread_name_.empty()) { SetThisThreadsName(thread_name_); }
+    while (false == shutdown_) { poll(); }
 
-    while (thread_.running_) {
-        if (auto idle = idle_.exchange(false); idle) {
-            data_.modify_detach([this](auto& data) { poll(data); });
-        } else {
-            using namespace std::literals;
-            Sleep(10us);
-        }
-    }
+    data_.items_.clear();
+    data_.data_.clear();
+    control_.Close();
 }
 
 auto Thread::Shutdown() noexcept -> void
 {
     shutdown_ = true;
-    data_.modify_detach([](auto& data) {
-        data.items_.clear();
-        data.data_.clear();
-    });
-    wait();
-}
-
-auto Thread::start() noexcept -> void
-{
-    if (auto running = thread_.running_.exchange(true); false == running) {
-        join();
-        thread_.handle_ = std::thread{&Thread::run, this};
-    }
-}
-
-auto Thread::wait() noexcept -> void
-{
-    gate_.shutdown();
     join();
 }
 
-Thread::Items::~Items() = default;
-
-Thread::~Thread() { wait(); }
+Thread::~Thread() { Shutdown(); }
 }  // namespace opentxs::network::zeromq::context

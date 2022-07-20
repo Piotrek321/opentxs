@@ -140,7 +140,8 @@ protected:
     auto work() noexcept -> bool override;
 
 private:
-    using Subchains = Map<identifier::Generic, boost::shared_ptr<SubchainStateData>>;
+    using Subchains =
+        Map<identifier::Generic, boost::shared_ptr<SubchainStateData>>;
     using HandledReorgs = Set<StateSequence>;
 
     const api::Session& api_;

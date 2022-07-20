@@ -16,11 +16,11 @@
 #include <memory>
 #include <stdexcept>
 
+#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Key.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/credential/Credential.hpp"

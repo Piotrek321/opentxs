@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <cs_deferred_guarded.h>
 #include <zmq.h>
 #include <atomic>
 #include <future>
@@ -24,7 +23,6 @@
 #include "internal/util/BoostPMR.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
-#include "util/Gatekeeper.hpp"
 
 struct zmq_pollitem_t;
 
@@ -60,22 +58,14 @@ namespace opentxs::network::zeromq::context
 class Thread final : public zeromq::internal::Thread
 {
 public:
-    auto Add(
-        BatchID id,
-        StartArgs&& args,
-        const std::string_view threadName) noexcept -> bool;
     auto Alloc() noexcept -> alloc::Resource* final { return &alloc_; }
     auto ID() const noexcept -> std::thread::id final
     {
-        return thread_.handle_.get_id();
+        return thread_.get_id();
     }
-    auto Modify(SocketID socket, ModifyCallback cb) noexcept
-        -> AsyncResult final;
-    auto Remove(BatchID id, UnallocatedVector<socket::Raw*>&& sockets) noexcept
-        -> std::future<bool>;
     auto Shutdown() noexcept -> void final;
 
-    Thread(zeromq::internal::Pool& parent) noexcept;
+    Thread(zeromq::internal::Pool& parent, std::string_view endpoint) noexcept;
     Thread() = delete;
     Thread(const Thread&) = delete;
     Thread(Thread&&) = delete;
@@ -85,10 +75,6 @@ public:
     ~Thread() final;
 
 private:
-    struct Background {
-        std::atomic_bool running_{false};
-        std::thread handle_{};
-    };
     struct Items {
         using ItemVector = Vector<::zmq_pollitem_t>;
         using DataVector = Vector<ReceiveCallback>;
@@ -96,32 +82,24 @@ private:
         ItemVector items_;
         DataVector data_;
 
-        Items(alloc::Default alloc) noexcept
-            : items_(alloc)
-            , data_(alloc)
-        {
-        }
+        Items(alloc::Default alloc) noexcept;
+        Items(Items&& rhs) noexcept;
 
         ~Items();
     };
 
-    using Data = libguarded::deferred_guarded<Items, std::shared_mutex>;
-
     zeromq::internal::Pool& parent_;
-    std::atomic_bool shutdown_;
-    socket::Raw null_;
     alloc::BoostPoolSync alloc_;
-    Gatekeeper gate_;
-    Background thread_;
-    Data data_;
-    std::atomic<bool> idle_;
+    std::atomic_bool shutdown_;
+    socket::Raw control_;
+    Items data_;
     CString thread_name_;
+    std::thread thread_;
 
     auto join() noexcept -> void;
-    auto poll(Items& data) noexcept -> void;
+    auto poll() noexcept -> void;
     auto receive_message(void* socket, Message& message) noexcept -> bool;
+    auto modify(Message&& message) noexcept -> void;
     auto run() noexcept -> void;
-    auto start() noexcept -> void;
-    auto wait() noexcept -> void;
 };
 }  // namespace opentxs::network::zeromq::context

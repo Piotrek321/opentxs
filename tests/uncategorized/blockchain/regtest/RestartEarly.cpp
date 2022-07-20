@@ -3,13 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.ko
 
+#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
+
 #include <gtest/gtest.h>
 #include <thread>
 
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "ottest/fixtures/blockchain/Restart.hpp"
-#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
 
 namespace ottest
 {

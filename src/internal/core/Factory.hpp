@@ -17,49 +17,49 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
-    namespace api
-    {
-        class Session;
-    }  // namespace api
+namespace api
+{
+class Session;
+}  // namespace api
 
-    namespace network
-    {
-        namespace zeromq
-        {
-            class Frame;
-        }  // namespace zeromq
-    }  // namespace network
+namespace network
+{
+namespace zeromq
+{
+class Frame;
+}  // namespace zeromq
+}  // namespace network
 
-    namespace proto
-    {
-        class PaymentCode;
-    }  // namespace proto
+namespace proto
+{
+class PaymentCode;
+}  // namespace proto
 
-    class Amount;
-    class PasswordPrompt;
-    class PaymentCode;
+class Amount;
+class PasswordPrompt;
+class PaymentCode;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace opentxs::factory
 {
-    auto Amount(std::string_view str, bool normalize = false) noexcept(false)
+auto Amount(std::string_view str, bool normalize = false) noexcept(false)
     -> opentxs::Amount;
-    auto Amount(const network::zeromq::Frame&) noexcept(false) -> opentxs::Amount;
-    auto PaymentCode(
-            const api::Session& api,
-            const UnallocatedCString& base58) noexcept -> opentxs::PaymentCode;
-    auto PaymentCode(
-            const api::Session& api,
-            const proto::PaymentCode& serialized) noexcept -> opentxs::PaymentCode;
-    auto PaymentCode(
-            const api::Session& api,
-            const UnallocatedCString& seed,
-            const Bip32Index nym,
-            const std::uint8_t version,
-            const bool bitmessage,
-            const std::uint8_t bitmessageVersion,
-            const std::uint8_t bitmessageStream,
-            const opentxs::PasswordPrompt& reason) noexcept -> opentxs::PaymentCode;
+auto Amount(const network::zeromq::Frame&) noexcept(false) -> opentxs::Amount;
+auto PaymentCode(
+    const api::Session& api,
+    const UnallocatedCString& base58) noexcept -> opentxs::PaymentCode;
+auto PaymentCode(
+    const api::Session& api,
+    const proto::PaymentCode& serialized) noexcept -> opentxs::PaymentCode;
+auto PaymentCode(
+    const api::Session& api,
+    const UnallocatedCString& seed,
+    const Bip32Index nym,
+    const std::uint8_t version,
+    const bool bitmessage,
+    const std::uint8_t bitmessageVersion,
+    const std::uint8_t bitmessageStream,
+    const opentxs::PasswordPrompt& reason) noexcept -> opentxs::PaymentCode;
 }  // namespace opentxs::factory

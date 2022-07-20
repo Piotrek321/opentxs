@@ -5,12 +5,13 @@
 
 #pragma once
 
+#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
+
 #include <opentxs/opentxs.hpp>
 #include <chrono>
 #include <cstddef>
 #include <memory>
 #include <utility>
-#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
 
 #include "ottest/fixtures/blockchain/regtest/Base.hpp"
 #include "ottest/fixtures/blockchain/regtest/Normal.hpp"
@@ -176,7 +177,8 @@ protected:
     auto GetNextBlockchainAddress(const User& user)
         -> const ot::UnallocatedCString;
 
-    auto GetHDAccount(const User& user) const noexcept -> const ot::blockchain::crypto::HD&;
+    auto GetHDAccount(const User& user) const noexcept
+        -> const ot::blockchain::crypto::HD&;
 
     auto GetDisplayBalance(opentxs::Amount value) const noexcept -> std::string;
     auto GetWalletAddress(const User& user) const noexcept -> std::string;

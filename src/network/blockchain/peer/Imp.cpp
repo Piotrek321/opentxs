@@ -1330,6 +1330,5 @@ auto Peer::Imp::work() noexcept -> bool
     return false;
 }
 
-Peer::Imp::~Imp() {
-    do_shutdown(); }
+Peer::Imp::~Imp() { do_shutdown(); }
 }  // namespace opentxs::network::blockchain::internal

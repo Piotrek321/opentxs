@@ -27,7 +27,6 @@
 #include "internal/api/session/Notary.hpp"
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
-#include "internal/network/zeromq/Thread.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"  // IWYU pragma: keep
 #include "internal/network/zeromq/socket/Raw.hpp"
@@ -239,7 +238,7 @@ auto MessageProcessor::Imp::init(
 {
     if (port == 0) { OT_FAIL; }
 
-    auto [queued, promise] = zmq_thread_->Modify(
+    api_.Network().ZeroMQ().Internal().Modify(
         frontend_id_,
         [this, inproc, port, key = OTSecret{privkey}](auto& socket) {
             auto set = socket.SetPrivateKey(key->Bytes());
@@ -268,8 +267,6 @@ auto MessageProcessor::Imp::init(
 
             LogConsole()("Bound to endpoint: ")(endpoint.str()).Flush();
         });
-
-    OT_ASSERT(queued);
 }
 
 auto MessageProcessor::Imp::old_pipeline(zmq::Message&& message) noexcept

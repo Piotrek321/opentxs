@@ -20,10 +20,10 @@
 #include <numeric>  // IWYU pragma: keep
 #include <ratio>
 
+#include "2_Factory.hpp"
 #include "blockchain/node/wallet/feeoracle/FeeOracle.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/node/wallet/FeeSource.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"

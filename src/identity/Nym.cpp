@@ -21,10 +21,10 @@
 #include <stdexcept>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "Proto.tpp"
 #include "internal/api/crypto/Seed.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/identity/Authority.hpp"

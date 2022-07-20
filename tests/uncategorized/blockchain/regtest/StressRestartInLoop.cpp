@@ -63,7 +63,9 @@ TEST_F(Restart_fixture, send_remove_user_compare_repeat)
         receiver_balance = GetBalance(user_bob);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
-            user_alice, send_transactions_, /*transactions_ptxid_*/transactions_);
+            user_alice,
+            send_transactions_,
+            /*transactions_ptxid_*/ transactions_);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
         WaitForSynchro(

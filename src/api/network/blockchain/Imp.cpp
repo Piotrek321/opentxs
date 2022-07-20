@@ -386,11 +386,11 @@ auto BlockchainImp::Init(
     };
     Set<CString> existing;
 
-        // TODO allocator
-        for (const auto& server : GetSyncServers({})) {
-            // TODO GetSyncServers should return pmr strings
-            existing.emplace(server.c_str());
-        }
+    // TODO allocator
+    for (const auto& server : GetSyncServers({})) {
+        // TODO GetSyncServers should return pmr strings
+        existing.emplace(server.c_str());
+    }
 
     for (const auto& server : defaultServers) {
         if (0 == existing.count(server)) {

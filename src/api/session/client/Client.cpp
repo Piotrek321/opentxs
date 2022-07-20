@@ -12,6 +12,7 @@
 #include <mutex>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "api/session/Session.hpp"
 #include "api/session/base/Scheduler.hpp"
 #include "api/session/base/Storage.hpp"
@@ -25,7 +26,6 @@
 #include "internal/api/session/Crypto.hpp"
 #include "internal/api/session/Factory.hpp"
 #include "internal/api/session/UI.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/client/Factory.hpp"
 #include "internal/otx/client/Pair.hpp"

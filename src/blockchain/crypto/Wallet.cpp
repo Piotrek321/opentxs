@@ -149,13 +149,15 @@ void Wallet::init() noexcept
 
     for (const auto& nymID : nyms) {
         Accounts hdAccounts{};
-        const auto list =
-            api_.Storage().BlockchainAccountList(nymID, BlockchainToUnit(chain_));
+        const auto list = api_.Storage().BlockchainAccountList(
+            nymID, BlockchainToUnit(chain_));
         std::transform(
             list.begin(),
             list.end(),
             std::inserter(hdAccounts, hdAccounts.end()),
-            [&](const auto& in) { return api_.Factory().IdentifierFromBase58(in);});
+            [&](const auto& in) {
+                return api_.Factory().IdentifierFromBase58(in);
+            });
 
         const auto pcAccounts = api_.Storage().Bip47ChannelsByChain(
             nymID, BlockchainToUnit(chain_));

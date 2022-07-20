@@ -60,15 +60,21 @@ auto GetSocketID() noexcept -> SocketID
 namespace opentxs::network::zeromq::implementation
 {
 Context::Context() noexcept
-    : context_(::zmq_ctx_new())
+    : context_([] {
+        auto* context = ::zmq_ctx_new();
+        assert(nullptr != context);
+        assert(1 == ::zmq_has("curve"));
+
+        const auto init =
+            ::zmq_ctx_set(context, ZMQ_MAX_SOCKETS, max_sockets());
+
+        assert(0 == init);
+
+        return context;
+    }())
     , pool_(*this)
 {
     assert(nullptr != context_);
-    assert(1 == ::zmq_has("curve"));
-
-    const auto init = ::zmq_ctx_set(context_, ZMQ_MAX_SOCKETS, max_sockets());
-
-    assert(0 == init);
 }
 
 Context::operator void*() const noexcept
@@ -113,10 +119,9 @@ auto Context::MakeBatch(
     return pool_.MakeBatch(preallocated, std::move(types));
 }
 
-auto Context::Modify(SocketID id, ModifyCallback cb) const noexcept
-    -> AsyncResult
+auto Context::Modify(SocketID id, ModifyCallback cb) const noexcept -> void
 {
-    return pool_.Modify(id, std::move(cb));
+    pool_.Modify(id, std::move(cb));
 }
 
 auto Context::PairEventListener(
@@ -254,10 +259,7 @@ auto Context::Start(
     return pool_.Start(id, std::move(sockets), threadName);
 }
 
-auto Context::Stop(BatchID id) const noexcept -> std::future<bool>
-{
-    return pool_.Stop(id);
-}
+auto Context::Stop(BatchID id) const noexcept -> void { pool_.Stop(id); }
 
 auto Context::SubscribeSocket(
     const ListenCallback& callback,

@@ -217,8 +217,8 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
     const auto haveNym = (2 < body.size());
     auto output = opentxs::blockchain::Balance{};
     const auto& chainFrame = body.at(1);
-    const auto nym =
-        haveNym ? api_.Factory().NymIDFromHash(body.at(2).Bytes()) : identifier::Nym{};
+    const auto nym = haveNym ? api_.Factory().NymIDFromHash(body.at(2).Bytes())
+                             : identifier::Nym{};
 
     const auto chain = chainFrame.as<Chain>();
 
@@ -244,8 +244,8 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
     auto& subscribers =
         haveNym ? chainData.second[nym].second : chainData.first.second;
 
-    const auto& id =
-            *(subscribers.emplace(api_.Factory().DataFromBytes(connectionID.Bytes()))
+    const auto& id = *(
+        subscribers.emplace(api_.Factory().DataFromBytes(connectionID.Bytes()))
             .first);
 
     const auto& log = LogTrace();

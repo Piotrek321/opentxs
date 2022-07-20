@@ -17,9 +17,9 @@
 #include <type_traits>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/util/LogMacros.hpp"

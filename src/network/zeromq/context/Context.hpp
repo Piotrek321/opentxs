@@ -99,8 +99,7 @@ public:
         -> internal::Handle final;
     auto MakeBatch(const BatchID preallocated, Vector<socket::Type>&& types)
         const noexcept -> internal::Handle final;
-    auto Modify(SocketID id, ModifyCallback cb) const noexcept
-        -> AsyncResult final;
+    auto Modify(SocketID id, ModifyCallback cb) const noexcept -> void final;
     auto PairEventListener(
         const PairEventCallback& callback,
         const int instance,
@@ -164,7 +163,7 @@ public:
         StartArgs&& sockets,
         const std::string_view threadName) const noexcept
         -> internal::Thread* final;
-    auto Stop(BatchID id) const noexcept -> std::future<bool> final;
+    auto Stop(BatchID id) const noexcept -> void final;
     auto SubscribeSocket(
         const ListenCallback& callback,
         const std::string_view threadName = {}) const noexcept

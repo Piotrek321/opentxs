@@ -3,7 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/network/zeromq/socket/SocketType.hpp"
+
 #include <cs_ordered_guarded.h>
+#include <cs_plain_guarded.h>
 #include <robin_hood.h>
 #include <atomic>
 #include <future>
@@ -20,6 +23,7 @@
 #include "internal/network/zeromq/Pool.hpp"
 #include "internal/network/zeromq/Thread.hpp"
 #include "internal/network/zeromq/Types.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "network/zeromq/context/Thread.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
@@ -82,21 +86,21 @@ public:
     auto ThreadID(BatchID id) const noexcept -> std::thread::id final;
 
     auto Alloc(BatchID id) noexcept -> alloc::Resource* final;
+    auto GetStartArgs(BatchID id) noexcept -> ThreadStartArgs final;
+    auto GetStopArgs(BatchID id) noexcept -> Set<void*> final;
     auto MakeBatch(Vector<socket::Type>&& types) noexcept -> internal::Handle;
     auto MakeBatch(const BatchID id, Vector<socket::Type>&& types) noexcept
         -> internal::Handle final;
-    auto Modify(SocketID id, ModifyCallback cb) noexcept -> AsyncResult;
-    auto DoModify(SocketID id, const ModifyCallback& cb) noexcept -> bool final;
+    auto Modify(SocketID id, ModifyCallback cb) noexcept -> void;
+    auto DoModify(SocketID id) noexcept -> void final;
     auto PreallocateBatch() const noexcept -> BatchID final;
     auto Shutdown() noexcept -> void final;
     auto Start(
         BatchID id,
         StartArgs&& sockets,
         const std::string_view threadName) noexcept
-        -> zeromq::internal::Thread*;
-    auto Stop(BatchID id) noexcept -> std::future<bool>;
-    auto UpdateIndex(BatchID id, StartArgs&& sockets) noexcept -> void final;
-    auto UpdateIndex(BatchID id) noexcept -> void final;
+        -> zeromq::internal::Thread* final;
+    auto Stop(BatchID id) noexcept -> void final;
 
     Pool(const Context& parent) noexcept;
     Pool() = delete;
@@ -108,18 +112,30 @@ public:
     ~Pool() final;
 
 private:
+    using ThreadNotifier = std::pair<CString, socket::Raw>;
+    using StartMap = Map<BatchID, StartArgs>;
+    using StopMap = Map<BatchID, Set<void*>>;
+    using ModifyMap = Map<SocketID, Vector<ModifyCallback>>;
+
     const Context& parent_;
     const unsigned int count_;
     std::atomic<bool> running_;
     Gatekeeper gate_;
+    robin_hood::unordered_node_map<unsigned int, ThreadNotifier> notify_;
     robin_hood::unordered_node_map<unsigned int, context::Thread> threads_;
     libguarded::ordered_guarded<Batches, std::shared_mutex> batches_;
     libguarded::ordered_guarded<BatchIndex, std::shared_mutex> batch_index_;
     libguarded::ordered_guarded<SocketIndex, std::shared_mutex> socket_index_;
+    libguarded::plain_guarded<StartMap> start_args_;
+    libguarded::plain_guarded<StopMap> stop_args_;
+    libguarded::plain_guarded<ModifyMap> modify_args_;
 
     auto get(BatchID id) const noexcept -> const context::Thread&;
 
     auto get(BatchID id) noexcept -> context::Thread&;
+    auto socket(BatchID id) noexcept -> socket::Raw&;
+    auto start_batch(BatchID id, StartArgs&& sockets) noexcept -> void;
     auto stop() noexcept -> void;
+    auto stop_batch(BatchID id) noexcept -> void;
 };
 }  // namespace opentxs::network::zeromq::context

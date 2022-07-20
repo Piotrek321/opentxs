@@ -63,7 +63,7 @@ public:
         const BatchID preallocated,
         Vector<socket::Type>&& types) const noexcept -> Handle = 0;
     virtual auto Modify(SocketID id, ModifyCallback cb) const noexcept
-        -> std::pair<bool, std::future<bool>> = 0;
+        -> void = 0;
     virtual auto PreallocateBatch() const noexcept -> BatchID = 0;
     virtual auto Pipeline(
         std::function<void(zeromq::Message&&)>&& callback,
@@ -89,6 +89,6 @@ public:
 private:
     friend Handle;
 
-    virtual auto Stop(BatchID id) const noexcept -> std::future<bool> = 0;
+    virtual auto Stop(BatchID id) const noexcept -> void = 0;
 };
 }  // namespace opentxs::network::zeromq::internal

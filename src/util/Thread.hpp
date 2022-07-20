@@ -277,7 +277,7 @@ static_assert(
 
 constexpr std::string_view asioTransmitThreadName{"AsioTransmit\0"};
 static_assert(
-        asioTransmitThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    asioTransmitThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
 constexpr std::string_view P2PClientThreadName{"P2PClient\0"};

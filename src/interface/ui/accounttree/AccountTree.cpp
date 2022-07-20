@@ -17,13 +17,12 @@
 #include <type_traits>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "interface/ui/base/List.hpp"
 #include "internal/api/crypto/blockchain/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/Factory.hpp"  // IWYU pragma: keep
-#include "2_Factory.hpp"
-#include "internal/core/Factory.hpp"                // IWYU pragma: keep
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/LogMacros.hpp"

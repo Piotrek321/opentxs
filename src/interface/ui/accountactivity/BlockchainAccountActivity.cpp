@@ -20,6 +20,7 @@
 #include <string_view>
 #include <type_traits>
 
+#include "2_Factory.hpp"
 #include "Proto.tpp"
 #include "interface/ui/base/List.hpp"
 #include "interface/ui/base/Widget.hpp"
@@ -30,7 +31,6 @@
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Manager.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"

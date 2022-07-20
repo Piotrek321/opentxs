@@ -3,10 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
+
 #include <gtest/gtest.h>
 #include <chrono>
 #include <thread>
-#include "ottest/fixtures/common/User.hpp"  // IWYU pragma: associated
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -78,7 +79,7 @@ TEST_F(Regtest_fixture_simple, send_to_client)
         SendCoins(*receiver, *sender, target_height, coin_to_send);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
-            *sender, send_transactions_, transactions_/*transactions_ptxid_*/);
+            *sender, send_transactions_, transactions_ /*transactions_ptxid_*/);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
         send_transactions_.clear();
 

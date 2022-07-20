@@ -30,7 +30,7 @@ auto Work(const UnallocatedCString& hex) -> blockchain::Work*
 {
     using ReturnType = blockchain::implementation::Work;
     using ValueType = ReturnType::Type;
-    auto bytes =  ByteArray{};
+    auto bytes = ByteArray{};
     bytes.DecodeHex(hex);
 
     if (bytes.empty()) { return new ReturnType(); }

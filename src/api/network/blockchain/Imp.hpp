@@ -186,8 +186,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const std::string_view syncEndpoint,
         const std::string_view publicSyncEndpoint,
         const std::string_view updateEndpoint,
-        const std::string_view publicUpdateEndpoint) const
-        -> bool final;
+        const std::string_view publicUpdateEndpoint) const -> bool final;
     auto Stop(const Imp::Chain type) const noexcept -> bool final;
     auto SyncEndpoint() const noexcept -> std::string_view final;
     auto UpdatePeer(

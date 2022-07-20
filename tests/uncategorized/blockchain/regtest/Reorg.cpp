@@ -164,7 +164,7 @@ TEST_F(Regtest_fixture_hd, first_block)
 
     const auto& tx = *pTx;
 
-    EXPECT_EQ(tx.ID(), /*transactions_ptxid_.*/transactions_.at(0));
+    EXPECT_EQ(tx.ID(), /*transactions_ptxid_.*/ transactions_.at(0));
     EXPECT_EQ(tx.BlockPosition(), 0);
     EXPECT_EQ(tx.Outputs().size(), 100);
     EXPECT_TRUE(tx.IsGeneration());
@@ -202,7 +202,8 @@ TEST_F(Regtest_fixture_hd, account_activity_immature)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(/*transactions_ptxid_.*/transactions_.at(0)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_.*/ transactions_.at(0)),
                 std::nullopt,
                 1,
             },
@@ -328,7 +329,8 @@ TEST_F(Regtest_fixture_hd, account_activity_mature)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(/*transactions_ptxid_.*/transactions_.at(0)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_.*/ transactions_.at(0)),
                 std::nullopt,
                 12,
             },
@@ -415,7 +417,8 @@ TEST_F(Regtest_fixture_hd, account_activity_reorg)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(/*transactions_ptxid_.*/transactions_.at(0)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_.*/ transactions_.at(0)),
                 std::nullopt,
                 13,
             },
@@ -503,7 +506,8 @@ TEST_F(Regtest_fixture_hd, account_activity_final)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(/*transactions_ptxid_.*/transactions_.at(0)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_.*/ transactions_.at(0)),
                 std::nullopt,
                 18,
             },

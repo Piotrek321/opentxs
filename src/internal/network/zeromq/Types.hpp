@@ -12,6 +12,7 @@
 
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Container.hpp"
+#include "util/Work.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -46,6 +47,12 @@ using AsyncResult = std::pair<bool, std::future<bool>>;
 using EndpointArg = std::pair<CString, socket::Direction>;
 using EndpointArgs = Vector<EndpointArg>;
 using SocketData = std::pair<socket::Type, EndpointArgs>;
+
+enum class Operation : OTZMQWorkType {
+    add_socket = OT_ZMQ_INTERNAL_SIGNAL + 0,
+    remove_socket = OT_ZMQ_INTERNAL_SIGNAL + 1,
+    change_socket = OT_ZMQ_INTERNAL_SIGNAL + 2,
+};
 
 auto GetBatchID() noexcept -> BatchID;
 auto GetSocketID() noexcept -> SocketID;

@@ -688,7 +688,8 @@ auto Blockchain::Imp::get_node(const identifier::Generic& accountID) const
         const auto error =
             UnallocatedCString{"unable to determine unit type for "
                                "blockchain subaccount "} +
-                    accountID.asBase58(api_.Crypto()) + " belonging to nym " + nymID.asBase58(api_.Crypto());
+            accountID.asBase58(api_.Crypto()) + " belonging to nym " +
+            nymID.asBase58(api_.Crypto());
 
         throw std::out_of_range(error);
     }

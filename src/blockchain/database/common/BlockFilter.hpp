@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include <GCS.pb.h>
 #include <cstdint>
 #include <memory>
-#include <GCS.pb.h>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"

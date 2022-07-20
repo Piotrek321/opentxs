@@ -12,11 +12,11 @@
 #include <memory>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "interface/ui/base/List.hpp"
 #include "internal/api/crypto/blockchain/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/LogMacros.hpp"

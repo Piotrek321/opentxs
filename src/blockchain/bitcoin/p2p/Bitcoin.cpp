@@ -246,7 +246,9 @@ auto GetServices(
 auto print(const Command command) noexcept -> std::string_view
 {
 
-    if (auto it = command_map_.find(command); command_map_.end() != it) { return it->second; }
+    if (auto it = command_map_.find(command); command_map_.end() != it) {
+        return it->second;
+    }
 
     return {};
 }

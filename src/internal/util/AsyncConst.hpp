@@ -13,6 +13,8 @@ template <typename T>
 class AsyncConst
 {
 public:
+    operator const T&() const noexcept { return get(); }
+
     auto get() const -> const T& { return future_.get(); }
 
     template <typename... Args>

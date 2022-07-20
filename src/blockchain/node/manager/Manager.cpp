@@ -988,7 +988,8 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
 
         proto::BlockchainTransactionProposal proposal{};
         proposal.set_version(proposal_version_);
-        proposal.set_id(api_.Factory().IdentifierFromRandom().asBase58(api_.Crypto()));
+        proposal.set_id(
+            api_.Factory().IdentifierFromRandom().asBase58(api_.Crypto()));
         proposal.set_initiator(nymID.data(), nymID.size());
         proposal.set_expires(
             Clock::to_time_t(Clock::now() + std::chrono::hours(1)));
@@ -1001,8 +1002,8 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
         const auto pubkey = api_.Factory().DataFromBytes(key.PublicKey());
         LogVerbose()(OT_PRETTY_CLASS())(" using derived public key ")(
             pubkey.asHex())(" at "
-                             "index"
-                             " ")(index.value())(" for outgoing transaction")
+                            "index"
+                            " ")(index.value())(" for outgoing transaction")
             .Flush();
         txout.set_pubkey(UnallocatedCString{pubkey.Bytes()});
         txout.set_contact(UnallocatedCString{contact.Bytes()});

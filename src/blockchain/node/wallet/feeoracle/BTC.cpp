@@ -370,9 +370,9 @@ auto createPmr(
     const std::string_view endpoint)
 {
     auto alloc = alloc::PMR<Imp>{pmr};
-        auto* out = alloc.allocate(1_uz);
-        alloc.construct(out, api, endpoint);
-        return out;
+    auto* out = alloc.allocate(1_uz);
+    alloc.construct(out, api, endpoint);
+    return out;
 }
 
 auto BTCFeeSources(

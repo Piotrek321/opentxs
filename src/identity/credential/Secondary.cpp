@@ -13,8 +13,8 @@
 #include <memory>
 #include <stdexcept>
 
-#include "identity/credential/Key.hpp"
 #include "2_Factory.hpp"
+#include "identity/credential/Key.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/identity/CredentialRole.hpp"

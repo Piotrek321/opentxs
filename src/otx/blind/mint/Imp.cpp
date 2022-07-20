@@ -14,10 +14,10 @@
 #include <memory>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Contract.hpp"

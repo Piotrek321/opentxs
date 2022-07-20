@@ -19,8 +19,8 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "core/String.hpp"
 #include "2_Factory.hpp"
+#include "core/String.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"

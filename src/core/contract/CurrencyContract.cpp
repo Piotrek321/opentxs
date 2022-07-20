@@ -12,9 +12,9 @@
 #include <memory>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/Unit.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"

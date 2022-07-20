@@ -19,9 +19,9 @@
 #include <string_view>
 #include <utility>
 
+#include "2_Factory.hpp"
 #include "interface/ui/base/List.hpp"
 #include "internal/api/network/Asio.hpp"
-#include "2_Factory.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"

@@ -47,15 +47,19 @@ public:
     virtual auto ThreadID(BatchID id) const noexcept -> std::thread::id = 0;
 
     virtual auto Alloc(BatchID id) noexcept -> alloc::Resource* = 0;
-    virtual auto DoModify(SocketID id, const ModifyCallback& cb) noexcept
-        -> bool = 0;
+    virtual auto GetStartArgs(BatchID id) noexcept -> ThreadStartArgs = 0;
+    virtual auto GetStopArgs(BatchID id) noexcept -> Set<void*> = 0;
+    virtual auto DoModify(SocketID id) noexcept -> void = 0;
     virtual auto MakeBatch(
         const BatchID preallocated,
         Vector<socket::Type>&& types) noexcept -> Handle = 0;
     virtual auto Shutdown() noexcept -> void = 0;
-    virtual auto UpdateIndex(BatchID id, StartArgs&& sockets) noexcept
-        -> void = 0;
-    virtual auto UpdateIndex(BatchID id) noexcept -> void = 0;
+    virtual auto Start(
+        BatchID id,
+        StartArgs&& sockets,
+        const std::string_view threadname) noexcept
+        -> zeromq::internal::Thread* = 0;
+    virtual auto Stop(BatchID id) noexcept -> void = 0;
 
     virtual ~Pool() = default;
 };
