@@ -189,7 +189,7 @@ TEST_F(Regtest_fixture_hd, generate)
     auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 0;
-    account_activity_.expected_ += (count + 1);
+    account_activity_.expected_ += (2u * count) + 1u;
     account_status_.expected_ += (3u * count);
 
     EXPECT_EQ(start, 0);
@@ -271,7 +271,7 @@ TEST_F(Regtest_fixture_hd, account_activity_immature)
         },
     };
 
-    EXPECT_TRUE(wait_for_counter(account_activity_));
+    wait_for_counter(account_activity_, false);
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
@@ -355,7 +355,7 @@ TEST_F(Regtest_fixture_hd, advance_test_chain_one_block_before_maturation)
     auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 0;
-    account_activity_.expected_ += (2u * count);
+    account_activity_.expected_ += (2u * count) + 1u;
     account_status_.expected_ += (6u * count);
 
     EXPECT_EQ(start, 1);
@@ -406,7 +406,7 @@ TEST_F(Regtest_fixture_hd, account_activity_one_block_before_maturation)
         },
     };
 
-    EXPECT_TRUE(wait_for_counter(account_activity_));
+    wait_for_counter(account_activity_, false);
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
@@ -493,7 +493,7 @@ TEST_F(Regtest_fixture_hd, mature)
     auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 1;
-    account_activity_.expected_ += ((2 * count) + 1);
+    account_activity_.expected_ += (2u * count) + 1u;
     account_status_.expected_ += (6u * count);
 
     EXPECT_EQ(start, 10);
@@ -582,7 +582,7 @@ TEST_F(Regtest_fixture_hd, account_activity_mature)
         },
     };
 
-    EXPECT_TRUE(wait_for_counter(account_activity_));
+    wait_for_counter(account_activity_, false);
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));

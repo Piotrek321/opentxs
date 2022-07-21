@@ -546,6 +546,8 @@ auto Log::operator()(const blockchain::block::Position& pos) const noexcept
     return imp_->operator()(pos.print());
 }
 
+auto Log::Abort() const noexcept -> void { imp_->Abort(); }
+
 auto Log::Assert(const char* file, const std::size_t line) const noexcept
     -> void
 {

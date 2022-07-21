@@ -113,6 +113,7 @@ public:
     auto asHex(std::string_view in) const noexcept -> const Log&;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> const internal::Log&;
 
+    [[noreturn]] auto Abort() const noexcept -> void;
     [[noreturn]] auto Assert(
         const char* file,
         const std::size_t line,

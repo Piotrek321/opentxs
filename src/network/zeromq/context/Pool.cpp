@@ -16,9 +16,9 @@
 #include <memory>
 #include <stdexcept>
 #include <thread>
-#include <tuple>
 #include <type_traits>
 
+#include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -44,8 +44,7 @@ Pool::Pool(const Context& parent) noexcept
     , notify_()
     , threads_()
     , batches_()
-    , batch_index_()
-    , socket_index_()
+    , index_()
     , start_args_()
     , stop_args_()
     , modify_args_()
@@ -111,11 +110,12 @@ auto Pool::DoModify(SocketID id) noexcept -> void
         } catch (...) {
         }
     } else {
-        auto socketHandle = socket_index_.lock_shared();
+        const auto indexHandle = index_.lock_shared();
+        const auto& [bIndex, sIndex] = *indexHandle;
         auto callbackHandle = modify_args_.lock();
 
         try {
-            auto* socket = socketHandle->at(id).second;
+            auto* socket = sIndex.at(id).second;
             auto& callbacks = callbackHandle->at(id);
 
             for (const auto& callback : callbacks) {
@@ -158,7 +158,6 @@ auto Pool::GetStartArgs(BatchID id) noexcept -> ThreadStartArgs
 
         return out;
     }();
-    start_batch(id, std::move(args));
 
     return sockets;
 }
@@ -209,6 +208,26 @@ auto Pool::MakeBatch(const BatchID id, Vector<socket::Type>&& types) noexcept
     assert(added);
 
     auto& batch = it->second;
+    index_.modify([&](auto& index) {
+        auto& [bIndex, sIndex] = index;
+        auto& sockets = bIndex[batch.id_];
+
+        assert(sockets.empty());
+
+        sockets.reserve(batch.sockets_.size());
+
+        for (auto& socket : batch.sockets_) {
+            const auto sID = socket.ID();
+            sockets.emplace_back(sID);
+
+            assert(0_uz == sIndex.count(sID));
+
+            const auto [i, rc] = sIndex.try_emplace(
+                sID, std::make_pair(batch.id_, std::addressof(socket)));
+
+            assert(rc);
+        }
+    });
 
     return {parent_.Internal(), batch};
 }
@@ -220,11 +239,7 @@ auto Pool::Modify(SocketID id, ModifyCallback cb) noexcept -> void
     if (ticket) { return; }
 
     try {
-        const auto batchID = [&] {
-            auto handle = socket_index_.lock_shared();
-
-            return handle->at(id).first;
-        }();
+        const auto batchID = index_.lock_shared()->socket_.at(id).first;
         {
             auto handle = modify_args_.lock();
             auto& map = *handle;
@@ -266,11 +281,6 @@ auto Pool::Start(
     if (ticket) { return nullptr; }
 
     try {
-        if (0_uz < batch_index_.lock_shared()->count(id)) {
-
-            throw std::runtime_error{"batch already exists"};
-        }
-
         {
             auto handle = start_args_.lock();
             auto& map = *handle;
@@ -304,37 +314,17 @@ auto Pool::Start(
     }
 }
 
-auto Pool::start_batch(BatchID id, StartArgs&& sockets) noexcept -> void
-{
-    for (auto& [sID, socket, cb] : sockets) {
-        auto& sid = sID;
-        auto& sock = socket;
-        batch_index_.modify(
-            [&](auto& batch_index) { batch_index[id].emplace_back(sid); });
-
-        SocketIndex::iterator it;
-        auto added{false};
-        std::pair<SocketIndex::iterator&, bool&> result{it, added};
-        socket_index_.modify([&](auto& socket_index) {
-            assert(0_uz == socket_index.count(sid));
-            result = socket_index.try_emplace(sid, std::make_pair(id, sock));
-        });
-
-        assert(added);
-    }
-}
-
 auto Pool::Stop(BatchID id) noexcept -> void
 {
     try {
         {
             auto sockets = [&] {
                 auto out = Set<void*>{};
-                auto handle = batch_index_.lock_shared();
+                auto handle = index_.lock_shared();
+                const auto& [bIndex, sIndex] = *handle;
 
-                for (const auto& sID : handle->at(id)) {
-                    auto socket_index = socket_index_.lock_shared();
-                    out.emplace(socket_index->at(sID).second->Native());
+                for (const auto& sID : bIndex.at(id)) {
+                    out.emplace(sIndex.at(sID).second->Native());
                 }
 
                 return out;
@@ -372,23 +362,23 @@ auto Pool::stop() noexcept -> void
         for (auto& [id, thread] : threads_) { thread.Shutdown(); }
 
         batches_.modify([](auto& map) { map.clear(); });
-        batch_index_.modify([](auto& map) { map.clear(); });
-        socket_index_.modify([](auto& map) { map.clear(); });
+        index_.modify([](auto& index) { index.clear(); });
     }
 }
 
 auto Pool::stop_batch(BatchID id) noexcept -> void
 {
     auto deletedSockets = Set<SocketID>{};
-    batch_index_.modify([&](auto& batch_index) {
-        if (auto batch = batch_index.find(id); batch_index.end() != batch) {
-            socket_index_.modify([&](auto& socket_index) {
-                for (const auto& socketID : batch->second) {
-                    socket_index.erase(socketID);
-                    deletedSockets.emplace(socketID);
-                }
-            });
-            batch_index.erase(batch);
+    index_.modify([&](auto& index) {
+        auto& [bIndex, sIndex] = index;
+
+        if (auto batch = bIndex.find(id); bIndex.end() != batch) {
+            for (const auto& socketID : batch->second) {
+                sIndex.erase(socketID);
+                deletedSockets.emplace(socketID);
+            }
+
+            bIndex.erase(batch);
         }
     });
     {

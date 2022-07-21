@@ -75,7 +75,7 @@ auto Nyms::init(const UnallocatedCString& hash) -> void
 
     if (false == serialized.operator bool()) {
         LogAbort()(OT_PRETTY_CLASS())("Failed to load nym list index file")
-            .Flush();
+            .Abort();
     }
 
     const auto& proto = *serialized;
@@ -186,7 +186,7 @@ auto Nyms::nym(const Lock& lock, const identifier::Nym& id) const
         if (false == nym.operator bool()) {
             LogAbort()(OT_PRETTY_CLASS())("failed to instantiate storage nym ")(
                 id)
-                .Flush();
+                .Abort();
         }
     }
 
@@ -237,7 +237,7 @@ auto Nyms::RelabelThread(
 auto Nyms::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogAbort()(OT_PRETTY_CLASS())("Lock failure.").Flush();
+        LogAbort()(OT_PRETTY_CLASS())("Lock failure.").Abort();
     }
 
     auto serialized = serialize();
@@ -253,11 +253,11 @@ auto Nyms::save(storage::Nym* nym, const Lock& lock, const identifier::Nym& id)
     -> void
 {
     if (!verify_write_lock(lock)) {
-        LogAbort()(OT_PRETTY_CLASS())("Lock failure").Flush();
+        LogAbort()(OT_PRETTY_CLASS())("Lock failure").Abort();
     }
 
     if (nullptr == nym) {
-        LogAbort()(OT_PRETTY_CLASS())("Null target").Flush();
+        LogAbort()(OT_PRETTY_CLASS())("Null target").Abort();
     }
 
     auto& index = item_map_[id.asBase58(crypto_)];
@@ -269,7 +269,7 @@ auto Nyms::save(storage::Nym* nym, const Lock& lock, const identifier::Nym& id)
     if (nym->private_.get()) { local_nyms_.emplace(id); }
 
     if (false == save(lock)) {
-        LogAbort()(OT_PRETTY_CLASS())("failed to save nym").Flush();
+        LogAbort()(OT_PRETTY_CLASS())("failed to save nym").Abort();
     }
 }
 

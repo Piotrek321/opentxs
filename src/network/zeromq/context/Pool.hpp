@@ -68,11 +68,6 @@ class Context;
 
 namespace opentxs::network::zeromq::context
 {
-using Batches = robin_hood::unordered_node_map<BatchID, internal::Batch>;
-using BatchIndex = robin_hood::unordered_node_map<BatchID, Vector<SocketID>>;
-using SocketIndex =
-    robin_hood::unordered_node_map<SocketID, std::pair<BatchID, socket::Raw*>>;
-
 class Pool final : public zeromq::internal::Pool
 {
 public:
@@ -116,6 +111,22 @@ private:
     using StartMap = Map<BatchID, StartArgs>;
     using StopMap = Map<BatchID, Set<void*>>;
     using ModifyMap = Map<SocketID, Vector<ModifyCallback>>;
+    using Batches = robin_hood::unordered_node_map<BatchID, internal::Batch>;
+    using BatchIndex =
+        robin_hood::unordered_node_map<BatchID, Vector<SocketID>>;
+    using SocketIndex = robin_hood::
+        unordered_node_map<SocketID, std::pair<BatchID, socket::Raw*>>;
+
+    struct Indices {
+        BatchIndex batch_{};
+        SocketIndex socket_{};
+
+        auto clear() noexcept -> void
+        {
+            batch_.clear();
+            socket_.clear();
+        }
+    };
 
     const Context& parent_;
     const unsigned int count_;
@@ -124,8 +135,7 @@ private:
     robin_hood::unordered_node_map<unsigned int, ThreadNotifier> notify_;
     robin_hood::unordered_node_map<unsigned int, context::Thread> threads_;
     libguarded::ordered_guarded<Batches, std::shared_mutex> batches_;
-    libguarded::ordered_guarded<BatchIndex, std::shared_mutex> batch_index_;
-    libguarded::ordered_guarded<SocketIndex, std::shared_mutex> socket_index_;
+    libguarded::ordered_guarded<Indices, std::shared_mutex> index_;
     libguarded::plain_guarded<StartMap> start_args_;
     libguarded::plain_guarded<StopMap> stop_args_;
     libguarded::plain_guarded<ModifyMap> modify_args_;
@@ -134,7 +144,6 @@ private:
 
     auto get(BatchID id) noexcept -> context::Thread&;
     auto socket(BatchID id) noexcept -> socket::Raw&;
-    auto start_batch(BatchID id, StartArgs&& sockets) noexcept -> void;
     auto stop() noexcept -> void;
     auto stop_batch(BatchID id) noexcept -> void;
 };
