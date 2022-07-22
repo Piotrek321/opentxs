@@ -24,15 +24,15 @@ public:
         "time keeps on slippin slippin slippi"sv;
 
     auto runOne(
-        const char* szDisplay,
-        ot::Secret& theOutput,
-        const ot::UnallocatedCString& key) const -> void final;
+        ot::Secret& output,
+        std::string_view prompt,
+        std::string_view key) const noexcept -> void final;
     auto runTwo(
-        const char* szDisplay,
-        ot::Secret& theOutput,
-        const ot::UnallocatedCString& key) const -> void final;
+        ot::Secret& output,
+        std::string_view prompt,
+        std::string_view key) const noexcept -> void final;
 
-    auto SetPassword(std::string_view password) -> void;
+    auto SetPassword(std::string_view password) noexcept -> void;
 
     PasswordCallback() noexcept;
 

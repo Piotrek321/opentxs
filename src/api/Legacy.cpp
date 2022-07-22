@@ -46,14 +46,11 @@ auto Legacy(const std::filesystem::path& home) noexcept
 
 namespace opentxs::api
 {
-auto Legacy::SuggestFolder(const UnallocatedCString& app) noexcept
-    -> UnallocatedCString
+auto Legacy::SuggestFolder(std::string_view appName) noexcept -> fs::path
 {
     using ReturnType = opentxs::api::imp::Legacy;
-    const auto path =
-        ReturnType::get_home_directory() / ReturnType::get_suffix(app.c_str());
 
-    return path.string();
+    return ReturnType::get_home_directory() / ReturnType::get_suffix(appName);
 }
 
 auto Legacy::Concatenate(
@@ -329,7 +326,7 @@ auto Legacy::get_home_directory() noexcept -> fs::path
     OT_FAIL;
 }
 
-auto Legacy::get_suffix(const char* application) noexcept -> fs::path
+auto Legacy::get_suffix(std::string_view application) noexcept -> fs::path
 {
     auto output = prepend();
 

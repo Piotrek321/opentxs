@@ -7,7 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/util/Container.hpp"
+#include <string_view>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -25,19 +25,20 @@ class OPENTXS_EXPORT PasswordCallback
 {
 public:
     // Asks for password once. (For authentication when using nym.)
-    virtual void runOne(
-        const char* szDisplay,
-        Secret& theOutput,
-        const UnallocatedCString& key) const = 0;
+    virtual auto runOne(
+        Secret& output,
+        std::string_view prompt,
+        std::string_view key) const noexcept -> void = 0;
 
     // Asks for password twice. (For confirmation when changing password or
     // creating nym.)
-    virtual void runTwo(
-        const char* szDisplay,
-        Secret& theOutput,
-        const UnallocatedCString& key) const = 0;
+    virtual auto runTwo(
+        Secret& output,
+        std::string_view prompt,
+        std::string_view key) const noexcept -> void = 0;
 
     PasswordCallback() = default;
+
     virtual ~PasswordCallback() = default;
 };
 }  // namespace opentxs

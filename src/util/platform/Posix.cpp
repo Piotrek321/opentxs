@@ -186,13 +186,15 @@ namespace opentxs::api::imp
 {
 auto Context::HandleSignals(ShutdownCallback* callback) const noexcept -> void
 {
-    Lock lock(signal_handler_lock_);
+    signal_handler_.modify([&](auto& data) {
+        auto& handler = data.handler_;
 
-    if (nullptr != callback) { shutdown_callback_ = callback; }
+        if (nullptr != callback) { data.callback_ = callback; }
 
-    if (false == bool(signal_handler_)) {
-        signal_handler_ = std::make_unique<Signals>(running_);
-    }
+        if (false == handler.operator bool()) {
+            handler = std::make_unique<Signals>(running_);
+        }
+    });
 }
 
 auto Context::Init_Rlimit() noexcept -> void

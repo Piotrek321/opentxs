@@ -18,7 +18,6 @@
 #include "api/session/Session.hpp"
 #include "api/session/base/Scheduler.hpp"
 #include "api/session/base/Storage.hpp"
-#include "core/Shutdown.hpp"
 #include "internal/api/Context.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/network/Factory.hpp"
@@ -75,12 +74,12 @@ auto NotarySession(
     const api::Settings& config,
     const opentxs::network::zeromq::Context& context,
     const std::filesystem::path& dataFolder,
-    const int instance) -> std::unique_ptr<api::session::Notary>
+    const int instance) -> std::shared_ptr<api::session::Notary>
 {
     using ReturnType = api::session::imp::Notary;
 
     try {
-        auto output = std::make_unique<ReturnType>(
+        auto output = std::make_shared<ReturnType>(
             parent,
             running,
             std::move(args),
@@ -181,7 +180,6 @@ Notary::Notary(
 void Notary::Cleanup()
 {
     LogDetail()(OT_PRETTY_CLASS())("Shutting down and cleaning up.").Flush();
-    shutdown_sender_.Activate();
     message_processor_.cleanup();
     message_processor_p_.reset();
     server_p_.reset();
@@ -589,5 +587,6 @@ Notary::~Notary()
     if (mint_thread_.joinable()) { mint_thread_.join(); }
 
     Cleanup();
+    shutdown_complete();
 }
 }  // namespace opentxs::api::session::imp

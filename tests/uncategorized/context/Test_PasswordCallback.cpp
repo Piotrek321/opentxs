@@ -15,12 +15,12 @@
 
 namespace ottest
 {
-ot::AsyncConst<ot::UnallocatedCString> profile_id_{};
+ot::AsyncConst<ot::CString> profile_id_{};
 ot::AsyncConst<ot::identifier::Nym> nym_id_{};
 
 TEST_F(LowLevel, create_nym)
 {
-    profile_id_.set_value(ot_.ProfileId());
+    profile_id_.set_value(ot::CString{ot_.ProfileId()});
     password_.SetPassword(PasswordCallback::password_1_);
     const auto& api = ot_.StartClientSession(0);
     const auto reason = api.Factory().PasswordPrompt(__func__);

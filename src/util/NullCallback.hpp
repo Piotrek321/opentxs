@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <string_view>
+
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordCallback.hpp"
 
@@ -30,13 +32,13 @@ class NullCallback final : virtual public PasswordCallback
 {
 public:
     auto runOne(
-        const char* display,
-        Secret& output,
-        const UnallocatedCString& key) const -> void final;
+        opentxs::Secret& output,
+        std::string_view prompt,
+        std::string_view key) const noexcept -> void final;
     auto runTwo(
-        const char* display,
-        Secret& output,
-        const UnallocatedCString& key) const -> void final;
+        opentxs::Secret& output,
+        std::string_view prompt,
+        std::string_view key) const noexcept -> void final;
 
     NullCallback() = default;
     NullCallback(const NullCallback&) = delete;

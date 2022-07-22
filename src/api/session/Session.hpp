@@ -10,6 +10,7 @@
 #include <chrono>
 #include <filesystem>
 #include <functional>
+#include <future>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -150,6 +151,7 @@ public:
     }
     auto SetMasterKeyTimeout(const std::chrono::seconds& timeout) const noexcept
         -> void final;
+    auto Stop() noexcept -> std::future<void> final;
     auto Storage() const noexcept -> const api::session::Storage& final;
     auto Wallet() const noexcept -> const session::Wallet& final;
 
@@ -183,6 +185,8 @@ protected:
         const api::session::Storage& storage) -> OTSymmetricKey;
 
     auto cleanup() noexcept -> void final;
+    // NOTE call from final destructor bodies
+    auto shutdown_complete() noexcept -> void;
 
     Session(
         const api::Context& parent,
@@ -202,6 +206,7 @@ private:
     mutable OTSymmetricKey master_key_;
     mutable std::chrono::seconds password_duration_;
     mutable Time last_activity_;
+    std::promise<void> shutdown_promise_;
 
     void bump_password_timer(const opentxs::Lock& lock) const;
     // TODO void password_timeout() const;

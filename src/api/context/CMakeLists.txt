@@ -11,6 +11,10 @@ target_sources(
     "Context.hpp"
 )
 set(cxx-install-headers "${opentxs_SOURCE_DIR}/include/opentxs/api/Context.hpp")
+target_include_directories(
+  opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"
+)
+target_link_libraries(opentxs-common PRIVATE Boost::headers)
 target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OT_ENABLE_RPC)

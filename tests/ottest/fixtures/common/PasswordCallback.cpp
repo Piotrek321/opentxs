@@ -16,22 +16,22 @@ PasswordCallback::PasswordCallback() noexcept
 }
 
 auto PasswordCallback::runOne(
-    const char* szDisplay,
-    ot::Secret& theOutput,
-    const ot::UnallocatedCString& key) const -> void
+    ot::Secret& output,
+    std::string_view prompt,
+    std::string_view key) const noexcept -> void
 {
-    theOutput.AssignText(password_);
+    output.AssignText(password_);
 }
 
 auto PasswordCallback::runTwo(
-    const char* szDisplay,
-    ot::Secret& theOutput,
-    const ot::UnallocatedCString& key) const -> void
+    ot::Secret& output,
+    std::string_view prompt,
+    std::string_view key) const noexcept -> void
 {
-    theOutput.AssignText(password_);
+    output.AssignText(password_);
 }
 
-auto PasswordCallback::SetPassword(std::string_view password) -> void
+auto PasswordCallback::SetPassword(std::string_view password) noexcept -> void
 {
     password_ = password;
 }

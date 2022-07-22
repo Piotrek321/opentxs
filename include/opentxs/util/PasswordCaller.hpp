@@ -7,7 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/util/Container.hpp"
+#include <string_view>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -26,17 +26,17 @@ namespace opentxs
 class OPENTXS_EXPORT PasswordCaller
 {
 public:
-    auto HaveCallback() const -> bool;
+    auto HaveCallback() const noexcept -> bool;
 
-    void AskOnce(
+    auto AskOnce(
         const PasswordPrompt& prompt,
         Secret& output,
-        const UnallocatedCString& key);
-    void AskTwice(
+        std::string_view key) noexcept -> void;
+    auto AskTwice(
         const PasswordPrompt& prompt,
         Secret& output,
-        const UnallocatedCString& key);
-    void SetCallback(PasswordCallback* callback);
+        std::string_view key) noexcept -> void;
+    auto SetCallback(PasswordCallback* callback) noexcept -> void;
 
     PasswordCaller();
     PasswordCaller(const PasswordCaller&) = delete;

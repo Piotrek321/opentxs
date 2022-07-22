@@ -34,8 +34,7 @@ namespace opentxs::api
 class Legacy
 {
 public:
-    static auto SuggestFolder(const UnallocatedCString& app) noexcept
-        -> UnallocatedCString;
+    static auto SuggestFolder(std::string_view appName) noexcept -> fs::path;
     static auto GetFilenameBin(const char* filename) noexcept
         -> UnallocatedCString;
     static auto GetFilenameA(const char* filename) noexcept

@@ -17,32 +17,32 @@ PasswordCaller::PasswordCaller()
 {
 }
 
-void PasswordCaller::AskOnce(
+auto PasswordCaller::AskOnce(
     const PasswordPrompt& prompt,
     Secret& output,
-    const UnallocatedCString& key)
+    std::string_view key) noexcept -> void
 {
     OT_ASSERT(callback_);
 
-    callback_->runOne(prompt.GetDisplayString(), output, key);
+    callback_->runOne(output, prompt.GetDisplayString(), key);
 }
 
-void PasswordCaller::AskTwice(
+auto PasswordCaller::AskTwice(
     const PasswordPrompt& prompt,
     Secret& output,
-    const UnallocatedCString& key)
+    std::string_view key) noexcept -> void
 {
     OT_ASSERT(callback_);
 
-    callback_->runTwo(prompt.GetDisplayString(), output, key);
+    callback_->runTwo(output, prompt.GetDisplayString(), key);
 }
 
-auto PasswordCaller::HaveCallback() const -> bool
+auto PasswordCaller::HaveCallback() const noexcept -> bool
 {
     return nullptr != callback_;
 }
 
-void PasswordCaller::SetCallback(PasswordCallback* callback)
+auto PasswordCaller::SetCallback(PasswordCallback* callback) noexcept -> void
 {
     callback_ = callback;
 }

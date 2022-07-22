@@ -8,7 +8,9 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
+#include <filesystem>
 #include <functional>
+#include <string_view>
 
 #include "opentxs/api/Periodic.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -81,11 +83,11 @@ class OPENTXS_EXPORT opentxs::api::Context : virtual public Periodic
 public:
     using ShutdownCallback = std::function<void()>;
 
-    /** NOTE You must call PrepareSignalHandling() prior to initializating the
+    /** NOTE You must call PrepareSignalHandling() prior to initializing the
      * context if you intend to use signal handling */
     static auto PrepareSignalHandling() noexcept -> void;
-    static auto SuggestFolder(const UnallocatedCString& app) noexcept
-        -> UnallocatedCString;
+    static auto SuggestFolder(std::string_view appName) noexcept
+        -> std::filesystem::path;
 
     /// Returns a handle to the ASIO API.
     virtual auto Asio() const noexcept -> const network::Asio& = 0;
@@ -94,14 +96,13 @@ public:
         -> const api::session::Client& = 0;
     /// Returns the number of client sessions.
     virtual auto ClientSessionCount() const noexcept -> std::size_t = 0;
-    /// Returns the settings for a given config file.
-    virtual auto Config(const UnallocatedCString& path) const noexcept
+    virtual auto Config(const std::filesystem::path& path) const noexcept
         -> const api::Settings& = 0;
     /// Returns a handle to the top-level crypto API.
     virtual auto Crypto() const noexcept -> const api::Crypto& = 0;
     /// Returns a handle to the top-level Factory API.
     virtual auto Factory() const noexcept -> const api::Factory& = 0;
-    /** WARNING You must call PrepareSignalHandling() prior to initializating
+    /** WARNING You must call PrepareSignalHandling() prior to initializing
      * the context if you intend to use this function */
     virtual auto HandleSignals(
         ShutdownCallback* callback = nullptr) const noexcept -> void = 0;
@@ -112,7 +113,7 @@ public:
         -> const session::Notary& = 0;
     /// Returns a count of the notary sessions.
     virtual auto NotarySessionCount() const noexcept -> std::size_t = 0;
-    virtual auto ProfileId() const noexcept -> UnallocatedCString = 0;
+    virtual auto ProfileId() const noexcept -> std::string_view = 0;
     OPENTXS_NO_EXPORT virtual auto QtRootObject() const noexcept
         -> QObject* = 0;
     /// Used for sending RPC requests. Returns RPC response.
@@ -133,8 +134,8 @@ public:
     virtual auto StartClientSession(
         const Options& args,
         const int instance,
-        const UnallocatedCString& recoverWords,
-        const UnallocatedCString& recoverPassphrase) const
+        std::string_view recoverWords,
+        std::string_view recoverPassphrase) const
         -> const api::session::Client& = 0;
     /** Start up a new server session
      *

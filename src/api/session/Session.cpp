@@ -16,6 +16,7 @@
 
 #include "api/session/base/Scheduler.hpp"
 #include "api/session/base/ZMQ.hpp"
+#include "core/Shutdown.hpp"
 #include "internal/api/Context.hpp"
 #include "internal/api/crypto/Symmetric.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -123,6 +124,7 @@ Session::Session(
           *storage_))
     , password_duration_(-1)
     , last_activity_()
+    , shutdown_promise_()
 {
     if (master_secret_) {
         opentxs::Lock lock(master_key_lock_);
@@ -294,6 +296,18 @@ void Session::SetMasterKeyTimeout(
 {
     opentxs::Lock lock(master_key_lock_);
     password_duration_ = timeout;
+}
+
+auto Session::shutdown_complete() noexcept -> void
+{
+    shutdown_promise_.set_value();
+}
+
+auto Session::Stop() noexcept -> std::future<void>
+{
+    shutdown_sender_.Activate();
+
+    return shutdown_promise_.get_future();
 }
 
 auto Session::Storage() const noexcept -> const api::session::Storage&

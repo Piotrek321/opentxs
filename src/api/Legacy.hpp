@@ -35,7 +35,7 @@ class Legacy final : public api::Legacy
 {
 public:
     static auto get_home_directory() noexcept -> fs::path;
-    static auto get_suffix(const char* application) noexcept -> fs::path;
+    static auto get_suffix(std::string_view application) noexcept -> fs::path;
 
     auto Account() const noexcept -> const char* final { return account_; }
     auto AppendFile(fs::path& out, const fs::path& base, const fs::path& file)

@@ -83,7 +83,7 @@ auto ClientSession(
     const api::Crypto& crypto,
     const network::zeromq::Context& context,
     const std::filesystem::path& dataFolder,
-    const int instance) noexcept -> std::unique_ptr<api::session::Client>;
+    const int instance) noexcept -> std::shared_ptr<api::session::Client>;
 auto ContactAPI(const api::session::Client& api) noexcept
     -> std::unique_ptr<api::session::Contacts>;
 auto EndpointsAPI(const int instance) noexcept
@@ -96,7 +96,7 @@ auto NotarySession(
     const api::Settings& config,
     const network::zeromq::Context& context,
     const std::filesystem::path& dataFolder,
-    const int instance) -> std::unique_ptr<api::session::Notary>;
+    const int instance) -> std::shared_ptr<api::session::Notary>;
 auto OTX(
     const Flag& running,
     const api::session::Client& api,

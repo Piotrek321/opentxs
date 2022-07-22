@@ -15,16 +15,16 @@ class PasswordCallbackMock : public opentxs::PasswordCallback
     MOCK_METHOD(
         void,
         runOne,
-        (const char* szDisplay,
-         opentxs::Secret& theOutput,
-         const opentxs::UnallocatedCString& key),
-        (const, override)){};
+        (opentxs::Secret & output,
+         std::string_view prompt,
+         std::string_view key),
+        (const, noexcept, override)){};
     MOCK_METHOD(
         void,
         runTwo,
-        (const char* szDisplay,
-         opentxs::Secret& theOutput,
-         const opentxs::UnallocatedCString& key),
-        (const, override)){};
+        (opentxs::Secret & output,
+         std::string_view prompt,
+         std::string_view key),
+        (const, noexcept, override)){};
 };
 }  // namespace common::mocks::util

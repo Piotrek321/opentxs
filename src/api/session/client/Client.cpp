@@ -16,7 +16,6 @@
 #include "api/session/Session.hpp"
 #include "api/session/base/Scheduler.hpp"
 #include "api/session/base/Storage.hpp"
-#include "core/Shutdown.hpp"
 #include "internal/api/Context.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/crypto/Factory.hpp"
@@ -63,12 +62,12 @@ auto ClientSession(
     const api::Crypto& crypto,
     const network::zeromq::Context& context,
     const std::filesystem::path& dataFolder,
-    const int instance) noexcept -> std::unique_ptr<api::session::Client>
+    const int instance) noexcept -> std::shared_ptr<api::session::Client>
 {
     using ReturnType = api::session::imp::Client;
 
     try {
-        return std::make_unique<ReturnType>(
+        return std::make_shared<ReturnType>(
             parent,
             running,
             std::move(args),
@@ -180,7 +179,6 @@ auto Client::Activity() const -> const session::Activity&
 auto Client::Cleanup() -> void
 {
     LogDetail()(OT_PRETTY_CLASS())("Shutting down and cleaning up.").Flush();
-    shutdown_sender_.Activate();
     ui_->Internal().Shutdown();
     ui_.reset();
     pair_.reset();
@@ -324,5 +322,6 @@ Client::~Client()
 {
     running_.Off();
     Cleanup();
+    shutdown_complete();
 }
 }  // namespace opentxs::api::session::imp

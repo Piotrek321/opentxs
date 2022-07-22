@@ -12,11 +12,9 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>  // IWYU pragma: keep
-#include <functional>
 #include <iosfwd>
 #include <limits>
 #include <memory>
-#include <mutex>
 #include <stdexcept>
 #include <utility>
 
@@ -27,7 +25,7 @@
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Factory.hpp"
-#include "internal/core/Factory.hpp"
+#include "internal/api/session/Session.hpp"
 #include "internal/interface/rpc/RPC.hpp"
 #include "internal/network/zeromq/Factory.hpp"
 #include "internal/util/Flag.hpp"
@@ -72,56 +70,82 @@ namespace opentxs::api
 {
 auto Context::PrepareSignalHandling() noexcept -> void { Signals::Block(); }
 
-auto Context::SuggestFolder(const UnallocatedCString& app) noexcept
-    -> UnallocatedCString
+auto Context::SuggestFolder(std::string_view appName) noexcept
+    -> std::filesystem::path
 {
-    return Legacy::SuggestFolder(app);
+    return Legacy::SuggestFolder(appName);
 }
 }  // namespace opentxs::api
 
 namespace opentxs::api::imp
 {
-Context::Context(
-    Flag& running,
-    const Options& args,
-    PasswordCaller* externalPasswordCallback)
+auto Context::Sessions::clear(ShutdownFutures& futures) noexcept -> void
+{
+    shutdown_ = true;
+    futures.reserve(server_.size() + client_.size());
+
+    for (auto& session : server_) {
+        futures.emplace_back(session->Internal().Stop());
+    }
+
+    for (auto& session : client_) {
+        futures.emplace_back(session->Internal().Stop());
+    }
+
+    server_.clear();
+    client_.clear();
+}
+}  // namespace opentxs::api::imp
+
+namespace opentxs::api::imp
+{
+Context::Context(Flag& running, const Options& args, PasswordCaller* password)
     : api::internal::Context()
-    , Lockable()
     , Periodic(running)
     , args_(args)
-    , home_(args_.Home())
-    , config_lock_()
-    , task_list_lock_()
-    , signal_handler_lock_()
-    , config_()
+    , home_(args_.Home().c_str())
+    , null_callback_(opentxs::Factory::NullCallback())
+    , default_external_password_callback_([&] {
+        auto out = std::make_unique<PasswordCaller>();
+
+        assert(out);
+
+        out->SetCallback(null_callback_.get());
+
+        return out;
+    }())
+    , external_password_callback_([&] {
+        if (nullptr == password) {
+
+            return default_external_password_callback_.get();
+        } else {
+
+            return password;
+        }
+    }())
+    , profile_id_()
     , zmq_context_(opentxs::factory::ZMQContext())
-    , signal_handler_(nullptr)
     , log_(factory::Log(*zmq_context_, args_.RemoteLogEndpoint()))
+    , legacy_(factory::Legacy(home_))
+    , config_()
     , asio_()
     , crypto_(nullptr)
     , factory_(nullptr)
-    , legacy_(factory::Legacy(home_))
     , zap_(nullptr)
-    , profile_id_()
-    , shutdown_callback_(nullptr)
-    , null_callback_(nullptr)
-    , default_external_password_callback_(nullptr)
-    , external_password_callback_{externalPasswordCallback}
-    , file_lock_()
-    , server_()
-    , client_()
+    , sessions_()
     , rpc_(opentxs::Factory::RPC(*this))
+    , file_lock_()
+    , signal_handler_()
+    , shutdown_()
 {
     // NOTE: OT_ASSERT is not available until Init() has been called
+    assert(null_callback_);
+    assert(default_external_password_callback_);
     assert(zmq_context_);
     assert(legacy_);
     assert(log_);
-
-    if (nullptr == external_password_callback_) {
-        setup_default_external_password_callback();
-    }
-
     assert(nullptr != external_password_callback_);
+    assert(external_password_callback_->HaveCallback());
     assert(rpc_);
 }
 
@@ -135,26 +159,37 @@ auto Context::client_instance(const int count) -> int
 auto Context::ClientSession(const int instance) const
     -> const api::session::Client&
 {
-    auto& output = client_.at(instance);
+    const auto& output = sessions_.lock_shared()->client_.at(instance);
 
     OT_ASSERT(output);
 
     return *output;
 }
 
-auto Context::Config(const UnallocatedCString& path) const noexcept
+auto Context::Config(const std::filesystem::path& path) const noexcept
     -> const api::Settings&
 {
-    std::unique_lock<std::mutex> lock(config_lock_);
-    auto& config = config_[path];
+    const auto& config = [&]() -> auto&
+    {
+        auto handle = config_.lock();
+        auto& map = *handle;
 
-    if (!config) {
-        config = factory::Settings(*legacy_, String::Factory(path));
+        if (auto i = map.find(path); map.end() == i) {
+            const auto [out, rc] = map.try_emplace(
+                path,
+                factory::Settings(*legacy_, String::Factory(path.c_str())));
+
+            OT_ASSERT(rc);
+
+            return out->second;
+        } else {
+
+            return i->second;
+        }
     }
+    ();
 
     OT_ASSERT(config);
-
-    lock.unlock();
 
     return *config;
 }
@@ -180,9 +215,9 @@ auto Context::GetPasswordCaller() const noexcept -> PasswordCaller&
     return *external_password_callback_;
 }
 
-auto Context::ProfileId() const noexcept -> UnallocatedCString
+auto Context::ProfileId() const noexcept -> std::string_view
 {
-    return profile_id_;
+    return profile_id_.get();
 }
 
 auto Context::Init() noexcept -> void
@@ -217,24 +252,25 @@ auto Context::Init_Crypto() -> void
 auto Context::Init_Profile() -> void
 {
     const auto& config = Config(legacy_->OpentxsConfigFilePath());
-    bool profile_id_exists{false};
+    auto profile_id_exists{false};
     auto existing_profile_id{String::Factory()};
     config.Check_str(
         String::Factory("profile"),
         String::Factory("profile_id"),
         existing_profile_id,
         profile_id_exists);
+
     if (profile_id_exists) {
-        profile_id_ = UnallocatedCString(existing_profile_id->Get());
+        profile_id_.set_value(existing_profile_id->Get());
     } else {
         const auto new_profile_id(crypto_->Encode().Nonce(20));
-        bool new_or_update{true};
+        auto new_or_update{true};
         config.Set_str(
             String::Factory("profile"),
             String::Factory("profile_id"),
             new_profile_id,
             new_or_update);
-        profile_id_ = UnallocatedCString(new_profile_id->Get());
+        profile_id_.set_value(new_profile_id->Get());
     }
 }
 
@@ -307,7 +343,7 @@ auto Context::Init_Zap() -> void
 
 auto Context::NotarySession(const int instance) const -> const session::Notary&
 {
-    auto& output = server_.at(instance);
+    const auto& output = sessions_.lock_shared()->server_.at(instance);
 
     OT_ASSERT(output);
 
@@ -327,49 +363,25 @@ auto Context::server_instance(const int count) -> int
     return (2 * count) + 1;
 }
 
-auto Context::setup_default_external_password_callback() -> void
-{
-    // NOTE: OT_ASSERT is not available yet because we're too early
-    // in the startup process
-
-    null_callback_.reset(opentxs::Factory::NullCallback());
-
-    assert(null_callback_);
-
-    default_external_password_callback_ = std::make_unique<PasswordCaller>();
-
-    assert(default_external_password_callback_);
-
-    default_external_password_callback_->SetCallback(null_callback_.get());
-
-    assert(default_external_password_callback_->HaveCallback());
-
-    external_password_callback_ = default_external_password_callback_.get();
-}
-
 auto Context::shutdown() noexcept -> void
 {
     running_.Off();
     Periodic::Shutdown();
-
-    if (nullptr != shutdown_callback_) {
-        ShutdownCallback& callback = *shutdown_callback_;
-        callback();
-        shutdown_callback_ = nullptr;
-    }
-
+    signal_handler_.modify([&](auto& data) {
+        if (nullptr != data.callback_) {
+            auto& callback = *data.callback_;
+            callback();
+            data.callback_ = nullptr;
+        }
+    });
     rpc_.reset();
-    server_.clear();
+    sessions_.lock()->clear(shutdown_);
     zap_.reset();
-    client_.clear();
     shutdown_qt();
     crypto_.reset();
     legacy_.reset();
     factory_.reset();
-
-    for (auto& config : config_) { config.second.reset(); }
-
-    config_.clear();
+    config_.lock()->clear();
 
     if (asio_) {
         asio_->Shutdown();
@@ -380,45 +392,47 @@ auto Context::shutdown() noexcept -> void
     log_.reset();
 }
 
-auto Context::start_client(const Lock& lock, const Options& args) const -> void
-{
-    OT_ASSERT(verify_lock(lock));
-    OT_ASSERT(crypto_);
-    OT_ASSERT(legacy_);
-    OT_ASSERT(std::numeric_limits<int>::max() > client_.size());
-
-    const auto next = static_cast<int>(client_.size());
-    const auto instance = client_instance(next);
-    auto& client = client_.emplace_back(factory::ClientSession(
-        *this,
-        running_,
-        args_ + args,
-        Config(legacy_->ClientConfigFilePath(next)),
-        *crypto_,
-        *zmq_context_,
-        legacy_->ClientDataFolder(next),
-        instance));
-
-    OT_ASSERT(client);
-
-    client->InternalClient().Init();
-}
-
 auto Context::StartClientSession(const Options& args, const int instance) const
     -> const api::session::Client&
 {
-    auto lock = Lock{lock_};
+    auto handle = sessions_.lock();
 
+    OT_ASSERT(false == handle->shutdown_);
+
+    auto& vector = handle->client_;
+    const auto existing = vector.size();
     const auto count = std::max<std::size_t>(0_uz, instance);
-    const auto effective = std::min(count, client_.size());
+    const auto effective = std::min(count, existing);
 
-    if (effective == client_.size()) { start_client(lock, args); }
+    if (effective == existing) {
+        const auto count = vector.size();
 
-    const auto& output = client_.at(effective);
+        OT_ASSERT(std::numeric_limits<int>::max() > count);
 
-    OT_ASSERT(output);
+        const auto next = static_cast<int>(count);
+        const auto instance = client_instance(next);
+        auto& client = vector.emplace_back(factory::ClientSession(
+            *this,
+            running_,
+            args_ + args,
+            Config(legacy_->ClientConfigFilePath(next)),
+            *crypto_,
+            *zmq_context_,
+            legacy_->ClientDataFolder(next),
+            instance));
 
-    return *output;
+        OT_ASSERT(client);
+
+        client->InternalClient().Init();
+
+        return *client;
+    } else {
+        const auto& output = vector.at(effective);
+
+        OT_ASSERT(output);
+
+        return *output;
+    }
 }
 
 auto Context::StartClientSession(const int instance) const
@@ -432,9 +446,8 @@ auto Context::StartClientSession(const int instance) const
 auto Context::StartClientSession(
     const Options& args,
     const int instance,
-    const UnallocatedCString& recoverWords,
-    const UnallocatedCString& recoverPassphrase) const
-    -> const api::session::Client&
+    std::string_view recoverWords,
+    std::string_view recoverPassphrase) const -> const api::session::Client&
 {
     OT_ASSERT(crypto::HaveHDKeys());
 
@@ -457,43 +470,45 @@ auto Context::StartClientSession(
     return client;
 }
 
-auto Context::start_server(const Lock& lock, const Options& args) const -> void
-{
-    OT_ASSERT(verify_lock(lock));
-    OT_ASSERT(crypto_);
-    OT_ASSERT(std::numeric_limits<int>::max() > server_.size());
-
-    const auto next = static_cast<int>(server_.size());
-    const auto instance{server_instance(next)};
-    server_.emplace_back(factory::NotarySession(
-        *this,
-        running_,
-        args_ + args,
-        *crypto_,
-        Config(legacy_->ServerConfigFilePath(next)),
-        *zmq_context_,
-        legacy_->ServerDataFolder(next),
-        instance));
-}
-
 auto Context::StartNotarySession(const Options& args, const int instance) const
     -> const session::Notary&
 {
-    auto lock = Lock{lock_};
+    auto handle = sessions_.lock();
 
-    OT_ASSERT(std::numeric_limits<int>::max() > server_.size());
+    OT_ASSERT(false == handle->shutdown_);
 
-    const auto size = static_cast<int>(server_.size());
-    const auto count = std::max<int>(0, instance);
-    const auto effective = std::min(count, size);
+    auto& vector = handle->server_;
+    const auto existing = vector.size();
+    const auto count = std::max<std::size_t>(0_uz, instance);
+    const auto effective = std::min(count, existing);
 
-    if (effective == size) { start_server(lock, args); }
+    if (effective == existing) {
+        const auto count = vector.size();
 
-    const auto& output = server_.at(effective);
+        OT_ASSERT(std::numeric_limits<int>::max() > count);
 
-    OT_ASSERT(output);
+        const auto next = static_cast<int>(count);
+        const auto instance = server_instance(next);
+        auto& server = vector.emplace_back(factory::NotarySession(
+            *this,
+            running_,
+            args_ + args,
+            *crypto_,
+            Config(legacy_->ServerConfigFilePath(next)),
+            *zmq_context_,
+            legacy_->ServerDataFolder(next),
+            instance));
 
-    return *output;
+        OT_ASSERT(server);
+
+        return *server;
+    } else {
+        const auto& output = vector.at(effective);
+
+        OT_ASSERT(output);
+
+        return *output;
+    }
 }
 
 auto Context::StartNotarySession(const int instance) const
@@ -511,5 +526,10 @@ auto Context::ZAP() const noexcept -> const api::network::ZAP&
     return *zap_;
 }
 
-Context::~Context() { shutdown(); }
+Context::~Context()
+{
+    shutdown();
+
+    for (auto& future : shutdown_) { future.get(); }
+}
 }  // namespace opentxs::api::imp

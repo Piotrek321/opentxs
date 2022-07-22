@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <future>
 #include <mutex>
 
 #include "internal/util/Mutex.hpp"
@@ -75,6 +76,7 @@ public:
     virtual auto NewNym(const identifier::Nym& id) const noexcept -> void = 0;
 
     auto Internal() noexcept -> Session& final { return *this; }
+    virtual auto Stop() noexcept -> std::future<void> = 0;
 
     ~Session() override = default;
 };
