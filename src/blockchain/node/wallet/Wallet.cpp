@@ -32,12 +32,12 @@ namespace opentxs::factory
 {
 auto BlockchainWallet(
     const api::Session& api,
-    const blockchain::node::internal::Manager& parent,
+    const blockchain::node::Manager& parent,
     blockchain::database::Wallet& db,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::Type chain,
     const std::string_view shutdown)
-    -> std::unique_ptr<blockchain::node::internal::Wallet>
+    -> std::unique_ptr<blockchain::node::Wallet>
 {
     using ReturnType = blockchain::node::implementation::Wallet;
 
@@ -92,7 +92,7 @@ namespace opentxs::blockchain::node::implementation
 {
 Wallet::Wallet(
     const api::Session& api,
-    const node::internal::Manager& parent,
+    const node::Manager& parent,
     database::Wallet& db,
     const node::internal::Mempool& mempool,
     const Type chain,

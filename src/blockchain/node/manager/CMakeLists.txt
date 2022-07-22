@@ -12,5 +12,8 @@ target_sources(
     "SyncServer.cpp"
     "SyncServer.hpp"
 )
+target_include_directories(
+  opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"
+)
 target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")
 target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")

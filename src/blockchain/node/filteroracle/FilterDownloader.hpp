@@ -15,6 +15,7 @@
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -43,8 +44,8 @@ public:
     FilterDownloader(
         const api::Session& api,
         database::Cfilter& db,
-        const HeaderOracle& header,
-        const internal::Manager& node,
+        const node::HeaderOracle& header,
+        const node::Manager& node,
         const blockchain::Type chain,
         const cfilter::Type type,
         const UnallocatedCString& shutdown,
@@ -63,8 +64,8 @@ private:
     friend FilterDM;
 
     database::Cfilter& db_;
-    const HeaderOracle& header_;
-    const internal::Manager& node_;
+    const node::HeaderOracle& header_;
+    const node::Manager& node_;
     const blockchain::Type chain_;
     const cfilter::Type type_;
     const filteroracle::NotifyCallback& notify_;

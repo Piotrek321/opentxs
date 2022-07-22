@@ -8,6 +8,24 @@
 #include "blockchain/node/filteroracle/FilterDownloader.hpp"
 #include "internal/blockchain/database/Cfilter.hpp"
 #include "internal/blockchain/node/Manager.hpp"
+#include "internal/blockchain/node/Types.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
+#include "opentxs/blockchain/block/Hash.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
+#include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Log.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -19,8 +37,8 @@ auto FilterOracle::HeaderDownloader::NextBatch() noexcept -> BatchType
 FilterOracle::HeaderDownloader::HeaderDownloader(
     const api::Session& api,
     database::Cfilter& db,
-    const HeaderOracle& header,
-    const internal::Manager& node,
+    const node::HeaderOracle& header,
+    const node::Manager& node,
     FilterOracle::FilterDownloader& filter,
     const blockchain::Type chain,
     const cfilter::Type type,
@@ -65,7 +83,7 @@ FilterOracle::HeaderDownloader::~HeaderDownloader()
 
 auto FilterOracle::HeaderDownloader::batch_ready() const noexcept -> void
 {
-    node_.JobReady(PeerManagerJobs::JobAvailableCfheaders);
+    node_.Internal().JobReady(PeerManagerJobs::JobAvailableCfheaders);
 }
 
 auto FilterOracle::HeaderDownloader::batch_size(const std::size_t in) noexcept

@@ -11,6 +11,7 @@
 #include <BlockchainBlockLocalData.pb.h>
 #include <algorithm>
 #include <cstring>
+#include <iterator>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -36,6 +37,9 @@
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/core/FixedByteArray.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -48,7 +52,7 @@ namespace opentxs::blockchain::database
 {
 Headers::Headers(
     const api::Session& api,
-    const node::internal::Manager& network,
+    const node::Manager& network,
     const common::Database& common,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
@@ -225,27 +229,27 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     if (update.HaveReorg()) {
         const auto [pHeight, pHash] = update.ReorgParent();
         const auto pBytes = pHash.Bytes();
-        LogConsole()(print(network_.Chain()))(
+        LogConsole()(print(network_.Internal().Chain()))(
             " reorg detected. Last common ancestor is ")(pHash.asHex())(
             " at height ")(pHeight)
             .Flush();
         auto work = MakeWork(WorkType::BlockchainReorg);
-        work.AddFrame(network_.Chain());
+        work.AddFrame(network_.Internal().Chain());
         work.AddFrame(pBytes.data(), pBytes.size());
         work.AddFrame(pHeight);
         work.AddFrame(bytes.data(), bytes.size());
         work.AddFrame(height);
-        network_.Reorg().Send(std::move(work));
+        network_.Internal().Reorg().Send(std::move(work));
     } else {
         // TODO c++20
         auto work = MakeWork(WorkType::BlockchainNewHeader);
-        work.AddFrame(network_.Chain());
+        work.AddFrame(network_.Internal().Chain());
         work.AddFrame(bytes.data(), bytes.size());
         work.AddFrame(height);
-        network_.Reorg().Send(std::move(work));
+        network_.Internal().Reorg().Send(std::move(work));
     }
 
-    network_.UpdateLocalHeight(position);
+    network_.Internal().UpdateLocalHeight(position);
 
     return true;
 }

@@ -9,21 +9,25 @@
 
 #include <memory>
 
+#include "api/network/blockchain/Base.hpp"
 #include "api/network/blockchain/Blockchain.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/api/network/Factory.hpp"
 #include "opentxs/api/network/BlockchainHandle.hpp"
 
 namespace opentxs::factory
 {
-auto BlockchainNetworkAPINull() noexcept -> api::network::Blockchain::Imp*
+auto BlockchainNetworkAPINull() noexcept
+    -> std::unique_ptr<api::network::Blockchain>
 {
-    using ReturnType = api::network::Blockchain;
+    using ReturnType = api::network::implementation::Blockchain;
 
-    return std::make_unique<ReturnType::Imp>().release();
+    return std::make_unique<ReturnType>(
+        std::make_unique<ReturnType::Imp>().release());
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::network
+namespace opentxs::api::network::implementation
 {
 Blockchain::Blockchain(Imp* imp) noexcept
     : imp_(imp)
@@ -76,10 +80,12 @@ auto Blockchain::GetSyncServers(alloc::Default alloc) const noexcept
     return imp_->GetSyncServers(alloc);
 }
 
-auto Blockchain::Internal() const noexcept -> internal::Blockchain&
+auto Blockchain::Internal() const noexcept -> const internal::Blockchain&
 {
-    return const_cast<Imp&>(*imp_);
+    return *imp_;
 }
+
+auto Blockchain::Internal() noexcept -> internal::Blockchain& { return *imp_; }
 
 auto Blockchain::Profile() const noexcept -> BlockchainProfile
 {
@@ -114,4 +120,4 @@ Blockchain::~Blockchain()
         imp_ = nullptr;
     }
 }
-}  // namespace opentxs::api::network
+}  // namespace opentxs::api::network::implementation

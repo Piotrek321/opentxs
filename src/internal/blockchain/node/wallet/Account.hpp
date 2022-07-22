@@ -44,8 +44,9 @@ namespace node
 namespace internal
 {
 class Mempool;
-class Manager;
 }  // namespace internal
+
+class Manager;
 }  // namespace node
 }  // namespace blockchain
 // }  // namespace v1
@@ -72,7 +73,7 @@ public:
     Account(
         const api::Session& api,
         const crypto::Account& account,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const node::internal::Mempool& mempool,
         const Type chain,

@@ -111,55 +111,56 @@ namespace ip = boost::asio::ip;
 namespace ssl = boost::asio::ssl;
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::network
+namespace opentxs::api::network::implementation
 {
-struct Asio::Imp final : public api::network::internal::Asio,
-                         public opentxs::internal::StateMachine {
-    auto NotificationEndpoint() const noexcept -> const char*;
-
-    auto Accept(
-        const opentxs::network::asio::Endpoint& endpoint,
-        AcceptCallback cb) noexcept -> bool;
-    auto Close(const opentxs::network::asio::Endpoint& endpoint) const noexcept
-        -> bool;
-    auto Connect(const ReadView id, internal::Asio::Socket socket) noexcept
-        -> bool final;
+class Asio final : public internal::Asio, public opentxs::internal::StateMachine
+{
+public:
+    auto Close(const Endpoint& endpoint) const noexcept -> bool final;
     auto FetchJson(
         const ReadView host,
         const ReadView path,
         const bool https,
         const ReadView notify) const noexcept
         -> std::future<boost::json::value> final;
-    auto GetPublicAddress4() const noexcept -> std::shared_future<ByteArray>;
-    auto GetPublicAddress6() const noexcept -> std::shared_future<ByteArray>;
+    auto GetPublicAddress4() const noexcept
+        -> std::shared_future<ByteArray> final;
+    auto GetPublicAddress6() const noexcept
+        -> std::shared_future<ByteArray> final;
+    auto MakeSocket(const Endpoint& endpoint) const noexcept -> Socket final;
+    auto NotificationEndpoint() const noexcept -> std::string_view final;
+    auto Resolve(std::string_view server, std::uint16_t port) const noexcept
+        -> Resolved final;
+
+    auto Accept(const Endpoint& endpoint, AcceptCallback cb) const noexcept
+        -> bool final;
+    auto Connect(const ReadView id, SocketImp socket) noexcept -> bool final;
     auto GetTimer() noexcept -> Timer final;
-    auto Init() noexcept -> void;
+    auto Init() noexcept -> void final;
     auto IOContext() noexcept -> boost::asio::io_context& final;
     auto Post(
         ThreadPool type,
-        Asio::Callback cb,
+        internal::Asio::Callback cb,
         std::string_view threadName) noexcept -> bool final;
     auto Receive(
         const ReadView id,
         const OTZMQWorkType type,
         const std::size_t bytes,
-        internal::Asio::Socket socket) noexcept -> bool final;
-    auto Resolve(std::string_view server, std::uint16_t port) const noexcept
-        -> Resolved;
-    auto Shutdown() noexcept -> void;
+        SocketImp socket) noexcept -> bool final;
+    auto Shutdown() noexcept -> void final;
     auto Transmit(
         const ReadView id,
         const ReadView bytes,
-        Socket socket) noexcept -> bool final;
+        SocketImp socket) noexcept -> bool final;
 
-    Imp(const zmq::Context& zmq) noexcept;
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
+    Asio(const zmq::Context& zmq) noexcept;
+    Asio() = delete;
+    Asio(const Asio&) = delete;
+    Asio(Asio&&) = delete;
+    auto operator=(const Asio&) -> Asio& = delete;
+    auto operator=(Asio&&) -> Asio& = delete;
 
-    ~Imp() final;
+    ~Asio() final;
 
 private:
     enum class ResponseType { IPvonly, AddressOnly };
@@ -221,7 +222,7 @@ private:
         const noexcept -> void;
     auto send_notification(const ReadView notify) const noexcept -> void;
 
-    auto data_callback(zmq::Message&& in) -> void;
+    auto data_callback(zmq::Message&& in) noexcept -> void;
     auto retrieve_address_async(
         const struct Site& site,
         std::shared_ptr<std::promise<ByteArray>> promise) -> void;
@@ -234,4 +235,4 @@ private:
         std::string_view threadName,
         ThreadPool type) noexcept -> std::string;
 };
-}  // namespace opentxs::api::network
+}  // namespace opentxs::api::network::implementation

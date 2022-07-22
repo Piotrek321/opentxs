@@ -15,13 +15,20 @@
 #include <string_view>
 #include <utility>
 
+#include "internal/api/network/Asio.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
+#include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -29,9 +36,14 @@
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
+#include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/network/p2p/State.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -520,13 +532,16 @@ auto Requestor::Imp::transition_state_run() noexcept -> void
 
     const auto interval = std::chrono::duration_cast<std::chrono::nanoseconds>(
         Clock::now() - begin_sync_);
-    const auto seconds =
-        std::chrono::duration_cast<std::chrono::seconds>(interval).count();
-    const auto kb = processed_bytes_ / 1024u;
-    const auto mb = kb / 1024u;
-    LogConsole()(print(chain_))(" sync complete. Processed ")(mb)(" MiB in ")(
-        interval)(" (")(kb / seconds)(" KiB/sec)")
-        .Flush();
+    const auto ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(interval).count();
+    const auto kb = processed_bytes_ / 1024_uz;
+    const auto mb = kb / 1024_uz;
+    const auto& log = LogConsole();
+    log(print(chain_))(" sync complete. Processed ")(mb)(" MiB in ")(interval);
+
+    if (0 < ms) { log(" (")(1000 * kb / ms)(" KiB/sec)"); }
+
+    log.Flush();
     state_ = State::run;
     reset_heartbeat_timer(heartbeat_timeout_);
 }

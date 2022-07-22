@@ -25,5 +25,5 @@ class Context;
 
 namespace opentxs::factory
 {
-auto ZMQContext() noexcept -> std::unique_ptr<network::zeromq::Context>;
+auto ZMQContext() noexcept -> std::shared_ptr<network::zeromq::Context>;
 }  // namespace opentxs::factory

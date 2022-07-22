@@ -21,6 +21,7 @@
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/api/network/Factory.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/api/session/Contacts.hpp"
 #include "internal/api/session/Crypto.hpp"
 #include "internal/api/session/Factory.hpp"
@@ -164,9 +165,6 @@ Client::Client(
     OT_ASSERT(otx_);
     OT_ASSERT(ui_);
     OT_ASSERT(pair_);
-
-    network_.Blockchain().Internal().Init(
-        *blockchain_, parent_.Internal().Legacy(), dataFolder, args_);
 }
 
 auto Client::Activity() const -> const session::Activity&
@@ -187,8 +185,8 @@ auto Client::Cleanup() -> void
     otapi_exec_.reset();
     ot_api_.reset();
     workflow_.reset();
+    network_->Internal().Shutdown();
 #if OT_BLOCKCHAIN
-    network_.Blockchain().Internal().Shutdown();
     contacts_->Internal().prepare_shutdown();
 #endif  // OT_BLOCKCHAIN
     crypto_.InternalSession().PrepareShutdown();
@@ -232,7 +230,6 @@ auto Client::Init() -> void
     StartActivity();
     pair_->init();
     blockchain_->Internal().Init();
-    StartBlockchain();
     ui_->Internal().Init();
 }
 
@@ -277,20 +274,27 @@ auto Client::ServerAction() const -> const otx::client::ServerAction&
     return *server_action_;
 }
 
-void Client::StartActivity() { Scheduler::Start(storage_.get()); }
+auto Client::Start(std::shared_ptr<const api::Session> api) noexcept -> void
+{
+    Session::Start(api);
+    blockchain_->Internal().Start(std::move(api));
+    StartBlockchain();
+}
+
+auto Client::StartActivity() -> void { Scheduler::Start(storage_.get()); }
 
 auto Client::StartBlockchain() noexcept -> void
 {
 #if OT_BLOCKCHAIN
     for (const auto chain : args_.DisabledBlockchains()) {
-        network_.Blockchain().Disable(chain);
+        network_->Blockchain().Disable(chain);
     }
 
-    network_.Blockchain().Internal().RestoreNetworks();
+    network_->Blockchain().Internal().RestoreNetworks();
 #endif  // OT_BLOCKCHAIN
 }
 
-void Client::StartContacts()
+auto Client::StartContacts() -> void
 {
     OT_ASSERT(contacts_);
 

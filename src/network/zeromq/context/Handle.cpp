@@ -7,34 +7,43 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "internal/network/zeromq/Handle.hpp"  // IWYU pragma: associated
 
+#include <cassert>
+#include <utility>
+
 #include "internal/network/zeromq/Batch.hpp"
 #include "internal/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 
 namespace opentxs::network::zeromq::internal
 {
 Handle::Handle(
-    const internal::Context& context,
-    internal::Batch& batch) noexcept
-    : batch_(batch)
-    , context_(&context)
+    std::shared_ptr<const zeromq::Context> context,
+    std::shared_ptr<internal::Batch> batch) noexcept
+    : batch_p_(std::move(batch))
+    , batch_(*batch_p_)
+    , context_(std::move(context))
 {
+    assert(batch_p_);
+    assert(context_);
 }
 
 Handle::Handle(Handle&& rhs) noexcept
-    : batch_(rhs.batch_)
-    , context_(rhs.context_)
+    : batch_p_(nullptr)
+    , batch_(rhs.batch_)
+    , context_(nullptr)
 {
-    rhs.context_ = nullptr;
+    using std::swap;
+    swap(batch_p_, rhs.batch_p_);
+    swap(context_, rhs.context_);
 }
 
-auto Handle::Release() noexcept -> void
+auto Handle::Release() noexcept -> void { batch_.ClearCallbacks(); }
+
+Handle::~Handle()
 {
-    if (nullptr != context_) {
-        batch_.ClearCallbacks();
-        context_->Stop(batch_.id_);
-        context_ = nullptr;
+    if (context_) {
+        Release();
+        context_->Internal().Stop(batch_.id_);
     }
 }
-
-Handle::~Handle() { Release(); }
 }  // namespace opentxs::network::zeromq::internal

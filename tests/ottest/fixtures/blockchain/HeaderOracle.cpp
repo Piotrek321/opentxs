@@ -6,11 +6,14 @@
 #include "ottest/fixtures/blockchain/HeaderOracle.hpp"  // IWYU pragma: associated
 
 #include <opentxs/opentxs.hpp>
+#include <future>
 #include <type_traits>
 
 #include "internal/blockchain/block/Header.hpp"
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/node/Manager.hpp"
+#include "internal/util/LogMacros.hpp"
 
 namespace ottest
 {
@@ -2688,9 +2691,14 @@ auto Test_HeaderOracle_base::init_network(
 
         return output;
     }();
-
-    return ot::factory::BlockchainNetworkBitcoin(
+    auto out = ot::factory::BlockchainNetworkBitcoin(
         api, type, config, "do not init peers", "");
+
+    OT_ASSERT(out);
+
+    out->Internal().Start(out);
+
+    return out;
 }
 
 auto Test_HeaderOracle_base::make_position(
@@ -2801,5 +2809,8 @@ Test_HeaderOracle_base::~Test_HeaderOracle_base() = default;
 
 Test_HeaderOracle_btc::~Test_HeaderOracle_btc() = default;
 
-Test_HeaderOracle::~Test_HeaderOracle() = default;
+Test_HeaderOracle::~Test_HeaderOracle()
+{
+    network_->Internal().Shutdown().get();
+}
 }  // namespace ottest

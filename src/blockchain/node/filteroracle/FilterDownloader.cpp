@@ -48,7 +48,7 @@ FilterOracle::FilterDownloader::FilterDownloader(
     const api::Session& api,
     database::Cfilter& db,
     const HeaderOracle& header,
-    const internal::Manager& node,
+    const node::Manager& node,
     const blockchain::Type chain,
     const cfilter::Type type,
     const UnallocatedCString& shutdown,
@@ -88,7 +88,7 @@ FilterOracle::FilterDownloader::~FilterDownloader()
 
 auto FilterOracle::FilterDownloader::batch_ready() const noexcept -> void
 {
-    node_.JobReady(PeerManagerJobs::JobAvailableCfilters);
+    node_.Internal().JobReady(PeerManagerJobs::JobAvailableCfilters);
 }
 auto FilterOracle::FilterDownloader::batch_size(std::size_t in) noexcept
     -> std::size_t

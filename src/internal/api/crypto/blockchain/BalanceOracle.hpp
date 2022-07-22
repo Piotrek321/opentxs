@@ -8,8 +8,8 @@
 #pragma once
 
 #include <boost/smart_ptr/shared_ptr.hpp>
-
-#include "opentxs/blockchain/Types.hpp"
+#include <memory>
+#include <string_view>
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -20,11 +20,6 @@ namespace api
 {
 class Session;
 }  // namespace api
-
-namespace identifier
-{
-class Nym;
-}  // namespace identifier
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -34,17 +29,11 @@ namespace opentxs::api::crypto::blockchain
 class BalanceOracle
 {
 public:
-    using Balance = opentxs::blockchain::Balance;
-    using Chain = opentxs::blockchain::Type;
+    auto Start() noexcept -> void;
 
-    auto UpdateBalance(const Chain chain, const Balance balance) const noexcept
-        -> void;
-    auto UpdateBalance(
-        const identifier::Nym& owner,
-        const Chain chain,
-        const Balance balance) const noexcept -> void;
-
-    BalanceOracle(const api::Session& api) noexcept;
+    BalanceOracle(
+        std::shared_ptr<const api::Session> api,
+        std::string_view endpoint) noexcept;
     BalanceOracle() = delete;
     BalanceOracle(const BalanceOracle&) = delete;
     BalanceOracle(BalanceOracle&&) = delete;

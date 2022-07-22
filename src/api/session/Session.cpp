@@ -19,6 +19,7 @@
 #include "core/Shutdown.hpp"
 #include "internal/api/Context.hpp"
 #include "internal/api/crypto/Symmetric.hpp"
+#include "internal/api/network/Network.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -124,8 +125,13 @@ Session::Session(
           *storage_))
     , password_duration_(-1)
     , last_activity_()
+    , init_promise_()
+    , init_(init_promise_.get_future())
     , shutdown_promise_()
+    , self_()
 {
+    OT_ASSERT(network_);
+
     if (master_secret_) {
         opentxs::Lock lock(master_key_lock_);
         bump_password_timer(lock);
@@ -139,7 +145,7 @@ void Session::bump_password_timer(const opentxs::Lock& lock) const
 
 auto Session::cleanup() noexcept -> void
 {
-    network_.Shutdown();
+    network_->Internal().Shutdown();
     wallet_.reset();
     Storage::cleanup();
 }
@@ -230,6 +236,16 @@ auto Session::GetSecret(
     return success;
 }
 
+auto Session::GetShared() const noexcept -> std::shared_ptr<const api::Session>
+{
+    init_.get();
+    auto out = self_.lock();
+
+    OT_ASSERT(out);
+
+    return out;
+}
+
 auto Session::Legacy() const noexcept -> const api::Legacy&
 {
     return parent_.Internal().Legacy();
@@ -301,6 +317,25 @@ void Session::SetMasterKeyTimeout(
 auto Session::shutdown_complete() noexcept -> void
 {
     shutdown_promise_.set_value();
+}
+
+auto Session::ShuttingDown() const noexcept -> bool
+{
+    return shutdown_sender_.Activated();
+}
+
+auto Session::Start(std::shared_ptr<const api::Session> me) noexcept -> void
+{
+    OT_ASSERT(me);
+
+    self_ = std::move(me);
+    init_promise_.set_value();
+    network_->Internal().Start(
+        self_.lock(),
+        crypto_.Blockchain(),
+        parent_.Internal().Legacy(),
+        data_folder_,
+        args_);
 }
 
 auto Session::Stop() noexcept -> std::future<void>

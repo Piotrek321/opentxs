@@ -53,6 +53,7 @@ public:
     virtual auto MakeBatch(
         const BatchID preallocated,
         Vector<socket::Type>&& types) noexcept -> Handle = 0;
+    virtual auto ReportShutdown(unsigned int index) noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
     virtual auto Start(
         BatchID id,

@@ -34,6 +34,7 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
@@ -57,6 +58,7 @@
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 #include "util/HDIndex.hpp"
@@ -194,6 +196,7 @@ Blockchain::Imp::Imp(
     : api_(api)
     , contacts_(contacts)
     , blank_(api_.Factory().Data(), Style::Unknown, {}, false)
+    , balance_oracle_endpoint_(opentxs::network::zeromq::MakeArbitraryInproc())
     , lock_()
     , nym_lock_()
     , accounts_(api_)
@@ -1311,19 +1314,6 @@ auto Blockchain::Imp::Unconfirm(
 
         return false;
     }
-}
-
-auto Blockchain::Imp::UpdateBalance(
-    const opentxs::blockchain::Type,
-    const opentxs::blockchain::Balance) const noexcept -> void
-{
-}
-
-auto Blockchain::Imp::UpdateBalance(
-    const identifier::Nym&,
-    const opentxs::blockchain::Type,
-    const opentxs::blockchain::Balance) const noexcept -> void
-{
 }
 
 auto Blockchain::Imp::UpdateElement(UnallocatedVector<ReadView>&) const noexcept

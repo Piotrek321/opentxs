@@ -16,6 +16,17 @@ namespace opentxs  // NOLINT
 {
 // inline namespace v1
 // {
+namespace blockchain
+{
+namespace node
+{
+namespace peermanager
+{
+class Peers;
+}  // namespace peermanager
+}  // namespace node
+}  // namespace blockchain
+
 namespace network
 {
 namespace asio
@@ -26,18 +37,14 @@ class Socket;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::blockchain::node::peermanager
 {
-class PeerManager::IncomingConnectionManager
+class IncomingConnectionManager
 {
 public:
-    static auto TCP(
-        const api::Session& api,
-        PeerManager::Peers& parent) noexcept
+    static auto TCP(const api::Session& api, Peers& parent) noexcept
         -> std::unique_ptr<IncomingConnectionManager>;
-    static auto ZMQ(
-        const api::Session& api,
-        PeerManager::Peers& parent) noexcept
+    static auto ZMQ(const api::Session& api, Peers& parent) noexcept
         -> std::unique_ptr<IncomingConnectionManager>;
 
     virtual auto Disconnect(const int peer) const noexcept -> void = 0;
@@ -59,11 +66,11 @@ public:
     virtual ~IncomingConnectionManager() = default;
 
 protected:
-    PeerManager::Peers& parent_;
+    Peers& parent_;
 
-    IncomingConnectionManager(PeerManager::Peers& parent) noexcept
+    IncomingConnectionManager(Peers& parent) noexcept
         : parent_(parent)
     {
     }
 };
-}  // namespace opentxs::blockchain::node::implementation
+}  // namespace opentxs::blockchain::node::peermanager

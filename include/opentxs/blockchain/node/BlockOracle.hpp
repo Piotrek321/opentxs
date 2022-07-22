@@ -61,6 +61,9 @@ public:
     virtual auto Validate(const bitcoin::block::Block& block) const noexcept
         -> bool = 0;
 
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept
+        -> internal::BlockOracle& = 0;
+
     BlockOracle(const BlockOracle&) = delete;
     BlockOracle(BlockOracle&&) = delete;
     auto operator=(const BlockOracle&) -> BlockOracle& = delete;

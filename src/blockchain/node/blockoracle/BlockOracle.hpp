@@ -84,11 +84,11 @@ class BlockDownloader;
 namespace internal
 {
 class BlockBatch;
-class Manager;
 struct Config;
 }  // namespace internal
 
 class HeaderOracle;
+class Manager;
 }  // namespace node
 }  // namespace blockchain
 
@@ -144,7 +144,7 @@ public:
     auto StartDownloader() noexcept -> void;
 
     Imp(const api::Session& api,
-        const internal::Manager& node,
+        const node::Manager& node,
         const internal::Config& config,
         const node::HeaderOracle& header,
         database::Block& db,
@@ -172,7 +172,7 @@ private:
         libguarded::shared_guarded<blockoracle::Cache, std::shared_mutex>;
 
     const api::Session& api_;
-    const internal::Manager& node_;
+    const node::Manager& node_;
     const database::Block& db_;
     const CString submit_endpoint_;
     const std::unique_ptr<const block::Validator> validator_;
@@ -185,7 +185,7 @@ private:
         -> std::unique_ptr<const block::Validator>;
 
     Imp(const api::Session& api,
-        const internal::Manager& node,
+        const node::Manager& node,
         const internal::Config& config,
         const node::HeaderOracle& header,
         database::Block& db,

@@ -34,10 +34,7 @@ class Database;
 
 namespace node
 {
-namespace internal
-{
 class Manager;
-}  // namespace internal
 }  // namespace node
 }  // namespace blockchain
 // }  // namespace v1
@@ -48,7 +45,7 @@ namespace opentxs::factory
 {
 auto BlockchainDatabase(
     const api::Session& api,
-    const blockchain::node::internal::Manager& node,
+    const blockchain::node::Manager& node,
     const blockchain::database::common::Database& db,
     const blockchain::Type chain,
     const blockchain::cfilter::Type filter) noexcept

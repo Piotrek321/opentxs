@@ -69,11 +69,7 @@ class Database;
 
 namespace node
 {
-namespace internal
-{
 class Manager;
-}  // namespace internal
-
 class UpdateTransaction;
 }  // namespace node
 }  // namespace blockchain
@@ -119,14 +115,14 @@ public:
 
     Headers(
         const api::Session& api,
-        const node::internal::Manager& network,
+        const node::Manager& network,
         const common::Database& common,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type type) noexcept;
 
 private:
     const api::Session& api_;
-    const node::internal::Manager& network_;
+    const node::Manager& network_;
     const common::Database& common_;
     const storage::lmdb::LMDB& lmdb_;
     mutable std::mutex lock_;

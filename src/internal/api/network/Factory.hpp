@@ -21,6 +21,7 @@ namespace api
 namespace network
 {
 class Asio;
+class Blockchain;
 class Network;
 }  // namespace network
 
@@ -46,17 +47,20 @@ class Context;
 
 namespace opentxs::factory
 {
+auto AsioAPI(const network::zeromq::Context& zmq) noexcept
+    -> std::unique_ptr<api::network::Asio>;
 auto BlockchainNetworkAPI(
     const api::Session& api,
     const api::session::Endpoints& endpoints,
     const opentxs::network::zeromq::Context& zmq) noexcept
-    -> api::network::Blockchain::Imp*;
-auto BlockchainNetworkAPINull() noexcept -> api::network::Blockchain::Imp*;
+    -> std::unique_ptr<api::network::Blockchain>;
+auto BlockchainNetworkAPINull() noexcept
+    -> std::unique_ptr<api::network::Blockchain>;
 auto NetworkAPI(
     const api::Session& api,
     const api::network::Asio& asio,
     const network::zeromq::Context& zmq,
     const api::session::Endpoints& endpoints,
-    api::network::Blockchain::Imp* blockchain) noexcept
-    -> api::network::Network::Imp*;
+    std::unique_ptr<api::network::Blockchain> blockchain) noexcept
+    -> std::unique_ptr<api::network::Network>;
 }  // namespace opentxs::factory

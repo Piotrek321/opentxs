@@ -54,43 +54,47 @@ namespace opentxs::api::network
 class OPENTXS_EXPORT Blockchain
 {
 public:
-    struct Imp;
-
     using Chain = opentxs::blockchain::Type;
     using Endpoints = Vector<CString>;
 
-    auto AddSyncServer(const std::string_view endpoint) const noexcept -> bool;
-    auto ConnectedSyncServers() const noexcept -> Endpoints;
-    auto DeleteSyncServer(const std::string_view endpoint) const noexcept
-        -> bool;
-    auto Disable(const Chain type) const noexcept -> bool;
-    auto Enable(const Chain type, const std::string_view seednode = "")
-        const noexcept -> bool;
-    auto EnabledChains(alloc::Default alloc = {}) const noexcept -> Set<Chain>;
+    virtual auto AddSyncServer(const std::string_view endpoint) const noexcept
+        -> bool = 0;
+    virtual auto ConnectedSyncServers() const noexcept -> Endpoints = 0;
+    virtual auto DeleteSyncServer(
+        const std::string_view endpoint) const noexcept -> bool = 0;
+    virtual auto Disable(const Chain type) const noexcept -> bool = 0;
+    virtual auto Enable(const Chain type, const std::string_view seednode = {})
+        const noexcept -> bool = 0;
+    virtual auto EnabledChains(alloc::Default alloc = {}) const noexcept
+        -> Set<Chain> = 0;
     /// throws std::out_of_range if chain has not been started
-    auto GetChain(const Chain type) const noexcept(false) -> BlockchainHandle;
-    auto GetSyncServers(alloc::Default alloc = {}) const noexcept -> Endpoints;
-    OPENTXS_NO_EXPORT auto Internal() const noexcept -> internal::Blockchain&;
-    auto Profile() const noexcept -> BlockchainProfile;
-    auto Start(const Chain type, const std::string_view seednode = "")
-        const noexcept -> bool;
-    auto StartSyncServer(
+    virtual auto GetChain(const Chain type) const noexcept(false)
+        -> BlockchainHandle = 0;
+    virtual auto GetSyncServers(alloc::Default alloc = {}) const noexcept
+        -> Endpoints = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Blockchain& = 0;
+    virtual auto Profile() const noexcept -> BlockchainProfile = 0;
+    virtual auto Start(const Chain type, const std::string_view seednode = {})
+        const noexcept -> bool = 0;
+    virtual auto StartSyncServer(
         const std::string_view syncEndpoint,
         const std::string_view publicSyncEndpoint,
         const std::string_view updateEndpoint,
-        const std::string_view publicUpdateEndpoint) const noexcept -> bool;
-    auto Stop(const Chain type) const noexcept -> bool;
+        const std::string_view publicUpdateEndpoint) const noexcept -> bool = 0;
+    virtual auto Stop(const Chain type) const noexcept -> bool = 0;
 
-    OPENTXS_NO_EXPORT Blockchain(Imp* imp) noexcept;
-    Blockchain() = delete;
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept
+        -> internal::Blockchain& = 0;
+
     Blockchain(const Blockchain&) = delete;
     Blockchain(Blockchain&&) = delete;
     auto operator=(const Blockchain&) -> Blockchain& = delete;
     auto operator=(Blockchain&&) -> Blockchain& = delete;
 
-    OPENTXS_NO_EXPORT ~Blockchain();
+    OPENTXS_NO_EXPORT virtual ~Blockchain() = default;
 
-private:
-    Imp* imp_;
+protected:
+    Blockchain() = default;
 };
 }  // namespace opentxs::api::network

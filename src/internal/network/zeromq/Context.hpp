@@ -82,7 +82,10 @@ public:
     virtual auto Thread(BatchID id) const noexcept -> Thread* = 0;
     virtual auto ThreadID(BatchID id) const noexcept -> std::thread::id = 0;
 
+    virtual auto Init(std::shared_ptr<const zeromq::Context> me) noexcept
+        -> void = 0;
     auto Internal() noexcept -> internal::Context& final { return *this; }
+    virtual auto Stop() noexcept -> std::future<void> = 0;
 
     ~Context() override = default;
 

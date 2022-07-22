@@ -38,6 +38,7 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/network/p2p/Base.hpp"
@@ -83,8 +84,8 @@ SyncServer::SyncServer(
     const api::Session& api,
     database::Sync& db,
     const node::HeaderOracle& header,
-    const node::internal::FilterOracle& filter,
-    const node::internal::Manager& node,
+    const node::FilterOracle& filter,
+    const node::Manager& node,
     const blockchain::Type chain,
     const cfilter::Type type,
     const UnallocatedCString& shutdown,
@@ -436,8 +437,9 @@ auto SyncServer::pipeline(zmq::Message&& in) -> void
             protect_shutdown([this] { shut_down(); });
         } break;
         case Work::heartbeat: {
-            if (dm_enabled()) { process_position(filter_.Tip(type_)); }
-
+            if (dm_enabled()) {
+                process_position(filter_.Internal().Tip(type_));
+            }
             run_if_enabled();
         } break;
         case Work::filter: {

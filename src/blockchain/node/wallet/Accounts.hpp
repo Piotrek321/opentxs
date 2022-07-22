@@ -58,7 +58,6 @@ namespace node
 {
 namespace internal
 {
-class Manager;
 class Mempool;
 }  // namespace internal
 
@@ -68,6 +67,8 @@ class Account;
 class NotificationStateData;
 class Subchain;
 }  // namespace wallet
+
+class Manager;
 }  // namespace node
 }  // namespace blockchain
 
@@ -105,7 +106,7 @@ public:
     auto Shutdown() noexcept -> void;
 
     Imp(const api::Session& api,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
@@ -129,7 +130,7 @@ private:
     using AccountMap = Map<identifier::Nym, wallet::Account>;
 
     const api::Session& api_;
-    const node::internal::Manager& node_;
+    const node::Manager& node_;
     database::Wallet& db_;
     const node::internal::Mempool& mempool_;
     const Type chain_;
@@ -160,7 +161,7 @@ private:
     auto transition_state_reorg() noexcept -> bool;
 
     Imp(const api::Session& api,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,

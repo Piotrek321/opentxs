@@ -137,7 +137,7 @@ private:
     const std::size_t total_socket_count_;
     mutable Gatekeeper gate_;
     mutable std::atomic<bool> shutdown_;
-    internal::Handle handle_;
+    mutable internal::Handle handle_;
     internal::Batch& batch_;
     socket::Raw& sub_;                   // NOTE activated by SubscribeTo()
     socket::Raw& pull_;                  // NOTE activated by PullFrom()

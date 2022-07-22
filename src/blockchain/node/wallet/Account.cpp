@@ -19,8 +19,6 @@
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "internal/blockchain/node/Manager.hpp"
-#include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/blockchain/node/wallet/subchain/Subchain.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Context.hpp"
@@ -42,6 +40,8 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -90,7 +90,7 @@ namespace opentxs::blockchain::node::wallet
 Account::Imp::Imp(
     const api::Session& api,
     const crypto::Account& account,
-    const node::internal::Manager& node,
+    const node::Manager& node,
     database::Wallet& db,
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
@@ -127,7 +127,7 @@ Account::Imp::Imp(
     , db_(db)
     , mempool_(mempool)
     , chain_(chain)
-    , filter_type_(node_.FilterOracleInternal().DefaultType())
+    , filter_type_(node_.FilterOracle().DefaultType())
     , from_parent_(std::move(fromParent))
     , pending_state_(State::normal)
     , state_(State::normal)
@@ -143,7 +143,7 @@ Account::Imp::Imp(
 Account::Imp::Imp(
     const api::Session& api,
     const crypto::Account& account,
-    const node::internal::Manager& node,
+    const node::Manager& node,
     database::Wallet& db,
     const node::internal::Mempool& mempool,
     const network::zeromq::BatchID batch,
@@ -584,7 +584,7 @@ namespace opentxs::blockchain::node::wallet
 Account::Account(
     const api::Session& api,
     const crypto::Account& account,
-    const node::internal::Manager& node,
+    const node::Manager& node,
     database::Wallet& db,
     const node::internal::Mempool& mempool,
     const Type chain,

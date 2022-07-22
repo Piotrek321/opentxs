@@ -20,7 +20,6 @@
 
 #include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
-#include "internal/blockchain/node/Manager.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -53,7 +52,7 @@ namespace opentxs::blockchain::node::wallet
 {
 DeterministicStateData::DeterministicStateData(
     const api::Session& api,
-    const node::internal::Manager& node,
+    const node::Manager& node,
     database::Wallet& db,
     const node::internal::Mempool& mempool,
     const crypto::Deterministic& subaccount,
@@ -279,7 +278,7 @@ auto DeterministicStateData::process(
 
                 if (key.PublicKey() == script.Pubkey().value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
-                        index)(": P2PK match found for ")(print(node_.Chain()))(
+                        index)(": P2PK match found for ")(print(chain_))(
                         " transaction ")
                         .asHex(txid)(" output ")(i)(" via ")
                         .asHex(key.PublicKey())
@@ -300,8 +299,8 @@ auto DeterministicStateData::process(
 
                 if (hash.Bytes() == script.PubkeyHash().value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
-                        index)(": P2PKH match found for ")(
-                        print(node_.Chain()))(" transaction ")
+                        index)(": P2PKH match found for ")(print(chain_))(
+                        " transaction ")
                         .asHex(txid)(" output ")(i)(" via ")
                         .asHex(hash)
                         .Flush();
@@ -321,8 +320,8 @@ auto DeterministicStateData::process(
 
                 if (hash.Bytes() == script.PubkeyHash().value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(
-                        index)(": P2WPKH match found for ")(
-                        print(node_.Chain()))(" transaction ")
+                        index)(": P2WPKH match found for ")(print(chain_))(
+                        " transaction ")
                         .asHex(txid)(" output ")(i)(" via ")
                         .asHex(hash)
                         .Flush();
@@ -357,7 +356,7 @@ auto DeterministicStateData::process(
                 if (key.PublicKey() == script.MultisigPubkey(0).value()) {
                     log_(OT_PRETTY_CLASS())(name_)(" element ")(index)(": ")(
                         m.value())(" of ")(n.value())(" P2MS match found for ")(
-                        print(node_.Chain()))(" transaction ")
+                        print(chain_))(" transaction ")
                         .asHex(txid)(" output ")(i)(" via ")
                         .asHex(key.PublicKey())
                         .Flush();

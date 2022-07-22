@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <future>
 
@@ -37,6 +38,7 @@ public:
     const UnallocatedCString endpoint_;
 
     auto Activate() const noexcept -> void;
+    auto Activated() const noexcept -> bool { return activated_; }
 
     auto Close() noexcept -> void;
 
@@ -52,6 +54,7 @@ public:
     ~ShutdownSender();
 
 private:
+    mutable std::atomic_bool activated_;
     OTZMQPublishSocket socket_;
 };
 

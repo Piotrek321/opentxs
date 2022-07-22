@@ -7,10 +7,12 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/peermanager/PeerManager.hpp"  // IWYU pragma: associated
 
+#include <atomic>
 #include <chrono>
 #include <memory>
 #include <optional>
 #include <string_view>
+#include <utility>
 
 #include "core/Worker.hpp"
 #include "internal/api/network/Blockchain.hpp"
@@ -44,10 +46,10 @@ auto BlockchainPeerManager(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
-    const blockchain::node::internal::Manager& node,
+    const blockchain::node::Manager& node,
     const blockchain::node::HeaderOracle& headers,
-    const blockchain::node::internal::FilterOracle& filter,
-    const blockchain::node::internal::BlockOracle& block,
+    const blockchain::node::FilterOracle& filter,
+    const blockchain::node::BlockOracle& block,
     blockchain::database::Peer& database,
     const blockchain::Type type,
     std::string_view seednode,
@@ -77,10 +79,10 @@ PeerManager::PeerManager(
     const api::Session& api,
     const internal::Config& config,
     const node::internal::Mempool& mempool,
-    const internal::Manager& node,
-    const HeaderOracle& headers,
-    const internal::FilterOracle& filter,
-    const internal::BlockOracle& block,
+    const node::Manager& node,
+    const node::HeaderOracle& headers,
+    const node::FilterOracle& filter,
+    const node::BlockOracle& block,
     database::Peer& database,
     const Type chain,
     std::string_view seednode,
@@ -91,19 +93,7 @@ PeerManager::PeerManager(
     , database_(database)
     , chain_(chain)
     , jobs_(api)
-    , peers_(
-          api,
-          config,
-          mempool,
-          node_,
-          headers,
-          filter,
-          block,
-          database_,
-          *this,
-          shutdown,
-          chain,
-          seednode)
+    , peers_(api, config, node_, database_, *this, shutdown, chain, seednode)
     , verified_lock_()
     , verified_peers_()
     , init_promise_()
@@ -184,12 +174,6 @@ auto PeerManager::GetVerifiedPeerCount() const noexcept -> std::size_t
     auto lock = Lock{verified_lock_};
 
     return verified_peers_.size();
-}
-
-auto PeerManager::init() noexcept -> void
-{
-    init_promise_.set_value();
-    trigger();
 }
 
 auto PeerManager::JobReady(const PeerManagerJobs type) const noexcept -> void
@@ -310,7 +294,7 @@ auto PeerManager::pipeline(zmq::Message&& message) -> void
             OT_ASSERT(2 < body.size());
 
             const auto id = body.at(1).as<int>();
-            auto endpoint = Peers::Endpoint{
+            auto endpoint = peermanager::Peers::Endpoint{
                 reinterpret_cast<blockchain::p2p::internal::Address*>(
                     body.at(2).as<std::uintptr_t>())};
 
@@ -383,6 +367,12 @@ auto PeerManager::shut_down() noexcept -> void
     jobs_.Shutdown();
     peers_.Shutdown();
     // TODO MT-34 investigate what other actions might be needed
+}
+
+auto PeerManager::Start() noexcept -> void
+{
+    init_promise_.set_value();
+    trigger();
 }
 
 auto PeerManager::state_machine() noexcept -> bool

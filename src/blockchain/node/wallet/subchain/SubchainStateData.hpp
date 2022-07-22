@@ -113,7 +113,6 @@ namespace node
 {
 namespace internal
 {
-class Manager;
 class Mempool;
 }  // namespace internal
 
@@ -124,6 +123,8 @@ class Job;
 class ScriptForm;
 class Work;
 }  // namespace wallet
+
+class Manager;
 }  // namespace node
 
 class GCS;
@@ -164,7 +165,7 @@ public:
         std::function<void(const Vector<block::Position>&)>;
 
     const api::Session& api_;
-    const node::internal::Manager& node_;
+    const node::Manager& node_;
     database::Wallet& db_;
     const node::internal::Mempool& mempool_oracle_;
     const crypto::Subaccount& subaccount_;
@@ -257,7 +258,7 @@ protected:
 
     SubchainStateData(
         const api::Session& api,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const node::internal::Mempool& mempool,
         const crypto::Subaccount& subaccount,
@@ -397,7 +398,7 @@ private:
 
     SubchainStateData(
         const api::Session& api,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const node::internal::Mempool& mempool,
         const crypto::Subaccount& subaccount,

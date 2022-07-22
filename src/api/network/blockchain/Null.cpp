@@ -13,7 +13,7 @@ auto BlockchainNetworkAPI(
     const api::Session&,
     const api::session::Endpoints&,
     const opentxs::network::zeromq::Context&) noexcept
-    -> api::network::Blockchain::Imp*
+    -> std::unique_ptr<api::network::Blockchain>
 {
     return BlockchainNetworkAPINull();
 }

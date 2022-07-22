@@ -68,14 +68,20 @@ public:
         const PasswordPrompt& reason,
         const bool twice,
         const UnallocatedCString& key = "") const -> bool = 0;
+    // WARNING do not call until the Session is fully constructed
+    virtual auto GetShared() const noexcept
+        -> std::shared_ptr<const api::Session> = 0;
     auto Internal() const noexcept -> const Session& final { return *this; }
     virtual auto Legacy() const noexcept -> const api::Legacy& = 0;
     virtual auto Lock() const -> std::mutex& = 0;
     virtual auto MasterKey(const opentxs::Lock& lock) const
         -> const opentxs::crypto::key::Symmetric& = 0;
     virtual auto NewNym(const identifier::Nym& id) const noexcept -> void = 0;
+    virtual auto ShuttingDown() const noexcept -> bool = 0;
 
     auto Internal() noexcept -> Session& final { return *this; }
+    virtual auto Start(std::shared_ptr<const api::Session> api) noexcept
+        -> void = 0;
     virtual auto Stop() noexcept -> std::future<void> = 0;
 
     ~Session() override = default;

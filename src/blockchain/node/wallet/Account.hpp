@@ -73,7 +73,6 @@ namespace node
 {
 namespace internal
 {
-class Manager;
 class Mempool;
 }  // namespace internal
 
@@ -82,6 +81,8 @@ namespace wallet
 class Subchain;
 class SubchainStateData;
 }  // namespace wallet
+
+class Manager;
 }  // namespace node
 }  // namespace blockchain
 
@@ -122,7 +123,7 @@ public:
 
     Imp(const api::Session& api,
         const crypto::Account& account,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,
@@ -146,7 +147,7 @@ private:
 
     const api::Session& api_;
     const crypto::Account& account_;
-    const node::internal::Manager& node_;
+    const node::Manager& node_;
     database::Wallet& db_;
     const node::internal::Mempool& mempool_;
     const Type chain_;
@@ -204,7 +205,7 @@ private:
 
     Imp(const api::Session& api,
         const crypto::Account& account,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const node::internal::Mempool& mempool,
         const network::zeromq::BatchID batch,

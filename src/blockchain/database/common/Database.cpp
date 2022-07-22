@@ -37,9 +37,11 @@ extern "C" {
 #include "blockchain/database/common/Wallet.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"  // IWYU pragma: keep
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
@@ -365,14 +367,14 @@ auto Database::Disable(const Chain type) const noexcept -> bool
 auto Database::Enable(const Chain type, std::string_view seednode)
     const noexcept -> bool
 {
-    static_assert(sizeof(true_byte_) == 1);
+    static_assert(sizeof(true_byte_) == 1_uz);
 
     const auto key = std::size_t{static_cast<std::uint32_t>(type)};
     const auto value = [&] {
         auto output = space(sizeof(true_byte_) + seednode.size());
         output.at(0) = true_byte_;
-        auto* it = std::next(output.data(), sizeof(true_byte_));
-        std::memcpy(it, seednode.data(), seednode.size());
+        auto* i = std::next(output.data(), sizeof(true_byte_));
+        copy(seednode, preallocated(seednode.size(), i));
 
         return output;
     }();

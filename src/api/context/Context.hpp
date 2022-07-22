@@ -195,11 +195,11 @@ private:
     const std::unique_ptr<PasswordCaller> default_external_password_callback_;
     PasswordCaller* const external_password_callback_;
     AsyncConst<CString> profile_id_;
-    std::unique_ptr<opentxs::network::zeromq::Context> zmq_context_;
+    std::shared_ptr<opentxs::network::zeromq::Context> zmq_context_;
+    std::unique_ptr<network::Asio> asio_;
     std::unique_ptr<api::internal::Log> log_;
     std::unique_ptr<api::Legacy> legacy_;
     mutable GuardedConfig config_;
-    std::unique_ptr<network::Asio> asio_;
     std::unique_ptr<api::Crypto> crypto_;
     std::shared_ptr<api::Factory> factory_;
     std::unique_ptr<api::network::ZAP> zap_;

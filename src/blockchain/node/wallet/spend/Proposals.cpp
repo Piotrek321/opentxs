@@ -37,6 +37,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/SendResult.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
@@ -77,7 +78,7 @@ public:
     }
 
     Imp(const api::Session& api,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const Type chain) noexcept
         : api_(api)
@@ -194,7 +195,7 @@ private:
     };
 
     const api::Session& api_;
-    const node::internal::Manager& node_;
+    const node::Manager& node_;
     database::Wallet& db_;
     const Type chain_;
     mutable std::mutex lock_;
@@ -216,7 +217,7 @@ private:
         auto rc = SendResult::UnspecifiedError;
         auto txid{blank};
         auto builder = BitcoinTransactionBuilder{
-            api_, db_, id, proposal, chain_, node_.FeeRate()};
+            api_, db_, id, proposal, chain_, node_.Internal().FeeRate()};
         auto post = ScopeGuard{[&] {
             switch (output) {
                 case BuildResult::TemporaryFailure: {
@@ -328,7 +329,8 @@ private:
         }
 
         txid = transaction.ID();
-        const auto sent = node_.BroadcastTransaction(transaction, true);
+        const auto sent =
+            node_.Internal().BroadcastTransaction(transaction, true);
 
         try {
             if (sent) {
@@ -435,7 +437,7 @@ private:
             if (!pTx) { continue; }
 
             const auto& tx = *pTx;
-            node_.BroadcastTransaction(tx, true);
+            node_.Internal().BroadcastTransaction(tx, true);
         }
     }
     auto send(const Lock& lock) noexcept -> void
@@ -490,7 +492,7 @@ private:
 
 Proposals::Proposals(
     const api::Session& api,
-    const node::internal::Manager& node,
+    const node::Manager& node,
     database::Wallet& db,
     const Type chain) noexcept
     : imp_(std::make_unique<Imp>(api, node, db, chain))

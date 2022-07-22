@@ -35,6 +35,14 @@ class Output;
 
 class Outpoint;
 }  // namespace block
+
+namespace node
+{
+namespace internal
+{
+class Wallet;
+}  // namespace internal
+}  // namespace node
 }  // namespace blockchain
 
 namespace identifier
@@ -91,14 +99,18 @@ public:
     virtual auto GetTags(const block::Outpoint& output) const noexcept
         -> UnallocatedSet<TxoTag> = 0;
     virtual auto Height() const noexcept -> block::Height = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Wallet& = 0;
     virtual auto StartRescan() const noexcept -> bool = 0;
+
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Wallet& = 0;
 
     Wallet(const Wallet&) = delete;
     Wallet(Wallet&&) = delete;
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
 
-    virtual ~Wallet() = default;
+    OPENTXS_NO_EXPORT virtual ~Wallet() = default;
 
 protected:
     Wallet() noexcept = default;

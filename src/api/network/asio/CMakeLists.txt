@@ -11,13 +11,12 @@ target_sources(
     "Acceptors.cpp"
     "Acceptors.hpp"
     "AddressSites.cpp"
+    "Asio.hpp"
     "Asio.cpp"
     "Buffers.cpp"
     "Buffers.hpp"
     "Context.cpp"
     "Context.hpp"
-    "Imp.cpp"
-    "Imp.hpp"
 )
 target_include_directories(
   opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/cs_libguarded/src"

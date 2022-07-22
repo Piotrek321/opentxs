@@ -172,6 +172,7 @@ private:
         -> bool;
 
     auto Cleanup() -> void;
-    auto Start() -> void final;
+    using session::internal::Session::Start;
+    auto Start() -> void;
 };
 }  // namespace opentxs::api::session::imp

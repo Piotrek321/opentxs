@@ -52,6 +52,7 @@ enum class Operation : OTZMQWorkType {
     add_socket = OT_ZMQ_INTERNAL_SIGNAL + 0,
     remove_socket = OT_ZMQ_INTERNAL_SIGNAL + 1,
     change_socket = OT_ZMQ_INTERNAL_SIGNAL + 2,
+    shutdown = OT_ZMQ_INTERNAL_SIGNAL + 3,
 };
 
 auto GetBatchID() noexcept -> BatchID;

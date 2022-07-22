@@ -9,6 +9,7 @@
 #include <future>
 
 #include "internal/blockchain/node/Types.hpp"
+#include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -74,6 +75,8 @@ public:
         -> bool = 0;
     virtual auto LookupIncomingSocket(const int id) const noexcept(false)
         -> opentxs::network::asio::Socket = 0;
+    virtual auto Nonce() const noexcept
+        -> const blockchain::p2p::bitcoin::Nonce& = 0;
     virtual auto RequestBlock(const block::Hash& block) const noexcept
         -> bool = 0;
     virtual auto RequestBlocks(
@@ -81,8 +84,7 @@ public:
     virtual auto RequestHeaders() const noexcept -> bool = 0;
     virtual auto VerifyPeer(const int id, const UnallocatedCString& address)
         const noexcept -> void = 0;
-
-    virtual auto init() noexcept -> void = 0;
+    virtual auto Start() noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 
     virtual ~PeerManager() = default;

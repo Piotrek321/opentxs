@@ -44,10 +44,7 @@ public:
     auto GetBlockBatch() const noexcept -> BlockBatch;
     auto GetBlockJob() const noexcept -> BlockBatch;
     auto Heartbeat() const noexcept -> void;
-    auto Internal() const noexcept -> const internal::BlockOracle& final
-    {
-        return *this;
-    }
+    auto Internal() const noexcept -> const BlockOracle& final { return *this; }
     auto LoadBitcoin(const block::Hash& block) const noexcept
         -> BitcoinBlockResult final;
     auto LoadBitcoin(const Vector<block::Hash>& hashes) const noexcept
@@ -58,6 +55,7 @@ public:
         -> bool final;
 
     auto Init() noexcept -> void;
+    auto Internal() noexcept -> BlockOracle& final { return *this; }
     auto Shutdown() noexcept -> void;
 
     BlockOracle(boost::shared_ptr<Imp>&& imp) noexcept;

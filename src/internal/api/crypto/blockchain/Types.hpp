@@ -15,8 +15,7 @@ namespace opentxs::api::crypto::blockchain
 // WARNING update print function if new values are added or removed
 enum class BalanceOracleJobs : OTZMQWorkType {
     shutdown = value(WorkType::Shutdown),
-    update_chain_balance = OT_ZMQ_INTERNAL_SIGNAL + 0,
-    update_nym_balance = OT_ZMQ_INTERNAL_SIGNAL + 1,
+    update_balance = OT_ZMQ_BALANCE_ORACLE_SUBMIT,
     registration = OT_ZMQ_REGISTER_SIGNAL,
     init = OT_ZMQ_INIT_SIGNAL,
     statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,

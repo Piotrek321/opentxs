@@ -64,10 +64,7 @@ class Wallet;
 
 namespace node
 {
-namespace internal
-{
 class Manager;
-}  // namespace internal
 }  // namespace node
 }  // namespace blockchain
 // }  // namespace v1
@@ -88,7 +85,7 @@ public:
 
     Proposals(
         const api::Session& api,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const Type chain) noexcept;
     ~Proposals();

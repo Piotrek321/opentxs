@@ -15,12 +15,14 @@
 #include <string_view>
 #include <utility>
 
+#include "internal/api/session/Session.hpp"
 #include "internal/core/Factory.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/BlockchainHandle.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -61,8 +63,7 @@ auto print(BalanceOracleJobs job) noexcept -> std::string_view
 
         static const auto map = Map<Type, CString>{
             {Type::shutdown, "shutdown"},
-            {Type::update_chain_balance, "update_chain_balance"},
-            {Type::update_nym_balance, "update_nym_balance"},
+            {Type::update_balance, "update_balance"},
             {Type::registration, "registration"},
             {Type::init, "init"},
             {Type::statemachine, "statemachine"},
@@ -82,30 +83,33 @@ auto print(BalanceOracleJobs job) noexcept -> std::string_view
 namespace opentxs::api::crypto::blockchain
 {
 BalanceOracle::Imp::Imp(
-    const api::Session& api,
+    std::shared_ptr<const api::Session> api,
+    std::string_view endpoint,
     const opentxs::network::zeromq::BatchID batch,
     allocator_type alloc) noexcept
     : Actor(
-          api,
+          *api,
           LogTrace(),
           CString{balanceOracleThreadName, alloc},
           0ms,
           batch,
           alloc,
           {
-              {CString{api.Endpoints().Shutdown(), alloc}, Direction::Connect},
+              {CString{api->Endpoints().Shutdown(), alloc}, Direction::Connect},
           },
-          {},
+          {
+              {CString{endpoint, alloc}, Direction::Bind},
+          },
           {},
           {
               {SocketType::Router,
                {
-                   {CString{api.Endpoints().BlockchainBalance(), alloc},
+                   {CString{api->Endpoints().BlockchainBalance(), alloc},
                     Direction::Bind},
                }},
               {SocketType::Publish,
                {
-                   {CString{api.Endpoints().BlockchainWalletUpdated(), alloc},
+                   {CString{api->Endpoints().BlockchainWalletUpdated(), alloc},
                     Direction::Bind},
                }},
           })
@@ -114,6 +118,14 @@ BalanceOracle::Imp::Imp(
     , publish_(pipeline_.Internal().ExtraSocket(1))
     , data_(alloc)
 {
+    OT_ASSERT(api_);
+}
+
+auto BalanceOracle::Imp::do_shutdown() noexcept -> void { api_.reset(); }
+
+auto BalanceOracle::Imp::do_startup() noexcept -> void
+{
+    if (api_->Internal().ShuttingDown()) { shutdown_actor(); }
 }
 
 auto BalanceOracle::Imp::make_message(
@@ -181,11 +193,8 @@ auto BalanceOracle::Imp::pipeline(const Work work, Message&& msg) noexcept
         case Work::shutdown: {
             shutdown_actor();
         } break;
-        case Work::update_chain_balance: {
-            process_update_chain_balance(std::move(msg));
-        } break;
-        case Work::update_nym_balance: {
-            process_update_nym_balance(std::move(msg));
+        case Work::update_balance: {
+            process_update_balance(std::move(msg));
         } break;
         case Work::registration: {
             process_registration(std::move(msg));
@@ -205,19 +214,19 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
 {
     const auto header = in.Header();
 
-    OT_ASSERT(1 < header.size());
+    OT_ASSERT(1_uz < header.size());
 
     // NOTE pipeline inserts an extra frame at the front of the message
     in.Internal().ExtractFront();
-    const auto& connectionID = header.at(0);
+    const auto& connectionID = header.at(0_uz);
     const auto body = in.Body();
 
-    OT_ASSERT(1 < body.size());
+    OT_ASSERT(1_uz < body.size());
 
-    const auto haveNym = (2 < body.size());
+    const auto haveNym = (2_uz < body.size());
     auto output = opentxs::blockchain::Balance{};
     const auto& chainFrame = body.at(1);
-    const auto nym = haveNym ? api_.Factory().NymIDFromHash(body.at(2).Bytes())
+    const auto nym = haveNym ? api_->Factory().NymIDFromHash(body.at(2).Bytes())
                              : identifier::Nym{};
 
     const auto chain = chainFrame.as<Chain>();
@@ -245,7 +254,7 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
         haveNym ? chainData.second[nym].second : chainData.first.second;
 
     const auto& id = *(
-        subscribers.emplace(api_.Factory().DataFromBytes(connectionID.Bytes()))
+        subscribers.emplace(api_->Factory().DataFromBytes(connectionID.Bytes()))
             .first);
 
     const auto& log = LogTrace();
@@ -257,7 +266,7 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
     log.Flush();
 
     try {
-        const auto handle = api_.Network().Blockchain().GetChain(chain);
+        const auto handle = api_->Network().Blockchain().GetChain(chain);
 
         if (false == handle.IsValid()) {
             throw std::runtime_error{"invalid chain"};
@@ -271,6 +280,24 @@ auto BalanceOracle::Imp::process_registration(Message&& in) noexcept -> void
             output = network.GetBalance();
         }
     } catch (...) {
+    }
+}
+
+auto BalanceOracle::Imp::process_update_balance(Message&& in) noexcept -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(3_uz < body.size());
+
+    const auto chain = body.at(1_uz).as<Chain>();
+    auto balance = std::make_pair(
+        factory::Amount(body.at(2_uz)), factory::Amount(body.at(3_uz)));
+
+    if (4_uz < body.size()) {
+        const auto owner = api_->Factory().NymIDFromHash(body.at(4_uz).Bytes());
+        process_update_balance(owner, chain, std::move(balance));
+    } else {
+        process_update_balance(chain, std::move(balance));
     }
 }
 
@@ -304,98 +331,31 @@ auto BalanceOracle::Imp::process_update_balance(
     if (changed) { notify_subscribers(subscribers, owner, balance, chain); }
 }
 
-auto BalanceOracle::Imp::process_update_chain_balance(Message&& in) noexcept
-    -> void
-{
-    const auto body = in.Body();
-
-    OT_ASSERT(3 < body.size());
-
-    const auto chain = body.at(1).as<Chain>();
-    auto balance = std::make_pair(
-        factory::Amount(body.at(2)), factory::Amount(body.at(3)));
-    process_update_balance(chain, std::move(balance));
-}
-
-auto BalanceOracle::Imp::process_update_nym_balance(Message&& in) noexcept
-    -> void
-{
-    const auto body = in.Body();
-
-    OT_ASSERT(4 < body.size());
-
-    const auto chain = body.at(1).as<Chain>();
-    const auto owner = api_.Factory().NymIDFromHash(body.at(2).Bytes());
-    auto balance = std::make_pair(
-        factory::Amount(body.at(3)), factory::Amount(body.at(4)));
-    process_update_balance(owner, chain, std::move(balance));
-}
-
-auto BalanceOracle::Imp::UpdateBalance(const Chain chain, const Balance balance)
-    const noexcept -> void
-{
-    auto work = MakeWork(Work::update_chain_balance);
-    work.AddFrame(chain);
-    work.AddFrame(balance.first);
-    work.AddFrame(balance.second);
-    pipeline_.Push(std::move(work));
-}
-
-auto BalanceOracle::Imp::UpdateBalance(
-    const identifier::Nym& owner,
-    const Chain chain,
-    const Balance balance) const noexcept -> void
-{
-    auto work = MakeWork(Work::update_nym_balance);
-    work.AddFrame(chain);
-    work.AddFrame(owner);
-    work.AddFrame(balance.first);
-    work.AddFrame(balance.second);
-
-    pipeline_.Push(std::move(work));
-}
-
-auto BalanceOracle::Imp::do_startup() noexcept -> void {}
-
-auto BalanceOracle::Imp::do_shutdown() noexcept -> void {}
-
 auto BalanceOracle::Imp::work() noexcept -> bool { return false; }
 
-BalanceOracle::Imp::~Imp() { signal_shutdown(); }
+BalanceOracle::Imp::~Imp() = default;
 }  // namespace opentxs::api::crypto::blockchain
 
 namespace opentxs::api::crypto::blockchain
 {
-BalanceOracle::BalanceOracle(const api::Session& api) noexcept
+BalanceOracle::BalanceOracle(
+    std::shared_ptr<const api::Session> api,
+    std::string_view endpoint) noexcept
     : imp_([&] {
-        const auto& asio = api.Network().ZeroMQ().Internal();
+        const auto& asio = api->Network().ZeroMQ().Internal();
         const auto batchID = asio.PreallocateBatch();
         // TODO the version of libc++ present in android ndk 23.0.7599858
         // has a broken std::allocate_shared function so we're using
         // boost::shared_ptr instead of std::shared_ptr
 
         return boost::allocate_shared<Imp>(
-            alloc::PMR<Imp>{asio.Alloc(batchID)}, api, batchID);
+            alloc::PMR<Imp>{asio.Alloc(batchID)}, api, endpoint, batchID);
     }())
 {
     OT_ASSERT(imp_);
-
-    imp_->Init(imp_);
 }
 
-auto BalanceOracle::UpdateBalance(const Chain chain, const Balance balance)
-    const noexcept -> void
-{
-    imp_->UpdateBalance(chain, balance);
-}
+auto BalanceOracle::Start() noexcept -> void { imp_->Init(imp_); }
 
-auto BalanceOracle::UpdateBalance(
-    const identifier::Nym& owner,
-    const Chain chain,
-    const Balance balance) const noexcept -> void
-{
-    imp_->UpdateBalance(owner, chain, balance);
-}
-
-BalanceOracle::~BalanceOracle() { imp_->Shutdown(); }
+BalanceOracle::~BalanceOracle() = default;
 }  // namespace opentxs::api::crypto::blockchain

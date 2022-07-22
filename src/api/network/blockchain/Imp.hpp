@@ -17,6 +17,7 @@
 #include <thread>
 #include <tuple>
 
+#include "api/network/blockchain/Base.hpp"
 #include "api/network/blockchain/Blockchain.hpp"
 #include "api/network/blockchain/StartupPublisher.hpp"
 #include "blockchain/database/common/Database.hpp"
@@ -121,7 +122,7 @@ class Options;
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::network
+namespace opentxs::api::network::implementation
 {
 struct BlockchainImp final : public Blockchain::Imp {
     using Imp::AddSyncServer;
@@ -264,4 +265,4 @@ private:
         const bool startWallet = true) const -> bool;
     auto stop(const Lock& lock, const Chain type) const noexcept -> bool;
 };
-}  // namespace opentxs::api::network
+}  // namespace opentxs::api::network::implementation

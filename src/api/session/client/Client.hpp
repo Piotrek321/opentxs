@@ -48,6 +48,7 @@ class Blockchain;
 class Context;
 class Crypto;
 class Legacy;
+class Session;
 class Settings;
 }  // namespace api
 
@@ -106,6 +107,7 @@ public:
     auto ZMQ() const -> const api::network::ZMQ& final;
 
     auto Init() -> void final;
+    auto Start(std::shared_ptr<const api::Session> api) noexcept -> void final;
     auto StartActivity() -> void;
     auto StartBlockchain() noexcept -> void;
     auto StartContacts() -> void;

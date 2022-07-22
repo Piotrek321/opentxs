@@ -24,24 +24,9 @@ class Session;
 
 namespace blockchain
 {
-namespace database
-{
-class Peer;
-}  // namespace database
-
 namespace node
 {
-namespace internal
-{
 class Manager;
-class Mempool;
-class PeerManager;
-struct Config;
-}  // namespace internal
-
-class BlockOracle;
-class FilterOracle;
-class HeaderOracle;
 }  // namespace node
 
 namespace p2p
@@ -59,18 +44,11 @@ struct Address;
 namespace opentxs::factory
 {
 auto BlockchainPeerBitcoin(
-    const api::Session& api,
-    const blockchain::node::internal::Config& config,
-    const blockchain::node::internal::Manager& network,
-    const blockchain::node::internal::PeerManager& parent,
-    const blockchain::node::internal::Mempool& mempool,
-    const blockchain::node::HeaderOracle& header,
-    const blockchain::node::BlockOracle& block,
-    const blockchain::node::FilterOracle& filter,
-    const blockchain::p2p::bitcoin::Nonce& nonce,
-    blockchain::database::Peer& database,
+    std::shared_ptr<const api::Session> api,
+    std::shared_ptr<const opentxs::blockchain::node::Manager> network,
     int peerID,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
+    std::string_view fromNode,
     std::string_view fromParent)
     -> boost::shared_ptr<network::blockchain::internal::Peer::Imp>;
 }  // namespace opentxs::factory

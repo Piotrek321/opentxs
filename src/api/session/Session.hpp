@@ -135,6 +135,8 @@ public:
         const PasswordPrompt& reason,
         const bool twice,
         const UnallocatedCString& key) const -> bool final;
+    auto GetShared() const noexcept
+        -> std::shared_ptr<const api::Session> final;
     auto Instance() const noexcept -> int final { return instance_; }
     auto Legacy() const noexcept -> const api::Legacy& final;
     auto Lock() const -> std::mutex& final { return master_key_lock_; }
@@ -143,7 +145,7 @@ public:
     auto NewNym(const identifier::Nym& id) const noexcept -> void override {}
     auto Network() const noexcept -> const network::Network& final
     {
-        return network_;
+        return *network_;
     }
     auto QtRootObject() const noexcept -> QObject* final
     {
@@ -151,6 +153,9 @@ public:
     }
     auto SetMasterKeyTimeout(const std::chrono::seconds& timeout) const noexcept
         -> void final;
+    auto ShuttingDown() const noexcept -> bool final;
+    auto Start(std::shared_ptr<const api::Session> api) noexcept
+        -> void override;
     auto Stop() noexcept -> std::future<void> final;
     auto Storage() const noexcept -> const api::session::Storage& final;
     auto Wallet() const noexcept -> const session::Wallet& final;
@@ -164,14 +169,14 @@ public:
     ~Session() override;
 
 protected:
-    network::Network network_;
+    std::unique_ptr<network::Network> network_;
     std::unique_ptr<api::session::Wallet> wallet_;
 
 private:
     proto::Ciphertext encrypted_secret_;
 
 protected:
-    using NetworkMaker = std::function<api::network::Network::Imp*(
+    using NetworkMaker = std::function<std::unique_ptr<api::network::Network>(
         const opentxs::network::zeromq::Context& zmq,
         const api::session::Endpoints& endpoints,
         api::session::Scheduler& config)>;
@@ -206,7 +211,10 @@ private:
     mutable OTSymmetricKey master_key_;
     mutable std::chrono::seconds password_duration_;
     mutable Time last_activity_;
+    std::promise<void> init_promise_;
+    const std::shared_future<void> init_;
     std::promise<void> shutdown_promise_;
+    std::weak_ptr<const api::Session> self_;
 
     void bump_password_timer(const opentxs::Lock& lock) const;
     // TODO void password_timeout() const;

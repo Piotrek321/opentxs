@@ -177,6 +177,10 @@ struct Blockchain::Imp {
     {
         return false;
     }
+    auto BalanceOracleEndpoint() const noexcept -> std::string_view
+    {
+        return balance_oracle_endpoint_;
+    }
     auto CalculateAddress(
         const opentxs::blockchain::Type chain,
         const Style format,
@@ -273,6 +277,9 @@ struct Blockchain::Imp {
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void;
     auto SenderContact(const Key& key) const noexcept -> identifier::Generic;
+    virtual auto Start(std::shared_ptr<const api::Session> api) noexcept -> void
+    {
+    }
     auto SubaccountList(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain) const noexcept
@@ -284,13 +291,6 @@ struct Blockchain::Imp {
         const Key key,
         const opentxs::blockchain::block::Txid& tx,
         const Time time) const noexcept -> bool;
-    virtual auto UpdateBalance(
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept -> void;
-    virtual auto UpdateBalance(
-        const identifier::Nym& owner,
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept -> void;
     virtual auto UpdateElement(
         UnallocatedVector<ReadView>& pubkeyHashes) const noexcept -> void;
     auto Wallet(const opentxs::blockchain::Type chain) const noexcept(false)
@@ -308,6 +308,7 @@ protected:
     const api::Session& api_;
     const api::session::Contacts& contacts_;
     const DecodedAddress blank_;
+    const CString balance_oracle_endpoint_;
     mutable std::mutex lock_;
     mutable IDLock nym_lock_;
     mutable blockchain::AccountCache accounts_;

@@ -24,7 +24,6 @@ public:
     {
         return *this;
     }
-    virtual auto Start() -> void = 0;
 
     ~Notary() override = default;
 };

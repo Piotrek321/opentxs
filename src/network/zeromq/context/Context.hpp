@@ -5,10 +5,12 @@
 
 #pragma once
 
+#include <cs_plain_guarded.h>
 #include <cstddef>
 #include <functional>
 #include <future>
 #include <iosfwd>
+#include <memory>
 #include <optional>
 #include <string_view>
 #include <thread>
@@ -171,6 +173,9 @@ public:
     auto Thread(BatchID id) const noexcept -> internal::Thread* final;
     auto ThreadID(BatchID id) const noexcept -> std::thread::id final;
 
+    auto Init(std::shared_ptr<const zeromq::Context> me) noexcept -> void final;
+    auto Stop() noexcept -> std::future<void> final;
+
     Context() noexcept;
     Context(const Context&) = delete;
     Context(Context&&) = delete;
@@ -180,8 +185,11 @@ public:
     ~Context() final;
 
 private:
+    using Pool = libguarded::plain_guarded<std::optional<context::Pool>>;
+
     void* context_;
-    mutable context::Pool pool_;
+    mutable Pool pool_;
+    std::promise<void> shutdown_;
 
     static auto max_sockets() noexcept -> int;
 };

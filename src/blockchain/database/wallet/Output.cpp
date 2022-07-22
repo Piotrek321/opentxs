@@ -8,6 +8,7 @@
 #include "blockchain/database/wallet/Output.hpp"  // IWYU pragma: associated
 
 #include <BlockchainTransactionOutput.pb.h>  // IWYU pragma: keep
+#include <cs_plain_guarded.h>
 #include <cs_shared_guarded.h>
 #include <robin_hood.h>
 #include <algorithm>
@@ -33,9 +34,12 @@
 #include "internal/blockchain/bitcoin/block/Output.hpp"
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/node/SpendPolicy.hpp"
+#include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -57,15 +61,21 @@
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
+#include "util/Work.hpp"
 
 namespace opentxs::blockchain::database::wallet
 {
+namespace socket = opentxs::network::zeromq::socket;
+
 struct Output::Imp {
 private:
     [[nodiscard]] auto lock_shared() const noexcept
@@ -990,6 +1000,19 @@ public:
         , blank_(-1, block::Hash{})
         , maturation_target_(params::Chains().at(chain_).maturation_interval_)
         , cache_(api_, lmdb_, chain_, blank_)
+        , to_balance_oracle_([&] {
+            auto out = api_.Network().ZeroMQ().Internal().RawSocket(
+                socket::Type::Push);
+            const auto rc = out.Connect(api_.Crypto()
+                                            .Blockchain()
+                                            .Internal()
+                                            .BalanceOracleEndpoint()
+                                            .data());
+
+            OT_ASSERT(rc);
+
+            return out;
+        }())
     {
     }
     Imp() = delete;
@@ -999,6 +1022,7 @@ public:
 
 private:
     using Cache = libguarded::shared_guarded<OutputCache, std::shared_mutex>;
+    using Push = libguarded::plain_guarded<socket::Raw>;
 
     const api::Session& api_;
     const storage::lmdb::LMDB& lmdb_;
@@ -1008,6 +1032,7 @@ private:
     const block::Position blank_;
     const block::Height maturation_target_;
     mutable Cache cache_;
+    mutable Push to_balance_oracle_;
 
     [[nodiscard]] static auto states(node::TxoState in) noexcept -> States
     {
@@ -1262,11 +1287,27 @@ private:
     }
     auto publish_balance(const OutputCache& cache) const noexcept -> void
     {
-        const auto& api = api_.Crypto().Blockchain();
-        api.Internal().UpdateBalance(chain_, get_balance(cache));
+        to_balance_oracle_.lock()->Send([&] {
+            const auto balance = get_balance(cache);
+            auto out = MakeWork(OT_ZMQ_BALANCE_ORACLE_SUBMIT);
+            out.AddFrame(chain_);
+            out.AddFrame(balance.first);
+            out.AddFrame(balance.second);
 
-        for (const auto& [nym, balance] : get_balances(cache)) {
-            api.Internal().UpdateBalance(nym, chain_, balance);
+            return out;
+        }());
+
+        for (const auto& data : get_balances(cache)) {
+            to_balance_oracle_.lock()->Send([&] {
+                const auto& [nym, balance] = data;  // TODO c++20
+                auto out = MakeWork(OT_ZMQ_BALANCE_ORACLE_SUBMIT);
+                out.AddFrame(chain_);
+                out.AddFrame(balance.first);
+                out.AddFrame(balance.second);
+                out.AddFrame(nym);
+
+                return out;
+            }());
         }
     }
     [[nodiscard]] auto translate(Vector<UTXO>&& outputs) const noexcept

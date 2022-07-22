@@ -23,7 +23,7 @@ namespace opentxs::factory
 {
 auto BlockchainDatabase(
     const api::Session& api,
-    const blockchain::node::internal::Manager& network,
+    const blockchain::node::Manager& network,
     const blockchain::database::common::Database& common,
     const blockchain::Type chain,
     const blockchain::cfilter::Type filter) noexcept
@@ -69,7 +69,7 @@ const storage::lmdb::TableNames Database::table_names_{
 
 Database::Database(
     const api::Session& api,
-    const node::internal::Manager& network,
+    const node::Manager& network,
     const database::common::Database& common,
     const blockchain::Type chain,
     const blockchain::cfilter::Type filter) noexcept

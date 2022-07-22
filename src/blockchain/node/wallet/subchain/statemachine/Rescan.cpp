@@ -11,13 +11,14 @@
 
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
+#include <algorithm>
+#include <atomic>
+#include <iterator>
 #include <limits>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "internal/blockchain/database/Wallet.hpp"
-#include "internal/blockchain/node/Manager.hpp"
-#include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
@@ -25,9 +26,18 @@
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -167,7 +177,7 @@ auto Rescan::Imp::do_process_update(Message&& msg) noexcept -> void
 auto Rescan::Imp::do_startup() noexcept -> void
 {
     const auto& node = parent_.node_;
-    const auto& filters = node.FilterOracleInternal();
+    const auto& filters = node.FilterOracle();
     set_last_scanned(parent_.db_.SubchainLastScanned(parent_.db_key_));
     filter_tip_ = filters.FilterTip(parent_.filter_type_);
 

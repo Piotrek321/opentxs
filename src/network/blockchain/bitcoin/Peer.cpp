@@ -35,6 +35,7 @@
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/Mempool.hpp"
+#include "internal/blockchain/node/PeerManager.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/node/blockoracle/BlockBatch.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -65,6 +66,7 @@
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
@@ -85,21 +87,16 @@
 namespace opentxs::factory
 {
 auto BlockchainPeerBitcoin(
-    const api::Session& api,
-    const blockchain::node::internal::Config& config,
-    const blockchain::node::internal::Manager& network,
-    const blockchain::node::internal::PeerManager& parent,
-    const blockchain::node::internal::Mempool& mempool,
-    const blockchain::node::HeaderOracle& header,
-    const blockchain::node::BlockOracle& block,
-    const blockchain::node::FilterOracle& filter,
-    const blockchain::p2p::bitcoin::Nonce& nonce,
-    blockchain::database::Peer& database,
+    std::shared_ptr<const api::Session> api,
+    std::shared_ptr<const opentxs::blockchain::node::Manager> network,
     int peerID,
     std::unique_ptr<blockchain::p2p::internal::Address> address,
+    std::string_view fromNode,
     std::string_view fromParent)
     -> boost::shared_ptr<network::blockchain::internal::Peer::Imp>
 {
+    OT_ASSERT(api);
+    OT_ASSERT(network);
     OT_ASSERT(address);
 
     using Network = opentxs::blockchain::p2p::Network;
@@ -116,28 +113,21 @@ auto BlockchainPeerBitcoin(
     }
 
     const auto chain = address->Chain();
-    const auto& asio = api.Network().ZeroMQ().Internal();
-    const auto batchID = asio.PreallocateBatch();
+    const auto& zmq = api->Network().ZeroMQ().Internal();
+    const auto batchID = zmq.PreallocateBatch();
     // TODO the version of libc++ present in android ndk 23.0.7599858
     // has a broken std::allocate_shared function so we're using
     // boost::shared_ptr instead of std::shared_ptr
 
     return boost::allocate_shared<ReturnType>(
-        alloc::PMR<ReturnType>{asio.Alloc(batchID)},
-        api,
-        config,
-        network,
-        parent,
-        mempool,
-        header,
-        block,
-        filter,
-        nonce,
-        database,
+        alloc::PMR<ReturnType>{zmq.Alloc(batchID)},
+        std::move(api),
+        std::move(network),
         chain,
         peerID,
         std::move(address),
         blockchain::params::Chains().at(chain).p2p_protocol_version_,
+        fromNode,
         fromParent,
         batchID);
 }
@@ -148,31 +138,18 @@ namespace opentxs::network::blockchain::bitcoin
 using namespace std::literals;
 
 Peer::Peer(
-    const api::Session& api,
-    const opentxs::blockchain::node::internal::Config& config,
-    const opentxs::blockchain::node::internal::Manager& network,
-    const opentxs::blockchain::node::internal::PeerManager& parent,
-    const opentxs::blockchain::node::internal::Mempool& mempool,
-    const opentxs::blockchain::node::HeaderOracle& header,
-    const opentxs::blockchain::node::BlockOracle& block,
-    const opentxs::blockchain::node::FilterOracle& filter,
-    const opentxs::blockchain::p2p::bitcoin::Nonce& nonce,
-    opentxs::blockchain::database::Peer& database,
+    std::shared_ptr<const api::Session> api,
+    std::shared_ptr<const opentxs::blockchain::node::Manager> network,
     opentxs::blockchain::Type chain,
     int peerID,
     std::unique_ptr<opentxs::blockchain::p2p::internal::Address> address,
     opentxs::blockchain::p2p::bitcoin::ProtocolVersion protocol,
+    std::string_view fromNode,
     std::string_view fromParent,
     const zeromq::BatchID batch,
     allocator_type alloc) noexcept
-    : Imp(api,
-          config,
-          network,
-          parent,
-          header,
-          block,
-          filter,
-          database,
+    : Imp(std::move(api),
+          std::move(network),
           chain,
           peerID,
           std::move(address),
@@ -180,10 +157,11 @@ Peer::Peer(
           1min,
           10min,
           HeaderType::Size(),
+          fromNode,
           fromParent,
           batch,
           alloc)
-    , mempool_(mempool)
+    , mempool_(network_.Internal().Mempool())
     , user_agent_([&] {
         auto out = CString{get_allocator()};
         out.append("/opentxs:"sv);
@@ -209,7 +187,7 @@ Peer::Peer(
             }
         }
     }())
-    , nonce_(nonce)
+    , nonce_(parent_.Nonce())
     , inv_block_([&] {
         using Type = opentxs::blockchain::bitcoin::Inventory::Type;
         // TODO do some chains use MsgWitnessBlock?
@@ -230,7 +208,7 @@ Peer::Peer(
         }
     }())
     , protocol_((0 == protocol) ? default_protocol_version_ : protocol)
-    , local_services_(get_local_services(protocol_, chain_, config))
+    , local_services_(get_local_services(protocol_, chain_, config_))
     , relay_(true)
     , handshake_()
     , verification_()
@@ -545,7 +523,7 @@ auto Peer::process_protocol_block(
 {
     update_block_job(payload.Bytes());
     using Task = opentxs::blockchain::node::ManagerJobs;
-    network_.Submit([&] {
+    network_.Internal().Submit([&] {
         auto work = MakeWork(Task::SubmitBlock);
         work.AddFrame(payload);
 
@@ -1168,7 +1146,7 @@ auto Peer::process_protocol_headers_run(
 
     OT_ASSERT(0_uz < size);
 
-    auto future = network_.Track([&] {
+    auto future = network_.Internal().Track([&] {
         using Task = opentxs::blockchain::node::ManagerJobs;
         auto work = MakeWork(Task::SubmitBlockHeader);
 
@@ -1450,7 +1428,7 @@ auto Peer::process_protocol_version(
     const auto pMessage = instantiate<Type>(
         std::move(header), protocol_, payload.data(), payload.size());
     const auto& message = *pMessage;
-    network_.UpdateHeight(message.Height());
+    network_.Internal().UpdateHeight(message.Height());
     protocol_ = std::min(protocol_, message.ProtocolVersion());
     update_address(message.RemoteServices());
     transmit_protocol_verack();

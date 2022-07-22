@@ -11,6 +11,7 @@
 #include <cstring>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
@@ -25,10 +26,8 @@ auto copy(
     const AllocateOutput out,
     const std::size_t limit) noexcept -> bool
 {
-    if ((nullptr == in.data()) || (0 == in.size())) {
-        LogError()(__func__)(": invalid input").Flush();
-
-        return false;
+    if ((nullptr == in.data()) || (0_uz == in.size()) || (0_uz == limit)) {
+        return true;
     }
 
     if (false == bool(out)) {
@@ -64,7 +63,7 @@ auto preallocated(const std::size_t size, void* out) noexcept -> AllocateOutput
                 size)(" are available")
                 .Flush();
 
-            return {nullptr, 0};
+            return {nullptr, 0_uz};
         }
     };
 }
@@ -101,7 +100,7 @@ auto space(const std::size_t size, alloc::Default alloc) noexcept
 }
 auto space(const ReadView bytes) noexcept -> Space
 {
-    if ((nullptr == bytes.data()) || (0 == bytes.size())) { return {}; }
+    if ((nullptr == bytes.data()) || (0_uz == bytes.size())) { return {}; }
 
     const auto* it = reinterpret_cast<const std::byte*>(bytes.data());
 
@@ -112,7 +111,9 @@ auto space(const ReadView bytes, alloc::Default alloc) noexcept
 {
     using Out = Vector<std::byte>;
 
-    if ((nullptr == bytes.data()) || (0 == bytes.size())) { return Out{alloc}; }
+    if ((nullptr == bytes.data()) || (0_uz == bytes.size())) {
+        return Out{alloc};
+    }
 
     const auto* it = reinterpret_cast<const std::byte*>(bytes.data());
 
@@ -120,7 +121,7 @@ auto space(const ReadView bytes, alloc::Default alloc) noexcept
 }
 auto valid(const ReadView view) noexcept -> bool
 {
-    return (nullptr != view.data()) && (0 < view.size());
+    return (nullptr != view.data()) && (0_uz < view.size());
 }
 auto writer(UnallocatedCString& in) noexcept -> AllocateOutput
 {

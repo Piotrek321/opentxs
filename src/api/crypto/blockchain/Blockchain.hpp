@@ -160,6 +160,7 @@ public:
     auto AssignTransactionMemo(
         const UnallocatedCString& id,
         const UnallocatedCString& label) const noexcept -> bool final;
+    auto BalanceOracleEndpoint() const noexcept -> std::string_view final;
     auto CalculateAddress(
         const Chain chain,
         const opentxs::blockchain::crypto::AddressStyle format,
@@ -266,17 +267,9 @@ public:
         -> void final;
     auto SenderContact(const Key& key) const noexcept
         -> identifier::Generic final;
+    auto Start(std::shared_ptr<const api::Session> api) noexcept -> void final;
     auto SubaccountList(const identifier::Nym& nymID, const Chain chain)
         const noexcept -> UnallocatedSet<identifier::Generic> final;
-    auto UpdateBalance(
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept
-        -> void final;
-    auto UpdateBalance(
-        const identifier::Nym& owner,
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept
-        -> void final;
     auto UpdateElement(UnallocatedVector<ReadView>& pubkeyHashes) const noexcept
         -> void final;
     auto Unconfirm(

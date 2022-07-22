@@ -93,6 +93,10 @@ public:
     {
         return {};
     }
+    auto BalanceOracleEndpoint() const noexcept -> std::string_view final
+    {
+        return {};
+    }
     auto CalculateAddress(
         const opentxs::blockchain::Type,
         const opentxs::blockchain::crypto::AddressStyle,
@@ -282,6 +286,9 @@ public:
     {
         return {id_};
     }
+    auto Start(std::shared_ptr<const api::Session> api) noexcept -> void final
+    {
+    }
     auto SubaccountList(const identifier::Nym&, const Chain) const noexcept
         -> UnallocatedSet<identifier::Generic> final
     {
@@ -293,17 +300,6 @@ public:
         const Time time) const noexcept -> bool final
     {
         return {};
-    }
-    auto UpdateBalance(
-        const opentxs::blockchain::Type,
-        const opentxs::blockchain::Balance) const noexcept -> void final
-    {
-    }
-    auto UpdateBalance(
-        const identifier::Nym&,
-        const opentxs::blockchain::Type,
-        const opentxs::blockchain::Balance) const noexcept -> void final
-    {
     }
     auto UpdateElement(UnallocatedVector<ReadView>&) const noexcept
         -> void final

@@ -7,6 +7,7 @@
 
 #include <future>
 
+#include "opentxs/api/network/Asio.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -50,11 +51,10 @@ auto print(ThreadPool) noexcept -> std::string_view;
 
 namespace opentxs::api::network::internal
 {
-class Asio
+class Asio : virtual public network::Asio
 {
 public:
-    using Endpoint = opentxs::network::asio::Endpoint::Imp;
-    using Socket = std::shared_ptr<opentxs::network::asio::Socket::Imp>;
+    using SocketImp = std::shared_ptr<opentxs::network::asio::Socket::Imp>;
     using Callback = std::function<void()>;
 
     virtual auto FetchJson(
@@ -63,8 +63,13 @@ public:
         const bool https = true,
         const ReadView notify = {}) const noexcept
         -> std::future<boost::json::value> = 0;
+    auto Internal() const noexcept -> internal::Asio& final
+    {
+        return const_cast<Asio&>(*this);  // TODO
+    }
 
-    virtual auto Connect(const ReadView id, Socket socket) noexcept -> bool = 0;
+    virtual auto Connect(const ReadView id, SocketImp socket) noexcept
+        -> bool = 0;
     virtual auto GetTimer() noexcept -> Timer = 0;
     virtual auto IOContext() noexcept -> boost::asio::io_context& = 0;
     virtual auto Post(
@@ -75,18 +80,18 @@ public:
         const ReadView id,
         const OTZMQWorkType type,
         const std::size_t bytes,
-        Socket socket) noexcept -> bool = 0;
+        SocketImp socket) noexcept -> bool = 0;
     virtual auto Transmit(
         const ReadView id,
         const ReadView bytes,
-        Socket socket) noexcept -> bool = 0;
+        SocketImp socket) noexcept -> bool = 0;
 
     Asio(const Asio&) = delete;
     Asio(Asio&&) = delete;
     auto operator=(const Asio&) -> Asio& = delete;
     auto operator=(Asio&&) -> Asio& = delete;
 
-    virtual ~Asio() = default;
+    ~Asio() override = default;
 
 protected:
     Asio() = default;

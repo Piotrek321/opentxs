@@ -86,12 +86,15 @@ public:
      *   \returns true if the operating system accepts the request to set up
      *            incoming connection handling on the specified socket
      */
-    auto Accept(const Endpoint& endpoint, AcceptCallback cb) const noexcept
-        -> bool;
-    auto Close(const Endpoint& endpoint) const noexcept -> bool;
-    auto GetPublicAddress4() const noexcept -> std::shared_future<ByteArray>;
-    auto GetPublicAddress6() const noexcept -> std::shared_future<ByteArray>;
-    OPENTXS_NO_EXPORT auto Internal() const noexcept -> internal::Asio&;
+    virtual auto Accept(const Endpoint& endpoint, AcceptCallback cb)
+        const noexcept -> bool = 0;
+    virtual auto Close(const Endpoint& endpoint) const noexcept -> bool = 0;
+    virtual auto GetPublicAddress4() const noexcept
+        -> std::shared_future<ByteArray> = 0;
+    virtual auto GetPublicAddress6() const noexcept
+        -> std::shared_future<ByteArray> = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> internal::Asio& = 0;
 
     /**  Construct a socket for outgoing tcp and udp connections
      *
@@ -100,9 +103,10 @@ public:
      *                   of the endpoint exceeds the lifetime of the
      *                   socket
      */
-    auto MakeSocket(const Endpoint& endpoint) const noexcept -> Socket;
+    virtual auto MakeSocket(const Endpoint& endpoint) const noexcept
+        -> Socket = 0;
 
-    /**  Endpoint for asio to zeromq message routing
+    /**  Endpoint for asio to zeromq message routing (null terminated)
      *
      *   This class maintained a zeromq router socket which is bound to the
      *   endpoint specified by this function.
@@ -114,26 +118,23 @@ public:
      *   response is the value that must be provided to the
      *   asio::Socket::Connect and asio::Socket::Receive functions
      */
-    auto NotificationEndpoint() const noexcept -> const char*;
-    auto Resolve(std::string_view server, std::uint16_t port) const noexcept
-        -> Resolved;
+    virtual auto NotificationEndpoint() const noexcept -> std::string_view = 0;
+    virtual auto Resolve(std::string_view server, std::uint16_t port)
+        const noexcept -> Resolved = 0;
 
-    OPENTXS_NO_EXPORT auto Init() noexcept -> void;
-    OPENTXS_NO_EXPORT auto Shutdown() noexcept -> void;
+    OPENTXS_NO_EXPORT virtual auto Init() noexcept -> void = 0;
+    OPENTXS_NO_EXPORT virtual auto Shutdown() noexcept -> void = 0;
 
     OPENTXS_NO_EXPORT Asio(
         const opentxs::network::zeromq::Context& zmq) noexcept;
-    Asio() = delete;
     Asio(const Asio&) = delete;
     Asio(Asio&&) = delete;
     auto operator=(const Asio&) -> Asio& = delete;
     auto operator=(Asio&&) -> Asio& = delete;
 
-    OPENTXS_NO_EXPORT ~Asio();
+    OPENTXS_NO_EXPORT virtual ~Asio() = default;
 
-private:
-    struct Imp;
-
-    Imp* imp_;
+protected:
+    Asio() = default;
 };
 }  // namespace opentxs::api::network

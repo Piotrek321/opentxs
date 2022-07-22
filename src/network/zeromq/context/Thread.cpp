@@ -59,9 +59,11 @@ namespace opentxs::network::zeromq::context
 using namespace std::literals;
 
 Thread::Thread(
+    const unsigned int index,
     zeromq::internal::Pool& parent,
     std::string_view endpoint) noexcept
-    : parent_(parent)
+    : index_(index)
+    , parent_(parent)
     , alloc_()
     , shutdown_(false)
     , control_([&] {
@@ -86,11 +88,7 @@ Thread::Thread(
     , thread_name_()
     , thread_(&Thread::run, this)
 {
-}
-
-auto Thread::join() noexcept -> void
-{
-    if (thread_.joinable()) { thread_.join(); }
+    thread_.detach();
 }
 
 auto Thread::modify(Message&& message) noexcept -> void
@@ -138,6 +136,9 @@ auto Thread::modify(Message&& message) noexcept -> void
         case Operation::change_socket: {
             const auto socketID = body.at(1).as<SocketID>();
             parent_.DoModify(socketID);
+        } break;
+        case Operation::shutdown: {
+            shutdown_ = true;
         } break;
         default: {
             std::abort();
@@ -269,13 +270,8 @@ auto Thread::run() noexcept -> void
     data_.items_.clear();
     data_.data_.clear();
     control_.Close();
+    parent_.ReportShutdown(index_);
 }
 
-auto Thread::Shutdown() noexcept -> void
-{
-    shutdown_ = true;
-    join();
-}
-
-Thread::~Thread() { Shutdown(); }
+Thread::~Thread() = default;
 }  // namespace opentxs::network::zeromq::context

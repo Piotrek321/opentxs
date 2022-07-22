@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+
 #pragma once
 
 #include <boost/smart_ptr/shared_ptr.hpp>
@@ -72,7 +74,6 @@ namespace node
 namespace internal
 {
 class BlockBatch;
-class Manager;
 class PeerManager;
 struct Config;
 }  // namespace internal
@@ -80,6 +81,7 @@ struct Config;
 class BlockOracle;
 class FilterOracle;
 class HeaderOracle;
+class Manager;
 }  // namespace node
 
 namespace p2p
@@ -124,8 +126,6 @@ using namespace std::literals;
 class Peer::Imp : public Actor<PeerJob>
 {
 public:
-    auto AddressID() const noexcept -> const identifier::Generic&;
-
     auto Init(boost::shared_ptr<Imp> me) noexcept -> void;
     auto Shutdown() noexcept -> void;
 
@@ -136,6 +136,10 @@ public:
     auto operator=(Imp&&) -> Imp& = delete;
 
     ~Imp() override;
+
+private:
+    std::shared_ptr<const api::Session> api_p_;
+    std::shared_ptr<const opentxs::blockchain::node::Manager> network_p_;
 
 protected:
     enum class Dir : bool { incoming = true, outgoing = false };
@@ -152,8 +156,9 @@ protected:
     using Txid = FixedByteArray<32>;
 
     const api::Session& api_;
+    const opentxs::blockchain::node::Manager& network_;
+    const opentxs::blockchain::node::internal::PeerManager& parent_;
     const opentxs::blockchain::node::internal::Config& config_;
-    const opentxs::blockchain::node::internal::Manager& network_;
     const opentxs::blockchain::node::HeaderOracle& header_oracle_;
     const opentxs::blockchain::node::BlockOracle& block_oracle_;
     const opentxs::blockchain::node::FilterOracle& filter_oracle_;
@@ -212,14 +217,8 @@ protected:
     auto update_remote_position(
         opentxs::blockchain::block::Position pos) noexcept -> void;
 
-    Imp(const api::Session& api,
-        const opentxs::blockchain::node::internal::Config& config,
-        const opentxs::blockchain::node::internal::Manager& network,
-        const opentxs::blockchain::node::internal::PeerManager& parent,
-        const opentxs::blockchain::node::HeaderOracle& header,
-        const opentxs::blockchain::node::BlockOracle& block,
-        const opentxs::blockchain::node::FilterOracle& filter,
-        opentxs::blockchain::database::Peer& database,
+    Imp(std::shared_ptr<const api::Session> api,
+        std::shared_ptr<const opentxs::blockchain::node::Manager> network,
         opentxs::blockchain::Type chain,
         int peerID,
         std::unique_ptr<opentxs::blockchain::p2p::internal::Address> address,
@@ -227,6 +226,7 @@ protected:
         std::chrono::milliseconds inactivityInterval,
         std::chrono::milliseconds peersInterval,
         std::size_t headerBytes,
+        std::string_view fromNode,
         std::string_view fromParent,
         zeromq::BatchID batch,
         allocator_type alloc) noexcept;
@@ -264,7 +264,6 @@ private:
 
     static constexpr auto job_timeout_ = 2min;
 
-    const opentxs::blockchain::node::internal::PeerManager& parent_;
     const int id_;
     const std::size_t untrusted_connection_id_;
     const std::chrono::milliseconds ping_interval_;

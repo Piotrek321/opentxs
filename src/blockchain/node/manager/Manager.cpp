@@ -41,6 +41,7 @@
 #include "internal/blockchain/node/PeerManager.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/node/Wallet.hpp"
+#include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/blockchain/node/p2p/Requestor.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/core/Factory.hpp"
@@ -98,14 +99,6 @@
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Thread.hpp"
-
-namespace opentxs::blockchain::node::internal
-{
-auto Manager::FilterOracle() const noexcept -> const node::FilterOracle&
-{
-    return FilterOracleInternal();
-}
-}  // namespace opentxs::blockchain::node::internal
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -280,7 +273,7 @@ Base::Base(
           chain_,
           seednode,
           shutdown_sender_.endpoint_))
-    , wallet_p_([&]() -> std::unique_ptr<blockchain::node::internal::Wallet> {
+    , wallet_p_([&]() -> std::unique_ptr<blockchain::node::Wallet> {
         if (config_.disable_wallet_) {
 
             return std::make_unique<NullWallet>(api);
@@ -356,6 +349,7 @@ Base::Base(
     , state_(State::UpdatingHeaders)
     , init_promise_()
     , init_(init_promise_.get_future())
+    , self_()
 {
     OT_ASSERT(database_p_);
     OT_ASSERT(filter_p_);
@@ -480,7 +474,7 @@ auto Base::AddBlock(const std::shared_ptr<const bitcoin::block::Block> pBlock)
         return false;
     }
 
-    if (false == filters_.ProcessBlock(block)) {
+    if (false == filters_.Internal().ProcessBlock(block)) {
         LogError()(OT_PRETTY_CLASS())("failed to index ")(print(chain_))(
             " block")
             .Flush();
@@ -496,7 +490,7 @@ auto Base::AddBlock(const std::shared_ptr<const bitcoin::block::Block> pBlock)
         return false;
     }
 
-    return true;  // FIXME
+    return true;
 }
 
 auto Base::AddPeer(const blockchain::p2p::Address& address) const noexcept
@@ -527,6 +521,13 @@ auto Base::Connect() noexcept -> bool
     return !running_.load() ? false : peer_.Connect();
 }
 
+auto Base::DB() const noexcept -> database::Database&
+{
+    OT_ASSERT(database_p_);
+
+    return *database_p_;
+}
+
 auto Base::Disconnect() noexcept -> bool
 {
     // TODO
@@ -539,7 +540,7 @@ auto Base::FeeRate() const noexcept -> Amount
     // TODO in full node mode, calculate the fee network from the mempool and
     // recent blocks
     // TODO on networks that support it, query the fee rate from network peers
-    const auto http = wallet_.FeeEstimate();
+    const auto http = wallet_.Internal().FeeEstimate();
     const auto fallback = params::Chains().at(chain_).default_fee_rate_;
     const auto chain = print(chain_);
     LogConsole()(chain)(" defined minimum fee rate is: ")(fallback).Flush();
@@ -560,15 +561,7 @@ auto Base::FeeRate() const noexcept -> Amount
     return out;
 }
 
-auto Base::FilterOracleInternal() const noexcept
-    -> const node::internal::FilterOracle&
-{
-    OT_ASSERT(filter_p_);
-
-    return *filter_p_;
-}
-
-auto Base::FilterOracleInternal() noexcept -> node::internal::FilterOracle&
+auto Base::FilterOracle() const noexcept -> const node::FilterOracle&
 {
     OT_ASSERT(filter_p_);
 
@@ -600,6 +593,13 @@ auto Base::GetConfirmations(const UnallocatedCString& txid) const noexcept
 auto Base::GetPeerCount() const noexcept -> std::size_t
 {
     return !running_.load() ? 0 : peer_.GetPeerCount();
+}
+
+auto Base::GetShared() const noexcept -> std::shared_ptr<const node::Manager>
+{
+    init_.get();
+
+    return self_.lock()->lock();
 }
 
 auto Base::GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>
@@ -640,9 +640,7 @@ auto Base::init() noexcept -> void
             .Flush();
     }
 
-    peer_.init();
     notify_sync_client();
-    init_promise_.set_value();
     trigger();
     reset_heartbeat();
 }
@@ -673,7 +671,8 @@ auto Base::is_synchronized_blocks() const noexcept -> bool
 auto Base::is_synchronized_filters() const noexcept -> bool
 {
     const auto target = this->target();
-    const auto progress = filters_.Tip(filters_.DefaultType()).height_;
+    const auto progress =
+        filters_.Internal().Tip(filters_.DefaultType()).height_;
 
     return (progress >= target);
 }
@@ -714,6 +713,13 @@ auto Base::notify_sync_client() const noexcept -> void
     }
 }
 
+auto Base::PeerManager() const noexcept -> const internal::PeerManager&
+{
+    OT_ASSERT(peer_p_);
+
+    return *peer_p_;
+}
+
 auto Base::pipeline(zmq::Message&& in) -> void
 {
     if (!running_.load()) { return; }
@@ -744,7 +750,7 @@ auto Base::pipeline(zmq::Message&& in) -> void
             // TODO upgrade all the oracles to no longer require this
             mempool_.Heartbeat();
             block_.Heartbeat();
-            filters_.Heartbeat();
+            filters_.Internal().Heartbeat();
             peer_.Heartbeat();
 
             if (sync_server_) { sync_server_->Heartbeat(); }
@@ -759,7 +765,7 @@ auto Base::pipeline(zmq::Message&& in) -> void
             process_send_to_payment_code(std::move(in));
         } break;
         case ManagerJobs::StartWallet: {
-            wallet_.Init();
+            wallet_.Internal().Init();
         } break;
         case ManagerJobs::FilterUpdate: {
             process_filter_update(std::move(in));
@@ -934,7 +940,8 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
             }
         }
 
-        wallet_.ConstructTransaction(proposal, send_promises_.finish(promise));
+        wallet_.Internal().ConstructTransaction(
+            proposal, send_promises_.finish(promise));
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
         static const auto blank = api_.Factory().Data();
@@ -1059,7 +1066,8 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
             *notif.mutable_recipient() = serialize(recipient);
         }
 
-        wallet_.ConstructTransaction(proposal, send_promises_.finish(promise));
+        wallet_.Internal().ConstructTransaction(
+            proposal, send_promises_.finish(promise));
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
         static const auto blank = api_.Factory().Data();
@@ -1097,7 +1105,7 @@ auto Base::process_sync_data(network::zeromq::Message&& in) noexcept -> void
         LogVerbose()("Accepted ")(accepted)(" of ")(blocks.size())(" ")(
             print(chain_))(" headers")
             .Flush();
-        filters_.ProcessSyncData(prior, hashes, data);
+        filters_.Internal().ProcessSyncData(prior, hashes, data);
         const auto elapsed =
             std::chrono::duration_cast<std::chrono::nanoseconds>(
                 Clock::now() - start);
@@ -1196,9 +1204,10 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
 {
     if (auto previous = running_.exchange(false); previous) {
         init_.get();
+        self_.lock()->reset();
         pipeline_.Close();
         shutdown_sender_.Activate();
-        wallet_.Shutdown();
+        wallet_.Internal().Shutdown();
 
         if (sync_server_) { sync_server_->Shutdown(); }
 
@@ -1207,7 +1216,7 @@ auto Base::shutdown(std::promise<void>& promise) noexcept -> void
         }
 
         peer_.Shutdown();
-        filters_.Shutdown();
+        filters_.Internal().Shutdown();
         block_.Shutdown();
         shutdown_sender_.Close();
         promise.set_value();
@@ -1222,16 +1231,30 @@ auto Base::shut_down() noexcept -> void
 
     close_pipeline();
     shutdown_sender_.Activate();
-    wallet_.Shutdown();
+    wallet_.Internal().Shutdown();
 
     if (sync_server_) { sync_server_->Shutdown(); }
     if (p2p_requestor_) { sync_socket_->Send(MakeWork(WorkType::Shutdown)); }
 
     peer_.Shutdown();
-    filters_.Shutdown();
+    filters_.Internal().Shutdown();
     block_.Shutdown();
     shutdown_sender_.Close();
     // TODO MT-34 investigate what other actions might be needed
+}
+
+auto Base::ShuttingDown() const noexcept -> bool
+{
+    return shutdown_sender_.Activated();
+}
+
+auto Base::Start(std::shared_ptr<const node::Manager> me) noexcept -> void
+{
+    OT_ASSERT(me);
+
+    *(self_.lock()) = std::move(me);
+    init_promise_.set_value();
+    peer_.Start();
 }
 
 auto Base::StartWallet() noexcept -> void
@@ -1399,7 +1422,7 @@ auto Base::state_transition_blocks() noexcept -> void
 
 auto Base::state_transition_filters() noexcept -> void
 {
-    filters_.Start();
+    filters_.Internal().Start();
     state_.store(State::UpdatingFilters);
 }
 

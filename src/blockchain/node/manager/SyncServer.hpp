@@ -59,13 +59,9 @@ class Base;
 class SyncServer;
 }  // namespace base
 
-namespace internal
-{
 class FilterOracle;
-class Manager;
-}  // namespace internal
-
 class HeaderOracle;
+class Manager;
 }  // namespace node
 
 class GCS;
@@ -104,8 +100,8 @@ public:
         const api::Session& api,
         database::Sync& db,
         const node::HeaderOracle& header,
-        const node::internal::FilterOracle& filter,
-        const node::internal::Manager& node,
+        const node::FilterOracle& filter,
+        const node::Manager& node,
         const blockchain::Type chain,
         const cfilter::Type type,
         const UnallocatedCString& shutdown,
@@ -129,8 +125,8 @@ private:
 
     database::Sync& db_;
     const node::HeaderOracle& header_;
-    const node::internal::FilterOracle& filter_;
-    const node::internal::Manager& node_;
+    const node::FilterOracle& filter_;
+    const node::Manager& node_;
     const blockchain::Type chain_;
     const cfilter::Type type_;
     const int linger_;

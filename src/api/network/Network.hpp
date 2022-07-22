@@ -6,11 +6,13 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 #include <tuple>
 #include <utility>
 
 #include "internal/api/network/Factory.hpp"
+#include "internal/api/network/Network.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 
@@ -21,9 +23,15 @@ namespace opentxs  // NOLINT
 // {
 namespace api
 {
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
 namespace network
 {
 class Asio;
+class Blockchain;
 }  // namespace network
 
 namespace session
@@ -31,6 +39,7 @@ namespace session
 class Endpoints;
 }  // namespace session
 
+class Legacy;
 class Session;
 }  // namespace api
 
@@ -41,31 +50,53 @@ namespace zeromq
 class Context;
 }  // namespace zeromq
 }  // namespace network
+
+class Options;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
-namespace opentxs::api::network
+namespace opentxs::api::network::implementation
 {
-struct Network::Imp {
-    const network::Asio& asio_;
-    const opentxs::network::zeromq::Context& zmq_;
-    network::Blockchain blockchain_;
+class Network final : public internal::Network
+{
+public:
+    auto Asio() const noexcept -> const network::Asio& final { return asio_; }
+    auto Blockchain() const noexcept -> const network::Blockchain& final
+    {
+        return *blockchain_;
+    }
+    auto ZeroMQ() const noexcept
+        -> const opentxs::network::zeromq::Context& final
+    {
+        return zmq_;
+    }
 
-    Imp(const api::Session& api,
+    auto Shutdown() noexcept -> void final;
+    auto Start(
+        std::shared_ptr<const api::Session> api,
+        const api::crypto::Blockchain& crypto,
+        const api::Legacy& legacy,
+        const std::filesystem::path& dataFolder,
+        const Options& args) noexcept -> void final;
+
+    Network(
+        const api::Session& api,
         const network::Asio& asio,
         const opentxs::network::zeromq::Context& zmq,
         const api::session::Endpoints& endpoints,
-        api::network::Blockchain::Imp* blockchain) noexcept
-        : asio_(asio)
-        , zmq_(zmq)
-        , blockchain_(blockchain)
-    {
-    }
-    Imp() = delete;
-    Imp(const Imp&) = delete;
-    Imp(Imp&&) = delete;
-    auto operator=(const Imp&) -> Imp& = delete;
-    auto operator=(Imp&&) -> Imp& = delete;
+        std::unique_ptr<api::network::Blockchain> blockchain) noexcept;
+    Network() = delete;
+    Network(const Network&) = delete;
+    Network(Network&&) = delete;
+    auto operator=(const Network&) -> Network& = delete;
+    auto operator=(Network&&) -> Network& = delete;
+
+    ~Network() final;
+
+private:
+    const network::Asio& asio_;
+    const opentxs::network::zeromq::Context& zmq_;
+    std::unique_ptr<network::Blockchain> blockchain_;
 };
-}  // namespace opentxs::api::network
+}  // namespace opentxs::api::network::implementation

@@ -9,8 +9,9 @@
 
 #include <memory>
 
+#include "api/network/blockchain/Blockchain.hpp"
 #include "api/network/blockchain/Imp.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/BlockchainHandle.hpp"
 
 namespace opentxs::factory
 {
@@ -18,10 +19,12 @@ auto BlockchainNetworkAPI(
     const api::Session& api,
     const api::session::Endpoints& endpoints,
     const opentxs::network::zeromq::Context& zmq) noexcept
-    -> api::network::Blockchain::Imp*
+    -> std::unique_ptr<api::network::Blockchain>
 {
-    using ReturnType = api::network::BlockchainImp;
+    using ReturnType = api::network::implementation::Blockchain;
+    using Imp = api::network::implementation::BlockchainImp;
 
-    return std::make_unique<ReturnType>(api, endpoints, zmq).release();
+    return std::make_unique<ReturnType>(
+        std::make_unique<Imp>(api, endpoints, zmq).release());
 }
 }  // namespace opentxs::factory

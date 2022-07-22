@@ -36,9 +36,11 @@
 
 namespace opentxs::network::zeromq::context
 {
-Pool::Pool(const Context& parent) noexcept
-    : parent_(parent)
+Pool::Pool(std::shared_ptr<const Context> parent) noexcept
+    : parent_p_(parent)
+    , parent_(*parent_p_)
     , count_(std::thread::hardware_concurrency())
+    , shutdown_counter_()
     , running_(true)
     , gate_()
     , notify_()
@@ -59,11 +61,11 @@ Pool::Pool(const Context& parent) noexcept
         assert(rc);
 
         auto& [endpoint, socket] = i->second;
-        rc = socket.Bind(endpoint.c_str());
+        rc = socket.lock()->Bind(endpoint.c_str());
 
         assert(rc);
 
-        threads_.try_emplace(n, *this, endpoint);
+        threads_.try_emplace(n, n, *this, endpoint);
     }
 }
 
@@ -202,12 +204,18 @@ auto Pool::MakeBatch(const BatchID id, Vector<socket::Type>&& types) noexcept
     auto added{false};
     std::pair<Batches::iterator&, bool&> result{it, added};
     batches_.modify([&](auto& batches) {
-        result = batches.try_emplace(id, id, parent_, std::move(types));
+        result = batches.try_emplace(
+            id,
+            std::make_shared<internal::Batch>(id, parent_, std::move(types)));
     });
 
     assert(added);
 
-    auto& batch = it->second;
+    auto& pBatch = it->second;
+
+    assert(added);
+
+    auto& batch = *pBatch;
     index_.modify([&](auto& index) {
         auto& [bIndex, sIndex] = index;
         auto& sockets = bIndex[batch.id_];
@@ -229,7 +237,7 @@ auto Pool::MakeBatch(const BatchID id, Vector<socket::Type>&& types) noexcept
         }
     });
 
-    return {parent_.Internal(), batch};
+    return {parent_p_, pBatch};
 }
 
 auto Pool::Modify(SocketID id, ModifyCallback cb) noexcept -> void
@@ -246,7 +254,7 @@ auto Pool::Modify(SocketID id, ModifyCallback cb) noexcept -> void
             map[id].emplace_back(std::move(cb));
         }
         auto& notify = socket(batchID);
-        const auto rc = notify.Send([&] {
+        const auto rc = notify.lock()->Send([&] {
             auto out = MakeWork(Operation::change_socket);
             out.AddFrame(id);
 
@@ -264,9 +272,26 @@ auto Pool::Modify(SocketID id, ModifyCallback cb) noexcept -> void
 
 auto Pool::PreallocateBatch() const noexcept -> BatchID { return GetBatchID(); }
 
-auto Pool::Shutdown() noexcept -> void { stop(); }
+auto Pool::ReportShutdown(unsigned int index) noexcept -> void
+{
+    notify_.at(index).second.lock()->Close();
 
-auto Pool::socket(BatchID id) noexcept -> socket::Raw&
+    if (++shutdown_counter_ == count_) { stop(); }
+}
+
+auto Pool::Shutdown() noexcept -> void
+{
+    if (auto running = running_.exchange(false); running) {
+        gate_.shutdown();
+
+        for (auto& [id, data] : notify_) {
+            auto& socket = data.second;
+            socket.lock()->Send(MakeWork(Operation::shutdown));
+        }
+    }
+}
+
+auto Pool::socket(BatchID id) noexcept -> GuardedSocket&
 {
     return notify_.at(id % count_).second;
 }
@@ -293,7 +318,7 @@ auto Pool::Start(
 
         auto& thread = get(id);
         auto& notify = socket(id);
-        const auto rc = notify.Send([&] {
+        const auto rc = notify.lock()->Send([&] {
             auto out = MakeWork(Operation::add_socket);
             out.AddFrame(id);
             out.AddFrame(threadName.data(), threadName.size());
@@ -316,6 +341,8 @@ auto Pool::Start(
 
 auto Pool::Stop(BatchID id) noexcept -> void
 {
+    if (const auto ticket = gate_.get(); ticket) { return; }
+
     try {
         {
             auto sockets = [&] {
@@ -338,8 +365,9 @@ auto Pool::Stop(BatchID id) noexcept -> void
                 throw std::runtime_error{"failed queue socket list"};
             }
         }
+
         auto& notify = socket(id);
-        const auto rc = notify.Send([&] {
+        const auto rc = notify.lock()->Send([&] {
             auto out = MakeWork(Operation::remove_socket);
             out.AddFrame(id);
 
@@ -354,16 +382,14 @@ auto Pool::Stop(BatchID id) noexcept -> void
 
 auto Pool::stop() noexcept -> void
 {
-    if (auto running = running_.exchange(false); running) {
-        gate_.shutdown();
-
-        for (auto& [id, data] : notify_) { data.second.Close(); }
-
-        for (auto& [id, thread] : threads_) { thread.Shutdown(); }
-
-        batches_.modify([](auto& map) { map.clear(); });
-        index_.modify([](auto& index) { index.clear(); });
-    }
+    batches_.modify([](auto& map) { map.clear(); });
+    index_.modify([](auto& index) { index.clear(); });
+    start_args_.lock()->clear();
+    stop_args_.lock()->clear();
+    modify_args_.lock()->clear();
+    threads_.clear();
+    notify_.clear();
+    parent_p_.reset();
 }
 
 auto Pool::stop_batch(BatchID id) noexcept -> void
@@ -403,5 +429,5 @@ auto Pool::ThreadID(BatchID id) const noexcept -> std::thread::id
     return get(id).ID();
 }
 
-Pool::~Pool() { stop(); }
+Pool::~Pool() = default;
 }  // namespace opentxs::network::zeromq::context

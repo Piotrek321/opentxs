@@ -68,7 +68,6 @@ namespace node
 namespace internal
 {
 class BlockBatch;
-class Manager;
 class Mempool;
 class PeerManager;
 struct Config;
@@ -77,6 +76,7 @@ struct Config;
 class BlockOracle;
 class FilterOracle;
 class HeaderOracle;
+class Manager;
 }  // namespace node
 
 namespace p2p
@@ -114,20 +114,13 @@ class Peer final : public blockchain::internal::Peer::Imp
 {
 public:
     Peer(
-        const api::Session& api,
-        const opentxs::blockchain::node::internal::Config& config,
-        const opentxs::blockchain::node::internal::Manager& network,
-        const opentxs::blockchain::node::internal::PeerManager& parent,
-        const opentxs::blockchain::node::internal::Mempool& mempool,
-        const opentxs::blockchain::node::HeaderOracle& header,
-        const opentxs::blockchain::node::BlockOracle& block,
-        const opentxs::blockchain::node::FilterOracle& filter,
-        const opentxs::blockchain::p2p::bitcoin::Nonce& nonce,
-        opentxs::blockchain::database::Peer& database,
+        std::shared_ptr<const api::Session> api,
+        std::shared_ptr<const opentxs::blockchain::node::Manager> network,
         opentxs::blockchain::Type chain,
         int peerID,
         std::unique_ptr<opentxs::blockchain::p2p::internal::Address> address,
         opentxs::blockchain::p2p::bitcoin::ProtocolVersion protocol,
+        std::string_view fromNode,
         std::string_view fromParent,
         zeromq::BatchID batch,
         allocator_type alloc) noexcept;

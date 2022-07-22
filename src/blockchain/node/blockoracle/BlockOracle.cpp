@@ -21,6 +21,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
@@ -37,7 +38,7 @@ namespace opentxs::factory
 {
 auto BlockOracle(
     const api::Session& api,
-    const blockchain::node::internal::Manager& node,
+    const blockchain::node::Manager& node,
     const blockchain::node::internal::Config& config,
     const blockchain::node::HeaderOracle& header,
     blockchain::database::Block& db,
@@ -96,7 +97,7 @@ namespace opentxs::blockchain::node::internal
 {
 BlockOracle::Imp::Imp(
     const api::Session& api,
-    const internal::Manager& node,
+    const node::Manager& node,
     const internal::Config& config,
     const node::HeaderOracle& header,
     database::Block& db,
@@ -149,7 +150,7 @@ BlockOracle::Imp::Imp(
         case BlockchainProfile::server: {
             block_fetcher_ = blockoracle::BlockFetcher{
                 api_,
-                node_.Endpoints(),
+                node_.Internal().Endpoints(),
                 header,
                 db,
                 chain,
@@ -163,7 +164,7 @@ BlockOracle::Imp::Imp(
 
 BlockOracle::Imp::Imp(
     const api::Session& api,
-    const internal::Manager& node,
+    const node::Manager& node,
     const internal::Config& config,
     const node::HeaderOracle& header,
     database::Block& db,

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <memory>
+
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
 {
@@ -15,8 +17,9 @@ namespace zeromq
 namespace internal
 {
 class Batch;
-class Context;
 }  // namespace internal
+
+class Context;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
@@ -26,12 +29,17 @@ namespace opentxs::network::zeromq::internal
 {
 class Handle
 {
+private:
+    std::shared_ptr<internal::Batch> batch_p_;
+
 public:
     internal::Batch& batch_;
 
     auto Release() noexcept -> void;
 
-    Handle(const internal::Context& context, internal::Batch& batch) noexcept;
+    Handle(
+        std::shared_ptr<const zeromq::Context> context,
+        std::shared_ptr<internal::Batch> batch) noexcept;
     Handle(const Handle&) = delete;
     Handle(Handle&& rhs) noexcept;
     auto operator=(const Handle&) -> Handle& = delete;
@@ -40,6 +48,6 @@ public:
     ~Handle();
 
 private:
-    const internal::Context* context_;
+    std::shared_ptr<const zeromq::Context> context_;
 };
 }  // namespace opentxs::network::zeromq::internal

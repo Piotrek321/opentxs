@@ -79,10 +79,10 @@ namespace node
 {
 namespace internal
 {
-class Manager;
 class Mempool;
 }  // namespace internal
 
+class Manager;
 class Mempool;
 }  // namespace node
 }  // namespace blockchain
@@ -178,7 +178,7 @@ public:
 
     Wallet(
         const api::Session& api,
-        const node::internal::Manager& parent,
+        const node::Manager& parent,
         database::Wallet& db,
         const node::internal::Mempool& mempool,
         const Type chain,
@@ -200,7 +200,7 @@ private:
 
     using Work = wallet::WalletJobs;
 
-    const node::internal::Manager& parent_;
+    const node::Manager& parent_;
     database::Wallet& db_;
     const Type chain_;
     wallet::FeeOracle fee_oracle_;

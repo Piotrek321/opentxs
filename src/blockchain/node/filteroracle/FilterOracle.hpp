@@ -91,12 +91,13 @@ class BlockIndexer;
 
 namespace internal
 {
-class BlockOracle;
-class Manager;
 struct Config;
 }  // namespace internal
 
+class BlockOracle;
+class FilterOracle;
 class HeaderOracle;
+class Manager;
 }  // namespace node
 
 class GCS;
@@ -185,9 +186,9 @@ public:
     FilterOracle(
         const api::Session& api,
         const internal::Config& config,
-        const internal::Manager& node,
+        const node::Manager& node,
         const HeaderOracle& header,
-        const internal::BlockOracle& block,
+        const node::BlockOracle& block,
         database::Cfilter& database,
         const blockchain::Type chain,
         const blockchain::cfilter::Type filter,
@@ -212,7 +213,7 @@ private:
     static const CheckpointMap filter_checkpoints_;
 
     const api::Session& api_;
-    const internal::Manager& node_;
+    const node::Manager& node_;
     const HeaderOracle& header_;
     database::Cfilter& database_;
     const network::zeromq::socket::Publish& filter_notifier_;

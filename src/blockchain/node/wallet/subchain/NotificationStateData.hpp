@@ -96,7 +96,6 @@ namespace node
 {
 namespace internal
 {
-class Manager;
 class Mempool;
 }  // namespace internal
 
@@ -107,6 +106,8 @@ class Progress;
 class Rescan;
 class Scan;
 }  // namespace wallet
+
+class Manager;
 }  // namespace node
 }  // namespace blockchain
 
@@ -139,7 +140,7 @@ class NotificationStateData final : public SubchainStateData
 public:
     NotificationStateData(
         const api::Session& api,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         database::Wallet& db,
         const node::internal::Mempool& mempool,
         const cfilter::Type filter,

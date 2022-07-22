@@ -3,15 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"              // IWYU pragma: associated
-#include "1_Internal.hpp"            // IWYU pragma: associated
-#include "api/network/asio/Imp.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"               // IWYU pragma: associated
+#include "1_Internal.hpp"             // IWYU pragma: associated
+#include "api/network/asio/Asio.hpp"  // IWYU pragma: associated
 
-namespace opentxs::api::network
+namespace opentxs::api::network::implementation
 {
-auto Asio::Imp::sites() -> const Vector<Imp::Site>&
+auto Asio::sites() -> const Vector<Site>&
 {
-    static const auto sites = Vector<Imp::Site>{
+    static const auto sites = Vector<Site>{
         {
             "ip4only.me",
             "http",
@@ -47,4 +47,4 @@ auto Asio::Imp::sites() -> const Vector<Imp::Site>&
 
     return sites;
 }
-}  // namespace opentxs::api::network
+}  // namespace opentxs::api::network::implementation

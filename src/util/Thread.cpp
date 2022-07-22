@@ -9,7 +9,7 @@
 
 #include <robin_hood.h>
 
-#include "util/Log.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {

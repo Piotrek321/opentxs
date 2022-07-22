@@ -6,6 +6,7 @@
 #pragma once
 
 #include <filesystem>
+#include <memory>
 #include <string_view>
 
 #include "opentxs/network/p2p/State.hpp"
@@ -27,6 +28,7 @@ class Blockchain;
 }  // namespace crypto
 
 class Legacy;
+class Session;
 }  // namespace api
 
 namespace blockchain

@@ -7,19 +7,6 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-// NOLINTBEGIN(modernize-concat-nested-namespaces)
-namespace opentxs  // NOLINT
-{
-// inline namespace v1
-// {
-namespace identifier
-{
-class Generic;
-}  // namespace identifier
-// }  // namespace v1
-}  // namespace opentxs
-// NOLINTEND(modernize-concat-nested-namespaces)
-
 namespace opentxs::network::blockchain::internal
 {
 class Peer
@@ -27,10 +14,7 @@ class Peer
 public:
     class Imp;
 
-    auto AddressID() const noexcept -> const identifier::Generic&;
-
     auto Start() noexcept -> void;
-    auto Stop() noexcept -> void;
 
     Peer(boost::shared_ptr<Imp>&& imp) noexcept;
     Peer() = delete;

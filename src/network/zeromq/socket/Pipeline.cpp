@@ -317,7 +317,7 @@ auto Pipeline::Imp::Close() const noexcept -> bool
     gate_.shutdown();
 
     if (auto sent = shutdown_.exchange(true); false == sent) {
-        batch_.ClearCallbacks();
+        handle_.Release();
     }
 
     return true;

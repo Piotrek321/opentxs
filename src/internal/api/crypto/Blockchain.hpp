@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string_view>
 
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -23,6 +24,8 @@ namespace session
 {
 class Contacts;
 }  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -47,6 +50,7 @@ namespace opentxs::api::crypto::internal
 class Blockchain : virtual public api::crypto::Blockchain
 {
 public:
+    virtual auto BalanceOracleEndpoint() const noexcept -> std::string_view = 0;
     virtual auto Contacts() const noexcept -> const api::session::Contacts& = 0;
     virtual auto KeyEndpoint() const noexcept -> std::string_view = 0;
     virtual auto KeyGenerated(
@@ -97,18 +101,13 @@ public:
         const opentxs::blockchain::crypto::Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void = 0;
-    virtual auto UpdateBalance(
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept -> void = 0;
-    virtual auto UpdateBalance(
-        const identifier::Nym& owner,
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept -> void = 0;
     virtual auto UpdateElement(
         UnallocatedVector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
 
     virtual auto Init() noexcept -> void = 0;
     auto Internal() noexcept -> Blockchain& final { return *this; }
+    virtual auto Start(std::shared_ptr<const api::Session> api) noexcept
+        -> void = 0;
 
     ~Blockchain() override = default;
 };

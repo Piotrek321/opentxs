@@ -63,9 +63,11 @@ public:
     {
         return thread_.get_id();
     }
-    auto Shutdown() noexcept -> void final;
 
-    Thread(zeromq::internal::Pool& parent, std::string_view endpoint) noexcept;
+    Thread(
+        const unsigned int index,
+        zeromq::internal::Pool& parent,
+        std::string_view endpoint) noexcept;
     Thread() = delete;
     Thread(const Thread&) = delete;
     Thread(Thread&&) = delete;
@@ -88,6 +90,7 @@ private:
         ~Items();
     };
 
+    const unsigned int index_;
     zeromq::internal::Pool& parent_;
     alloc::BoostPoolSync alloc_;
     std::atomic_bool shutdown_;
@@ -96,7 +99,6 @@ private:
     CString thread_name_;
     std::thread thread_;
 
-    auto join() noexcept -> void;
     auto poll() noexcept -> void;
     auto receive_message(void* socket, Message& message) noexcept -> bool;
     auto modify(Message&& message) noexcept -> void;

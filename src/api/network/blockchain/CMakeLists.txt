@@ -7,6 +7,7 @@ target_sources(
   opentxs-common
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/api/network/Blockchain.hpp"
+    "Base.hpp"
     "Blockchain.cpp"
     "Blockchain.hpp"
     "BlockchainHandle.cpp"

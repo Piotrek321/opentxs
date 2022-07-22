@@ -24,10 +24,13 @@
 #include "internal/api/Factory.hpp"
 #include "internal/api/Log.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#include "internal/api/network/Factory.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/api/session/Notary.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/interface/rpc/RPC.hpp"
+#include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Factory.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/Log.hpp"
@@ -128,11 +131,16 @@ Context::Context(Flag& running, const Options& args, PasswordCaller* password)
         }
     }())
     , profile_id_()
-    , zmq_context_(opentxs::factory::ZMQContext())
+    , zmq_context_([] {
+        auto zmq = factory::ZMQContext();
+        zmq->Internal().Init(zmq);
+
+        return zmq;
+    }())
+    , asio_()
     , log_(factory::Log(*zmq_context_, args_.RemoteLogEndpoint()))
     , legacy_(factory::Legacy(home_))
     , config_()
-    , asio_()
     , crypto_(nullptr)
     , factory_(nullptr)
     , zap_(nullptr)
@@ -238,7 +246,7 @@ auto Context::Init() noexcept -> void
 
 auto Context::Init_Asio() -> void
 {
-    asio_ = std::make_unique<network::Asio>(*zmq_context_);
+    asio_ = factory::AsioAPI(*zmq_context_);
 
     OT_ASSERT(asio_);
 
@@ -392,6 +400,12 @@ auto Context::shutdown() noexcept -> void
     }
 
     log_.reset();
+
+    if (zmq_context_) {
+        auto zmq = zmq_context_->Internal().Stop();
+        zmq_context_.reset();
+        zmq.get();
+    }
 }
 
 auto Context::StartClientSession(const Options& args, const int instance) const
@@ -426,6 +440,7 @@ auto Context::StartClientSession(const Options& args, const int instance) const
         OT_ASSERT(client);
 
         client->InternalClient().Init();
+        client->InternalClient().Start(client);
 
         return *client;
     } else {
@@ -502,6 +517,8 @@ auto Context::StartNotarySession(const Options& args, const int instance) const
             instance));
 
         OT_ASSERT(server);
+
+        server->InternalNotary().Start(server);
 
         return *server;
     } else {

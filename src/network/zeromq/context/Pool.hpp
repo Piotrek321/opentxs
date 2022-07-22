@@ -10,6 +10,7 @@
 #include <robin_hood.h>
 #include <atomic>
 #include <future>
+#include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <string_view>
@@ -77,18 +78,19 @@ public:
     {
         return parent_;
     }
+    auto PreallocateBatch() const noexcept -> BatchID final;
     auto Thread(BatchID id) const noexcept -> zeromq::internal::Thread* final;
     auto ThreadID(BatchID id) const noexcept -> std::thread::id final;
 
     auto Alloc(BatchID id) noexcept -> alloc::Resource* final;
+    auto DoModify(SocketID id) noexcept -> void final;
     auto GetStartArgs(BatchID id) noexcept -> ThreadStartArgs final;
     auto GetStopArgs(BatchID id) noexcept -> Set<void*> final;
     auto MakeBatch(Vector<socket::Type>&& types) noexcept -> internal::Handle;
     auto MakeBatch(const BatchID id, Vector<socket::Type>&& types) noexcept
         -> internal::Handle final;
     auto Modify(SocketID id, ModifyCallback cb) noexcept -> void;
-    auto DoModify(SocketID id) noexcept -> void final;
-    auto PreallocateBatch() const noexcept -> BatchID final;
+    auto ReportShutdown(unsigned int index) noexcept -> void final;
     auto Shutdown() noexcept -> void final;
     auto Start(
         BatchID id,
@@ -97,7 +99,7 @@ public:
         -> zeromq::internal::Thread* final;
     auto Stop(BatchID id) noexcept -> void final;
 
-    Pool(const Context& parent) noexcept;
+    Pool(std::shared_ptr<const Context> parent) noexcept;
     Pool() = delete;
     Pool(const Pool&) = delete;
     Pool(Pool&&) = delete;
@@ -107,11 +109,13 @@ public:
     ~Pool() final;
 
 private:
-    using ThreadNotifier = std::pair<CString, socket::Raw>;
+    using GuardedSocket = libguarded::plain_guarded<socket::Raw>;
+    using ThreadNotifier = std::pair<CString, GuardedSocket>;
     using StartMap = Map<BatchID, StartArgs>;
     using StopMap = Map<BatchID, Set<void*>>;
     using ModifyMap = Map<SocketID, Vector<ModifyCallback>>;
-    using Batches = robin_hood::unordered_node_map<BatchID, internal::Batch>;
+    using Batches = robin_hood::
+        unordered_node_map<BatchID, std::shared_ptr<internal::Batch>>;
     using BatchIndex =
         robin_hood::unordered_node_map<BatchID, Vector<SocketID>>;
     using SocketIndex = robin_hood::
@@ -128,8 +132,10 @@ private:
         }
     };
 
+    std::shared_ptr<const Context> parent_p_;
     const Context& parent_;
     const unsigned int count_;
+    std::atomic<unsigned int> shutdown_counter_;
     std::atomic<bool> running_;
     Gatekeeper gate_;
     robin_hood::unordered_node_map<unsigned int, ThreadNotifier> notify_;
@@ -143,7 +149,7 @@ private:
     auto get(BatchID id) const noexcept -> const context::Thread&;
 
     auto get(BatchID id) noexcept -> context::Thread&;
-    auto socket(BatchID id) noexcept -> socket::Raw&;
+    auto socket(BatchID id) noexcept -> GuardedSocket&;
     auto stop() noexcept -> void;
     auto stop_batch(BatchID id) noexcept -> void;
 };

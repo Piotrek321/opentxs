@@ -16,6 +16,11 @@ namespace api
 {
 namespace network
 {
+namespace internal
+{
+class Network;
+}
+
 class Asio;
 class Blockchain;
 }  // namespace network
@@ -41,24 +46,24 @@ namespace opentxs::api::network
 class OPENTXS_EXPORT Network
 {
 public:
-    struct Imp;
+    virtual auto Asio() const noexcept -> const network::Asio& = 0;
+    virtual auto Blockchain() const noexcept -> const network::Blockchain& = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Network& = 0;
+    virtual auto ZeroMQ() const noexcept
+        -> const opentxs::network::zeromq::Context& = 0;
 
-    auto Asio() const noexcept -> const network::Asio&;
-    auto Blockchain() const noexcept -> const network::Blockchain&;
-    auto ZeroMQ() const noexcept -> const opentxs::network::zeromq::Context&;
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept
+        -> internal::Network& = 0;
 
-    OPENTXS_NO_EXPORT auto Shutdown() noexcept -> void;
-
-    OPENTXS_NO_EXPORT Network(Imp*) noexcept;
-    Network() = delete;
     Network(const Network&) = delete;
     Network(Network&&) = delete;
     auto operator=(const Network&) -> Network& = delete;
     auto operator=(Network&&) -> Network& = delete;
 
-    OPENTXS_NO_EXPORT ~Network();
+    OPENTXS_NO_EXPORT virtual ~Network() = default;
 
-private:
-    Imp* imp_;
+protected:
+    Network() = default;
 };
 }  // namespace opentxs::api::network

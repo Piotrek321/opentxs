@@ -56,9 +56,10 @@ namespace node
 {
 namespace internal
 {
-class Manager;
 struct Config;
 }  // namespace internal
+
+class Manager;
 }  // namespace node
 }  // namespace blockchain
 
@@ -107,7 +108,7 @@ public:
 
     Cache(
         const api::Session& api_,
-        const internal::Manager& node,
+        const node::Manager& node,
         const internal::Config& config,
         database::Block& db,
         const blockchain::Type chain,
@@ -128,7 +129,7 @@ private:
     static const std::chrono::seconds download_timeout_;
 
     const api::Session& api_;
-    const internal::Manager& node_;
+    const node::Manager& node_;
     database::Block& db_;
     const blockchain::Type chain_;
     const bool save_blocks_;

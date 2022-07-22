@@ -37,7 +37,6 @@
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/node/blockoracle/BlockOracle.hpp"
-#include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/BoostPMR.hpp"
@@ -61,7 +60,9 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -427,7 +428,7 @@ namespace opentxs::blockchain::node::wallet
 {
 SubchainStateData::SubchainStateData(
     const api::Session& api,
-    const node::internal::Manager& node,
+    const node::Manager& node,
     database::Wallet& db,
     const node::internal::Mempool& mempool,
     const crypto::Subaccount& subaccount,
@@ -478,7 +479,7 @@ SubchainStateData::SubchainStateData(
     , account_type_(subaccount_.Type())
     , id_(subaccount_.ID())
     , subchain_(subchain)
-    , chain_(node_.Chain())
+    , chain_(node_.Internal().Chain())
     , filter_type_(filter)
     , db_key_(db.GetSubchainID(id_, subchain_))
     , null_position_(block::Position{})
@@ -533,7 +534,7 @@ SubchainStateData::SubchainStateData(
 
 SubchainStateData::SubchainStateData(
     const api::Session& api,
-    const node::internal::Manager& node,
+    const node::Manager& node,
     database::Wallet& db,
     const node::internal::Mempool& mempool,
     const crypto::Subaccount& subaccount,
@@ -936,7 +937,7 @@ auto SubchainStateData::ProcessBlock(
     const auto& name = name_;
     const auto& type = filter_type_;
     const auto& node = node_;
-    const auto& filters = node.FilterOracleInternal();
+    const auto& filters = node.FilterOracle();
     const auto& blockHash = position.hash_;
     auto buf = std::array<std::byte, 16_kib>{};
     auto upstream = alloc::StandardToBoost{get_allocator().resource()};
@@ -1107,7 +1108,7 @@ auto SubchainStateData::scan(
         const auto& node = node_;
         const auto& type = filter_type_;
         const auto& headers = node.HeaderOracle();
-        const auto& filters = node.FilterOracleInternal();
+        const auto& filters = node.FilterOracle();
         const auto start = Clock::now();
         const auto startHeight = highestTested.height_ + 1;
         auto atLeastOnce = std::atomic_bool{false};

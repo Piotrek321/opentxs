@@ -47,16 +47,16 @@ namespace node
 namespace internal
 {
 class BlockOracle;
-class FilterOracle;
-class Manager;
 class Mempool;
 class PeerManager;
-class Wallet;
 struct Config;
 }  // namespace internal
 
+class BlockOracle;
+class FilterOracle;
 class HeaderOracle;
 class Manager;
+class Wallet;
 }  // namespace node
 }  // namespace blockchain
 // }  // namespace v1
@@ -68,14 +68,14 @@ namespace opentxs::factory
 auto BlockchainFilterOracle(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
-    const blockchain::node::internal::Manager& node,
+    const blockchain::node::Manager& node,
     const blockchain::node::HeaderOracle& header,
-    const blockchain::node::internal::BlockOracle& block,
+    const blockchain::node::BlockOracle& block,
     blockchain::database::Cfilter& database,
     const blockchain::Type chain,
     const blockchain::cfilter::Type filter,
     const UnallocatedCString& shutdown) noexcept
-    -> std::unique_ptr<blockchain::node::internal::FilterOracle>;
+    -> std::unique_ptr<blockchain::node::FilterOracle>;
 auto BlockchainNetworkBitcoin(
     const api::Session& api,
     const blockchain::Type type,
@@ -87,10 +87,10 @@ auto BlockchainPeerManager(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
-    const blockchain::node::internal::Manager& node,
+    const blockchain::node::Manager& node,
     const blockchain::node::HeaderOracle& headers,
-    const blockchain::node::internal::FilterOracle& filter,
-    const blockchain::node::internal::BlockOracle& block,
+    const blockchain::node::FilterOracle& filter,
+    const blockchain::node::BlockOracle& block,
     blockchain::database::Peer& database,
     const blockchain::Type type,
     std::string_view seednode,
@@ -98,15 +98,15 @@ auto BlockchainPeerManager(
     -> std::unique_ptr<blockchain::node::internal::PeerManager>;
 auto BlockchainWallet(
     const api::Session& api,
-    const blockchain::node::internal::Manager& parent,
+    const blockchain::node::Manager& parent,
     blockchain::database::Wallet& db,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::Type chain,
     const std::string_view shutdown)
-    -> std::unique_ptr<blockchain::node::internal::Wallet>;
+    -> std::unique_ptr<blockchain::node::Wallet>;
 auto BlockOracle(
     const api::Session& api,
-    const blockchain::node::internal::Manager& node,
+    const blockchain::node::Manager& node,
     const blockchain::node::internal::Config& config,
     const blockchain::node::HeaderOracle& header,
     blockchain::database::Block& db,

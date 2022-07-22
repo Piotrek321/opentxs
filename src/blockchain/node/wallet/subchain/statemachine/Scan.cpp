@@ -12,29 +12,40 @@
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 #include <array>
+#include <atomic>
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
 #include "blockchain/node/wallet/subchain/statemachine/ElementCache.hpp"
 #include "internal/blockchain/database/Wallet.hpp"
 #include "internal/blockchain/node/Manager.hpp"
-#include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
 #include "internal/blockchain/node/wallet/Types.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Job.hpp"
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
+#include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Types.hpp"
 #include "util/Actor.hpp"
 #include "util/ScopeGuard.hpp"
 #include "util/Work.hpp"
@@ -91,7 +102,7 @@ auto Scan::Imp::do_startup() noexcept -> void
 {
     disable_automatic_processing_ = true;
     const auto& node = parent_.node_;
-    const auto& filters = node.FilterOracleInternal();
+    const auto& filters = node.FilterOracle();
     last_scanned_ = parent_.db_.SubchainLastScanned(parent_.db_key_);
     filter_tip_ = filters.FilterTip(parent_.filter_type_);
 
@@ -195,7 +206,7 @@ auto Scan::Imp::work() noexcept -> bool
     }
 
     if (false == enabled_) {
-        enabled_ = parent_.node_.IsWalletScanEnabled();
+        enabled_ = parent_.node_.Internal().IsWalletScanEnabled();
 
         if (false == enabled_) {
             log_(OT_PRETTY_CLASS())(parent_.name_)(
@@ -267,7 +278,6 @@ auto Scan::Imp::work() noexcept -> bool
 
     if (highestClean.has_value()) {
         clean.emplace_back(ScanState::scan_clean, highestClean.value());
-        // TODO: remove Lambda
         to_process_.SendDeferred([&] {
             auto out = MakeWork(Work::update);
             add_last_reorg(out);

@@ -14,6 +14,7 @@
 #include <iterator>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string_view>
 #include <thread>
 #include <tuple>
@@ -22,7 +23,6 @@
 #include "api/crypto/blockchain/Blockchain.hpp"
 #include "api/crypto/blockchain/Imp.hpp"
 #include "blockchain/database/common/Database.hpp"
-#include "internal/api/crypto/blockchain/BalanceOracle.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/util/Mutex.hpp"
 #include "opentxs/Version.hpp"
@@ -173,19 +173,11 @@ struct BlockchainImp final : public Blockchain::Imp {
         const Blockchain::Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void final;
+    auto Start(std::shared_ptr<const api::Session> api) noexcept -> void final;
     auto Unconfirm(
         const Blockchain::Key key,
         const opentxs::blockchain::block::Txid& tx,
         const Time time) const noexcept -> bool final;
-    auto UpdateBalance(
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept
-        -> void final;
-    auto UpdateBalance(
-        const identifier::Nym& owner,
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept
-        -> void final;
     auto UpdateElement(UnallocatedVector<ReadView>& pubkeyHashes) const noexcept
         -> void final;
 
@@ -207,7 +199,6 @@ private:
     OTZMQPublishSocket key_updates_;
     OTZMQPublishSocket scan_updates_;
     OTZMQPublishSocket new_blockchain_accounts_;
-    blockchain::BalanceOracle balances_;
 
     auto broadcast_update_signal(const Txid& txid) const noexcept -> void
     {

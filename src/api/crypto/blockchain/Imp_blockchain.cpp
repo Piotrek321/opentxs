@@ -15,9 +15,11 @@
 #include <iterator>
 #include <sstream>
 #include <string_view>
+#include <utility>
 
 #include "Proto.hpp"
 #include "blockchain/database/common/Database.hpp"
+#include "internal/api/crypto/blockchain/BalanceOracle.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/node/Types.hpp"
@@ -34,6 +36,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
@@ -103,7 +106,6 @@ BlockchainImp::BlockchainImp(
 
         return out;
     }())
-    , balances_(api_)
 {
 }
 
@@ -507,6 +509,12 @@ auto BlockchainImp::ReportScan(
     scan_updates_->Send(std::move(work));
 }
 
+auto BlockchainImp::Start(std::shared_ptr<const api::Session> api) noexcept
+    -> void
+{
+    blockchain::BalanceOracle{std::move(api), balance_oracle_endpoint_}.Start();
+}
+
 auto BlockchainImp::Unconfirm(
     const Blockchain::Key key,
     const opentxs::blockchain::block::Txid& txid,
@@ -531,21 +539,6 @@ auto BlockchainImp::Unconfirm(
     }
 
     return out;
-}
-
-auto BlockchainImp::UpdateBalance(
-    const opentxs::blockchain::Type chain,
-    const opentxs::blockchain::Balance balance) const noexcept -> void
-{
-    balances_.UpdateBalance(chain, balance);
-}
-
-auto BlockchainImp::UpdateBalance(
-    const identifier::Nym& owner,
-    const opentxs::blockchain::Type chain,
-    const opentxs::blockchain::Balance balance) const noexcept -> void
-{
-    balances_.UpdateBalance(owner, chain, balance);
 }
 
 auto BlockchainImp::UpdateElement(

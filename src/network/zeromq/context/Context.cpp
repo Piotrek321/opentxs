@@ -32,11 +32,11 @@
 
 namespace opentxs::factory
 {
-auto ZMQContext() noexcept -> std::unique_ptr<network::zeromq::Context>
+auto ZMQContext() noexcept -> std::shared_ptr<network::zeromq::Context>
 {
     using ReturnType = network::zeromq::implementation::Context;
 
-    return std::make_unique<ReturnType>();
+    return std::make_shared<ReturnType>();
 }
 }  // namespace opentxs::factory
 
@@ -72,7 +72,8 @@ Context::Context() noexcept
 
         return context;
     }())
-    , pool_(*this)
+    , pool_(std::nullopt)
+    , shutdown_()
 {
     assert(nullptr != context_);
 }
@@ -86,13 +87,23 @@ Context::operator void*() const noexcept
 
 auto Context::Alloc(BatchID id) const noexcept -> alloc::Resource*
 {
-    return pool_.Alloc(id);
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    return pool->Alloc(id);
 }
 
 auto Context::BelongsToThreadPool(const std::thread::id id) const noexcept
     -> bool
 {
-    return pool_.BelongsToThreadPool(id);
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    return pool->BelongsToThreadPool(id);
 }
 
 auto Context::DealerSocket(
@@ -104,24 +115,51 @@ auto Context::DealerSocket(
         *this, static_cast<bool>(direction), callback, threadName)};
 }
 
+auto Context::Init(std::shared_ptr<const zeromq::Context> me) noexcept -> void
+{
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(false == pool.has_value());
+
+    pool.emplace(std::move(me));
+
+    assert(pool.has_value());
+}
+
 auto Context::max_sockets() noexcept -> int { return 32768; }
 
 auto Context::MakeBatch(Vector<socket::Type>&& types) const noexcept
     -> internal::Handle
 {
-    return pool_.MakeBatch(std::move(types));
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    return pool->MakeBatch(std::move(types));
 }
 
 auto Context::MakeBatch(
     const BatchID preallocated,
     Vector<socket::Type>&& types) const noexcept -> internal::Handle
 {
-    return pool_.MakeBatch(preallocated, std::move(types));
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    return pool->MakeBatch(preallocated, std::move(types));
 }
 
 auto Context::Modify(SocketID id, ModifyCallback cb) const noexcept -> void
 {
-    pool_.Modify(id, std::move(cb));
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    pool->Modify(id, std::move(cb));
 }
 
 auto Context::PairEventListener(
@@ -183,7 +221,12 @@ auto Context::Pipeline(
 
 auto Context::PreallocateBatch() const noexcept -> BatchID
 {
-    return pool_.PreallocateBatch();
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    return pool->PreallocateBatch();
 }
 
 auto Context::Proxy(
@@ -256,10 +299,35 @@ auto Context::Start(
     StartArgs&& sockets,
     const std::string_view threadName) const noexcept -> internal::Thread*
 {
-    return pool_.Start(id, std::move(sockets), threadName);
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    return pool->Start(id, std::move(sockets), threadName);
 }
 
-auto Context::Stop(BatchID id) const noexcept -> void { pool_.Stop(id); }
+auto Context::Stop(BatchID id) const noexcept -> void
+{
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    pool->Stop(id);
+}
+
+auto Context::Stop() noexcept -> std::future<void>
+{
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    pool->Shutdown();
+
+    return shutdown_.get_future();
+}
 
 auto Context::SubscribeSocket(
     const ListenCallback& callback,
@@ -271,18 +339,26 @@ auto Context::SubscribeSocket(
 
 auto Context::Thread(BatchID id) const noexcept -> internal::Thread*
 {
-    return pool_.Thread(id);
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    return pool->Thread(id);
 }
 
 auto Context::ThreadID(BatchID id) const noexcept -> std::thread::id
 {
-    return pool_.ThreadID(id);
+    auto handle = pool_.lock();
+    auto& pool = *handle;
+
+    assert(pool.has_value());
+
+    return pool->ThreadID(id);
 }
 
 Context::~Context()
 {
-    pool_.Shutdown();
-
     if (nullptr != context_) {
         std::thread{[context = context_] {
             // NOTE neither of these functions should block forever but
@@ -291,6 +367,7 @@ Context::~Context()
             ::zmq_ctx_term(context);
         }}.detach();
         context_ = nullptr;
+        shutdown_.set_value();
     }
 }
 }  // namespace opentxs::network::zeromq::implementation

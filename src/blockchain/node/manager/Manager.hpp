@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cs_plain_guarded.h>
 #include <atomic>
 #include <cstddef>
 #include <future>
@@ -21,10 +22,12 @@
 #include "core/Worker.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Endpoints.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/blockchain/node/Mempool.hpp"
+#include "internal/blockchain/node/PeerManager.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/blockchain/node/blockoracle/BlockOracle.hpp"
 #include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
@@ -40,6 +43,8 @@
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
@@ -104,7 +109,6 @@ class SyncServer;
 namespace internal
 {
 class PeerManager;
-class Wallet;
 struct Config;
 }  // namespace internal
 
@@ -112,6 +116,8 @@ namespace p2p
 {
 class Requestor;
 }  // namespace p2p
+
+class Wallet;
 }  // namespace node
 
 namespace p2p
@@ -163,8 +169,7 @@ public:
         const noexcept -> bool final;
     auto AddPeer(const blockchain::p2p::Address& address) const noexcept
         -> bool final;
-    auto BlockOracle() const noexcept
-        -> const node::internal::BlockOracle& final
+    auto BlockOracle() const noexcept -> const node::BlockOracle& final
     {
         return block_;
     }
@@ -172,16 +177,20 @@ public:
         const bitcoin::block::Transaction& tx,
         const bool pushtx) const noexcept -> bool final;
     auto Chain() const noexcept -> Type final { return chain_; }
+    auto DB() const noexcept -> database::Database& final;
     auto Endpoints() const noexcept -> const node::Endpoints& final
     {
         return endpoints_;
     }
     auto FeeRate() const noexcept -> Amount final;
-    auto FilterOracleInternal() const noexcept
-        -> const node::internal::FilterOracle& final;
+    auto FilterOracle() const noexcept -> const node::FilterOracle& final;
     auto GetBalance() const noexcept -> Balance final;
     auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance final;
+    auto GetConfig() const noexcept -> const internal::Config& final
+    {
+        return config_;
+    }
     auto GetConfirmations(const UnallocatedCString& txid) const noexcept
         -> ChainHeight final;
     auto GetHeight() const noexcept -> ChainHeight final
@@ -189,6 +198,8 @@ public:
         return local_chain_height_.load();
     }
     auto GetPeerCount() const noexcept -> std::size_t final;
+    auto GetShared() const noexcept
+        -> std::shared_ptr<const node::Manager> final;
     auto GetTransactions() const noexcept
         -> UnallocatedVector<block::pTxid> final;
     auto GetTransactions(const identifier::Nym& account) const noexcept
@@ -203,16 +214,14 @@ public:
     auto IsWalletScanEnabled() const noexcept -> bool final;
     auto JobReady(const node::PeerManagerJobs type) const noexcept
         -> void final;
-    auto Internal() const noexcept -> const internal::Manager& final
-    {
-        return *this;
-    }
+    auto Internal() const noexcept -> const Manager& final { return *this; }
     auto Listen(const blockchain::p2p::Address& address) const noexcept
         -> bool final;
     auto Mempool() const noexcept -> const internal::Mempool& final
     {
         return mempool_;
     }
+    auto PeerManager() const noexcept -> const internal::PeerManager& final;
     auto Profile() const noexcept -> BlockchainProfile final;
     auto Reorg() const noexcept
         -> const network::zeromq::socket::Publish& final;
@@ -234,6 +243,7 @@ public:
         const PaymentCode& recipient,
         const Amount amount,
         const UnallocatedCString& memo) const noexcept -> PendingOutgoing final;
+    auto ShuttingDown() const noexcept -> bool final;
     auto Submit(network::zeromq::Message&& work) const noexcept -> void final;
     auto SyncTip() const noexcept -> block::Position final;
     auto Track(network::zeromq::Message&& work) const noexcept
@@ -244,12 +254,12 @@ public:
 
     auto Connect() noexcept -> bool final;
     auto Disconnect() noexcept -> bool final;
-    auto FilterOracleInternal() noexcept -> node::internal::FilterOracle& final;
-    auto Internal() noexcept -> internal::Manager& final { return *this; }
+    auto Internal() noexcept -> Manager& final { return *this; }
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
         return signal_shutdown();
     }
+    auto Start(std::shared_ptr<const node::Manager>) noexcept -> void final;
     auto StartWallet() noexcept -> void final;
     auto Wallet() const noexcept -> const node::Wallet& final;
 
@@ -271,7 +281,7 @@ private:
     const node::Endpoints endpoints_;
     const cfilter::Type filter_type_;
     opentxs::internal::ShutdownSender shutdown_sender_;
-    std::unique_ptr<blockchain::database::Database> database_p_;
+    mutable std::unique_ptr<blockchain::database::Database> database_p_;
     node::Mempool mempool_;
     std::unique_ptr<node::HeaderOracle> header_p_;
 
@@ -279,16 +289,16 @@ protected:
     node::internal::BlockOracle block_;
 
 private:
-    std::unique_ptr<node::internal::FilterOracle> filter_p_;
+    std::unique_ptr<node::FilterOracle> filter_p_;
     std::unique_ptr<node::internal::PeerManager> peer_p_;
-    std::unique_ptr<node::internal::Wallet> wallet_p_;
+    std::unique_ptr<node::Wallet> wallet_p_;
 
 protected:
     blockchain::database::Database& database_;
-    node::internal::FilterOracle& filters_;
+    node::FilterOracle& filters_;
     node::HeaderOracle& header_;
     node::internal::PeerManager& peer_;
-    node::internal::Wallet& wallet_;
+    node::Wallet& wallet_;
 
     // NOTE call init in every final constructor body
     auto init() noexcept -> void;
@@ -365,6 +375,10 @@ private:
         UnallocatedMap<int, std::promise<SendOutcome>> map_{};
     };
 
+    // TODO c++20 use atomic weak_ptr
+    using GuardedSelf =
+        libguarded::plain_guarded<std::weak_ptr<const node::Manager>>;
+
     const Time start_;
     const UnallocatedCString sync_endpoint_;
     const UnallocatedCString requestor_endpoint_;
@@ -385,6 +399,7 @@ private:
     std::atomic<State> state_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
+    mutable GuardedSelf self_;
 
     virtual auto instantiate_header(const ReadView payload) const noexcept
         -> std::unique_ptr<block::Header> = 0;

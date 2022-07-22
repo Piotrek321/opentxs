@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "1_Internal.hpp"
+#include "blockchain/node/peermanager/Peers.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/PeerManager.hpp"
 #include "internal/blockchain/node/Types.hpp"
@@ -69,11 +70,6 @@ class Transaction;
 }  // namespace block
 }  // namespace bitcoin
 
-namespace block
-{
-class Block;
-}  // namespace block
-
 namespace database
 {
 class Peer;
@@ -83,23 +79,23 @@ namespace node
 {
 namespace internal
 {
-class BlockOracle;
-class FilterOracle;
-class Manager;
 class Mempool;
 struct Config;
 }  // namespace internal
 
+namespace peermanager
+{
+class Peers;
+}  // namespace peermanager
+
+class BlockOracle;
+class FilterOracle;
 class HeaderOracle;
+class Manager;
 }  // namespace node
 
 namespace p2p
 {
-namespace internal
-{
-struct Address;
-}  // namespace internal
-
 class Address;
 }  // namespace p2p
 }  // namespace blockchain
@@ -111,28 +107,16 @@ namespace asio
 class Socket;
 }  // namespace asio
 
-namespace blockchain
-{
-namespace internal
-{
-class Peer;
-}  // namespace internal
-}  // namespace blockchain
-
 namespace zeromq
 {
 namespace socket
 {
-class Publish;
 class Sender;
 }  // namespace socket
 
 class Context;
 }  // namespace zeromq
 }  // namespace network
-
-class Data;
-class Flag;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -145,109 +129,6 @@ class PeerManager final : virtual public node::internal::PeerManager,
                           public Worker<api::Session>
 {
 public:
-    class IncomingConnectionManager;
-
-    struct Peers {
-        using Endpoint = std::unique_ptr<blockchain::p2p::internal::Address>;
-
-        const Type chain_;
-
-        auto Count() const noexcept -> std::size_t { return count_.load(); }
-
-        auto AddIncoming(const int id, Endpoint endpoint) noexcept -> void
-        {
-            add_peer(id, std::move(endpoint));
-        }
-        auto AddListener(
-            const blockchain::p2p::Address& address,
-            std::promise<bool>& promise) noexcept -> void;
-        auto AddPeer(
-            const blockchain::p2p::Address& address,
-            std::promise<bool>& promise) noexcept -> void;
-        auto ConstructPeer(Endpoint endpoint) noexcept -> int;
-        auto LookupIncomingSocket(const int id) noexcept(false)
-            -> opentxs::network::asio::Socket;
-        auto Disconnect(const int id) noexcept -> void;
-        auto Run() noexcept -> bool;
-        auto Shutdown() noexcept -> void;
-
-        Peers(
-            const api::Session& api,
-            const node::internal::Config& config,
-            const node::internal::Mempool& mempool,
-            const node::internal::Manager& node,
-            const node::HeaderOracle& headers,
-            const node::internal::FilterOracle& filter,
-            const node::internal::BlockOracle& block,
-            database::Peer& database,
-            const node::internal::PeerManager& parent,
-            const std::string_view shutdown,
-            const Type chain,
-            const std::string_view seednode) noexcept;
-
-        ~Peers();
-
-    private:
-        using Peer = network::blockchain::internal::Peer;
-        using Resolver = boost::asio::ip::tcp::resolver;
-        using Addresses = boost::container::flat_set<identifier::Generic>;
-
-        static std::atomic<int> next_id_;
-
-        const api::Session& api_;
-        const node::internal::Config& config_;
-        const node::internal::Mempool& mempool_;
-        const node::internal::Manager& node_;
-        const node::HeaderOracle& headers_;
-        const node::internal::FilterOracle& filter_;
-        const node::internal::BlockOracle& block_;
-        database::Peer& database_;
-        const node::internal::PeerManager& parent_;
-        const network::zeromq::socket::Publish& connected_peers_;
-        const UnallocatedCString shutdown_endpoint_;
-        const bool invalid_peer_;
-        const ByteArray localhost_peer_;
-        const ByteArray default_peer_;
-        const UnallocatedSet<blockchain::p2p::Service> preferred_services_;
-        const blockchain::p2p::bitcoin::Nonce nonce_;
-        std::atomic<std::size_t> minimum_peers_;
-        UnallocatedMap<int, Peer> peers_;
-        UnallocatedMap<identifier::Generic, int> active_;
-        std::atomic<std::size_t> count_;
-        Addresses connected_;
-        std::unique_ptr<IncomingConnectionManager> incoming_zmq_;
-        std::unique_ptr<IncomingConnectionManager> incoming_tcp_;
-        UnallocatedMap<identifier::Generic, Time> attempt_;
-        Gatekeeper gatekeeper_;
-
-        static auto get_preferred_services(
-            const node::internal::Config& config) noexcept
-            -> UnallocatedSet<blockchain::p2p::Service>;
-        static auto set_default_peer(
-            const std::string_view node,
-            const Data& localhost,
-            bool& invalidPeer) noexcept -> ByteArray;
-
-        auto get_default_peer() const noexcept -> Endpoint;
-        auto get_dns_peer() const noexcept -> Endpoint;
-        auto get_fallback_peer(const blockchain::p2p::Protocol protocol)
-            const noexcept -> Endpoint;
-        auto get_peer() const noexcept -> Endpoint;
-        auto get_preferred_peer(const blockchain::p2p::Protocol protocol)
-            const noexcept -> Endpoint;
-        auto get_types() const noexcept
-            -> UnallocatedSet<blockchain::p2p::Network>;
-        auto is_not_connected(
-            const blockchain::p2p::Address& endpoint) const noexcept -> bool;
-
-        auto add_peer(Endpoint endpoint) noexcept -> int;
-        auto add_peer(const int id, Endpoint endpoint) noexcept -> int;
-        auto adjust_count(int adjustment) noexcept -> void;
-        auto previous_failure_timeout(
-            const identifier::Generic& addressID) const noexcept -> bool;
-        auto peer_factory(Endpoint endpoint, const int id) noexcept -> Peer;
-    };
-
     enum class Work : OTZMQWorkType {
         Disconnect = OT_ZMQ_INTERNAL_SIGNAL + 0,
         AddPeer = OT_ZMQ_INTERNAL_SIGNAL + 1,
@@ -284,6 +165,10 @@ public:
         -> bool final;
     auto LookupIncomingSocket(const int id) const noexcept(false)
         -> opentxs::network::asio::Socket final;
+    auto Nonce() const noexcept -> const blockchain::p2p::bitcoin::Nonce& final
+    {
+        return peers_.Nonce();
+    }
     auto RequestBlock(const block::Hash& block) const noexcept -> bool final;
     auto RequestBlocks(const UnallocatedVector<ReadView>& hashes) const noexcept
         -> bool final;
@@ -296,16 +181,16 @@ public:
         protect_shutdown([this] { shut_down(); });
     }
 
-    auto init() noexcept -> void final;
+    auto Start() noexcept -> void override;
 
     PeerManager(
         const api::Session& api,
         const node::internal::Config& config,
         const node::internal::Mempool& mempool,
-        const node::internal::Manager& node,
+        const node::Manager& node,
         const node::HeaderOracle& headers,
-        const node::internal::FilterOracle& filter,
-        const node::internal::BlockOracle& block,
+        const node::FilterOracle& filter,
+        const node::BlockOracle& block,
         database::Peer& database,
         const Type chain,
         std::string_view seednode,
@@ -359,11 +244,11 @@ private:
             const zmq::socket::Sender& socket) noexcept -> void;
     };
 
-    const node::internal::Manager& node_;
+    const node::Manager& node_;
     database::Peer& database_;
     const Type chain_;
     mutable Jobs jobs_;
-    mutable Peers peers_;
+    mutable peermanager::Peers peers_;
     mutable std::mutex verified_lock_;
     mutable UnallocatedSet<int> verified_peers_;
     std::promise<void> init_promise_;

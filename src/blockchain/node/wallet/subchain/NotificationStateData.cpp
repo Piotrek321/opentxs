@@ -25,7 +25,6 @@
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/blockchain/node/Manager.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -59,7 +58,7 @@ namespace opentxs::blockchain::node::wallet
 {
 NotificationStateData::NotificationStateData(
     const api::Session& api,
-    const node::internal::Manager& node,
+    const node::Manager& node,
     database::Wallet& db,
     const node::internal::Mempool& mempool,
     const cfilter::Type filter,
@@ -128,7 +127,7 @@ auto NotificationStateData::handle_confirmed_matches(
 {
     const auto& [utxo, general] = confirmed;
     log(OT_PRETTY_CLASS())(general.size())(" confirmed matches for ")(
-        pc_display_)(" on ")(print(node_.Chain()))
+        pc_display_)(" on ")(print(chain_))
         .Flush();
 
     if (0u == general.size()) { return; }
@@ -138,7 +137,7 @@ auto NotificationStateData::handle_confirmed_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        log(OT_PRETTY_CLASS())(print(node_.Chain()))(" transaction ")
+        log(OT_PRETTY_CLASS())(print(chain_))(" transaction ")
             .asHex(txid)(" contains a version ")(version)(" notification for ")(
                 pc_display_)
             .Flush();
@@ -166,7 +165,7 @@ auto NotificationStateData::handle_mempool_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        log_(OT_PRETTY_CLASS())(print(node_.Chain()))(" mempool transaction ")
+        log_(OT_PRETTY_CLASS())(print(chain_))(" mempool transaction ")
             .asHex(txid)(" contains a version ")(version)(" notification for ")(
                 pc_display_)
             .Flush();
@@ -203,7 +202,7 @@ auto NotificationStateData::init_contacts() noexcept -> void
                 // TODO use allocator when we upgrade to c++20
                 auto out = std::stringstream{};
                 out << "Generate keys for a ";
-                out << print(node_.Chain());
+                out << print(chain_);
                 out << " payment code account for ";
                 out << api.ContactName(id);
 
@@ -272,8 +271,7 @@ auto NotificationStateData::process(
             if (0u == sender.Version()) { continue; }
 
             log_(OT_PRETTY_CLASS())("decoded incoming notification from ")(
-                sender.asBase58())(" on ")(print(node_.Chain()))(" for ")(
-                pc_display_)
+                sender.asBase58())(" on ")(print(chain_))(" for ")(pc_display_)
                 .Flush();
             process(sender, reason);
         }
@@ -290,7 +288,7 @@ auto NotificationStateData::process(
 
     const auto& account =
         api_.Crypto().Blockchain().Internal().PaymentCodeSubaccount(
-            owner_, *handle, remote, path_, node_.Chain(), reason);
+            owner_, *handle, remote, path_, chain_, reason);
     log_(OT_PRETTY_CLASS())("Created or verified account ")(account.ID())(
         " for ")(remote.asBase58())
         .Flush();

@@ -19,6 +19,8 @@
 #include "blockchain/DownloadTask.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Endpoints.hpp"
+#include "internal/api/session/Session.hpp"
+#include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/database/Peer.hpp"
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Manager.hpp"
@@ -42,6 +44,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/block/Header.hpp"  // IWYU pragma: keep
@@ -50,6 +53,7 @@
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -138,14 +142,8 @@ auto Peer::Imp::update_job(Visitor& visitor) noexcept -> bool
 namespace opentxs::network::blockchain::internal
 {
 Peer::Imp::Imp(
-    const api::Session& api,
-    const opentxs::blockchain::node::internal::Config& config,
-    const opentxs::blockchain::node::internal::Manager& network,
-    const opentxs::blockchain::node::internal::PeerManager& parent,
-    const opentxs::blockchain::node::HeaderOracle& header,
-    const opentxs::blockchain::node::BlockOracle& block,
-    const opentxs::blockchain::node::FilterOracle& filter,
-    opentxs::blockchain::database::Peer& database,
+    std::shared_ptr<const api::Session> api,
+    std::shared_ptr<const opentxs::blockchain::node::Manager> network,
     opentxs::blockchain::Type chain,
     int peerID,
     std::unique_ptr<opentxs::blockchain::p2p::internal::Address> address,
@@ -153,11 +151,12 @@ Peer::Imp::Imp(
     std::chrono::milliseconds inactivityInterval,
     std::chrono::milliseconds peersInterval,
     std::size_t headerBytes,
+    std::string_view fromNode,
     std::string_view fromParent,
     zeromq::BatchID batch,
     allocator_type alloc) noexcept
     : Actor(
-          api,
+          *api,
           LogTrace(),
           [&] {
               using opentxs::blockchain::print;
@@ -183,16 +182,22 @@ Peer::Imp::Imp(
           batch,
           alloc,
           {
-              {CString{fromParent, alloc}, Direction::Connect},
-              {CString{api.Endpoints().BlockchainReorg(), alloc},
+              {CString{fromNode, alloc}, Direction::Connect},
+              {CString{api->Endpoints().BlockchainReorg(), alloc},
                Direction::Connect},
+          },
+          {
+              {CString{fromParent, alloc}, Direction::Connect},
           })
-    , api_(api)
-    , config_(config)
-    , network_(network)
-    , header_oracle_(header)
-    , block_oracle_(block)
-    , filter_oracle_(filter)
+    , api_p_(api)
+    , network_p_(network)
+    , api_(*api_p_)
+    , network_(*network_p_)
+    , parent_(network_.Internal().PeerManager())
+    , config_(network_.Internal().GetConfig())
+    , header_oracle_(network_.HeaderOracle())
+    , block_oracle_(network_.BlockOracle())
+    , filter_oracle_(network_.FilterOracle())
     , chain_(chain)
     , dir_([&] {
         if (address->Incoming()) {
@@ -203,8 +208,7 @@ Peer::Imp::Imp(
             return Dir::outgoing;
         }
     }())
-    , database_(database)
-    , parent_(parent)
+    , database_(network_.Internal().DB())
     , id_(peerID)
     , untrusted_connection_id_(pipeline_.ConnectionIDDealer())
     , ping_interval_(std::move(pingInterval))
@@ -237,13 +241,10 @@ Peer::Imp::Imp(
     , block_header_capability_(false)
     , cfilter_capability_(false)
 {
+    OT_ASSERT(api_p_);
+    OT_ASSERT(network_p_);
     OT_ASSERT(connection_p_);
     OT_ASSERT(address_p_);
-}
-
-auto Peer::Imp::AddressID() const noexcept -> const identifier::Generic&
-{
-    return address_.ID();
 }
 
 auto Peer::Imp::add_known_block(opentxs::blockchain::block::Hash hash) noexcept
@@ -303,7 +304,7 @@ auto Peer::Imp::check_jobs() noexcept -> void
             bJob.ID())
             .Flush();
         job_ = std::move(bJob);
-    } else if (false == network_.IsSynchronized()) {
+    } else if (false == network_.Internal().IsSynchronized()) {
         job_ = GetHeadersJob{};
         log_(OT_PRETTY_CLASS())(name_)(": accepted ")(job_name()).Flush();
     }
@@ -384,10 +385,22 @@ auto Peer::Imp::do_disconnect() noexcept -> void
     }
 }
 
-auto Peer::Imp::do_shutdown() noexcept -> void { do_disconnect(); }
+auto Peer::Imp::do_shutdown() noexcept -> void
+{
+    do_disconnect();
+    network_p_.reset();
+    api_p_.reset();
+
+}
 
 auto Peer::Imp::do_startup() noexcept -> void
 {
+    if (api_.Internal().ShuttingDown() || network_.Internal().ShuttingDown()) {
+        shutdown_actor();
+
+        return;
+    }
+
     update_local_position(header_oracle_.BestChain());
     transition_state_init();
 
@@ -1330,5 +1343,5 @@ auto Peer::Imp::work() noexcept -> bool
     return false;
 }
 
-Peer::Imp::~Imp() { do_shutdown(); }
+Peer::Imp::~Imp() = default;
 }  // namespace opentxs::network::blockchain::internal

@@ -16,7 +16,6 @@
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/api/crypto/Null.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/block/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/ByteArray.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -150,6 +149,11 @@ auto Blockchain::AssignTransactionMemo(
     const UnallocatedCString& label) const noexcept -> bool
 {
     return imp_->AssignTransactionMemo(id, label);
+}
+
+auto Blockchain::BalanceOracleEndpoint() const noexcept -> std::string_view
+{
+    return imp_->BalanceOracleEndpoint();
 }
 
 auto Blockchain::CalculateAddress(
@@ -392,6 +396,11 @@ auto Blockchain::SenderContact(const Key& key) const noexcept
     return imp_->SenderContact(key);
 }
 
+auto Blockchain::Start(std::shared_ptr<const api::Session> api) noexcept -> void
+{
+    imp_->Start(std::move(api));
+}
+
 auto Blockchain::Unconfirm(
     const Key key,
     const opentxs::blockchain::block::Txid& tx,
@@ -404,21 +413,6 @@ auto Blockchain::UpdateElement(
     UnallocatedVector<ReadView>& hashes) const noexcept -> void
 {
     imp_->UpdateElement(hashes);
-}
-
-auto Blockchain::UpdateBalance(
-    const opentxs::blockchain::Type chain,
-    const opentxs::blockchain::Balance balance) const noexcept -> void
-{
-    imp_->UpdateBalance(chain, balance);
-}
-
-auto Blockchain::UpdateBalance(
-    const identifier::Nym& owner,
-    const opentxs::blockchain::Type chain,
-    const opentxs::blockchain::Balance balance) const noexcept -> void
-{
-    imp_->UpdateBalance(owner, chain, balance);
 }
 
 auto Blockchain::Wallet(const Chain chain) const noexcept(false)

@@ -67,14 +67,14 @@ namespace opentxs::factory
 auto BlockchainFilterOracle(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
-    const blockchain::node::internal::Manager& node,
+    const blockchain::node::Manager& node,
     const blockchain::node::HeaderOracle& header,
-    const blockchain::node::internal::BlockOracle& block,
+    const blockchain::node::BlockOracle& block,
     blockchain::database::Cfilter& database,
     const blockchain::Type chain,
     const blockchain::cfilter::Type filter,
     const UnallocatedCString& shutdown) noexcept
-    -> std::unique_ptr<blockchain::node::internal::FilterOracle>
+    -> std::unique_ptr<blockchain::node::FilterOracle>
 {
     using ReturnType = opentxs::blockchain::node::implementation::FilterOracle;
 
@@ -120,9 +120,9 @@ struct FilterOracle::SyncClientFilterData {
 FilterOracle::FilterOracle(
     const api::Session& api,
     const internal::Config& config,
-    const internal::Manager& node,
+    const node::Manager& node,
     const HeaderOracle& header,
-    const internal::BlockOracle& block,
+    const node::BlockOracle& block,
     database::Cfilter& database,
     const blockchain::Type chain,
     const blockchain::cfilter::Type filter,

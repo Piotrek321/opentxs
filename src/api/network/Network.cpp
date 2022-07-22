@@ -8,9 +8,13 @@
 #include "opentxs/api/network/Network.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
 #include "api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/api/network/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
 
 namespace opentxs::factory
 {
@@ -19,47 +23,45 @@ auto NetworkAPI(
     const api::network::Asio& asio,
     const network::zeromq::Context& zmq,
     const api::session::Endpoints& endpoints,
-    api::network::Blockchain::Imp* blockchain) noexcept
-    -> api::network::Network::Imp*
+    std::unique_ptr<api::network::Blockchain> blockchain) noexcept
+    -> std::unique_ptr<api::network::Network>
 {
-    using ReturnType = api::network::Network;
+    using ReturnType = api::network::implementation::Network;
 
-    return std::make_unique<ReturnType::Imp>(
-               api, asio, zmq, endpoints, blockchain)
-        .release();
+    return std::make_unique<ReturnType>(
+        api, asio, zmq, endpoints, std::move(blockchain));
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::network
+namespace opentxs::api::network::implementation
 {
-Network::Network(Imp* imp) noexcept
-    : imp_(imp)
+Network::Network(
+    const api::Session& api,
+    const network::Asio& asio,
+    const opentxs::network::zeromq::Context& zmq,
+    const api::session::Endpoints& endpoints,
+    std::unique_ptr<api::network::Blockchain> blockchain) noexcept
+    : asio_(asio)
+    , zmq_(zmq)
+    , blockchain_(std::move(blockchain))
 {
+    OT_ASSERT(blockchain_);
 }
 
-auto Network::Asio() const noexcept -> const network::Asio&
+auto Network::Start(
+    std::shared_ptr<const api::Session> api,
+    const api::crypto::Blockchain& crypto,
+    const api::Legacy& legacy,
+    const std::filesystem::path& dataFolder,
+    const Options& args) noexcept -> void
 {
-    return imp_->asio_;
+    blockchain_->Internal().Init(crypto, legacy, dataFolder, args);
 }
 
-auto Network::Blockchain() const noexcept -> const network::Blockchain&
+auto Network::Shutdown() noexcept -> void
 {
-    return imp_->blockchain_;
+    blockchain_->Internal().Shutdown();
 }
 
-auto Network::Shutdown() noexcept -> void {}
-
-auto Network::ZeroMQ() const noexcept
-    -> const opentxs::network::zeromq::Context&
-{
-    return imp_->zmq_;
-}
-
-Network::~Network()
-{
-    if (nullptr != imp_) {
-        delete imp_;
-        imp_ = nullptr;
-    }
-}
-}  // namespace opentxs::api::network
+Network::~Network() = default;
+}  // namespace opentxs::api::network::implementation

@@ -27,17 +27,7 @@ Peer::Peer(Peer&& rhs) noexcept
 {
 }
 
-auto Peer::AddressID() const noexcept -> const identifier::Generic&
-{
-    return imp_->AddressID();
-}
-
 auto Peer::Start() noexcept -> void { imp_->Init(imp_); }
 
-auto Peer::Stop() noexcept -> void { imp_->Shutdown(); }
-
-Peer::~Peer()
-{
-    if (imp_) { imp_->Shutdown(); }
-}
+Peer::~Peer() = default;
 }  // namespace opentxs::network::blockchain::internal
