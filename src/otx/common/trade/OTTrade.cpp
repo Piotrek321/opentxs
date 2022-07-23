@@ -196,11 +196,11 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         LogDetail()(OT_PRETTY_CLASS())("Creation Date: ")(
             creation)(". Valid From: ")(validFrom)(". Valid To: ")(
-            validTo)(". assetTypeID: ")(
-            instrumentDefinitionID)(". assetAccountID: ")(
-            assetAcctID)(". NotaryID: ")(notaryID)(". NymID: ")(
-            nymID)(". currencyTypeID: ")(
-            currencyTypeID)(". currencyAccountID: ")(currencyAcctID)(".")
+            validTo)(". assetTypeID: ")(instrumentDefinitionID.get())(
+            ". assetAccountID: ")(assetAcctID.get())(". NotaryID: ")(
+            notaryID.get())(". NymID: ")(nymID.get())(". currencyTypeID: ")(
+            currencyTypeID.get())(". currencyAccountID: ")(
+            currencyAcctID.get())(".")
             .Flush();
 
         returnVal = 1;
@@ -226,7 +226,7 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             stopSign_ = 0;
             LogError()(OT_PRETTY_CLASS())(
                 "Unexpected or nonexistent value in stop order sign: ")(
-                sign)(".")
+                sign.get())(".")
                 .Flush();
             return (-1);
         }

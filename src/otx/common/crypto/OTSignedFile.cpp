@@ -193,11 +193,11 @@ auto OTSignedFile::VerifyFile() -> bool
         return true;
     }
 
-    LogError()(OT_PRETTY_CLASS())(
-        "Failed verifying signed file: "
-        "Expected directory: ")(m_strLocalDir)(". Found: ")(
-        m_strPurportedLocalDir)(". Expected filename: ")(
-        m_strSignedFilename)(". Found: ")(m_strPurportedFilename)(".")
+    LogError()(OT_PRETTY_CLASS())("Failed verifying signed file: "
+                                  "Expected directory: ")(m_strLocalDir.get())(
+        ". Found: ")(m_strPurportedLocalDir.get())(". Expected filename: ")(
+        m_strSignedFilename.get())(". Found: ")(m_strPurportedFilename.get())(
+        ".")
         .Flush();
     return false;
 }

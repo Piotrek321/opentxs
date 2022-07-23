@@ -20,6 +20,7 @@ extern "C" {
 
 #include "internal/crypto/library/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/String.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -424,7 +425,7 @@ auto OpenSSL::PKCS5_PBKDF2_HMAC(
 
     if (nullptr == algorithm) {
         LogError()(OT_PRETTY_CLASS())("Error: invalid hash type: ")(
-            HashingProvider::HashTypeToString(hashType))
+            HashingProvider::HashTypeToString(hashType).get())
             .Flush();
 
         return false;

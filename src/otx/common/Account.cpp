@@ -296,8 +296,9 @@ auto Account::LoadInbox(const identity::Nym& nym) const
     {
         LogVerbose()(OT_PRETTY_CLASS())("Unable to load or verify inbox: ")
             .Flush();
-        LogVerbose()(OT_PRETTY_CLASS())(strAcctID)("  For user: ").Flush();
-        LogVerbose()(OT_PRETTY_CLASS())(strNymID).Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(strAcctID.get())("  For user: ")
+            .Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(strNymID.get()).Flush();
     }
     return nullptr;
 }
@@ -317,8 +318,8 @@ auto Account::LoadOutbox(const identity::Nym& nym) const
     {
         LogVerbose()(OT_PRETTY_CLASS())("Unable to load or verify outbox: ")
             .Flush();
-        LogVerbose()(OT_PRETTY_CLASS())(strAcctID)(" For user: ").Flush();
-        LogVerbose()(OT_PRETTY_CLASS())(strNymID).Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(strAcctID.get())(" For user: ").Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(strNymID.get()).Flush();
     }
     return nullptr;
 }
@@ -652,7 +653,7 @@ auto Account::LoadExistingAccount(
             "",
             "")) {
         LogVerbose()(OT_PRETTY_STATIC(Account))("File does not exist: ")(
-            account->m_strFoldername)('/')(account->m_strFilename)
+            account->m_strFoldername.get())('/')(account->m_strFilename.get())
             .Flush();
 
         return nullptr;
@@ -745,7 +746,7 @@ auto Account::GenerateNewAccount(
             "",
             "")) {
         LogError()(OT_PRETTY_CLASS())("Account already exists: ")(
-            m_strFilename)(".")
+            m_strFilename.get())(".")
             .Flush();
         return false;
     }
@@ -1025,13 +1026,14 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         auto strInstrumentDefinitionID =
             String::Factory(acctInstrumentDefinitionID_);
-        LogDebug()(OT_PRETTY_CLASS())("Account Type: ")(acctType).Flush();
-        LogDebug()(OT_PRETTY_CLASS())("AccountID: ")(strAccountID).Flush();
-        LogDebug()(OT_PRETTY_CLASS())("NymID: ")(strAcctNymID).Flush();
-        LogDebug()(OT_PRETTY_CLASS())("Unit Type ID: ")(
-            strInstrumentDefinitionID)
+        LogDebug()(OT_PRETTY_CLASS())("Account Type: ")(acctType.get()).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("AccountID: ")(strAccountID.get())
             .Flush();
-        LogDebug()(OT_PRETTY_CLASS())("NotaryID: ")(strNotaryID).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("NymID: ")(strAcctNymID.get()).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("Unit Type ID: ")(
+            strInstrumentDefinitionID.get())
+            .Flush();
+        LogDebug()(OT_PRETTY_CLASS())("NotaryID: ")(strNotaryID.get()).Flush();
 
         retval = 1;
     } else if (strNodeName->Compare("inboxHash")) {
@@ -1042,7 +1044,8 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             inboxHash_ = api_.Factory().IdentifierFromBase58(strHash->Bytes());
         }
 
-        LogDebug()(OT_PRETTY_CLASS())("Account inboxHash: ")(strHash).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("Account inboxHash: ")(strHash.get())
+            .Flush();
         retval = 1;
     } else if (strNodeName->Compare("outboxHash")) {
 
@@ -1052,7 +1055,8 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             outboxHash_ = api_.Factory().IdentifierFromBase58(strHash->Bytes());
         }
 
-        LogDebug()(OT_PRETTY_CLASS())("Account outboxHash: ")(strHash).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("Account outboxHash: ")(strHash.get())
+            .Flush();
 
         retval = 1;
     } else if (strNodeName->Compare("MARKED_FOR_DELETION")) {
@@ -1078,8 +1082,10 @@ auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         amount.Serialize(writer(balance));
         balanceAmount_->Set(balance.c_str());
 
-        LogDebug()(OT_PRETTY_CLASS())("BALANCE  -- ")(balanceAmount_).Flush();
-        LogDebug()(OT_PRETTY_CLASS())("DATE     --")(balanceDate_).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("BALANCE  -- ")(balanceAmount_.get())
+            .Flush();
+        LogDebug()(OT_PRETTY_CLASS())("DATE     --")(balanceDate_.get())
+            .Flush();
 
         retval = 1;
     } else if (strNodeName->Compare("stashinfo")) {

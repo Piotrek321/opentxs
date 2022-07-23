@@ -31,6 +31,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "util/Thread.hpp"
 

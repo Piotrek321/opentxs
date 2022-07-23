@@ -332,7 +332,8 @@ auto Message::HarvestTransactionNumbers(
 
     if (!strLedger->Exists() || !theLedger->LoadLedgerFromString(strLedger)) {
         LogError()(OT_PRETTY_CLASS())(
-            "ERROR: Failed trying to load message ledger: ")(strLedger)(".")
+            "ERROR: Failed trying to load message ledger: ")(strLedger.get())(
+            ".")
             .Flush();
         return false;
     }
@@ -711,9 +712,10 @@ public:
 
         if (strDepth->GetLength() > 0) { m.m_lDepth = strDepth->ToLong(); }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Market ID: ")(m.m_strNymID2)(" Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Market ID: ")(m.m_strNymID2.get())(
+            " Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -778,7 +780,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -791,16 +793,16 @@ public:
         }
 
         if (m.m_bSuccess) {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS"
-                             : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-                " NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(m.m_strNymID2)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+                " MarketID: ")(m.m_strNymID2.get())
                 .Flush();  // m_ascPayload.Get()
         } else {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS"
-                             : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-                " NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(m.m_strNymID2)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+                " MarketID: ")(m.m_strNymID2.get())
                 .Flush();  // m_ascInReferenceTo.Get()
         }
 
@@ -837,9 +839,10 @@ public:
             String::Factory(xml->getAttributeValue("requestNum"));
         m.m_strNymID2 = String::Factory(xml->getAttributeValue("marketID"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Market ID: ")(m.m_strNymID2)(" Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Market ID: ")(m.m_strNymID2.get())(
+            " Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -904,7 +907,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -917,16 +920,16 @@ public:
         }
 
         if (m.m_bSuccess) {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS"
-                             : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-                " NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(m.m_strNymID2)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+                " MarketID: ")(m.m_strNymID2.get())
                 .Flush();  // m_ascPayload.Get()
         } else {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS"
-                             : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-                " NotaryID: ")(m.m_strNotaryID)(" MarketID: ")(m.m_strNymID2)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+                " MarketID: ")(m.m_strNymID2.get())
                 .Flush();  // m_ascInReferenceTo.Get()
         }
 
@@ -961,9 +964,9 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -1026,7 +1029,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -1039,14 +1042,14 @@ public:
         }
 
         if (m.m_bSuccess) {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-                m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
                 .Flush();  // m_ascPayload.Get()
         } else {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-                m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
                 .Flush();  // m_ascInReferenceTo.Get()
         }
 
@@ -1108,7 +1111,7 @@ public:
                 &temp_MapAttributesAuthent)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
@@ -1131,17 +1134,18 @@ public:
                 &temp_MapAttributesEncrypt)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
         m.m_strNymID2->Set(ascTextExpected);
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Public signing key: ")(m.m_strNymPublicKey)(
-            " Public encryption key: ")(m.m_strNymID2)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Public signing key: ")(
+            m.m_strNymPublicKey.get())(" Public encryption key: ")(
+            m.m_strNymID2.get())
             .Flush();
 
         return 1;
@@ -1176,9 +1180,9 @@ public:
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
         m.m_strNotaryID = String::Factory(xml->getAttributeValue("notaryID"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
             " Success: ")(m.m_bSuccess ? "true" : "false")(" NymID:    ")(
-            m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -1225,8 +1229,9 @@ public:
             m.enum_ = 0;
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -1277,14 +1282,14 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("  ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())("  ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -1323,8 +1328,9 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -1380,7 +1386,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -1393,14 +1399,14 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("  ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())("  ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -1434,8 +1440,9 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -1483,14 +1490,14 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("  ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())("  ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -1529,9 +1536,10 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NymID2:    ")(
+            m.m_strNymID2.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -1597,7 +1605,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -1609,7 +1617,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -1617,16 +1625,17 @@ public:
         }
 
         if (m.m_bBool) {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-                m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(
-                m.m_strNotaryID)(" Nym2 Public Key: ")(m.m_strNymPublicKey)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NymID2:    ")(m.m_strNymID2.get())(
+                " NotaryID: ")(m.m_strNotaryID.get())(" Nym2 Public Key: ")(
+                m.m_strNymPublicKey.get())
                 .Flush();
         } else {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS"
-                             : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-                " NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(m.m_strNotaryID)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NymID2:    ")(m.m_strNymID2.get())(
+                " NotaryID: ")(m.m_strNotaryID.get())
                 .Flush();
         }
         // m.m_ascInReferenceTo.Get()
@@ -1672,10 +1681,11 @@ public:
             m.m_lDepth = strAdjustment->ToLong();
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)(
-            " Adjustment: ")(m.m_lDepth)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NymID2:    ")(
+            m.m_strNymID2.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request #: ")(m.m_strRequestNum.get())(" Adjustment: ")(
+            m.m_lDepth)
             .Flush();
 
         return 1;
@@ -1722,10 +1732,11 @@ public:
             m.m_lDepth = strTotalCredits->ToLong();
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(m.m_strNotaryID)(
-            " Total Credits: ")(m.m_lDepth)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NymID2:    ")(m.m_strNymID2.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())(" Total Credits: ")(
+            m.m_lDepth)
             .Flush();
         return 1;
     }
@@ -1778,14 +1789,15 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NymID2:    ")(
+            m.m_strNymID2.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -1839,14 +1851,15 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NymID2:    ")(
+            m.m_strNymID2.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -1888,9 +1901,10 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NymID2:    ")(m.m_strNymID2)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NymID2:    ")(m.m_strNymID2.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -1954,14 +1968,15 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NymID2:    ")(m.m_strNymID2)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NymID2:    ")(
+            m.m_strNymID2.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -1999,8 +2014,9 @@ public:
         m.m_strNymID = String::Factory(xml->getAttributeValue("nymID"));
         m.m_strNotaryID = String::Factory(xml->getAttributeValue("notaryID"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -2051,10 +2067,11 @@ public:
         m.m_lNewRequestNum =
             strNewRequestNum->Exists() ? strNewRequestNum->ToLong() : 0;
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request Number:    ")(
-            m.m_strRequestNum)(" New Number: ")(m.m_lNewRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request Number:    ")(m.m_strRequestNum.get())(" New Number: ")(
+            m.m_lNewRequestNum)
             .Flush();
 
         return 1;
@@ -2103,15 +2120,15 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request#: ")(m.m_strRequestNum)(" Asset Type: ")(
-            m.m_strInstrumentDefinitionID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Request#: ")(m.m_strRequestNum.get())(
+            " Asset Type: ")(m.m_strInstrumentDefinitionID.get())
             .Flush();
 
         return 1;
@@ -2180,7 +2197,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2194,7 +2211,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2215,10 +2232,11 @@ public:
         }
 
         auto acctContents = String::Factory(m.m_ascPayload);
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " AccountID: ")(m.m_strAcctID)(" Instrument Definition ID: ")(
-            m.m_strInstrumentDefinitionID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" AccountID: ")(m.m_strAcctID.get())(
+            " Instrument Definition ID: ")(m.m_strInstrumentDefinitionID.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
         //    "****New Account****:\n%s\n",
         //    m.m_ascInReferenceTo.Get(),
@@ -2266,14 +2284,14 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request#: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Request#: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -2332,7 +2350,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2346,7 +2364,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2365,9 +2383,9 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -2413,7 +2431,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2429,9 +2447,9 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request#: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Request#: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -2486,7 +2504,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2503,10 +2521,11 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " AccountID: ")(m.m_strAcctID)(" InstrumentDefinitionID: ")(
-            m.m_strInstrumentDefinitionID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" AccountID: ")(m.m_strAcctID.get())(
+            " InstrumentDefinitionID: ")(m.m_strInstrumentDefinitionID.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -2544,10 +2563,10 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request#: ")(m.m_strRequestNum)(" Asset Type: ")(
-            m.m_strInstrumentDefinitionID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Request#: ")(m.m_strRequestNum.get())(
+            " Asset Type: ")(m.m_strInstrumentDefinitionID.get())
             .Flush();
 
         return 1;
@@ -2610,7 +2629,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 //                return (-1); // error condition
             }
@@ -2624,7 +2643,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2642,9 +2661,10 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" AccountID: ")(m.m_strAcctID.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
         //    "****New Account****:\n%s\n",
         //    m.m_ascInReferenceTo.Get(),
@@ -2714,13 +2734,13 @@ public:
             return (-1);
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request#: ")(m.m_strRequestNum)(
-            " Transaction#: ")(m.m_lTransactionNum)(" boxType: ")(
-            ((m.m_lDepth == 0)   ? "nymbox"
-             : (m.m_lDepth == 1) ? "inbox"
-                                 : "outbox"))
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" AccountID:    ")(
+            m.m_strAcctID.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request#: ")(m.m_strRequestNum.get())(" Transaction#: ")(
+            m.m_lTransactionNum)(" boxType: ")(((m.m_lDepth == 0)   ? "nymbox"
+                                                : (m.m_lDepth == 1) ? "inbox"
+                                                                    : "outbox"))
             .Flush();  // outbox is 2.);
 
         return 1;
@@ -2810,7 +2830,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2824,7 +2844,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2842,9 +2862,10 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" AccountID: ")(m.m_strAcctID.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
         //    "****New Account****:\n%s\n",
 
@@ -2881,9 +2902,10 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request#: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" AccountID:    ")(
+            m.m_strAcctID.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request#: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -2937,7 +2959,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -2953,9 +2975,10 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" AccountID: ")(m.m_strAcctID.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
         //    "****New Account****:\n%s\n",
         //    m.m_ascInReferenceTo.Get(),
@@ -3009,15 +3032,16 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request#: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" AccountID:    ")(
+            m.m_strAcctID.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request#: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -3077,7 +3101,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3091,7 +3115,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3112,9 +3136,10 @@ public:
         }
 
         //      OTString acctContents(m.m_ascPayload);
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" AccountID: ")(m.m_strAcctID.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
         //    "****New Account****:\n%s\n",
         //    m.m_ascInReferenceTo.Get(),
@@ -3154,9 +3179,9 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request#: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Request#: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -3196,9 +3221,9 @@ public:
             String::Factory(xml->getAttributeValue("nymboxHash"));
         m.m_strNotaryID = String::Factory(xml->getAttributeValue("notaryID"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -3235,9 +3260,9 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -3296,7 +3321,7 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
@@ -3307,9 +3332,9 @@ public:
             m.m_ascInReferenceTo = ascTextExpected;
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -3345,9 +3370,10 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " AccountID:    ")(m.m_strAcctID)(" Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" AccountID:    ")(m.m_strAcctID.get())(
+            " Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -3411,7 +3437,7 @@ public:
             if (!LoadEncodedTextFieldByName(xml, m.m_ascPayload, "account")) {
                 LogError()(OT_PRETTY_CLASS())(
                     "Error: Expected account "
-                    "element with text field, for ")(m.m_strCommand)(".")
+                    "element with text field, for ")(m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3419,7 +3445,7 @@ public:
             if (!LoadEncodedTextFieldByName(xml, m.m_ascPayload2, "inbox")) {
                 LogError()(OT_PRETTY_CLASS())(
                     "Error: Expected inbox"
-                    " element with text field, for ")(m.m_strCommand)(".")
+                    " element with text field, for ")(m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3427,7 +3453,7 @@ public:
             if (!LoadEncodedTextFieldByName(xml, m.m_ascPayload3, "outbox")) {
                 LogError()(OT_PRETTY_CLASS())(
                     "Error: Expected outbox"
-                    " element with text field, for ")(m.m_strCommand)(".")
+                    " element with text field, for ")(m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3437,15 +3463,16 @@ public:
                 LogError()(OT_PRETTY_CLASS())(
                     "Error: Expected "
                     "inReferenceTo element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " AccountID:    ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" AccountID:    ")(m.m_strAcctID.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -3494,10 +3521,11 @@ public:
             m.enum_ = 0;
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Asset Type:    ")(m.m_strInstrumentDefinitionID)(" Request #: ")(
-            m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Asset Type:    ")(
+            m.m_strInstrumentDefinitionID.get())(" Request #: ")(
+            m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -3569,7 +3597,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3582,7 +3610,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3592,10 +3620,11 @@ public:
 
         if (false == m.m_bSuccess) { m.m_ascInReferenceTo = ascTextExpected; }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " Instrument Definition ID:    ")(m.m_strInstrumentDefinitionID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" Instrument Definition ID:    ")(
+            m.m_strInstrumentDefinitionID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -3636,10 +3665,11 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Asset Type:    ")(m.m_strInstrumentDefinitionID)(" Request #: ")(
-            m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Asset Type:    ")(
+            m.m_strInstrumentDefinitionID.get())(" Request #: ")(
+            m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -3701,7 +3731,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3716,7 +3746,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3724,10 +3754,11 @@ public:
             m.m_ascPayload = ascTextExpected;
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " Instrument Definition ID:    ")(m.m_strInstrumentDefinitionID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" Instrument Definition ID:    ")(
+            m.m_strInstrumentDefinitionID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -3778,15 +3809,16 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" AccountID:    ")(m.m_strAcctID)(
-            " NotaryID: ")(m.m_strNotaryID)(" Request#: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" AccountID:    ")(
+            m.m_strAcctID.get())(" NotaryID: ")(m.m_strNotaryID.get())(
+            " Request#: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -3846,7 +3878,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3860,7 +3892,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -3880,9 +3912,10 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " AccountID: ")(m.m_strAcctID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" AccountID: ")(m.m_strAcctID.get())(
+            " NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
         //    "****New Account****:\n%s\n",
 
@@ -3932,15 +3965,15 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request#: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Request#: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -3998,7 +4031,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -4012,7 +4045,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -4032,9 +4065,9 @@ public:
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
         //    "****New Account****:\n%s\n",
 
@@ -4097,7 +4130,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             } else {
@@ -4105,10 +4138,11 @@ public:
             }
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Clause TransNum and Name:  ")(m.m_lTransactionNum)("  /  ")(
-            m.m_strNymID2)(" Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Clause TransNum and Name:  ")(
+            m.m_lTransactionNum)("  /  ")(m.m_strNymID2.get())(" Request #: ")(
+            m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -4157,16 +4191,16 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
         m.m_ascInReferenceTo = ascTextExpected;
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -4200,9 +4234,9 @@ public:
         m.m_strRequestNum =
             String::Factory(xml->getAttributeValue("requestNum"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)(
-            " Request #: ")(m.m_strRequestNum)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())(" Request #: ")(m.m_strRequestNum.get())
             .Flush();
 
         return 1;
@@ -4245,7 +4279,7 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
@@ -4258,14 +4292,14 @@ public:
         }
 
         if (m.m_bSuccess) {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-                m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
                 .Flush();  // m_ascPayload.Get()
         } else {
-            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("   ")(
-                m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
-                m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+            LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+                "   ")(m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+                m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
                 .Flush();  // m_ascInReferenceTo.Get()
         }
 
@@ -4326,8 +4360,9 @@ public:
         m.m_strNymboxHash =
             String::Factory(xml->getAttributeValue("nymboxHash"));
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -4382,14 +4417,14 @@ public:
                 xml, ascTextExpected, pElementExpected)) {
             LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                 pElementExpected)(" element with text field, for ")(
-                m.m_strCommand)(".")
+                m.m_strCommand.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("  ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())("  ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -4432,8 +4467,9 @@ public:
         const auto primary = String::Factory(xml->getAttributeValue("primary"));
         m.m_bBool = primary->Compare("true");
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)(
-            " NymID:    ")(m.m_strNymID)(" NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())(
+            " NymID:    ")(m.m_strNymID.get())(" NotaryID: ")(
+            m.m_strNotaryID.get())
             .Flush();
 
         return 1;
@@ -4489,15 +4525,15 @@ public:
                     xml, ascTextExpected, pElementExpected)) {
                 LogError()(OT_PRETTY_CLASS())("Error: Expected ")(
                     pElementExpected)(" element with text field, for ")(
-                    m.m_strCommand)(".")
+                    m.m_strCommand.get())(".")
                     .Flush();
                 return (-1);  // error condition
             }
         }
 
-        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand)("  ")(
-            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(m.m_strNymID)(
-            " NotaryID: ")(m.m_strNotaryID)
+        LogDetail()(OT_PRETTY_CLASS())("Command: ")(m.m_strCommand.get())("  ")(
+            m.m_bSuccess ? "SUCCESS" : "FAILURE")(" NymID:    ")(
+            m.m_strNymID.get())(" NotaryID: ")(m.m_strNotaryID.get())
             .Flush();
 
         return 1;

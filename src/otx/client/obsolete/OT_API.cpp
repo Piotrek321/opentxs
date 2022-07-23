@@ -947,7 +947,8 @@ auto OT_API::SmartContract_ConfirmAccount(
             String::Factory(theActualInstrumentDefinitionID);
         LogError()(OT_PRETTY_CLASS())(
             "Failed, since the instrument definition ID of the account (")(
-            strInstrumentDefinitionID)(") does not match what was expected (")(
+            strInstrumentDefinitionID.get())(
+            ") does not match what was expected (")(
             partyAcct->GetInstrumentDefinitionID())(
             ") according to this contract.")
             .Flush();
@@ -969,7 +970,8 @@ auto OT_API::SmartContract_ConfirmAccount(
     if (!account.get().VerifyOwner(*nym)) {
         const auto strNymID = String::Factory(SIGNER_NYM_ID);
         LogError()(OT_PRETTY_CLASS())("Failed, since this nym (")(
-            strNymID)(") isn't the owner of this account (")(str_name)(").")
+            strNymID.get())(") isn't the owner of this account (")(
+            str_name)(").")
             .Flush();
         return false;
     }
@@ -1007,8 +1009,9 @@ auto OT_API::SmartContract_ConfirmAccount(
                        String::Factory(account.get().GetPurportedNotaryID());
         LogError()(OT_PRETTY_CLASS())(
             "The smart contract has a different server ID on it already (")(
-            strServer1)(") than the one  that goes with this account (server ")(
-            strServer2)(", for account ")(ACCT_ID)(").")
+            strServer1.get())(
+            ") than the one  that goes with this account (server ")(
+            strServer2.get())(", for account ")(ACCT_ID)(").")
             .Flush();
         return false;
     }
@@ -2251,7 +2254,7 @@ auto OT_API::ConfirmPaymentPlan(
         const auto strRecinymfileID = String::Factory(RECIPIENT_NYM_ID);
         LogError()(OT_PRETTY_CLASS())(
             "Failure: First you need to download the missing "
-            "(Merchant) Nym's credentials: ")(strRecinymfileID)(".")
+            "(Merchant) Nym's credentials: ")(strRecinymfileID.get())(".")
             .Flush();
         return false;
     }
@@ -2582,8 +2585,8 @@ auto OT_API::GenerateBasketExchange(
                            String::Factory(BASKET_INSTRUMENT_DEFINITION_ID);
             LogError()(OT_PRETTY_CLASS())("Wrong instrument "
                                           "definition ID "
-                                          "on account ")(
-                strAcctID)(" (expected type to be ")(strAcctTypeID)(").")
+                                          "on account ")(strAcctID.get())(
+                " (expected type to be ")(strAcctTypeID.get())(").")
                 .Flush();
             return nullptr;
         }
@@ -2691,9 +2694,9 @@ auto OT_API::AddBasketExchangeItem(
                    strAcctID = String::Factory(ASSET_ACCOUNT_ID);
         LogError()(OT_PRETTY_CLASS())("Wrong instrument "
                                       "definition ID "
-                                      "on account ")(
-            strAcctID)(" (expected to find instrument definition ")(
-            strInstrumentDefinitionID)(").")
+                                      "on account ")(strAcctID.get())(
+            " (expected to find instrument definition ")(
+            strInstrumentDefinitionID.get())(").")
             .Flush();
         return false;
     }
@@ -5172,7 +5175,7 @@ auto OT_API::FinalizeProcessInbox(
                 auto typeName = String::Factory();
                 acceptItem->GetTypeString(typeName);
                 LogError()(OT_PRETTY_CLASS())("Unexpected item type: ")(
-                    typeName)
+                    typeName.get())
                     .Flush();
 
                 return false;
@@ -5299,7 +5302,8 @@ auto OT_API::find_cron(
         default: {
             auto typeName = String::Factory();
             item.GetTypeString(typeName);
-            LogError()(OT_PRETTY_CLASS())("Unexpected item type: ")(typeName)
+            LogError()(OT_PRETTY_CLASS())("Unexpected item type: ")(
+                typeName.get())
                 .Flush();
 
             return false;
@@ -5379,7 +5383,7 @@ auto OT_API::find_standard(
                     auto typeName = String::Factory();
                     original->GetTypeString(typeName);
                     LogError()(OT_PRETTY_CLASS())(
-                        "Unexpected original item type: ")(typeName)
+                        "Unexpected original item type: ")(typeName.get())
                         .Flush();
 
                     return false;
@@ -5402,7 +5406,8 @@ auto OT_API::find_standard(
         default: {
             auto typeName = String::Factory();
             item.GetTypeString(typeName);
-            LogError()(OT_PRETTY_CLASS())("Unexpected item type: ")(typeName)
+            LogError()(OT_PRETTY_CLASS())("Unexpected item type: ")(
+                typeName.get())
                 .Flush();
 
             return false;

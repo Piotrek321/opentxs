@@ -1699,7 +1699,7 @@ auto Operation::evaluate_transaction_reply(
         case MessageType::processNymboxResponse:
             break;
         default: {
-            LogError()(OT_PRETTY_CLASS())(reply.m_strCommand)(
+            LogError()(OT_PRETTY_CLASS())(reply.m_strCommand.get())(
                 " is not a transaction")
                 .Flush();
 

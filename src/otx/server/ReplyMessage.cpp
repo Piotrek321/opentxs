@@ -221,7 +221,7 @@ auto ReplyMessage::init_nym() -> bool
 auto ReplyMessage::LoadContext(const PasswordPrompt& reason) -> bool
 {
     if (false == init_nym()) {
-        LogError()(OT_PRETTY_CLASS())("Nym (")(original_.m_strNymID)(
+        LogError()(OT_PRETTY_CLASS())("Nym (")(original_.m_strNymID.get())(
             ") does not exist")
             .Flush();
 

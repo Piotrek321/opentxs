@@ -26,6 +26,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // IDEA: Put a Nym in the Nyms folder for each entity. While it may
 // not have a public key in the pubkey folder, or embedded within it,
@@ -141,7 +142,7 @@ auto OTPartyAccount::IsAccountByID(const identifier::Generic& theAcctID) const
         api_.Factory().IdentifierFromBase58(m_strAcctID->Bytes());
     if (!(theAcctID == theMemberAcctID)) {
         LogTrace()(OT_PRETTY_CLASS())("Account IDs don't match: ")(
-            m_strAcctID)(" / ")(theAcctID)
+            m_strAcctID.get())(" / ")(theAcctID)
             .Flush();
 
         return false;
@@ -171,7 +172,7 @@ auto OTPartyAccount::IsAccount(const Account& theAccount) -> bool
         api_.Factory().IdentifierFromBase58(m_strAcctID->Bytes());
     if (!(theAccount.GetRealAccountID() == theAcctID)) {
         LogTrace()(OT_PRETTY_CLASS())("Account IDs don't match: ")(
-            m_strAcctID)(" / ")(theAccount.GetRealAccountID())
+            m_strAcctID.get())(" / ")(theAccount.GetRealAccountID())
             .Flush();
 
         return false;
@@ -187,8 +188,8 @@ auto OTPartyAccount::IsAccount(const Account& theAccount) -> bool
             {
                 LogConsole()(OT_PRETTY_CLASS())(
                     "Instrument Definition IDs don't "
-                    "match ( ")(m_strInstrumentDefinitionID)(" / ")(
-                    strRHS)(" ) for Acct ID: ")(m_strAcctID)(".")
+                    "match ( ")(m_strInstrumentDefinitionID.get())(" / ")(
+                    strRHS.get())(" ) for Acct ID: ")(m_strAcctID.get())(".")
                     .Flush();
             }
             return false;
@@ -203,8 +204,7 @@ auto OTPartyAccount::IsAccount(const Account& theAccount) -> bool
 auto OTPartyAccount::VerifyOwnership() const -> bool
 {
     if (nullptr == m_pForParty) {
-        LogError()(OT_PRETTY_CLASS())("Error: nullptr pointer to "
-                                      "owner party.")
+        LogError()(OT_PRETTY_CLASS())("Error: nullptr pointer to owner party.")
             .Flush();
         return false;
     }
@@ -213,9 +213,8 @@ auto OTPartyAccount::VerifyOwnership() const -> bool
 
     if (false == bool(account)) {
         LogError()(OT_PRETTY_CLASS())(
-            "Error: nullptr pointer to "
-            "account. (This function expects account to already be "
-            "loaded).")
+            "Error: nullptr pointer to account. (This function expects account "
+            "to already be loaded).")
             .Flush();
         return false;
     }  // todo maybe turn the above into OT_ASSERT()s.
@@ -223,8 +222,8 @@ auto OTPartyAccount::VerifyOwnership() const -> bool
     if (!m_pForParty->VerifyOwnershipOfAccount(account.get())) {
         {
             LogConsole()(OT_PRETTY_CLASS())(
-                "Party %s doesn't verify as "
-                "the ACTUAL owner of account: ")(m_strName)(".")
+                "Party doesn't verify as the ACTUAL owner of account: ")(
+                m_strName.get())(".")
                 .Flush();
         }
         return false;
@@ -241,9 +240,8 @@ auto OTPartyAccount::VerifyAgency() -> bool
 
     if (false == bool(account)) {
         LogError()(OT_PRETTY_CLASS())(
-            "Error: nullptr pointer to "
-            "account. (This function expects account to already be "
-            "loaded).")
+            "Error: nullptr pointer to account. (This function expects account "
+            "to already be loaded).")
             .Flush();
         return false;
     }  // todo maybe turn the above into OT_ASSERT()s.
@@ -332,7 +330,7 @@ auto OTPartyAccount::LoadAccount() -> SharedAccount
     if (!m_strAcctID->Exists()) {
         {
             LogConsole()(OT_PRETTY_CLASS())(
-                "Bad: Acct ID is blank for account: ")(m_strName)(".")
+                "Bad: Acct ID is blank for account: ")(m_strName.get())(".")
                 .Flush();
         }
 
@@ -345,7 +343,7 @@ auto OTPartyAccount::LoadAccount() -> SharedAccount
     if (false == bool(account)) {
         {
             LogConsole()(OT_PRETTY_CLASS())("Failed trying to load account: ")(
-                m_strName)(", with AcctID: ")(m_strAcctID)(".")
+                m_strName.get())(", with AcctID: ")(m_strAcctID.get())(".")
                 .Flush();
         }
 
@@ -417,8 +415,8 @@ auto OTPartyAccount::Compare(const OTPartyAccount& rhs) const -> bool
         (!GetAcctID().Compare(rhs.GetAcctID()))) {
         {
             LogConsole()(OT_PRETTY_CLASS())(
-                "Asset account numbers don't match "
-                "for party account ")(GetName())(".")
+                "Asset account numbers don't match for party account ")(
+                GetName())(".")
                 .Flush();
 
             LogConsole()(OT_PRETTY_CLASS())("( ")(GetAcctID())("  /  ")(
@@ -447,8 +445,8 @@ auto OTPartyAccount::Compare(const OTPartyAccount& rhs) const -> bool
         !GetInstrumentDefinitionID().Compare(rhs.GetInstrumentDefinitionID())) {
         {
             LogConsole()(OT_PRETTY_CLASS())(
-                "Instrument Definition IDs don't "
-                "exist, or don't match (")(GetInstrumentDefinitionID())(" / ")(
+                "Instrument Definition IDs don't exist, or don't match (")(
+                GetInstrumentDefinitionID())(" / ")(
                 rhs.GetInstrumentDefinitionID())(") for party's account: ")(
                 GetName())(".")
                 .Flush();

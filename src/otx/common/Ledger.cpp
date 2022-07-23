@@ -159,8 +159,8 @@ auto Ledger::VerifyAccount(const identity::Nym& theNym) -> bool
             auto strAccountID = String::Factory();
             GetIdentifier(strAccountID);
             LogError()(OT_PRETTY_CLASS())("Failure: Bad ledger type: ")(
-                nLedgerType)(", NymID: ")(strNymID)(", AcctID: ")(
-                strAccountID)(".")
+                nLedgerType)(", NymID: ")(strNymID.get())(", AcctID: ")(
+                strAccountID.get())(".")
                 .Flush();
         }
             return false;
@@ -210,8 +210,7 @@ auto Ledger::SaveBoxReceipt(const std::int64_t& lTransactionNum) -> bool
 
     if (false == bool(pTransaction)) {
         LogConsole()(OT_PRETTY_CLASS())("Unable to save box receipt ")(
-            lTransactionNum)(": "
-                             "couldn't find the transaction on this ledger.")
+            lTransactionNum)(": couldn't find the transaction on this ledger.")
             .Flush();
         return false;
     }
@@ -495,7 +494,7 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
     } else {  // Loading FROM A FILE.
         if (!OTDB::Exists(api_, api_.DataFolder(), path1, path2, path3, "")) {
             LogDebug()(OT_PRETTY_CLASS())("does not exist in OTLedger::Load")(
-                pszType)(": ")(path1)('/')(m_strFilename)
+                pszType)(": ")(path1)('/')(m_strFilename.get())
                 .Flush();
             return false;
         }
@@ -511,7 +510,7 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
 
         if (strFileContents.length() < 2) {
             LogError()(OT_PRETTY_CLASS())("Error reading file: ")(path1)('/')(
-                m_strFilename)
+                m_strFilename.get())
                 .Flush();
             return false;
         }
@@ -523,7 +522,7 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
     //       LoadContractFromString already handles that automatically.
     if (!strRawFile->Exists()) {
         LogError()(OT_PRETTY_CLASS())("Unable to load box (")(path1)('/')(
-            m_strFilename)(") from empty string.")
+            m_strFilename.get())(") from empty string.")
             .Flush();
         return false;
     }
@@ -532,14 +531,16 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
 
     if (!bSuccess) {
         LogError()(OT_PRETTY_CLASS())("Failed loading ")(pszType)(" ")(
-            (pString.Exists()) ? "from string" : "from file")(
-            " in OTLedger::Load")(pszType)(": ")(path1)('/')(m_strFilename)
+            (pString.Exists()) ? "from string"
+                               : "from file")(" in OTLedger::Load")(
+            pszType)(": ")(path1)('/')(m_strFilename.get())
             .Flush();
         return false;
     } else {
         LogVerbose()(OT_PRETTY_CLASS())("Successfully loaded ")(pszType)(" ")(
-            (pString.Exists()) ? "from string" : "from file")(
-            " in OTLedger::Load")(pszType)(": ")(path1)('/')(m_strFilename)
+            (pString.Exists()) ? "from string"
+                               : "from file")(" in OTLedger::Load")(
+            pszType)(": ")(path1)('/')(m_strFilename.get())
             .Flush();
     }
 
@@ -563,7 +564,8 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
     auto strRawFile = String::Factory();
 
     if (!SaveContractRaw(strRawFile)) {
-        LogError()(OT_PRETTY_CLASS())("Error saving ")(pszType)(m_strFilename)
+        LogError()(OT_PRETTY_CLASS())("Error saving ")(
+            pszType)(m_strFilename.get())
             .Flush();
         return false;
     }
@@ -575,7 +577,7 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
         LogError()(OT_PRETTY_CLASS())("Error saving ")(
             pszType)(" (failed writing armored string): ")(path1)('/')(
-            m_strFilename)
+            m_strFilename.get())
             .Flush();
         return false;
     }
@@ -590,12 +592,12 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
         "");  // <=== SAVING TO DATA STORE.
     if (!bSaved) {
         LogError()(OT_PRETTY_CLASS())("Error writing ")(pszType)(" to file: ")(
-            path1)('/')(m_strFilename)
+            path1)('/')(m_strFilename.get())
             .Flush();
         return false;
     } else {
         LogVerbose()(OT_PRETTY_CLASS())("Successfully saved ")(pszType)(": ")(
-            path1)('/')(m_strFilename)
+            path1)('/')(m_strFilename.get())
             .Flush();
     }
 
@@ -1300,7 +1302,8 @@ auto Ledger::GetChequeReceipt(std::int64_t lChequeNum)
             LogError()(OT_PRETTY_CLASS())(
                 "Expected original depositCheque request item to be "
                 "inside the chequeReceipt, "
-                "but somehow what we found instead was a ")(strItemType)("...")
+                "but somehow what we found instead was a ")(strItemType.get())(
+                "...")
                 .Flush();
         } else {
             // Get the cheque from the Item and load it up into a Cheque object.
@@ -1314,7 +1317,7 @@ auto Ledger::GetChequeReceipt(std::int64_t lChequeNum)
             if (!((strCheque->GetLength() > 2) &&
                   pCheque->LoadContractFromString(strCheque))) {
                 LogError()(OT_PRETTY_CLASS())(
-                    "Error loading cheque from string: ")(strCheque)(".")
+                    "Error loading cheque from string: ")(strCheque.get())(".")
                     .Flush();
             }
             // NOTE: Technically we don'T NEED to load up the cheque anymore,
@@ -1855,11 +1858,10 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         if (!strLedgerAcctID->Exists() || !strLedgerAcctNotaryID->Exists() ||
             !strNymID->Exists()) {
             LogConsole()(OT_PRETTY_CLASS())(
-                "Failure: missing strLedgerAcctID (")(
-                strLedgerAcctID)(") or strLedgerAcctNotaryID (")(
-                strLedgerAcctNotaryID)(") or strNymID (")(
-                strNymID)(") while loading transaction from ")(
-                strType)(" ledger.")
+                "Failure: missing strLedgerAcctID (")(strLedgerAcctID.get())(
+                ") or strLedgerAcctNotaryID (")(strLedgerAcctNotaryID.get())(
+                ") or strNymID (")(strNymID.get())(
+                ") while loading transaction from ")(strType.get())(" ledger.")
                 .Flush();
             return (-1);
         }
@@ -1916,11 +1918,10 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 if (nPartialRecordCount > 0) {
                     LogError()(OT_PRETTY_CLASS())("Error: There are ")(
                         nPartialRecordCount)(" unexpected abbreviated records "
-                                             "in an "
-                                             "OTLedger::message type ledger. "
-                                             "(Failed loading "
-                                             "ledger with accountID: ")(
-                        strLedgerAcctID)(").")
+                                             "in an OTLedger::message type "
+                                             "ledger. (Failed loading ledger "
+                                             "with accountID: ")(
+                        strLedgerAcctID.get())(").")
                         .Flush();
                     return (-1);
                 }
@@ -1928,8 +1929,8 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 break;
             default:
                 LogError()(OT_PRETTY_CLASS())("Unexpected ledger type (")(
-                    strType)("). (Failed loading "
-                             "ledger for account: ")(strLedgerAcctID)(").")
+                    strType.get())("). (Failed loading ledger for account: ")(
+                    strLedgerAcctID.get())(").")
                     .Flush();
                 return (-1);
         }  // switch (to set strExpected to the abbreviated record type.)
@@ -1946,10 +1947,10 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 //                xml->read(); // <==================
                 if (!SkipToElement(xml)) {
                     LogConsole()(OT_PRETTY_CLASS())(
-                        "Failure: Unable to find element when "
-                        "one was expected (")(
-                        strExpected)(") for abbreviated record of receipt in ")(
-                        GetTypeString())(" box: ")(m_strRawFile)(".")
+                        "Failure: Unable to find element when one was expected "
+                        "(")(strExpected.get())(
+                        ") for abbreviated record of receipt in ")(
+                        GetTypeString())(" box: ")(m_strRawFile.get())(".")
                         .Flush();
                     return (-1);
                 }
@@ -2021,9 +2022,9 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                     {
                         LogConsole()(OT_PRETTY_CLASS())(
                             "Error loading transaction ")(number)(" (")(
-                            strExpected)("), since one was already there, in "
-                                         "box for "
-                                         "account: ")(strLedgerAcctID)(".")
+                            strExpected.get())("), since one was already "
+                                               "there, in box for account: ")(
+                            strLedgerAcctID.get())(".")
                             .Flush();
                         return (-1);
                     }
@@ -2131,7 +2132,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         }      // if (number of partial records > 0)
 
         LogTrace()(OT_PRETTY_CLASS())("Loading account ledger of type \"")(
-            strType)("\", version: ")(m_strVersion)
+            strType.get())("\", version: ")(m_strVersion.get())
             .Flush();
 
         // Since we just loaded this stuff, let's verify it. We may have to
@@ -2201,8 +2202,8 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             if (!ascTransaction->Exists() ||
                 !ascTransaction->GetString(strTransaction)) {
                 LogError()(OT_PRETTY_CLASS())(
-                    "ERROR: Missing expected transaction contents. "
-                    "Ledger contents: ")(m_strRawFile)(".")
+                    "ERROR: Missing expected transaction contents. Ledger "
+                    "contents: ")(m_strRawFile.get())(".")
                     .Flush();
                 return (-1);
             }
@@ -2263,7 +2264,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         "Error loading full transaction ")(
                         pTransaction->GetTransactionNum())(
                         ", since one was already there, in box for account: ")(
-                        strPurportedAcctID)(".")
+                        strPurportedAcctID.get())(".")
                         .Flush();
                     return (-1);
                 }

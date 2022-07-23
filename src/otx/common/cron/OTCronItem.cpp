@@ -169,7 +169,7 @@ auto OTCronItem::LoadActiveCronReceipt(
             filename,
             "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("File does not exist: ")(
-            szFoldername)('/')(strNotaryID)('/')(filename)(".")
+            szFoldername)('/')(strNotaryID.get())('/')(filename)(".")
             .Flush();
         return nullptr;
     }
@@ -185,7 +185,7 @@ auto OTCronItem::LoadActiveCronReceipt(
 
     if (strFileContents->GetLength() < 2) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("Error reading file: ")(
-            szFoldername)('/')(strNotaryID)('/')(filename)(".")
+            szFoldername)('/')(strNotaryID.get())('/')(filename)(".")
             .Flush();
         return nullptr;
     } else {
@@ -232,7 +232,7 @@ auto OTCronItem::GetActiveCronTransNums(
                 LogError()(OT_PRETTY_STATIC(OTCronItem))(
                     "List of recurring transactions; string apparently was "
                     "encoded and then failed decoding. Contents: ")(
-                    strNumlist)(".")
+                    strNumlist.get())(".")
                     .Flush();
                 return false;
             } else {
@@ -291,9 +291,9 @@ auto OTCronItem::EraseActiveCronReceipt(
                                                      // by default.
             {
                 LogError()(OT_PRETTY_STATIC(OTCronItem))(
-                    "List of recurring transactions; string apparently "
-                    "was encoded "
-                    "and then failed decoding. Contents: ")(strNumlist)(".")
+                    "List of recurring transactions; string apparently was "
+                    "encoded and then failed decoding. Contents: ")(
+                    strNumlist.get())(".")
                     .Flush();
             } else {
                 numlist.Add(strNumlist);
@@ -314,7 +314,8 @@ auto OTCronItem::EraseActiveCronReceipt(
                     "")) {
                 LogConsole()(OT_PRETTY_STATIC(OTCronItem))(
                     "FYI, failure erasing recurring IDs file: ")(
-                    szFoldername)('/')(strNotaryID)('/')(list_filename)(".")
+                    szFoldername)('/')(strNotaryID.get())('/')(
+                    list_filename)(".")
                     .Flush();
             }
         } else {
@@ -327,8 +328,8 @@ auto OTCronItem::EraseActiveCronReceipt(
                              strFinal, "ACTIVE CRON ITEMS"))  // todo hardcoding
             {
                 LogError()(OT_PRETTY_STATIC(OTCronItem))(
-                    "Error re-saving recurring IDs (failed writing "
-                    "armored string): ")(szFoldername)('/')(strNotaryID)('/')(
+                    "Error re-saving recurring IDs (failed writing armored "
+                    "string): ")(szFoldername)('/')(strNotaryID.get())('/')(
                     list_filename)(".")
                     .Flush();
                 return false;
@@ -345,7 +346,7 @@ auto OTCronItem::EraseActiveCronReceipt(
                 if (!bSaved) {
                     LogError()(OT_PRETTY_STATIC(OTCronItem))(
                         "Error re-saving recurring IDs: ")(szFoldername)('/')(
-                        strNotaryID)('/')(list_filename)(".")
+                        strNotaryID.get())('/')(list_filename)(".")
                         .Flush();
                     return false;
                 }
@@ -359,7 +360,7 @@ auto OTCronItem::EraseActiveCronReceipt(
     if (!OTDB::Exists(
             api, dataFolder, szFoldername, strNotaryID->Get(), filename, "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("File does not exist: ")(
-            szFoldername)('/')(strNotaryID)('/')(filename.c_str())(".")
+            szFoldername)('/')(strNotaryID.get())('/')(filename.c_str())(".")
             .Flush();
         return false;
     }
@@ -367,7 +368,7 @@ auto OTCronItem::EraseActiveCronReceipt(
     if (!OTDB::EraseValueByKey(
             api, dataFolder, szFoldername, strNotaryID->Get(), filename, "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("Error erasing file: ")(
-            szFoldername)('/')(strNotaryID)('/')(filename.c_str())(".")
+            szFoldername)('/')(strNotaryID.get())('/')(filename.c_str())(".")
             .Flush();
         return false;
     }
@@ -396,8 +397,8 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
             "")) {
         LogVerbose()(OT_PRETTY_CLASS())(
             "Cron Record already exists for transaction ")(GetTransactionNum())(
-            " ")(szFoldername)('/')(strNotaryID)('/')(filename)(", ")(
-            "overwriting. ")
+            " ")(szFoldername)('/')(strNotaryID.get())('/')(
+            filename)(", overwriting.")
             .Flush();
         // NOTE: We could just return here. But what if the record we have is
         // corrupted somehow?
@@ -433,8 +434,8 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
                                           // by default.
                 {
                     LogError()(OT_PRETTY_CLASS())(
-                        "Input string apparently was encoded and then"
-                        " failed decoding. Contents: ")(strNumlist)(".")
+                        "Input string apparently was encoded and then failed "
+                        "decoding. Contents: ")(strNumlist.get())(".")
                         .Flush();
                 } else {
                     numlist.Add(strNumlist);
@@ -455,7 +456,7 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
             {
                 LogError()(OT_PRETTY_CLASS())(
                     "Error saving recurring IDs (failed writing armored "
-                    "string): ")(szFoldername)('/')(strNotaryID)('/')(
+                    "string): ")(szFoldername)('/')(strNotaryID.get())('/')(
                     list_filename)(".")
                     .Flush();
                 return false;
@@ -472,7 +473,8 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
 
             if (!bSaved) {
                 LogError()(OT_PRETTY_CLASS())("Error saving recurring IDs: ")(
-                    szFoldername)('/')(strNotaryID)('/')(list_filename)(".")
+                    szFoldername)('/')(strNotaryID.get())('/')(
+                    list_filename)(".")
                     .Flush();
                 return false;
             }
@@ -486,7 +488,7 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
         LogError()(OT_PRETTY_CLASS())(
             "Error saving file (failed writing armored string): ")(
-            szFoldername)('/')(strNotaryID)('/')(filename)("")
+            szFoldername)('/')(strNotaryID.get())('/')(filename)("")
             .Flush();
         return false;
     }
@@ -502,7 +504,7 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
 
     if (!bSaved) {
         LogError()(OT_PRETTY_CLASS())("Error saving file: ")(szFoldername)('/')(
-            strNotaryID)('/')(filename)(".")
+            strNotaryID.get())('/')(filename)(".")
             .Flush();
         return false;
     }
@@ -722,7 +724,7 @@ auto OTCronItem::ProcessCron(const PasswordPrompt& reason) -> bool
 
     if (IsFlaggedForRemoval()) {
         LogDebug()(OT_PRETTY_CLASS())("Flagged for removal: ")(
-            m_strContractType)
+            m_strContractType.get())
             .Flush();
         return false;
     }
@@ -732,7 +734,8 @@ auto OTCronItem::ProcessCron(const PasswordPrompt& reason) -> bool
     // Cron even if it is NOT YET valid. But once it actually expires, this
     // will remove it.
     if (IsExpired()) {
-        LogDebug()(OT_PRETTY_CLASS())("Expired ")(m_strContractType).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("Expired ")(m_strContractType.get())
+            .Flush();
         return false;
     }
 

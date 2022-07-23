@@ -68,6 +68,7 @@ class Server;
 
 class Account;
 class NymData;
+class NymFile;
 class PeerObject;
 // }  // namespace v1
 }  // namespace opentxs

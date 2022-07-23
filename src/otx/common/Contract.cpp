@@ -186,9 +186,9 @@ auto Contract::VerifyContract() const -> bool
         const auto& nymID = pNym->ID();
         const auto strNymID = String::Factory(nymID);
         LogConsole()(OT_PRETTY_CLASS())(
-            "Failed verifying the contract's signature "
-            "against the public key that was retrieved "
-            "from the contract, with key ID: ")(strNymID)(".")
+            "Failed verifying the contract's signature against the public key "
+            "that was retrieved from the contract, with key ID: ")(
+            strNymID.get())(".")
             .Flush();
         return false;
     }
@@ -242,14 +242,14 @@ auto Contract::VerifyContractID() const -> bool
 
         LogConsole()(OT_PRETTY_CLASS())(
             "Hashes do NOT match in Contract::VerifyContractID. "
-            "Expected: ")(str1)(". ")("Actual: ")(str2)(".")
+            "Expected: ")(str1.get())(". ")("Actual: ")(str2.get())(".")
             .Flush();
         return false;
     } else {
         auto str1 = String::Factory();
         newID.GetString(api_.Crypto(), str1);
         LogDetail()(OT_PRETTY_CLASS())("Contract ID *SUCCESSFUL* match to "
-                                       "hash of contract file: ")(str1)
+                                       "hash of contract file: ")(str1.get())
             .Flush();
         return true;
     }
@@ -575,11 +575,10 @@ auto Contract::VerifySigAuthent(
         nym.GetIdentifier(strNymID);
         LogDetail()(OT_PRETTY_CLASS())(
             "Tried to grab a list of keys from this Nym "
-            "(")(strNymID)(") which might match this signature, "
-                           "but recovered none. Therefore, will "
-                           "attempt to verify using "
-                           "the Nym's default public "
-                           "AUTHENTICATION key.")
+            "(")(strNymID.get())(
+            ") which might match this signature, but recovered none. "
+            "Therefore, will attempt to verify using the Nym's default public "
+            "AUTHENTICATION key.")
             .Flush();
     }
     // else found no keys.
@@ -618,11 +617,10 @@ auto Contract::VerifySignature(
         nym.GetIdentifier(strNymID);
         LogDetail()(OT_PRETTY_CLASS())(
             "Tried to grab a list of keys from this Nym "
-            "(")(strNymID)(") which might match this signature, "
-                           "but recovered none. Therefore, will "
-                           "attempt to verify using "
-                           "the Nym's default public SIGNING "
-                           "key.")
+            "(")(strNymID.get())(
+            ") which might match this signature, but recovered none. "
+            "Therefore, will attempt to verify using the Nym's default public "
+            "SIGNING key.")
             .Flush();
     }
     // else found no keys.
@@ -873,7 +871,7 @@ auto Contract::LoadContractRawFile() -> bool
     {
         LogError()(OT_PRETTY_CLASS())(
             "Input string apparently was encoded and "
-            "then failed decoding. Contents: ")(strFileContents)(".")
+            "then failed decoding. Contents: ")(strFileContents.get())(".")
             .Flush();
         return false;
     }
@@ -900,9 +898,8 @@ auto Contract::LoadContract(const char* szFoldername, const char* szFilename)
         return ParseRawFile();  // Parses m_strRawFile into the various
                                 // member variables.
     } else {
-        LogDetail()(OT_PRETTY_CLASS())(
-            "Failed loading raw contract "
-            "file: ")(m_strFoldername)(" file")(m_strFilename)
+        LogDetail()(OT_PRETTY_CLASS())("Failed loading raw contract file: ")(
+            m_strFoldername.get())(" file")(m_strFilename.get())
             .Flush();
     }
     return false;
@@ -972,7 +969,7 @@ auto Contract::ParseRawFile() -> bool
     if (!m_strRawFile->GetLength()) {
         LogError()(OT_PRETTY_CLASS())(
             "Empty m_strRawFile in Contract::ParseRawFile. "
-            "Filename: ")(m_strFoldername)('/')(m_strFilename)
+            "Filename: ")(m_strFoldername.get())('/')(m_strFilename.get())
             .Flush();
         return false;
     }
@@ -1040,13 +1037,9 @@ auto Contract::ParseRawFile() -> bool
             else if (
                 line.length() < 3 || line.at(1) != ' ' || line.at(2) != '-') {
                 LogConsole()(OT_PRETTY_CLASS())("Error in contract ")(
-                    m_strFilename)(": A dash at the "
-                                   "beginning of the "
-                                   "line should be "
-                                   "followed by a "
-                                   "space and another "
-                                   "dash:"
-                                   " ")(m_strRawFile)(".")
+                    m_strFilename.get())(
+                    ": A dash at the beginning of the line should be followed "
+                    "by a space and another dash: ")(m_strRawFile.get())(".")
                     .Flush();
                 return false;
             }
@@ -1070,9 +1063,9 @@ auto Contract::ParseRawFile() -> bool
                         if (bIsEOF ||
                             !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
-                                "Error in signature for "
-                                "contract ")(m_strFilename)(": Unexpected EOF "
-                                                            "after short line.")
+                                "Error in signature for contract ")(
+                                m_strFilename.get())(
+                                ": Unexpected EOF after short line.")
                                 .Flush();
                             return false;
                         }
@@ -1086,9 +1079,9 @@ auto Contract::ParseRawFile() -> bool
                         if (bIsEOF ||
                             !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
-                                "Error in signature for "
-                                "contract ")(m_strFilename)(": Unexpected EOF "
-                                                            "after Version: .")
+                                "Error in signature for contract ")(
+                                m_strFilename.get())(
+                                ": Unexpected EOF after Version: .")
                                 .Flush();
                             return false;
                         }
@@ -1102,9 +1095,9 @@ auto Contract::ParseRawFile() -> bool
                         if (bIsEOF ||
                             !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
-                                "Error in signature for "
-                                "contract ")(m_strFilename)(": Unexpected EOF "
-                                                            "after Comment: .")
+                                "Error in signature for contract ")(
+                                m_strFilename.get())(
+                                ": Unexpected EOF after Comment: .")
                                 .Flush();
                             return false;
                         }
@@ -1124,10 +1117,9 @@ auto Contract::ParseRawFile() -> bool
                         // (A|E|S) and the others are base62.
                         {
                             LogConsole()(OT_PRETTY_CLASS())(
-                                "Error in signature for "
-                                "contract ")(m_strFilename)(": Unexpected "
-                                                            "length for "
-                                                            "Meta: comment.")
+                                "Error in signature for contract ")(
+                                m_strFilename.get())(
+                                ": Unexpected length for Meta: comment.")
                                 .Flush();
                             return false;
                         }
@@ -1150,12 +1142,10 @@ auto Contract::ParseRawFile() -> bool
                                                         // knms"
                         {
                             LogConsole()(OT_PRETTY_CLASS())(
-                                "Error in signature for "
-                                "contract ")(m_strFilename)(": Unexpected "
-                                                            "metadata in the "
-                                                            "Meta: "
-                                                            "comment. "
-                                                            "Line: ")(line)(".")
+                                "Error in signature for contract ")(
+                                m_strFilename.get())(
+                                ": Unexpected metadata in the Meta: comment. "
+                                "Line: ")(line)(".")
                                 .Flush();
                             return false;
                         }
@@ -1163,9 +1153,9 @@ auto Contract::ParseRawFile() -> bool
                         if (bIsEOF ||
                             !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
-                                "Error in signature for "
-                                "contract ")(m_strFilename)(": Unexpected EOF "
-                                                            "after Meta: .")
+                                "Error in signature for contract ")(
+                                m_strFilename.get())(
+                                ": Unexpected EOF after Meta: .")
                                 .Flush();
                             return false;
                         }
@@ -1191,13 +1181,8 @@ auto Contract::ParseRawFile() -> bool
                         if (bIsEOF ||
                             !m_strRawFile->sgets(buffer1.data(), 2048)) {
                             LogConsole()(OT_PRETTY_CLASS())(
-                                "Error in contract ")(m_strFilename)(": "
-                                                                     "Unexpec"
-                                                                     "ted "
-                                                                     "EOF "
-                                                                     "after "
-                                                                     "Hash: "
-                                                                     ".")
+                                "Error in contract ")(m_strFilename.get())(
+                                ": Unexpected EOF after Hash: .")
                                 .Flush();
                             return false;
                         }
@@ -1553,10 +1538,8 @@ auto Contract::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_strEntityEmail = String::Factory(xml->getAttributeValue("email"));
 
         LogDetail()(OT_PRETTY_CLASS())("Loaded Entity, shortname: ")(
-            m_strEntityShortName)(", "
-                                  "Longname:"
-                                  " ")(m_strEntityLongName)(", email: ")(
-            m_strEntityEmail)
+            m_strEntityShortName.get())(", Longname: ")(
+            m_strEntityLongName.get())(", email: ")(m_strEntityEmail.get())
             .Flush();
 
         return 1;
@@ -1570,9 +1553,9 @@ auto Contract::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         strConditionName = String::Factory(xml->getAttributeValue("name"));
 
         if (!SkipToTextField(xml)) {
-            LogDetail()(OT_PRETTY_CLASS())("Failure: Unable to find "
-                                           "expected text field for xml node "
-                                           "named: ")(xml->getNodeName())(".")
+            LogDetail()(OT_PRETTY_CLASS())(
+                "Failure: Unable to find expected "
+                "text field for xml node named: ")(xml->getNodeName())(".")
                 .Flush();
             return (-1);  // error condition
         }
@@ -1581,8 +1564,8 @@ auto Contract::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             strConditionValue = String::Factory(xml->getNodeData());
         } else {
             LogError()(OT_PRETTY_CLASS())(
-                "Error in Contract::ProcessXMLNode: Condition without "
-                "value: ")(strConditionName)(".")
+                "Error in Contract::ProcessXMLNode: Condition without value: ")(
+                strConditionName.get())(".")
                 .Flush();
             return (-1);  // error condition
         }
@@ -1594,7 +1577,7 @@ auto Contract::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 strConditionName->Get(), strConditionValue->Get()));
 
         LogDetail()(OT_PRETTY_CLASS())("---- Loaded condition ")(
-            strConditionName)
+            strConditionName.get())
             .Flush();
         //        otWarn << "Loading condition \"%s\": %s----------(END
         // DATA)----------\n", strConditionName.Get(),

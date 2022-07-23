@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>  // IWYU pragma: keep
+#include <future>
 #include <iosfwd>
 #include <limits>
 #include <memory>
@@ -79,9 +80,10 @@ auto Context::SuggestFolder(std::string_view appName) noexcept
 
 namespace opentxs::api::imp
 {
-auto Context::Sessions::clear(ShutdownFutures& futures) noexcept -> void
+auto Context::Sessions::clear() noexcept -> void
 {
     shutdown_ = true;
+    auto futures = Vector<std::future<void>>{};
     futures.reserve(server_.size() + client_.size());
 
     for (auto& session : server_) {
@@ -94,6 +96,8 @@ auto Context::Sessions::clear(ShutdownFutures& futures) noexcept -> void
 
     server_.clear();
     client_.clear();
+
+    for (auto& future : futures) { future.get(); }
 }
 }  // namespace opentxs::api::imp
 
@@ -136,7 +140,6 @@ Context::Context(Flag& running, const Options& args, PasswordCaller* password)
     , rpc_(opentxs::Factory::RPC(*this))
     , file_lock_()
     , signal_handler_()
-    , shutdown_()
 {
     // NOTE: OT_ASSERT is not available until Init() has been called
     assert(null_callback_);
@@ -375,7 +378,7 @@ auto Context::shutdown() noexcept -> void
         }
     });
     rpc_.reset();
-    sessions_.lock()->clear(shutdown_);
+    sessions_.lock()->clear();
     zap_.reset();
     shutdown_qt();
     crypto_.reset();
@@ -388,7 +391,6 @@ auto Context::shutdown() noexcept -> void
         asio_.reset();
     }
 
-    opentxs::internal::Log::Shutdown();
     log_.reset();
 }
 
@@ -526,10 +528,5 @@ auto Context::ZAP() const noexcept -> const api::network::ZAP&
     return *zap_;
 }
 
-Context::~Context()
-{
-    shutdown();
-
-    for (auto& future : shutdown_) { future.get(); }
-}
+Context::~Context() { shutdown(); }
 }  // namespace opentxs::api::imp

@@ -178,19 +178,10 @@ public:
     }
     auto FeeRate() const noexcept -> Amount final;
     auto FilterOracleInternal() const noexcept
-        -> const node::internal::FilterOracle& final
-    {
-        return *filter_p_;
-    }
-    auto GetBalance() const noexcept -> Balance final
-    {
-        return database_.GetBalance();
-    }
+        -> const node::internal::FilterOracle& final;
+    auto GetBalance() const noexcept -> Balance final;
     auto GetBalance(const identifier::Nym& owner) const noexcept
-        -> Balance final
-    {
-        return database_.GetBalance(owner);
-    }
+        -> Balance final;
     auto GetConfirmations(const UnallocatedCString& txid) const noexcept
         -> ChainHeight final;
     auto GetHeight() const noexcept -> ChainHeight final
@@ -204,10 +195,7 @@ public:
         -> UnallocatedVector<block::pTxid> final;
     auto GetType() const noexcept -> Type final { return chain_; }
     auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
-    auto HeaderOracle() const noexcept -> const node::HeaderOracle& final
-    {
-        return header_;
-    }
+    auto HeaderOracle() const noexcept -> const node::HeaderOracle& final;
     auto IsSynchronized() const noexcept -> bool final
     {
         return is_synchronized_headers();
@@ -256,10 +244,7 @@ public:
 
     auto Connect() noexcept -> bool final;
     auto Disconnect() noexcept -> bool final;
-    auto FilterOracleInternal() noexcept -> node::internal::FilterOracle& final
-    {
-        return filters_;
-    }
+    auto FilterOracleInternal() noexcept -> node::internal::FilterOracle& final;
     auto Internal() noexcept -> internal::Manager& final { return *this; }
     auto Shutdown() noexcept -> std::shared_future<void> final
     {

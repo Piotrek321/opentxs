@@ -801,13 +801,13 @@ auto Factory::Contract(const opentxs::String& strInput) const
         if (!pContract) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "Object type not yet supported by class "
-                "factory: ")(strFirstLine)
+                "factory: ")(strFirstLine.get())
                 .Flush();
             // Does the contract successfully load from the string passed in?
         } else if (!pContract->LoadContractFromString(strContract)) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "Failed loading contract from string (first "
-                "line): ")(strFirstLine)
+                "line): ")(strFirstLine.get())
                 .Flush();
         } else {
             return pContract;
@@ -2388,7 +2388,7 @@ auto Factory::Transaction(const String& strInput) const
         if (nullptr == pContract) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "Object type not yet supported by class "
-                "factory: ")(strFirstLine)
+                "factory: ")(strFirstLine.get())
                 .Flush();
             return nullptr;
         }
@@ -2417,7 +2417,7 @@ auto Factory::Transaction(const String& strInput) const
         } else {
             LogConsole()(OT_PRETTY_CLASS())(
                 "Failed loading contract from string (first "
-                "line): ")(strFirstLine)
+                "line): ")(strFirstLine.get())
                 .Flush();
         }
     }

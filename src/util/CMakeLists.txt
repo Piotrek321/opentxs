@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(license)
+add_subdirectory(log)
 add_subdirectory(platform)
 add_subdirectory(storage)
 
@@ -17,8 +18,6 @@ target_sources(
     "${opentxs_SOURCE_DIR}/src/internal/util/Flag.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Future.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Lockable.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/util/Log.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/util/LogMacros.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Mutex.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/P0330.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Shared.hpp"
@@ -44,8 +43,6 @@ target_sources(
     "JobCounter.cpp"
     "JobCounter.hpp"
     "Latest.hpp"
-    "Log.cpp"
-    "Log.hpp"
     "NullCallback.cpp"
     "NullCallback.hpp"
     "NymEditor.cpp"
@@ -82,7 +79,6 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/ConnectionMode.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Container.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Iterator.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/util/Log.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Numbers.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/NymEditor.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Options.hpp"

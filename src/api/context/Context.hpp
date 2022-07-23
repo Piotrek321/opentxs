@@ -169,8 +169,6 @@ public:
     ~Context() final;
 
 private:
-    using ShutdownFutures = Vector<std::future<void>>;
-
     struct SignalHandler {
         ShutdownCallback* callback_{nullptr};
         std::unique_ptr<Signals> handler_{};
@@ -180,7 +178,7 @@ private:
         Vector<std::shared_ptr<api::session::Notary>> server_{};
         Vector<std::shared_ptr<api::session::Client>> client_{};
 
-        auto clear(ShutdownFutures& futures) noexcept -> void;
+        auto clear() noexcept -> void;
     };
 
     using ConfigMap =
@@ -209,7 +207,6 @@ private:
     std::unique_ptr<rpc::internal::RPC> rpc_;
     mutable boost::interprocess::file_lock file_lock_;
     mutable GuardedSignals signal_handler_;
-    ShutdownFutures shutdown_;
 
     static auto client_instance(const int count) -> int;
     static auto server_instance(const int count) -> int;

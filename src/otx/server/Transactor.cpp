@@ -235,17 +235,15 @@ auto Transactor::getVoucherAccount(
         const auto strInstrumentDefinitionID =
             String::Factory(INSTRUMENT_DEFINITION_ID);
         {
-            LogConsole()(OT_PRETTY_CLASS())("Successfully created "
-                                            "voucher account ID: ")(
-                strAcctID)(" Instrument Definition "
-                           "ID:"
-                           " ")(strInstrumentDefinitionID)(".")
+            LogConsole()(OT_PRETTY_CLASS())(
+                "Successfully created voucher account ID: ")(strAcctID.get())(
+                " Instrument Definition ID: ")(strInstrumentDefinitionID.get())(
+                ".")
                 .Flush();
         }
         if (!server_.GetMainFile().SaveMainFile()) {
             LogError()(OT_PRETTY_CLASS())(
-                ": Error saving main "
-                "server file containing new account ID!!")
+                ": Error saving main server file containing new account ID!!")
                 .Flush();
         }
     }

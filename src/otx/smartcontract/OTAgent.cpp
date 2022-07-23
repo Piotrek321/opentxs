@@ -126,8 +126,9 @@ auto OTAgent::VerifySignature(const Contract& theContract) const -> bool
     // verify an election result (or whatever.)
     //
     if (!IsAnIndividual() || !DoesRepresentHimself()) {
-        LogError()(OT_PRETTY_CLASS())("Entities and roles are not yet "
-                                      "supported. Agent: ")(m_strName)(".")
+        LogError()(OT_PRETTY_CLASS())(
+            "Entities and roles are not yet supported. Agent: ")(
+            m_strName.get())(".")
             .Flush();
         return false;
     }  // todo: when adding entities, this will change.
@@ -167,7 +168,8 @@ auto OTAgent::VerifySignature(const Contract& theContract) const -> bool
         LogError()(OT_PRETTY_CLASS())(
             "Attempted to verify signature on "
             "contract, "
-            "but no Nym had ever been loaded for this agent: ")(strTemp)(".")
+            "but no Nym had ever been loaded for this agent: ")(strTemp.get())(
+            ".")
             .Flush();
         return false;
     }
@@ -694,15 +696,17 @@ auto OTAgent::SignContract(Contract& theInput, const PasswordPrompt& reason)
     const -> bool
 {
     if (!IsAnIndividual() || !DoesRepresentHimself()) {
-        LogError()(OT_PRETTY_CLASS())("Entities and roles are not yet "
-                                      "supported. Agent: ")(m_strName)(".")
+        LogError()(OT_PRETTY_CLASS())(
+            "Entities and roles are not yet supported. Agent: ")(
+            m_strName.get())(".")
             .Flush();
         return false;
     }  // todo: when adding entities, this will change.
 
     if (nullptr == m_pNym) {
-        LogError()(OT_PRETTY_CLASS())("Nym was nullptr while trying to sign "
-                                      "contract. Agent: ")(m_strName)(".")
+        LogError()(OT_PRETTY_CLASS())(
+            "Nym was nullptr while trying to sign contract. Agent: ")(
+            m_strName.get())(".")
             .Flush();
         return false;
     }  // todo: when adding entities, this will change.
@@ -717,8 +721,8 @@ auto OTAgent::VerifyIssuedNumber(
     // Todo: this function may change when entities / roles are added.
     if (!IsAnIndividual() || !DoesRepresentHimself()) {
         LogError()(OT_PRETTY_CLASS())(
-            "Error: Entities and Roles are "
-            "not yet supported. Agent: ")(m_strName)(".")
+            "Error: Entities and Roles are not yet supported. Agent: ")(
+            m_strName.get())(".")
             .Flush();
         return false;
     }
@@ -732,8 +736,8 @@ auto OTAgent::VerifyIssuedNumber(
 
         return context->VerifyIssuedNumber(lNumber);
     } else {
-        LogError()(OT_PRETTY_CLASS())("Error: m_pNym was nullptr. For "
-                                      "agent: ")(m_strName)(".")
+        LogError()(OT_PRETTY_CLASS())("Error: m_pNym was nullptr. For agent: ")(
+            m_strName.get())(".")
             .Flush();
     }
 
@@ -747,8 +751,8 @@ auto OTAgent::VerifyTransactionNumber(
     // Todo: this function may change when entities / roles are added.
     if (!IsAnIndividual() || !DoesRepresentHimself()) {
         LogError()(OT_PRETTY_CLASS())(
-            "Error: Entities and Roles "
-            "are not yet supported. Agent: ")(m_strName)(".")
+            "Error: Entities and Roles are not yet supported. Agent: ")(
+            m_strName.get())(".")
             .Flush();
         return false;
     }
@@ -762,8 +766,8 @@ auto OTAgent::VerifyTransactionNumber(
 
         return context->VerifyAvailableNumber(lNumber);
     } else {
-        LogError()(OT_PRETTY_CLASS())("Error: m_pNym was nullptr. "
-                                      "For agent: ")(m_strName)(".")
+        LogError()(OT_PRETTY_CLASS())("Error: m_pNym was nullptr. For agent: ")(
+            m_strName.get())(".")
             .Flush();
     }
 
@@ -778,7 +782,7 @@ auto OTAgent::RecoverTransactionNumber(
     if (!IsAnIndividual() || !DoesRepresentHimself()) {
         LogError()(OT_PRETTY_CLASS())(
             "Error: Entities and Roles are not yet supported. Agent: ")(
-            m_strName)(".")
+            m_strName.get())(".")
             .Flush();
         return false;
     }
@@ -801,13 +805,13 @@ auto OTAgent::RecoverTransactionNumber(
             return true;
         } else {
             LogError()(OT_PRETTY_CLASS())("Number (")(
-                lNumber)(") failed to verify for agent: ")(
-                m_strName)(" (Thus didn't bother 'adding it back').")
+                lNumber)(") failed to verify for agent: ")(m_strName.get())(
+                " (Thus didn't bother 'adding it back').")
                 .Flush();
         }
     } else {
         LogError()(OT_PRETTY_CLASS())("Error: m_pNym was nullptr. For agent: ")(
-            m_strName)(".")
+            m_strName.get())(".")
             .Flush();
     }
 
@@ -828,7 +832,7 @@ auto OTAgent::RecoverTransactionNumber(
         return RecoverTransactionNumber(lNumber, context.get());
     } else {
         LogError()(OT_PRETTY_CLASS())("Error: m_pNym was nullptr. For agent: ")(
-            m_strName)(".")
+            m_strName.get())(".")
             .Flush();
     }
 
@@ -847,14 +851,14 @@ auto OTAgent::RemoveTransactionNumber(
     if (!IsAnIndividual() || !DoesRepresentHimself()) {
         LogError()(OT_PRETTY_CLASS())(
             "Error: Entities and Roles are not yet supported. Agent: ")(
-            m_strName)(".")
+            m_strName.get())(".")
             .Flush();
         return false;
     }
 
     if (nullptr == m_pNym) {
         LogError()(OT_PRETTY_CLASS())("Error: m_pNym was nullptr. For agent: ")(
-            m_strName)(".")
+            m_strName.get())(".")
             .Flush();
 
         return false;
@@ -869,9 +873,8 @@ auto OTAgent::RemoveTransactionNumber(
         context.get().OpenCronItem(lNumber);
     } else {
         LogError()(OT_PRETTY_CLASS())(
-            "Error, should never happen. (I'd assume you aren't "
-            "removing numbers without verifying first if they're "
-            "there).")
+            "Error, should never happen. (I'd assume you aren't removing "
+            "numbers without verifying first if they're there).")
             .Flush();
     }
 
@@ -891,7 +894,7 @@ auto OTAgent::RemoveIssuedNumber(
     if (!IsAnIndividual() || !DoesRepresentHimself()) {
         LogError()(OT_PRETTY_CLASS())(
             "Error: Entities and Roles are not yet supported. Agent: ")(
-            m_strName)(".")
+            m_strName.get())(".")
             .Flush();
 
         return false;
@@ -899,7 +902,7 @@ auto OTAgent::RemoveIssuedNumber(
 
     if (nullptr == m_pNym) {
         LogError()(OT_PRETTY_CLASS())("Error: m_pNym was nullptr. For agent: ")(
-            m_strName)(".")
+            m_strName.get())(".")
             .Flush();
 
         return false;
@@ -914,9 +917,8 @@ auto OTAgent::RemoveIssuedNumber(
         context.get().CloseCronItem(lNumber);
     } else {
         LogError()(OT_PRETTY_CLASS())(
-            "Error, should never happen. (I'd assume you aren't "
-            "removing issued numbers without verifying first if "
-            "they're there).")
+            "Error, should never happen. (I'd assume you aren't removing "
+            "issued numbers without verifying first if they're there).")
             .Flush();
     }
 
@@ -931,8 +933,7 @@ auto OTAgent::ReserveClosingTransNum(
     if (IsAnIndividual() && DoesRepresentHimself() && (nullptr != m_pNym)) {
         if (thePartyAcct.GetClosingTransNo() > 0) {
             LogConsole()(OT_PRETTY_CLASS())(
-                "Failure: The account "
-                "ALREADY has a closing transaction number "
+                "Failure: The account ALREADY has a closing transaction number "
                 "set on it. Don't you want to save that first, before "
                 "overwriting it?")
                 .Flush();
@@ -945,8 +946,8 @@ auto OTAgent::ReserveClosingTransNum(
             MessageType::notarizeTransaction);
 
         if (0 == number.Value()) {
-            LogError()(OT_PRETTY_CLASS())("Error: Strangely, "
-                                          "unable to get a transaction number.")
+            LogError()(OT_PRETTY_CLASS())(
+                "Error: Strangely, unable to get a transaction number.")
                 .Flush();
 
             return false;
@@ -972,10 +973,9 @@ auto OTAgent::ReserveClosingTransNum(
             // change.
     {
         LogError()(OT_PRETTY_CLASS())(
-            "Either the Nym pointer "
-            "isn't set properly, "
-            "or you tried to use Entities when they haven't been coded "
-            "yet. Agent: ")(m_strName)(".")
+            "Either the Nym pointer isn't set properly, or you tried to use "
+            "Entities when they haven't been coded yet. Agent: ")(
+            m_strName.get())(".")
             .Flush();
     }
 
@@ -987,18 +987,17 @@ auto OTAgent::ReserveOpeningTransNum(otx::context::Server& context) -> bool
 {
     if (IsAnIndividual() && DoesRepresentHimself() && (nullptr != m_pNym)) {
         if (nullptr == m_pForParty) {
-            LogError()(OT_PRETTY_CLASS())("Error: Party pointer "
-                                          "was nullptr. SHOULD NEVER HAPPEN!!")
+            LogError()(OT_PRETTY_CLASS())(
+                "Error: Party pointer was nullptr. SHOULD NEVER HAPPEN!!")
                 .Flush();
             return false;
         }
 
         if (m_pForParty->GetOpeningTransNo() > 0) {
             LogConsole()(OT_PRETTY_CLASS())(
-                "Failure: Party ALREADY "
-                "had an opening transaction number "
-                "set on it. Don't you want to save that first, before "
-                "overwriting it?")
+                "Failure: Party ALREADY had an opening transaction number set "
+                "on it. Don't you want to save that first, before overwriting "
+                "it?")
                 .Flush();
             return false;
         }
@@ -1008,8 +1007,8 @@ auto OTAgent::ReserveOpeningTransNum(otx::context::Server& context) -> bool
             MessageType::notarizeTransaction);
 
         if (0 == number.Value()) {
-            LogError()(OT_PRETTY_CLASS())("Error: Strangely, "
-                                          "unable to get a transaction number.")
+            LogError()(OT_PRETTY_CLASS())(
+                "Error: Strangely, unable to get a transaction number.")
                 .Flush();
 
             return false;
@@ -1035,10 +1034,9 @@ auto OTAgent::ReserveOpeningTransNum(otx::context::Server& context) -> bool
             // change.
     {
         LogError()(OT_PRETTY_CLASS())(
-            "Either the Nym pointer "
-            "isn't set properly, "
-            "or you tried to use Entities when they haven't been coded "
-            "yet. Agent: ")(m_strName)(".")
+            "Either the Nym pointer isn't set properly, or you tried to use "
+            "Entities when they haven't been coded yet. Agent: ")(
+            m_strName.get())(".")
             .Flush();
     }
 

@@ -318,7 +318,7 @@ auto Lucre::GenerateTokenRequest(
     } else {
         LogInsane()(OT_PRETTY_CLASS())("Begin mint series ")(denomination_)
             .Flush();
-        LogInsane()(serializedMint).Flush();
+        LogInsane()(serializedMint.get()).Flush();
         LogInsane()(OT_PRETTY_CLASS())("End mint").Flush();
     }
 
@@ -581,7 +581,7 @@ auto Lucre::Process(
     } else {
         LogInsane()(OT_PRETTY_CLASS())("Begin mint series ")(denomination_)
             .Flush();
-        LogInsane()(serializedMint).Flush();
+        LogInsane()(serializedMint.get()).Flush();
         LogInsane()(OT_PRETTY_CLASS())("End mint").Flush();
     }
 

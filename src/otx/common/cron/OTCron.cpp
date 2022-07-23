@@ -401,7 +401,7 @@ auto OTCron::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_NOTARY_ID = api_.Factory().NotaryIDFromBase58(strNotaryID->Bytes());
 
         LogConsole()(OT_PRETTY_CLASS())("Loading OTCron for NotaryID: ")(
-            strNotaryID)(".")
+            strNotaryID.get())(".")
             .Flush();
 
         nReturnVal = 1;
@@ -506,7 +506,7 @@ auto OTCron::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                        api_.Factory().UnitIDFromBase58(strCurrencyID->Bytes());
 
         LogDetail()(OT_PRETTY_CLASS())("Loaded cron entry for Market: ")(
-            strMarketID)(".")
+            strMarketID.get())(".")
             .Flush();
 
         // LoadMarket() needs this info to do its thing.
@@ -1134,7 +1134,7 @@ auto OTCron::GetMarket(const identifier::Generic& MARKET_ID)
             return pMarket;
         } else {
             LogError()(OT_PRETTY_CLASS())("Expected Market with ID: ")(
-                std_MARKET_ID)(" but found ")(str_LOOP_MARKET_ID)(".")
+                std_MARKET_ID)(" but found ")(str_LOOP_MARKET_ID.get())(".")
                 .Flush();
         }
     }

@@ -563,7 +563,8 @@ auto UserCommandProcessor::cmd_check_nym(ReplyMessage& reply) const -> bool
     if (nym) {
         auto publicNym = proto::Nym{};
         if (false == nym->Internal().Serialize(publicNym)) {
-            LogError()(OT_PRETTY_CLASS())("Failed to serialize nym ")(targetNym)
+            LogError()(OT_PRETTY_CLASS())("Failed to serialize nym ")(
+                targetNym.get())
                 .Flush();
             reply.SetBool(false);
         } else {
@@ -572,7 +573,8 @@ auto UserCommandProcessor::cmd_check_nym(ReplyMessage& reply) const -> bool
             reply.SetBool(true);
         }
     } else {
-        LogError()(OT_PRETTY_CLASS())("Nym ")(targetNym)(" does not exist.")
+        LogError()(OT_PRETTY_CLASS())("Nym ")(targetNym.get())(
+            " does not exist.")
             .Flush();
         reply.SetBool(false);
     }
@@ -2193,7 +2195,8 @@ auto UserCommandProcessor::cmd_register_nym(ReplyMessage& reply) const -> bool
     auto sender_nym = server_.API().Wallet().Internal().Nym(serialized);
 
     if (false == bool(sender_nym)) {
-        LogError()(OT_PRETTY_CLASS())("Invalid nym: ")(msgIn.m_strNymID)(".")
+        LogError()(OT_PRETTY_CLASS())("Invalid nym: ")(msgIn.m_strNymID.get())(
+            ".")
             .Flush();
 
         return false;
@@ -2865,7 +2868,7 @@ auto UserCommandProcessor::ProcessUserCommand(
     }
 
     LogConsole()("*** Received a ")(command)(" message. Nym: ")(
-        msgIn.m_strNymID)
+        msgIn.m_strNymID.get())
         .Flush();
 
     switch (type) {
@@ -3031,7 +3034,8 @@ auto UserCommandProcessor::reregister_nym(ReplyMessage& reply) const -> bool
     auto& context = reply.Context();
     context.IncrementRequest();
     const auto& msgIn = reply.Original();
-    LogDebug()(OT_PRETTY_CLASS())("Re-registering nym: ")(msgIn.m_strNymID)
+    LogDebug()(OT_PRETTY_CLASS())("Re-registering nym: ")(
+        msgIn.m_strNymID.get())
         .Flush();
     const auto& nym = reply.Context().RemoteNym();
     const auto& serverNym = *context.Nym();
@@ -3047,9 +3051,8 @@ auto UserCommandProcessor::reregister_nym(ReplyMessage& reply) const -> bool
 
     if (false == bool(nymbox)) {
         LogError()(OT_PRETTY_CLASS())(
-            "Error during nym "
-            "re-registration. Failed verifying or generating nymbox for "
-            "Nym: ")(msgIn.m_strNymID)(".")
+            "Error during nym re-registration. Failed verifying or generating "
+            "nymbox for Nym: ")(msgIn.m_strNymID.get())(".")
             .Flush();
 
         return false;

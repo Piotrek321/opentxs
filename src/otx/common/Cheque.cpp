@@ -208,16 +208,14 @@ auto Cheque::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 m_lTransactionNum)(" Valid From: ")(
                 str_valid_from)(" Valid To: ")(
                 str_valid_to)(" InstrumentDefinitionID: ")(
-                strInstrumentDefinitionID)(" NotaryID: ")(
-                strNotaryID)(" senderAcctID: ")(
-                strSenderAcctID)(" senderNymID: ")(
-                strSenderNymID)(" Has Recipient? ")(
-                m_bHasRecipient ? "Yes"
-                                : "No")(". If yes, NymID of Recipient: ")(
-                strRecipientNymID)(" Has Remitter? ")(
-                m_bHasRemitter ? "Yes"
-                               : "No")(". If yes, NymID/Acct of Remitter: ")(
-                strRemitterNymID)(" / ")(strRemitterAcctID)
+                strInstrumentDefinitionID.get())(" NotaryID: ")(
+                strNotaryID.get())(" senderAcctID: ")(strSenderAcctID.get())(
+                " senderNymID: ")(strSenderNymID.get())(" Has Recipient? ")(
+                m_bHasRecipient ? "Yes" : "No")(
+                ". If yes, NymID of Recipient: ")(strRecipientNymID.get())(
+                " Has Remitter? ")(m_bHasRemitter ? "Yes" : "No")(
+                ". If yes, NymID/Acct of Remitter: ")(strRemitterNymID.get())(
+                " / ")(strRemitterAcctID.get())
                 .Flush();
         }
         nReturnVal = 1;

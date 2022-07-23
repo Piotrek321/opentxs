@@ -219,7 +219,8 @@ auto Unit::AddAccountRecord(
     if (nullptr == pMap) {
         LogError()(OT_PRETTY_CLASS())(
             "Error: Failed trying to load or create the account records "
-            "file for instrument definition: ")(strInstrumentDefinitionID)(".")
+            "file for instrument definition: ")(
+            strInstrumentDefinitionID.get())(".")
             .Flush();
         return false;
     }
@@ -236,10 +237,9 @@ auto Unit::AddAccountRecord(
         // (it better be, since we loaded the account records file based on the
         // instrument definition ID as its filename...)
         //
-        const UnallocatedCString& str2 =
-            map_it->second;  // Containing the instrument
-                             // definition ID. (Just in
-                             // case
+        const auto& str2 = map_it->second;  // Containing the instrument
+                                            // definition ID. (Just in
+                                            // case
         // someone copied the wrong file here,
         // --------------------------------          // every account should map
         // to the SAME instrument definition id.)
@@ -253,8 +253,9 @@ auto Unit::AddAccountRecord(
                 "Error: wrong instrument definition found in "
                 "account records "
                 "file. For instrument definition: ")(
-                strInstrumentDefinitionID)(". For account: ")(
-                strAcctID)(". Found wrong instrument definition: ")(str2)(".")
+                strInstrumentDefinitionID.get())(". For account: ")(
+                strAcctID.get())(". Found wrong instrument definition: ")(
+                str2)(".")
                 .Flush();
             return false;
         }
@@ -283,8 +284,8 @@ auto Unit::AddAccountRecord(
         LogError()(OT_PRETTY_CLASS())(
             "Failed trying to StoreObject, while saving updated "
             "account records file for instrument definition: ")(
-            strInstrumentDefinitionID)(" to contain account ID: ")(
-            strAcctID)(".")
+            strInstrumentDefinitionID.get())(" to contain account ID: ")(
+            strAcctID.get())(".")
             .Flush();
         return false;
     }
@@ -384,7 +385,8 @@ auto Unit::EraseAccountRecord(
     if (nullptr == pMap) {
         LogError()(OT_PRETTY_CLASS())(
             "Error: Failed trying to load or create the account records "
-            "file for instrument definition: ")(strInstrumentDefinitionID)(".")
+            "file for instrument definition: ")(
+            strInstrumentDefinitionID.get())(".")
             .Flush();
         return false;
     }
@@ -418,7 +420,8 @@ auto Unit::EraseAccountRecord(
         LogError()(OT_PRETTY_CLASS())(
             "Failed trying to StoreObject, while saving updated "
             "account records file for instrument definition: ")(
-            strInstrumentDefinitionID)(" to erase account ID: ")(strAcctID)(".")
+            strInstrumentDefinitionID.get())(" to erase account ID: ")(
+            strAcctID.get())(".")
             .Flush();
         return false;
     }
@@ -698,7 +701,7 @@ auto Unit::VisitAccountRecords(
                 LogError()(OT_PRETTY_CLASS())("Error: wrong "
                                               "instrument definition ID (")(
                     str_instrument_definition_id)(") when expecting: ")(
-                    strInstrumentDefinitionID)(".")
+                    strInstrumentDefinitionID.get())(".")
                     .Flush();
             } else {
                 const auto& wallet = api_.Wallet();

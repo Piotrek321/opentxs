@@ -136,8 +136,8 @@ auto OTStash::ReadFromXMLNode(
                     LogError()(OT_PRETTY_CLASS())(
                         "Error loading "
                         "stashItem: Either the instrumentDefinitionID (")(
-                        strInstrumentDefinitionID)("), or the balance (")(
-                        strAmount)(") was EMPTY.")
+                        strInstrumentDefinitionID.get())("), or the balance (")(
+                        strAmount.get())(") was EMPTY.")
                         .Flush();
                     return (-1);
                 }
@@ -149,16 +149,15 @@ auto OTStash::ReadFromXMLNode(
                     LogError()(OT_PRETTY_CLASS())("Failed crediting "
                                                   "stashItem for stash ")(
                         strStashName)(". instrumentDefinitionID (")(
-                        strInstrumentDefinitionID)("), balance (")(
-                        strAmount)(").")
+                        strInstrumentDefinitionID.get())("), balance (")(
+                        strAmount.get())(").")
                         .Flush();
                     return (-1);
                 }
 
                 // (Success)
             } else {
-                LogError()(OT_PRETTY_CLASS())("Expected stashItem "
-                                              "element.")
+                LogError()(OT_PRETTY_CLASS())("Expected stashItem element.")
                     .Flush();
                 return (-1);  // error condition
             }

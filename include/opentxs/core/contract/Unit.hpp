@@ -12,6 +12,7 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 

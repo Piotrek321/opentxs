@@ -1266,10 +1266,11 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         LogVerbose()(OT_PRETTY_CLASS())("Creation Date: ")(
             tCreation)(" Valid From: ")(tValidFrom)(" Valid To: ")(
             tValidTo)(" InstrumentDefinitionID: ")(
-            strInstrumentDefinitionID)(" NotaryID: ")(
-            strNotaryID)(" senderAcctID: ")(strSenderAcctID)(" senderNymID: ")(
-            strSenderNymID)(" recipientAcctID: ")(
-            strRecipientAcctID)(" recipientNymID: ")(strRecipientNymID)
+            strInstrumentDefinitionID.get())(" NotaryID: ")(strNotaryID.get())(
+            " senderAcctID: ")(strSenderAcctID.get())(" senderNymID: ")(
+            strSenderNymID.get())(" recipientAcctID: ")(
+            strRecipientAcctID.get())(" recipientNymID: ")(
+            strRecipientNymID.get())
             .Flush();
 
         nReturnVal = 1;

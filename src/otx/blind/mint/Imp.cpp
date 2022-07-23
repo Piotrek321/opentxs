@@ -339,15 +339,15 @@ auto Mint::VerifyContractID() const -> bool
              str2 = String::Factory(m_InstrumentDefinitionID);
 
         LogError()(OT_PRETTY_CLASS())(
-            " Mint ID does NOT match Instrument Definition. ")(str1)(" | ")(
-            str2)(".")
+            " Mint ID does NOT match Instrument Definition. ")(str1.get())(
+            " | ")(str2.get())(".")
             .Flush();
         //                "\nRAW FILE:\n--->" << m_strRawFile << "<---"
         return false;
     } else {
         auto str1 = String::Factory(m_ID);
         LogVerbose()(OT_PRETTY_CLASS())(
-            " Mint ID *SUCCESSFUL* match to Asset Contract ID: ")(str1)
+            " Mint ID *SUCCESSFUL* match to Asset Contract ID: ")(str1.get())
             .Flush();
         return true;
     }
@@ -532,10 +532,11 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         LogDetail()(OT_PRETTY_CLASS())
             //    "\n===> Loading XML for mint into memory structures..."
-            ("Mint version: ")(m_strVersion)(" Notary ID: ")(
-                strNotaryID)(" Instrument Definition ID: ")(
-                strInstrumentDefinitionID)(" Cash Acct ID: ")(
-                strCashAcctID)((m_CashAccountID.empty()) ? "FAILURE" : "SUCCESS")(
+            ("Mint version: ")(m_strVersion.get())(" Notary ID: ")(
+                strNotaryID.get())(" Instrument Definition ID: ")(
+                strInstrumentDefinitionID.get())(" Cash Acct ID: ")(
+                strCashAcctID.get())(
+                (m_CashAccountID.empty()) ? "FAILURE" : "SUCCESS")(
                 " loading Cash Account into memory for pointer: ")(
                 "Mint::m_pReserveAcct ")(" Series: ")(
                 m_nSeries)(" Expiration: ")(m_EXPIRATION)(" Valid From: ")(

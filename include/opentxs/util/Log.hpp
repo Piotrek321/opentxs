@@ -17,7 +17,7 @@
 
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -32,6 +32,8 @@ class error_code;
 
 namespace opentxs
 {
+// inline namespace v1
+// {
 namespace blockchain
 {
 namespace block
@@ -60,8 +62,11 @@ class Log;
 }  // namespace internal
 
 class Amount;
+class Armored;
 class Data;
+class String;
 class StringXML;
+// }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
@@ -70,70 +75,73 @@ namespace opentxs
 class OPENTXS_EXPORT Log
 {
 public:
-    struct Imp;
+    class Imp;
 
+    [[noreturn]] static auto Assert(
+        const char* file,
+        const std::size_t line,
+        const char* message) noexcept -> void;
+    [[noreturn]] static auto Assert(
+        const char* file,
+        const std::size_t line) noexcept -> void;
+    static auto Trace(const char* file, const std::size_t line) noexcept
+        -> void;
+    static auto Trace(
+        const char* file,
+        const std::size_t line,
+        const char* message) noexcept -> void;
+
+    [[noreturn]] auto Abort() const noexcept -> void;
+    auto asHex(const Data& in) const noexcept -> const Log&;
+    auto asHex(std::string_view in) const noexcept -> const Log&;
+    auto Flush() const noexcept -> void;
+    OPENTXS_NO_EXPORT auto Internal() const noexcept -> const internal::Log&;
     auto operator()() const noexcept -> const Log&;
-    auto operator()(const char* in) const noexcept -> const Log&;
     auto operator()(char* in) const noexcept -> const Log&;
-    auto operator()(const std::string_view in) const noexcept -> const Log&;
-    auto operator()(const std::filesystem::path in) const noexcept
-        -> const Log&;
-    auto operator()(const CString& in) const noexcept -> const Log&;
-    auto operator()(const UnallocatedCString& in) const noexcept -> const Log&;
-    auto operator()(const std::chrono::nanoseconds& in) const noexcept
-        -> const Log&;
-    auto operator()(const OTString& in) const noexcept -> const Log&;
-    auto operator()(const OTArmored& in) const noexcept -> const Log&;
     auto operator()(const Amount& in) const noexcept -> const Log&;
     auto operator()(const Amount& in, UnitType currency) const noexcept
         -> const Log&;
     auto operator()(const Amount& in, const display::Scale& scale)
         const noexcept -> const Log&;
+    auto operator()(const Armored& in) const noexcept -> const Log&;
+    auto operator()(const CString& in) const noexcept -> const Log&;
     auto operator()(const String& in) const noexcept -> const Log&;
     auto operator()(const StringXML& in) const noexcept -> const Log&;
-    auto operator()(const Armored& in) const noexcept -> const Log&;
-    auto operator()(const identifier::Generic& in) const noexcept -> const Log&;
-    auto operator()(const identifier::Nym& in) const noexcept -> const Log&;
-    auto operator()(const identifier::Notary& in) const noexcept -> const Log&;
-    auto operator()(const identifier::UnitDefinition& in) const noexcept
-        -> const Log&;
     auto operator()(const Time in) const noexcept -> const Log&;
-    auto operator()(const boost::system::error_code& error) const noexcept
-        -> const Log&;
+    auto operator()(const UnallocatedCString& in) const noexcept -> const Log&;
     auto operator()(const blockchain::block::Outpoint& outpoint) const noexcept
         -> const Log&;
     auto operator()(const blockchain::block::Position& position) const noexcept
         -> const Log&;
+    auto operator()(const boost::system::error_code& error) const noexcept
+        -> const Log&;
+    auto operator()(const char* in) const noexcept -> const Log&;
+    auto operator()(const identifier::Generic& in) const noexcept -> const Log&;
+    auto operator()(const identifier::Notary& in) const noexcept -> const Log&;
+    auto operator()(const identifier::Nym& in) const noexcept -> const Log&;
+    auto operator()(const identifier::UnitDefinition& in) const noexcept
+        -> const Log&;
+    auto operator()(const std::chrono::nanoseconds& in) const noexcept
+        -> const Log&;
+    auto operator()(const std::filesystem::path& in) const noexcept
+        -> const Log&;
+    auto operator()(const std::string_view in) const noexcept -> const Log&;
     template <typename T>
     auto operator()(const T& in) const noexcept -> const Log&
     {
         return this->operator()(std::to_string(in));
     }
-    auto asHex(const Data& in) const noexcept -> const Log&;
-    auto asHex(std::string_view in) const noexcept -> const Log&;
-    OPENTXS_NO_EXPORT auto Internal() const noexcept -> const internal::Log&;
 
-    [[noreturn]] auto Abort() const noexcept -> void;
-    [[noreturn]] auto Assert(
-        const char* file,
-        const std::size_t line,
-        const char* message) const noexcept -> void;
-    [[noreturn]] auto Assert(const char* file, const std::size_t line)
-        const noexcept -> void;
-    auto Flush() const noexcept -> void;
     OPENTXS_NO_EXPORT auto Internal() noexcept -> internal::Log&;
-    auto Trace(const char* file, const std::size_t line, const char* message)
-        const noexcept -> void;
-    auto Trace(const char* file, const std::size_t line) const noexcept -> void;
 
-    explicit Log(const int logLevel) noexcept;
+    OPENTXS_NO_EXPORT Log(Imp* imp) noexcept;
     Log() = delete;
     Log(const Log&) = delete;
     Log(Log&&) = delete;
     auto operator=(const Log&) -> Log& = delete;
     auto operator=(Log&&) -> Log& = delete;
 
-    ~Log();
+    OPENTXS_NO_EXPORT ~Log();
 
 private:
     Imp* imp_;

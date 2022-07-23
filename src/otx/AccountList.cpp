@@ -123,8 +123,8 @@ auto AccountList::ReadFromXMLNode(
                     LogError()(OT_PRETTY_CLASS())(
                         "Error loading accountEntry: Either the "
                         "instrumentDefinitionID (")(
-                        instrumentDefinitionID)("), or the accountID (")(
-                        accountID)(") was EMPTY.")
+                        instrumentDefinitionID.get())("), or the accountID (")(
+                        accountID.get())(") was EMPTY.")
                         .Flush();
                     return -1;
                 }
@@ -142,9 +142,9 @@ auto AccountList::ReadFromXMLNode(
 
     if (!SkipAfterLoadingField(xml))  // </accountList>
     {
-        LogConsole()(OT_PRETTY_CLASS())("Bad data? Expected "
-                                        "EXN_ELEMENT_END here, but "
-                                        "didn't get it. Returning false.")
+        LogConsole()(OT_PRETTY_CLASS())(
+            "Bad data? Expected EXN_ELEMENT_END here, but didn't get it. "
+            "Returning false.")
             .Flush();
         return -1;
     }
@@ -195,8 +195,8 @@ auto AccountList::GetOrRegisterAccount(
         if (account) {
 
             LogDebug()(OT_PRETTY_CLASS())("Successfully loaded ")(
-                acctTypeString)(" account ID: ")(accountID)("Unit Type ID:: ")(
-                instrumentDefinitionID.asBase58(api_.Crypto()))
+                acctTypeString.get())(" account ID: ")(
+                accountID)("Unit Type ID:: ")(instrumentDefinitionID)
                 .Flush();
 
             return account;
@@ -216,7 +216,7 @@ auto AccountList::GetOrRegisterAccount(
 
     if (false == bool(account)) {
         LogError()(OT_PRETTY_CLASS())("Failed trying to generate ")(
-            acctTypeString)(" account with instrument definition ID: ")(
+            acctTypeString.get())(" account with instrument definition ID: ")(
             instrumentDefinitionID)(".")
             .Flush();
     } else {
@@ -224,9 +224,8 @@ auto AccountList::GetOrRegisterAccount(
         account.get().GetIdentifier(acctIDString);
 
         LogConsole()(OT_PRETTY_CLASS())("Successfully created ")(
-            acctTypeString)(" account ID: ")(
-            acctIDString)(" Instrument Definition ID: ")(
-            instrumentDefinitionID.asBase58(api_.Crypto()))
+            acctTypeString.get())(" account ID: ")(acctIDString.get())(
+            " Instrument Definition ID: ")(instrumentDefinitionID)
             .Flush();
         mapAcctIDs_[instrumentDefinitionID.asBase58(api_.Crypto())] =
             acctIDString->Get();

@@ -514,7 +514,7 @@ auto Armored::SaveTo_ofstream(std::ofstream& fout) -> bool
 
         if (fout.fail()) {
             LogError()(OT_PRETTY_CLASS())("Failed saving to file. Contents: ")(
-                strOutput)(".")
+                strOutput.get())(".")
                 .Flush();
             return false;
         }

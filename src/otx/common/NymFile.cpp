@@ -158,8 +158,8 @@ auto NymFile::deserialize_nymfile(
 
                     if (UserNymID->GetLength()) {
                         LogDebug()(OT_PRETTY_CLASS())(
-                            "Loading user, version: ")(
-                            m_strVersion)(" NymID: ")(UserNymID)
+                            "Loading user, version: ")(m_strVersion.get())(
+                            " NymID: ")(UserNymID.get())
                             .Flush();
                     }
                     bSuccess = true;
@@ -168,12 +168,12 @@ auto NymFile::deserialize_nymfile(
                     if (convert) {
                         LogError()(OT_PRETTY_CLASS())(
                             "Converting nymfile with version ")(
-                            m_strVersion)(".")
+                            m_strVersion.get())(".")
                             .Flush();
                     } else {
                         LogDetail()(OT_PRETTY_CLASS())(
                             "Not converting nymfile because version is ")(
-                            m_strVersion)
+                            m_strVersion.get())
                             .Flush();
                     }
                 } else if (strNodeName->Compare("nymIDSource")) {
@@ -185,7 +185,8 @@ auto NymFile::deserialize_nymfile(
                         String::Factory(xml->getAttributeValue("hashValue"));
 
                     LogDebug()(OT_PRETTY_CLASS())("InboxHash is ")(
-                        strHashValue)(" for Account ID: ")(strAccountID)
+                        strHashValue.get())(" for Account ID: ")(
+                        strAccountID.get())
                         .Flush();
 
                     // Make sure now that I've loaded this InboxHash, to add it
@@ -206,7 +207,8 @@ auto NymFile::deserialize_nymfile(
                         String::Factory(xml->getAttributeValue("hashValue"));
 
                     LogDebug()(OT_PRETTY_CLASS())("OutboxHash is ")(
-                        strHashValue)(" for Account ID: ")(strAccountID)
+                        strHashValue.get())(" for Account ID: ")(
+                        strAccountID.get())
                         .Flush();
 
                     // Make sure now that I've loaded this OutboxHash, to add it
@@ -234,7 +236,7 @@ auto NymFile::deserialize_nymfile(
                         m_setAccounts.insert(strID->Get());
                         LogDebug()(OT_PRETTY_CLASS())(
                             "This nym has an asset account with the ID: ")(
-                            strID)
+                            strID.get())
                             .Flush();
                     } else {
                         LogDebug()(OT_PRETTY_CLASS())(
@@ -483,7 +485,7 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
 
     if (!theNymFile->LoadFile()) {
         LogDetail()(OT_PRETTY_CLASS())("Failed loading a signed nymfile: ")(
-            nymID)
+            nymID.get())
             .Flush();
 
         return false;
@@ -496,7 +498,8 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
     // 3. That the signature matches for the signer nym who was passed in.
     //
     if (!theNymFile->VerifyFile()) {
-        LogError()(OT_PRETTY_CLASS())("Failed verifying nymfile: ")(nymID)(".")
+        LogError()(OT_PRETTY_CLASS())("Failed verifying nymfile: ")(
+            nymID.get())(".")
             .Flush();
 
         return false;
@@ -506,8 +509,8 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
 
     if (!theNymFile->VerifyWithKey(publicSignKey)) {
         LogError()(OT_PRETTY_CLASS())(
-            "Failed verifying signature on nymfile: ")(
-            nymID)(". Signer Nym ID: ")(signer_nym_->ID())(".")
+            "Failed verifying signature on nymfile: ")(nymID.get())(
+            ". Signer Nym ID: ")(signer_nym_->ID())(".")
             .Flush();
 
         return false;
@@ -521,7 +524,7 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
         const auto lLength = theNymFile->GetFilePayload().GetLength();
 
         LogError()(OT_PRETTY_CLASS())("Bad length (")(
-            lLength)(") while loading nymfile: ")(nymID)(".")
+            lLength)(") while loading nymfile: ")(nymID.get())(".")
             .Flush();
     }
 
@@ -765,7 +768,8 @@ auto NymFile::save_signed_nymfile(const T& lock, const PasswordPrompt& reason)
         api_.Internal().Legacy().Nym(), strNymID);
     theNymFile->GetFilename(m_strNymFile);
 
-    LogVerbose()(OT_PRETTY_CLASS())("Saving nym to: ")(m_strNymFile).Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Saving nym to: ")(m_strNymFile.get())
+        .Flush();
 
     // First we save this nym to a string...
     // Specifically, the file payload string on the OTSignedFile object.
@@ -784,15 +788,15 @@ auto NymFile::save_signed_nymfile(const T& lock, const PasswordPrompt& reason)
         if (!bSaved) {
             LogError()(OT_PRETTY_CLASS())(
                 "Failed while calling theNymFile->SaveFile() for Nym ")(
-                strNymID)(" using Signer Nym ")(signer_nym_->ID())(".")
+                strNymID.get())(" using Signer Nym ")(signer_nym_->ID())(".")
                 .Flush();
         }
 
         return bSaved;
     } else {
         LogError()(OT_PRETTY_CLASS())(
-            "Failed trying to sign and save NymFile for Nym ")(
-            strNymID)(" using Signer Nym ")(signer_nym_->ID())(".")
+            "Failed trying to sign and save NymFile for Nym ")(strNymID.get())(
+            " using Signer Nym ")(signer_nym_->ID())(".")
             .Flush();
     }
 

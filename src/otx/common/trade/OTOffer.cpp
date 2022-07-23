@@ -332,9 +332,9 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         LogTrace()(OT_PRETTY_CLASS())("Offer Transaction Number: ")(
             m_lTransactionNum)("\n Valid From: ")(tValidFrom)("\n Valid To: ")(
             tValidTo)("\n InstrumentDefinitionID: ")(
-            strInstrumentDefinitionID)("\n  CurrencyTypeID: ")(
-            strCurrencyTypeID)("\n NotaryID: ")(
-            strNotaryID)("\n Price Limit: ")(GetPriceLimit(), unittype)(
+            strInstrumentDefinitionID.get())("\n  CurrencyTypeID: ")(
+            strCurrencyTypeID.get())("\n NotaryID: ")(strNotaryID.get())(
+            "\n Price Limit: ")(GetPriceLimit(), unittype)(
             ",  Total Assets on Offer: ")(GetTotalAssetsOnOffer(), unittype)(
             ",  ")((m_bSelling ? "sold" : "bought"))(" so far: ")(
             GetFinishedSoFar(), unittype)("\n  Scale: ")(GetScale())(

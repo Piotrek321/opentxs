@@ -352,19 +352,17 @@ auto MainFile::LoadMainFile(bool bReadOnly) -> bool
                                 BASKET_CONTRACT_ID)) {
                             LogConsole()(OT_PRETTY_CLASS())(
                                 "Loading basket currency info... "
-                                "Basket ID: ")(strBasketID)(" Basket Acct "
-                                                            "ID:"
-                                                            " ")(
-                                strBasketAcctID)(" Basket Contract ID: ")(
-                                strBasketContractID)(".")
+                                "Basket ID: ")(strBasketID.get())(
+                                " Basket Acct ID: ")(strBasketAcctID.get())(
+                                " Basket Contract ID: ")(
+                                strBasketContractID.get())(".")
                                 .Flush();
                         } else {
                             LogError()(OT_PRETTY_CLASS())(
                                 "Error adding basket currency info."
                                 " Basket ID: ")(strBasketID->Get())(
-                                ". Basket Acct "
-                                "ID:"
-                                " ")(strBasketAcctID->Get())(".")
+                                ". Basket Acct ID: ")(strBasketAcctID->Get())(
+                                ".")
                                 .Flush();
                         }
                     } else {

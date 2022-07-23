@@ -1820,7 +1820,7 @@ auto OTX::refresh_accounts() const -> bool
             static auto registered_here =
                 String::Factory(UnallocatedCString{" registered here."});
             logStr->Concatenate(registered_here);
-            LogDetail()(OT_PRETTY_CLASS())(logStr).Flush();
+            LogDetail()(OT_PRETTY_CLASS())(logStr.get()).Flush();
         }
     }
 

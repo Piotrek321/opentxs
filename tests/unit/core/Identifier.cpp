@@ -6,11 +6,9 @@
 #include <Identifier.pb.h>
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
-#include <utility>
 
 #include "internal/api/FactoryAPI.hpp"
 #include "internal/util/P0330.hpp"
-#include "ottest/Basic.hpp"
 #include "ottest/fixtures/core/Identifier.hpp"
 
 namespace ottest

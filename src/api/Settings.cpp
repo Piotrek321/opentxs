@@ -200,8 +200,8 @@ auto Settings::LogChange_str(
     if (!StringFill(strCategory, strSection.Get(), 12)) { return false; }
     if (!StringFill(strOption, strKey.Get(), 30, " to:")) { return false; }
 
-    LogDetail()(OT_PRETTY_CLASS())("Setting ")(strCategory)(" ")(
-        strOption)(" ")(szValue)
+    LogDetail()(OT_PRETTY_CLASS())("Setting ")(strCategory.get())(" ")(
+        strOption.get())(" ")(szValue)
         .Flush();
     return true;
 }

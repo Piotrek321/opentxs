@@ -551,12 +551,12 @@ auto OTScriptable::ExecuteCallback(
         if (!pScript->ExecuteScript(&varReturnVal)) {
             LogError()(OT_PRETTY_CLASS())(
                 "Error while running "
-                "callback on scriptable: ")(m_strLabel)(".")
+                "callback on scriptable: ")(m_strLabel.get())(".")
                 .Flush();
         } else {
             LogConsole()(OT_PRETTY_CLASS())(
                 "Successfully executed "
-                "callback on scriptable: ")(m_strLabel)(".")
+                "callback on scriptable: ")(m_strLabel.get())(".")
                 .Flush();
             return true;
         }
@@ -2524,8 +2524,8 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (!OTScriptable::ValidateName(
                                         strAgentName->Get())) {
                                     LogError()(OT_PRETTY_CLASS())(
-                                        "Failed loading agent due to "
-                                        "Invalid name: ")(strAgentName)(".")
+                                        "Failed loading agent due to Invalid "
+                                        "name: ")(strAgentName.get())(".")
                                         .Flush();
                                     delete pParty;
                                     pParty = nullptr;
@@ -2557,9 +2557,9 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 {
                                     LogConsole()(OT_PRETTY_CLASS())(
                                         "Error loading agent named ")(
-                                        strAgentName)(", since one was "
-                                                      "already there on "
-                                                      "party ")(strName)(".")
+                                        strAgentName.get())(
+                                        ", since one was already there on "
+                                        "party ")(strName.get())(".")
                                         .Flush();
                                     delete pParty;
                                     pParty = nullptr;
@@ -2701,9 +2701,9 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 {
                                     LogConsole()(OT_PRETTY_CLASS())(
                                         "Error loading partyacct named ")(
-                                        strAcctName)(", since one was "
-                                                     "already there on party ")(
-                                        strName)(".")
+                                        strAcctName.get())(
+                                        ", since one was already there on "
+                                        "party ")(strName.get())(".")
                                         .Flush();
                                     delete pParty;
                                     pParty = nullptr;
@@ -2894,10 +2894,9 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 {
                                     LogConsole()(OT_PRETTY_CLASS())(
                                         "Error loading variable named ")(
-                                        strVarName)(", since one was "
-                                                    "already there on one of "
-                                                    "the "
-                                                    "bylaws.")
+                                        strVarName.get())(
+                                        ", since one was already there on one "
+                                        "of the bylaws.")
                                         .Flush();
                                     delete pBylaw;
                                     pBylaw = nullptr;
@@ -2923,7 +2922,8 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                     theVarType = OTVariable::Var_Bool;
                                 } else {
                                     LogError()(OT_PRETTY_CLASS())(
-                                        "Bad variable type: ")(strVarType)(".")
+                                        "Bad variable type: ")(
+                                        strVarType.get())(".")
                                         .Flush();
                                 }
 
@@ -2940,7 +2940,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 } else {
                                     LogError()(OT_PRETTY_CLASS())(
                                         "Bad variable access type: ")(
-                                        strVarAccess)(".")
+                                        strVarAccess.get())(".")
                                         .Flush();
                                 }
 
@@ -2949,10 +2949,10 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                     (OTVariable::Var_Error_Type ==
                                      theVarType)) {
                                     LogError()(OT_PRETTY_CLASS())(
-                                        "Error loading variable to "
-                                        "bylaw: bad type (")(
-                                        strVarType)(") or access type (")(
-                                        strVarAccess)(").")
+                                        "Error loading variable to bylaw: bad "
+                                        "type (")(strVarType.get())(
+                                        ") or access type (")(
+                                        strVarAccess.get())(").")
                                         .Flush();
                                     delete pBylaw;
                                     pBylaw = nullptr;
@@ -2974,9 +2974,9 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                                 theVarAccess);
                                         } else {
                                             LogError()(OT_PRETTY_CLASS())(
-                                                "No value found for "
-                                                "integer "
-                                                "variable: ")(strVarName)(".")
+                                                "No value found for integer "
+                                                "variable: ")(strVarName.get())(
+                                                ".")
                                                 .Flush();
                                             delete pBylaw;
                                             pBylaw = nullptr;
@@ -2997,7 +2997,8 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                         } else {
                                             LogError()(OT_PRETTY_CLASS())(
                                                 "No value found for bool "
-                                                "variable: ")(strVarName)(".")
+                                                "variable: ")(strVarName.get())(
+                                                ".")
                                                 .Flush();
                                             delete pBylaw;
                                             pBylaw = nullptr;
@@ -3018,7 +3019,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                                 LogError()(OT_PRETTY_CLASS())(
                                                     "No value found for "
                                                     "string variable: ")(
-                                                    strVarName)(".")
+                                                    strVarName.get())(".")
                                                     .Flush();
                                                 delete pBylaw;
                                                 pBylaw = nullptr;
@@ -3290,10 +3291,9 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 if (!strCallbackName->Exists() ||
                                     !strClause->Exists()) {
                                     LogError()(OT_PRETTY_CLASS())(
-                                        "Expected, yet nevertheless "
-                                        "missing, name or clause while "
-                                        "loading "
-                                        "callback for bylaw ")(strName)(".")
+                                        "Expected, yet nevertheless missing, "
+                                        "name or clause while loading callback "
+                                        "for bylaw ")(strName.get())(".")
                                         .Flush();
                                     delete pBylaw;
                                     pBylaw = nullptr;
@@ -3313,10 +3313,9 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 {
                                     LogConsole()(OT_PRETTY_CLASS())(
                                         "Error loading callback ")(
-                                        strCallbackName)(", since one was "
-                                                         "already there on "
-                                                         "one of the other "
-                                                         "bylaws.")
+                                        strCallbackName.get())(
+                                        ", since one was already there on one "
+                                        "of the other bylaws.")
                                         .Flush();
                                     delete pBylaw;
                                     pBylaw = nullptr;
@@ -3334,8 +3333,8 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                                  strClause->Get())) {
                                     LogError()(OT_PRETTY_CLASS())(
                                         "Failed adding callback (")(
-                                        strCallbackName)(") to bylaw (")(
-                                        strName)(").")
+                                        strCallbackName.get())(") to bylaw (")(
+                                        strName.get())(").")
                                         .Flush();
                                     delete pBylaw;
                                     pBylaw = nullptr;
@@ -3343,8 +3342,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 }
                             } else {
                                 LogError()(OT_PRETTY_CLASS())(
-                                    "Expected callback "
-                                    "element in bylaw.")
+                                    "Expected callback element in bylaw.")
                                     .Flush();
                                 delete pBylaw;
                                 pBylaw = nullptr;

@@ -248,10 +248,10 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         if (strTemp->Exists()) { SetClosingNum(strTemp->ToLong()); }
 
         LogVerbose()(OT_PRETTY_CLASS())("Basket Transfer multiple is ")(
-            m_nTransferMultiple)(". Direction is ")(
-            strDirection)(". Closing number is ")(
+            m_nTransferMultiple)(". Direction is ")(strDirection.get())(
+            ". Closing number is ")(
             m_lClosingTransactionNo)(". Target account is: ")(
-            strRequestAccountID)
+            strRequestAccountID.get())
             .Flush();
 
         return 1;

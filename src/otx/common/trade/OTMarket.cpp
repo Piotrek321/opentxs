@@ -158,8 +158,8 @@ auto OTMarket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             .Flush();
 
         LogDetail()(OT_PRETTY_CLASS())("instrumentDefinitionID: ")(
-            strInstrumentDefinitionID)(" currencyTypeID: ")(
-            strCurrencyTypeID)(" NotaryID: ")(strNotaryID)
+            strInstrumentDefinitionID.get())(" currencyTypeID: ")(
+            strCurrencyTypeID.get())(" NotaryID: ")(strNotaryID.get())
             .Flush();
 
         nReturnVal = 1;
@@ -1234,7 +1234,7 @@ void OTMarket::ProcessTrade(
             auto strNymID = String::Factory(FIRST_NYM_ID);
             LogError()(OT_PRETTY_CLASS())(
                 "Failure verifying trade, offer, nym, or loading "
-                "signed Nymfile: ")(strNymID)(".")
+                "signed Nymfile: ")(strNymID.get())(".")
                 .Flush();
             theTrade.FlagForRemoval();
             return;
@@ -1257,7 +1257,7 @@ void OTMarket::ProcessTrade(
             auto strNymID = String::Factory(OTHER_NYM_ID);
             LogError()(OT_PRETTY_CLASS())(
                 "Failure loading or verifying Other Nym public key: ")(
-                strNymID)(".")
+                strNymID.get())(".")
                 .Flush();
             pOtherTrade->FlagForRemoval();
             return;

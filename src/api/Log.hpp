@@ -44,7 +44,7 @@ public:
     auto operator=(const Log&) -> Log& = delete;
     auto operator=(Log&&) -> Log& = delete;
 
-    ~Log() final = default;
+    ~Log() final;
 
 private:
     OTZMQListenCallback callback_;

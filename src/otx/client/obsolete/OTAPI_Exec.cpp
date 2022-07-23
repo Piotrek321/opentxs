@@ -1311,7 +1311,7 @@ auto OTAPI_Exec::Smart_AreAllPartiesConfirmed(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string : ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
     } else {
         const bool bConfirmed =
@@ -1339,7 +1339,7 @@ auto OTAPI_Exec::Smart_AreAllPartiesConfirmed(
         LogConsole()(OT_PRETTY_CLASS())(
             "Suspicious: Smart contract loaded up, and is supposedly "
             "confirmed by all parties, but failed to verify: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
     }
     return false;
@@ -1360,7 +1360,7 @@ auto OTAPI_Exec::Smart_IsPartyConfirmed(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string : ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return false;
     }
@@ -1436,7 +1436,7 @@ auto OTAPI_Exec::Smart_GetPartyCount(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return OT_ERROR;  // Error condition.
     }
@@ -1454,7 +1454,7 @@ auto OTAPI_Exec::Smart_GetBylawCount(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string : ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return OT_ERROR;  // Error condition.
     }
@@ -1474,7 +1474,7 @@ auto OTAPI_Exec::Smart_GetPartyByIndex(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1505,7 +1505,7 @@ auto OTAPI_Exec::Smart_GetBylawByIndex(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string : ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1537,7 +1537,7 @@ auto OTAPI_Exec::Bylaw_GetLanguage(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string : ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1567,7 +1567,7 @@ auto OTAPI_Exec::Bylaw_GetClauseCount(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string : ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return OT_ERROR;
     }
@@ -1596,7 +1596,7 @@ auto OTAPI_Exec::Bylaw_GetVariableCount(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string : ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return OT_ERROR;
     }
@@ -1625,7 +1625,7 @@ auto OTAPI_Exec::Bylaw_GetHookCount(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string : ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return OT_ERROR;
     }
@@ -1654,7 +1654,7 @@ auto OTAPI_Exec::Bylaw_GetCallbackCount(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return OT_ERROR;
     }
@@ -1685,7 +1685,7 @@ auto OTAPI_Exec::Clause_GetNameByIndex(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1730,7 +1730,7 @@ auto OTAPI_Exec::Clause_GetContents(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1772,7 +1772,7 @@ auto OTAPI_Exec::Variable_GetNameByIndex(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1816,7 +1816,7 @@ auto OTAPI_Exec::Variable_GetType(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1861,7 +1861,7 @@ auto OTAPI_Exec::Variable_GetAccess(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1906,7 +1906,7 @@ auto OTAPI_Exec::Variable_GetContents(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1958,7 +1958,7 @@ auto OTAPI_Exec::Hook_GetNameByIndex(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -1991,7 +1991,7 @@ auto OTAPI_Exec::Hook_GetClauseCount(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return OT_ERROR;
     }
@@ -2032,7 +2032,7 @@ auto OTAPI_Exec::Hook_GetClauseAtIndex(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -2081,7 +2081,7 @@ auto OTAPI_Exec::Callback_GetNameByIndex(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -2115,7 +2115,7 @@ auto OTAPI_Exec::Callback_GetClause(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -2153,7 +2153,7 @@ auto OTAPI_Exec::Party_GetAcctCount(
     if (nullptr == pScriptable) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return OT_ERROR;
     }
@@ -2183,7 +2183,7 @@ auto OTAPI_Exec::Party_GetAgentCount(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return OT_ERROR;
     }
@@ -2216,7 +2216,7 @@ auto OTAPI_Exec::Party_GetID(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -2248,7 +2248,7 @@ auto OTAPI_Exec::Party_GetAcctNameByIndex(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -2294,7 +2294,7 @@ auto OTAPI_Exec::Party_GetAcctID(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
         return {};
     }
@@ -2340,7 +2340,7 @@ auto OTAPI_Exec::Party_GetAcctInstrumentDefinitionID(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
     } else {
         OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
@@ -2388,7 +2388,7 @@ auto OTAPI_Exec::Party_GetAcctAgentName(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
     } else {
         OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
@@ -2433,7 +2433,7 @@ auto OTAPI_Exec::Party_GetAgentNameByIndex(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
     } else {
         OTParty* pParty = pScriptable->GetParty(PARTY_NAME);
@@ -2480,7 +2480,7 @@ auto OTAPI_Exec::Party_GetAgentID(
     if (false == bool(pScriptable)) {
         LogConsole()(OT_PRETTY_CLASS())(
             "Failed trying to load smart contract from string: ")(
-            strContract)(".")
+            strContract.get())(".")
             .Flush();
     } else {
         OTParty* pParty = pScriptable->GetParty(PARTY_NAME);

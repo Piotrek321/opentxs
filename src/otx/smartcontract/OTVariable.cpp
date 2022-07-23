@@ -177,7 +177,7 @@ auto OTVariable::SetValue(const std::int32_t& nValue) -> bool
 {
     if (!IsInteger()) {
         LogError()(OT_PRETTY_CLASS())("Error: This variable (")(
-            m_strName)(") is not an integer.")
+            m_strName.get())(") is not an integer.")
             .Flush();
         return false;
     }
@@ -191,7 +191,7 @@ auto OTVariable::SetValue(bool bValue) -> bool
 {
     if (!IsBool()) {
         LogError()(OT_PRETTY_CLASS())("Error: This variable (")(
-            m_strName)(") is not a bool.")
+            m_strName.get())(") is not a bool.")
             .Flush();
         return false;
     }
@@ -205,7 +205,7 @@ auto OTVariable::SetValue(const UnallocatedCString& str_Value) -> bool
 {
     if (!IsString()) {
         LogError()(OT_PRETTY_CLASS())("Error: This variable (")(
-            m_strName)(") is not a string.")
+            m_strName.get())(") is not a string.")
             .Flush();
         return false;
     }
@@ -249,7 +249,7 @@ auto OTVariable::IsDirty() const -> bool
             break;
         default:
             LogError()(OT_PRETTY_CLASS())("Error: Unknown type for variable: ")(
-                m_strName)(".")
+                m_strName.get())(".")
                 .Flush();
             break;
     }
@@ -279,7 +279,7 @@ void OTVariable::SetAsClean()
             break;
         default:
             LogError()(OT_PRETTY_CLASS())("Error: Unknown type for variable: ")(
-                m_strName)(".")
+                m_strName.get())(".")
                 .Flush();
             m_str_ValueBackup = m_str_Value;
             m_nValueBackup = m_nValue;
@@ -351,7 +351,7 @@ auto OTVariable::Compare(OTVariable& rhs) -> bool
             break;
         default:
             LogError()(OT_PRETTY_CLASS())("Unknown type in variable ")(
-                m_strName)(".")
+                m_strName.get())(".")
                 .Flush();
             break;
     }

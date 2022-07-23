@@ -51,7 +51,7 @@ auto ConfigLoader::load(
         walletFilename.Set(strValue);
         {
             LogDetail()(OT_PRETTY_STATIC(ConfigLoader))("Using Wallet: ")(
-                strValue)(".")
+                strValue.get())(".")
                 .Flush();
         }
     }

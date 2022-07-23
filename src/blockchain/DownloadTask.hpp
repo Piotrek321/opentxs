@@ -10,6 +10,7 @@
 #include <functional>
 #include <future>
 #include <memory>
+#include <optional>
 
 #include "internal/blockchain/node/Job.hpp"
 #include "internal/util/LogMacros.hpp"

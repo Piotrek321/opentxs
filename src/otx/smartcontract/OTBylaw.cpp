@@ -228,27 +228,27 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
         if (GetVariableCount() != rhs.GetVariableCount()) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "The variable count doesn't match for "
-                "bylaw: ")(m_strName)(".")
+                "bylaw: ")(m_strName.get())(".")
                 .Flush();
             return false;
         }
         if (GetClauseCount() != rhs.GetClauseCount()) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "The clause count doesn't match for "
-                "bylaw: ")(m_strName)(".")
+                "bylaw: ")(m_strName.get())(".")
                 .Flush();
             return false;
         }
         if (GetHookCount() != rhs.GetHookCount()) {
             LogConsole()(OT_PRETTY_CLASS())("The hook count doesn't match for "
-                                            "bylaw: ")(m_strName)(".")
+                                            "bylaw: ")(m_strName.get())(".")
                 .Flush();
             return false;
         }
         if (GetCallbackCount() != rhs.GetCallbackCount()) {
             LogConsole()(OT_PRETTY_CLASS())(
                 "The callback count doesn't match for "
-                "bylaw: ")(m_strName)(".")
+                "bylaw: ")(m_strName.get())(".")
                 .Flush();
             return false;
         }
@@ -308,7 +308,7 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
                 LogConsole()(OT_PRETTY_CLASS())(" Failed: Callback (")(
                     str_callback_name)(") clause (")(
                     str_clause_name)(") not found on this bylaw: ")(
-                    m_strName)(".")
+                    m_strName.get())(".")
                     .Flush();
                 return false;
             } else if (nullptr == pCallbackClause2) {
@@ -324,7 +324,7 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
                     str_callback_name)(") clause (")(
                     str_clause_name)(") on rhs has a different name (")(
                     pCallbackClause2->GetName())(") than *this bylaw: ")(
-                    m_strName)(".")
+                    m_strName.get())(".")
                     .Flush();
                 return false;
             }
@@ -356,7 +356,7 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
                 !rhs.GetHooks(str_hook_name, theHookClauses2)) {
                 LogConsole()(OT_PRETTY_CLASS())("Failed finding hook (")(
                     str_hook_name)(") clauses on this bylaw or rhs bylaw: ")(
-                    m_strName)(".")
+                    m_strName.get())(".")
                     .Flush();
                 return false;
             }
@@ -364,8 +364,8 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
             if (theHookClauses.size() != theHookClauses2.size()) {
                 LogConsole()(OT_PRETTY_CLASS())("Hook (")(
                     str_hook_name)(") clauses count doesn't match between this "
-                                   "bylaw and "
-                                   "the rhs bylaw named: ")(m_strName)(".")
+                                   "bylaw and the rhs bylaw named: ")(
+                    m_strName.get())(".")
                     .Flush();
                 return false;
             }
@@ -381,8 +381,8 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
                     LogConsole()(OT_PRETTY_CLASS())(
                         "Unable to find hook clause (")(
                         str_clause_name)(") on rhs that was definitely present "
-                                         "on "
-                                         "*this. Bylaw: ")(m_strName)(".")
+                                         "on *this. Bylaw: ")(m_strName.get())(
+                        ".")
                         .Flush();
                     return false;
                 }
@@ -624,8 +624,8 @@ auto OTBylaw::AddCallback(
     {
         const UnallocatedCString str_existing_clause = it->second;
         LogConsole()(OT_PRETTY_CLASS())("Failed to add callback (")(
-            str_CallbackName)(") to bylaw ")(m_strName)(", already there as ")(
-            str_existing_clause)(".")
+            str_CallbackName)(") to bylaw ")(m_strName.get())(
+            ", already there as ")(str_existing_clause)(".")
             .Flush();
         return false;
     }
@@ -867,8 +867,9 @@ auto OTBylaw::AddVariable(OTVariable& theVariable) -> bool
     const UnallocatedCString str_name = theVariable.GetName().Get();
 
     if (!OTScriptable::ValidateVariableName(str_name)) {
-        LogError()(OT_PRETTY_CLASS())("Failed due to invalid variable name. "
-                                      "In Bylaw: ")(m_strName)(".")
+        LogError()(OT_PRETTY_CLASS())(
+            "Failed due to invalid variable name. In Bylaw: ")(m_strName.get())(
+            ".")
             .Flush();
         return false;
     }
@@ -968,8 +969,9 @@ auto OTBylaw::UpdateClause(
     UnallocatedCString str_Code) -> bool
 {
     if (!OTScriptable::ValidateClauseName(str_Name)) {
-        LogError()(OT_PRETTY_CLASS())("Failed due to invalid clause name. In "
-                                      "Bylaw: ")(m_strName)(".")
+        LogError()(OT_PRETTY_CLASS())(
+            "Failed due to invalid clause name. In Bylaw: ")(m_strName.get())(
+            ".")
             .Flush();
         return false;
     }
@@ -1000,8 +1002,9 @@ auto OTBylaw::AddClause(OTClause& theClause) -> bool
     const UnallocatedCString str_clause_name = theClause.GetName().Get();
 
     if (!OTScriptable::ValidateClauseName(str_clause_name)) {
-        LogError()(OT_PRETTY_CLASS())("Failed due to invalid clause name. In "
-                                      "Bylaw: ")(m_strName)(".")
+        LogError()(OT_PRETTY_CLASS())(
+            "Failed due to invalid clause name. In Bylaw: ")(m_strName.get())(
+            ".")
             .Flush();
         return false;
     }

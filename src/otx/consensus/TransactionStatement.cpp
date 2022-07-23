@@ -114,12 +114,13 @@ TransactionStatement::TransactionStatement(const String& serialized)
                     }
                 } else {
                     LogError()(OT_PRETTY_CLASS())("Unknown element type in: ")(
-                        nodeName)(".")
+                        nodeName.get())(".")
                         .Flush();
                 }
             } break;
             default: {
-                LogInsane()(OT_PRETTY_CLASS())("Unknown XML type in ")(nodeName)
+                LogInsane()(OT_PRETTY_CLASS())("Unknown XML type in ")(
+                    nodeName.get())
                     .Flush();
                 break;
             }

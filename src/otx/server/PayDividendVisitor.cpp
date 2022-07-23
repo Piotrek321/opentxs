@@ -199,8 +199,8 @@ auto PayDividendVisitor::Trigger(
                 "ERROR failed issuing "
                 "voucher (to send to dividend payout recipient). WAS "
                 "TRYING TO PAY ")(lPayoutAmount, unittype)(
-                " of instrument definition ")(strPayoutUnitTypeId)(" to Nym ")(
-                strRecipientNymID)(".")
+                " of instrument definition ")(strPayoutUnitTypeId.get())(
+                " to Nym ")(strRecipientNymID.get())(".")
                 .Flush();
         }
         // If we didn't send it, then we need to return the funds to where they
@@ -271,13 +271,12 @@ auto PayDividendVisitor::Trigger(
                 const auto unittype =
                     Wallet().CurrencyTypeBasedOnUnitType(payoutUnitTypeId);
                 LogError()(OT_PRETTY_CLASS())(
-                    "ERROR! Failed issuing voucher (to return back to "
-                    "the dividend payout initiator, after a failed "
-                    "payment attempt to the originally intended "
-                    "recipient). WAS TRYING TO "
+                    "ERROR! Failed issuing voucher (to return back to the "
+                    "dividend payout initiator, after a failed payment attempt "
+                    "to the originally intended recipient). WAS TRYING TO "
                     "PAY ")(lPayoutAmount, unittype)(
-                    " of instrument definition ")(
-                    strPayoutUnitTypeId)(" to Nym ")(strSenderNymID)(".")
+                    " of instrument definition ")(strPayoutUnitTypeId.get())(
+                    " to Nym ")(strSenderNymID.get())(".")
                     .Flush();
             }
         }   // if !bSent
@@ -288,10 +287,10 @@ auto PayDividendVisitor::Trigger(
         const auto unittype =
             Wallet().CurrencyTypeBasedOnUnitType(payoutUnitTypeId);
         LogError()(OT_PRETTY_CLASS())(
-            "ERROR! Failed issuing next transaction number while "
-            "trying to send a voucher (while paying dividends). "
-            "WAS TRYING TO PAY ")(lPayoutAmount, unittype)(
-            " of instrument definition ")(strPayoutUnitTypeId->Get())(
+            "ERROR! Failed issuing next transaction number while trying to "
+            "send a voucher (while paying dividends). WAS TRYING TO PAY ")(
+            lPayoutAmount,
+            unittype)(" of instrument definition ")(strPayoutUnitTypeId->Get())(
             " to Nym ")(strRecipientNymID->Get())(".")
             .Flush();
     }

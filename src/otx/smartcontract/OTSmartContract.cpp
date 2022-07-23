@@ -2227,9 +2227,9 @@ auto OTSmartContract::StashFunds(
         stashAccount.get().GetIdentifier(strAcctID);
 
         LogConsole()(OT_PRETTY_CLASS())(
-            "Successfully created stash account ID: ")(
-            strAcctID)(" (Stash acct has Instrument Definition ID: ")(
-            strInstrumentDefinitionID)(").")
+            "Successfully created stash account ID: ")(strAcctID.get())(
+            " (Stash acct has Instrument Definition ID: ")(
+            strInstrumentDefinitionID.get())(").")
             .Flush();
 
         // Todo: Some kind of save here?
@@ -2359,8 +2359,8 @@ auto OTSmartContract::StashFunds(
         pPartyNym = api_.Wallet().Nym(PARTY_NYM_ID);
         if (nullptr == pPartyNym) {
             LogError()(OT_PRETTY_CLASS())(
-                "Failure loading or "
-                "verifying party Nym public key: ")(strPartyNymID)(".")
+                "Failure loading or verifying party Nym public key: ")(
+                strPartyNymID.get())(".")
                 .Flush();
             FlagForRemoval();  // Remove it from future Cron processing, please.
             return false;
@@ -2371,8 +2371,8 @@ auto OTSmartContract::StashFunds(
     // In this function, pStashNym and pServerNym are always the same.
 
     if (!pOrigCronItem->VerifyNymAsAgent(*pPartyNym, *pServerNym)) {
-        LogError()(OT_PRETTY_CLASS())("Failed authorization for party "
-                                      "Nym: ")(strPartyNymID)(".")
+        LogError()(OT_PRETTY_CLASS())("Failed authorization for party Nym: ")(
+            strPartyNymID.get())(".")
             .Flush();
         FlagForRemoval();  // Remove it from Cron.
         return false;
@@ -2413,8 +2413,8 @@ auto OTSmartContract::StashFunds(
             bSuccessLoadingPartyInbox =
                 thePartyInbox->VerifyAccount(*pServerNym);
         } else {
-            LogError()(OT_PRETTY_CLASS())("Failed trying to load "
-                                          "party's inbox.")
+            LogError()(OT_PRETTY_CLASS())(
+                "Failed trying to load party's inbox.")
                 .Flush();
         }
         //            OT_FAIL_MSG("ASSERT:  TRYING TO GENERATE INBOX IN STASH
@@ -2424,8 +2424,8 @@ auto OTSmartContract::StashFunds(
         // OTLedger::inbox, true); // bGenerateFile=true
 
         if (!bSuccessLoadingPartyInbox) {
-            LogError()(OT_PRETTY_CLASS())("ERROR loading or generating "
-                                          "inbox ledger.")
+            LogError()(OT_PRETTY_CLASS())(
+                "ERROR loading or generating inbox ledger.")
                 .Flush();
         } else {
             // Generate new transaction numbers for these new transactions
@@ -2436,8 +2436,8 @@ auto OTSmartContract::StashFunds(
             //          reminder.
             if (0 == lNewTransactionNumber) {
                 LogConsole()(OT_PRETTY_CLASS())(
-                    "Aborted move: There are no more "
-                    "transaction numbers available in Cron.")
+                    "Aborted move: There are no more transaction numbers "
+                    "available in Cron.")
                     .Flush();
                 // (Here I do NOT flag for removal.)
                 return false;
@@ -4140,8 +4140,8 @@ auto OTSmartContract::VerifySmartContract(
         auto strNymID = String::Factory();
         theNym.GetIdentifier(strNymID);
         LogConsole()(OT_PRETTY_CLASS())(
-            "Unable to find a party in this smart contract, based "
-            "on theNym (")(strNymID)(") as authorizing agent.")
+            "Unable to find a party in this smart contract, based on theNym (")(
+            strNymID.get())(") as authorizing agent.")
             .Flush();
         return false;
     }
@@ -5327,8 +5327,8 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
 
         LogVerbose()(OT_PRETTY_CLASS())("Creation Date: ")(
             tCreation)(" Valid From: ")(tValidFrom)(" Valid To: ")(
-            tValidTo)(" NotaryID: ")(strNotaryID)(" activatorNymID: ")(
-            strActivatorNymID)
+            tValidTo)(" NotaryID: ")(strNotaryID.get())(" activatorNymID: ")(
+            strActivatorNymID.get())
             .Flush();
 
         nReturnVal = 1;
@@ -5362,7 +5362,7 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
 
         if ((-1) == pStash->ReadFromXMLNode(xml, strStashName, strItemCount)) {
             LogError()(OT_PRETTY_CLASS())("Error loading stash: ")(
-                strStashName)(".")
+                strStashName.get())(".")
                 .Flush();
             delete pStash;
             nReturnVal = (-1);
@@ -5499,8 +5499,8 @@ auto OTSmartContract::MoveFunds(
         if (nullptr == pSenderNym) {
             auto strNymID = String::Factory(SENDER_NYM_ID);
             LogError()(OT_PRETTY_CLASS())(
-                "Failure loading or verifying "
-                "Sender Nym public key: ")(strNymID)(".")
+                "Failure loading or verifying Sender Nym public key: ")(
+                strNymID.get())(".")
                 .Flush();
             FlagForRemoval();  // Remove it from future Cron processing, please.
             return false;
@@ -5523,8 +5523,8 @@ auto OTSmartContract::MoveFunds(
         if (nullptr == pRecipientNym) {
             auto strNymID = String::Factory(RECIPIENT_NYM_ID);
             LogError()(OT_PRETTY_CLASS())(
-                "Failure loading or verifying "
-                "Recipient Nym public key: ")(strNymID)(".")
+                "Failure loading or verifying Recipient Nym public key: ")(
+                strNymID.get())(".")
                 .Flush();
             FlagForRemoval();  // Remove it from future Cron processing, please.
             return false;
@@ -5602,7 +5602,7 @@ auto OTSmartContract::MoveFunds(
     //
     if (!pOrigCronItem->VerifyNymAsAgent(*pSenderNym, *pServerNym)) {
         LogError()(OT_PRETTY_CLASS())("Failed authorization for sender Nym: ")(
-            strSenderNymID)(".")
+            strSenderNymID.get())(".")
             .Flush();
         FlagForRemoval();  // Remove it from Cron.
         return false;
@@ -5610,7 +5610,8 @@ auto OTSmartContract::MoveFunds(
 
     if (!pOrigCronItem->VerifyNymAsAgent(*pRecipientNym, *pServerNym)) {
         LogError()(OT_PRETTY_CLASS())(
-            "Failed authorization for recipient Nym: ")(strRecipientNymID)(".")
+            "Failed authorization for recipient Nym: ")(
+            strRecipientNymID.get())(".")
             .Flush();
         FlagForRemoval();  // Remove it from Cron.
         return false;

@@ -362,9 +362,9 @@ auto Item::VerifyBalanceStatement(
             default: {
                 auto strItemType = String::Factory();
                 GetTypeString(strItemType);
-                LogDetail()(OT_PRETTY_CLASS())("Ignoring ")(
-                    strItemType)(" item in balance statement while "
-                                 "verifying it against inbox.")
+                LogDetail()(OT_PRETTY_CLASS())("Ignoring ")(strItemType.get())(
+                    " item in balance statement while "
+                    "verifying it against inbox.")
                     .Flush();
             }
                 continue;
@@ -988,7 +988,8 @@ void Item::CalculateNumberOfOrigin()
 
             if (!theCheque->LoadContractFromString(strAttachment)) {
                 LogError()(OT_PRETTY_CLASS())(
-                    "ERROR loading cheque from string: ")(strAttachment)(".")
+                    "ERROR loading cheque from string: ")(strAttachment.get())(
+                    ".")
                     .Flush();
             } else {
                 SetNumberOfOrigin(theCheque->GetTransactionNum());
@@ -1053,8 +1054,8 @@ void Item::CalculateNumberOfOrigin()
                 auto strType = String::Factory();
                 pOriginalItem->GetTypeString(strType);
                 LogError()(OT_PRETTY_CLASS())(
-                    "ERROR: Wrong item type as 'in "
-                    "reference to' string on ")(strType)(" item.")
+                    "ERROR: Wrong item type as 'in reference to' string on ")(
+                    strType.get())(" item.")
                     .Flush();
                 SetNumberOfOrigin(0);
                 return;
@@ -1479,7 +1480,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         LogDebug()(OT_PRETTY_CLASS())(
             "Loaded transaction Item, transaction num ")(GetTransactionNum())(
             ", In Reference To: ")(GetReferenceToNum())(", type: ")(
-            strType)(", status: ")(strStatus)
+            strType.get())(", status: ")(strStatus.get())
             .Flush();
         //                "fromAccountID:\n%s\n NymID:\n%s\n toAccountID:\n%s\n
         // notaryID:\n%s\n----------\n",
@@ -1614,7 +1615,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             LogDebug()(OT_PRETTY_CLASS())(
                 "Loaded transactionReport Item, transaction num ")(
                 pItem->GetTransactionNum())(", In Reference To: ")(
-                pItem->GetReferenceToNum())(", type: ")(strType)
+                pItem->GetReferenceToNum())(", type: ")(strType.get())
                 .Flush();
             //                         "fromAccountID:\n%s\n NymID:\n%s\n
             // toAccountID:\n%s\n notaryID:\n%s\n----------\n",
