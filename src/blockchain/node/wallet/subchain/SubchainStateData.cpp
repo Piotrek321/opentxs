@@ -43,6 +43,7 @@
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -944,8 +945,8 @@ auto SubchainStateData::ProcessBlock(
     auto alloc = alloc::BoostMonotonic{buf.data(), buf.size(), &upstream};
     auto haveTargets = Time{};
     auto haveFilter = Time{};
-    auto keyMatches = std::size_t{};
-    auto txoMatches = std::size_t{};
+    auto keyMatches = 0_uz;
+    auto txoMatches = 0_uz;
     const auto& log = LogTrace();
     // Try to remove Lambda
     const auto confirmed = [&] {
@@ -1128,10 +1129,10 @@ auto SubchainStateData::scan(
 
             constexpr auto GetBatchSize = [](std::size_t cfilter,
                                              std::size_t user) {
-                constexpr auto cfilterWeight = std::size_t{1u};
-                constexpr auto walletWeight = std::size_t{5u};
-                constexpr auto target = std::size_t{425000u};
-                constexpr auto max = std::size_t{10000u};
+                constexpr auto cfilterWeight = 1_uz;
+                constexpr auto walletWeight = 5_uz;
+                constexpr auto target = 425000_uz;
+                constexpr auto max = 10000_uz;
 
                 return std::min<std::size_t>(
                     std::max<std::size_t>(
@@ -1330,11 +1331,9 @@ auto SubchainStateData::scan(
                     }
 
                     const auto totalCfilterElements = std::accumulate(
-                        filter_sizes_.begin(),
-                        filter_sizes_.end(),
-                        std::size_t{0u});
-                    elements_per_cfilter_.store(std::max<std::size_t>(
-                        1, totalCfilterElements / filter_sizes_.size()));
+                        filter_sizes_.begin(), filter_sizes_.end(), 0_uz);
+                    elements_per_cfilter_.store(std::max(
+                        1_uz, totalCfilterElements / filter_sizes_.size()));
                 }
             }
 

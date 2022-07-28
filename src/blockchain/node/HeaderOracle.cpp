@@ -19,6 +19,7 @@
 #include "internal/blockchain/database/Header.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/bitcoin/Work.hpp"
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"  // IWYU pragma: keep
@@ -412,7 +413,7 @@ auto HeaderOracle::BestHashes(
     alloc::Resource* alloc) const noexcept -> Hashes
 {
     auto lock = Lock{lock_};
-    auto start = std::size_t{0};
+    auto start = 0_uz;
 
     for (const auto& hash : previous) {
         const auto [best, height] = is_in_best_chain(lock, hash);
@@ -934,7 +935,7 @@ auto HeaderOracle::ProcessSyncData(
     Vector<block::Hash>& hashes,
     const network::p2p::Data& data) noexcept -> std::size_t
 {
-    auto output = std::size_t{0};
+    auto output = 0_uz;
     auto update = UpdateTransaction{api_, database_};
 
     try {

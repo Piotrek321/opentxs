@@ -13,6 +13,7 @@
 #include <stdexcept>
 
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -69,7 +70,7 @@ auto Position::Hash() const noexcept -> ReadView
 auto Position::Height() const noexcept -> block::Height
 {
     auto out = block::Height{};
-    static constexpr auto offset = std::size_t{0};
+    static constexpr auto offset = 0_uz;
     static constexpr auto size = sizeof(out);
     const auto* const start = std::next(data_.data(), offset);
     std::memcpy(&out, start, size);

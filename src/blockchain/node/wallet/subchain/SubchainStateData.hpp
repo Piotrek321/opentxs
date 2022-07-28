@@ -43,6 +43,7 @@
 #include "internal/blockchain/node/wallet/subchain/statemachine/Types.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "internal/util/Timer.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -297,7 +298,7 @@ private:
 
     class PrehashData;
 
-    static constexpr auto cfilter_size_window_ = std::size_t{1000u};
+    static constexpr auto cfilter_size_window_ = 1000_uz;
 
     network::zeromq::socket::Raw& to_block_oracle_;
     network::zeromq::socket::Raw& to_children_;

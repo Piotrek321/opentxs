@@ -12,6 +12,7 @@
 #include <iterator>
 #include <stdexcept>
 
+#include "internal/util/P0330.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::database::wallet::db
@@ -61,7 +62,7 @@ auto Pattern::Data() const noexcept -> ReadView
 auto Pattern::Index() const noexcept -> Bip32Index
 {
     auto out = Bip32Index{};
-    static constexpr auto offset = std::size_t{0};
+    static constexpr auto offset = 0_uz;
     static constexpr auto size = sizeof(out);
     const auto* const start = std::next(data_.data(), offset);
     std::memcpy(&out, start, size);

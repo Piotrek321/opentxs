@@ -18,6 +18,7 @@
 #include "internal/blockchain/p2p/P2P.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -389,7 +390,7 @@ auto PeerManager::RequestBlocks(
 
     auto work = jobs_.Work(PeerManagerJobs::Getblock);
     static constexpr auto limit =
-        std::size_t{1u};  // TODO peers don't respond well to larger values
+        1_uz;  // TODO peers don't respond well to larger values
 
     for (const auto& block : hashes) {
         work.AddFrame(block.data(), block.size());

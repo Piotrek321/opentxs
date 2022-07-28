@@ -33,6 +33,7 @@
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -145,7 +146,6 @@ FilterOracle::FilterOracle(
     }())
     , cb_([this](const auto type, const auto& pos) {
         if (false == running_) { return; }
-
 
         auto lock = rLock{lock_};
         new_tip(lock, type, pos);
@@ -291,7 +291,8 @@ auto FilterOracle::compare_tips_to_header_chain() noexcept -> bool
     const auto current = database_.FilterHeaderTip(default_type_);
     const auto [parent, best] = header_.CommonParent(current);
 
-    if ((parent.height_ == current.height_) && (parent.hash_ == current.hash_)) {
+    if ((parent.height_ == current.height_) &&
+        (parent.hash_ == current.hash_)) {
         LogVerbose()(print(chain_))(
             " filter header chain is following the best chain")
             .Flush();
@@ -419,7 +420,6 @@ auto FilterOracle::new_tip(
         // NOTE: first tip broadcast
         last_broadcast_.emplace(type, tip);
     }
-
     last_sync_progress_ = Clock::now();
 
     {
@@ -594,7 +594,7 @@ auto FilterOracle::ProcessSyncData(
         auto b = hashes.cbegin();
         auto d = blocks.cbegin();
 
-        for (auto i = std::size_t{0u}; i < count; ++i, ++b, ++d) {
+        for (auto i = 0_uz; i < count; ++i, ++b, ++d) {
             const auto& blockHash = *b;
             const auto& syncData = *d;
             const auto height = syncData.Height();

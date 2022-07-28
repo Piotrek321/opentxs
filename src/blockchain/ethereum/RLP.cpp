@@ -20,6 +20,7 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
@@ -45,7 +46,7 @@ struct Node::Constants {
     static constexpr auto long_string_ = std::byte{0xb8};
     static constexpr auto short_list_ = std::byte{0xc0};
     static constexpr auto long_list_ = std::byte{0xf7};
-    static constexpr auto long_ = std::size_t{56};
+    static constexpr auto long_ = 56_uz;
 
     static constexpr auto to_int(std::byte in)
     {
@@ -63,7 +64,7 @@ struct Node::Calculator {
         const auto payload = std::accumulate(
             in.begin(),
             in.end(),
-            std::size_t{0},
+            0_uz,
             [this](const auto lhs, const auto& node) {
                 return lhs + node.EncodedSize(*this);
             });
@@ -488,7 +489,7 @@ struct Node::Encoder {
         const auto payload = std::accumulate(
             in.begin(),
             in.end(),
-            std::size_t{0},
+            0_uz,
             [this](const auto lhs, const auto& rhs) {
                 return lhs + rhs.EncodedSize(api_);
             });

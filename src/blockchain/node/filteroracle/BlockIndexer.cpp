@@ -257,8 +257,8 @@ auto BlockIndexer::Imp::find_best_position(block::Position candidate) noexcept
 
         while (0 <= candidate.height_) {
             if (0 == candidate.height_) {
-                current_header_ = db_.LoadFilterHeader(
-                    filter_type_, candidate.hash_.Bytes());
+                current_header_ =
+                    db_.LoadFilterHeader(filter_type_, candidate.hash_.Bytes());
                 previous_header_ = {};
                 current_position_ = std::move(candidate);
 

@@ -17,6 +17,7 @@
 #include "blockchain/database/wallet/SubchainID.hpp"
 #include "blockchain/database/wallet/Types.hpp"
 #include "internal/blockchain/database/Types.hpp"
+#include "internal/util/P0330.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/FilterType.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
@@ -124,7 +125,7 @@ public:
     ~SubchainCache();
 
 private:
-    static constexpr auto reserve_ = std::size_t{1000u};
+    static constexpr auto reserve_ = 1000_uz;
 
     using SubchainIDMap =
         robin_hood::unordered_node_map<pSubchainIndex, db::SubchainID>;

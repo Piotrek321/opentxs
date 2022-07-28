@@ -9,6 +9,7 @@
 #include <mutex>
 #include <optional>
 
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -56,7 +57,7 @@ struct Position {
     ~Position() = default;
 
 private:
-    static constexpr auto fixed_ = std::size_t{sizeof(block::Height) + 32u};
+    static constexpr auto fixed_ = sizeof(block::Height) + 32_uz;
 
     mutable std::mutex lock_;
     mutable std::optional<block::Position> position_;

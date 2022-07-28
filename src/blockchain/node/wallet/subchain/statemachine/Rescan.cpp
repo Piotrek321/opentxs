@@ -263,8 +263,7 @@ auto Rescan::Imp::process_dirty(const Set<block::Position>& dirty) noexcept
 
         if (current > limit) {
             log_(OT_PRETTY_CLASS())(name_)(" adjusting last scanned to ")(
-                (limit))(" based on dirty block ")(
-                (lowestDirty))
+                (limit))(" based on dirty block ")((lowestDirty))
                 .Flush();
             set_last_scanned(limit);
         }

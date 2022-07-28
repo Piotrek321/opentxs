@@ -33,6 +33,7 @@
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/blockchain/node/SpendPolicy.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -1038,7 +1039,7 @@ private:
     [[nodiscard]] auto fifo(const OutputCache& cache, const Outpoints& in)
         const noexcept -> UnallocatedVector<block::Outpoint>
     {
-        auto counter = std::size_t{0};
+        auto counter = 0_uz;
         auto map =
             UnallocatedMap<block::Position, UnallocatedSet<block::Outpoint>>{};
 
@@ -1791,7 +1792,7 @@ private:
         bitcoin::block::internal::Transaction& tx,
         OutputCache& cache) noexcept(false) -> void
     {
-        auto index = std::size_t{0};
+        auto index = 0_uz;
 
         for (const auto& input : tx.Inputs()) {
             const auto& outpoint = input.PreviousOutput();

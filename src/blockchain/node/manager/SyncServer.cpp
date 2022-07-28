@@ -176,7 +176,8 @@ auto SyncServer::update_tip(const Position& position, const int&) const noexcept
 
     OT_ASSERT(saved);
 
-    LogDetail()(print(chain_))(" sync data updated to height ")(position.height_)
+    LogDetail()(print(chain_))(" sync data updated to height ")(
+        position.height_)
         .Flush();
 }
 

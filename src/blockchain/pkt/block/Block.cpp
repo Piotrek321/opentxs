@@ -15,6 +15,7 @@
 
 #include "blockchain/bitcoin/block/BlockParser.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
@@ -34,7 +35,7 @@ auto parse_pkt_block(
         (blockchain::Type::PKT_testnet == chain));
 
     const auto* it = ByteIterator{};
-    auto expectedSize = std::size_t{};
+    auto expectedSize = 0_uz;
     auto pHeader = parse_header(api, chain, in, it, expectedSize);
 
     OT_ASSERT(pHeader);
@@ -133,8 +134,8 @@ auto Block::extra_bytes() const noexcept -> std::size_t
 
             return previous + sizeof(type) + cs.Total();
         };
-        proof_bytes_ = std::accumulate(
-            std::begin(proofs_), std::end(proofs_), std::size_t{0}, cb);
+        proof_bytes_ =
+            std::accumulate(std::begin(proofs_), std::end(proofs_), 0_uz, cb);
     }
 
     OT_ASSERT(proof_bytes_.has_value());

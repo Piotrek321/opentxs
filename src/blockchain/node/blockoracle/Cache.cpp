@@ -22,6 +22,7 @@
 #include "internal/blockchain/node/Manager.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -124,8 +125,8 @@ auto Cache::GetBatch(allocator_type alloc) noexcept
     -> std::pair<BatchID, Vector<block::Hash>>
 {
     // TODO define max in Params
-    static constexpr auto max = std::size_t{50000};
-    static constexpr auto min = std::size_t{10};
+    static constexpr auto max = 50000_uz;
+    static constexpr auto min = 10_uz;
     const auto available = queue_.size();
     const auto peers = get_peer_target();
     // NOTE The batch size should approximate the value appropriate for ideal

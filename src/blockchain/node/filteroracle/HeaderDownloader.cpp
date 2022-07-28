@@ -68,8 +68,8 @@ auto FilterOracle::HeaderDownloader::batch_ready() const noexcept -> void
     node_.JobReady(PeerManagerJobs::JobAvailableCfheaders);
 }
 
-auto FilterOracle::HeaderDownloader::batch_size(
-    const std::size_t in) noexcept -> std::size_t
+auto FilterOracle::HeaderDownloader::batch_size(const std::size_t in) noexcept
+    -> std::size_t
 {
     if (in < 10) {
 

@@ -40,6 +40,7 @@
 #include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Hash.hpp"  // IWYU pragma: keep
 #include "opentxs/api/session/Contacts.hpp"
@@ -444,7 +445,7 @@ private:
     using Bip143 = std::optional<bitcoin::Bip143Hashes>;
     using Hash = std::array<std::byte, 32>;
 
-    static constexpr auto p2pkh_output_bytes_ = std::size_t{34};
+    static constexpr auto p2pkh_output_bytes_ = 34_uz;
 
     const api::Session& api_;
     const Nym_p sender_;
@@ -767,7 +768,7 @@ private:
 
         if (!segwit_) { return base; }
 
-        static constexpr auto markerBytes = std::size_t{2u};
+        static constexpr auto markerBytes = 2_uz;
         const auto segwit = markerBytes + witness_total_;
         const auto total = base + segwit;
         const auto scale = params::Chains().at(chain_).segwit_scale_factor_;
@@ -788,7 +789,7 @@ private:
         // TODO this should account for script type
 
         const auto amount = 148 * fee_rate_ / 1000;
-        auto dust = std::size_t{};
+        auto dust = 0_uz;
         try {
             dust = amount.Internal().ExtractUInt64();
         } catch (const std::exception& e) {
@@ -932,7 +933,7 @@ private:
             std::begin(inputs_),
             std::end(inputs_),
             std::back_inserter(inputCopy),
-            [](const auto& input) -> auto{
+            [](const auto& input) -> auto {
                 return input.first->SignatureVersion();
             });
         auto inputs = factory::BitcoinTransactionInputs(std::move(inputCopy));
@@ -948,7 +949,7 @@ private:
             std::begin(outputs_),
             std::end(outputs_),
             std::back_inserter(outputCopy),
-            [](const auto& output) -> auto{ return output->clone(); });
+            [](const auto& output) -> auto { return output->clone(); });
         auto outputs =
             factory::BitcoinTransactionOutputs(std::move(outputCopy));
 
