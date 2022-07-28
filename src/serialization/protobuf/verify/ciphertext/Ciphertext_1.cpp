@@ -9,6 +9,7 @@
 #include "internal/serialization/protobuf/Check.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/SymmetricKey.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
@@ -38,7 +39,7 @@ auto CheckProto_1(const Ciphertext& input, const bool silent, const bool nested)
         OPTIONAL_SUBOBJECT(key, CiphertextAllowedSymmetricKey());
     }
 
-    static constexpr auto limit = std::size_t{64u};
+    static constexpr auto limit = 64_uz;
 
     if (1 > input.iv().size()) { FAIL_1("iv too small") }
 

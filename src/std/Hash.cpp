@@ -17,6 +17,7 @@
 #include "internal/crypto/Parameters.hpp"
 #include "internal/network/zeromq/message/FrameIterator.hpp"
 #include "internal/serialization/protobuf/Contact.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
@@ -42,12 +43,14 @@
 
 namespace std
 {
+using namespace opentxs::literals;
+
 auto hash<opentxs::blockchain::block::Hash>::operator()(
     const opentxs::blockchain::block::Hash& data) const noexcept -> std::size_t
 {
     // NOTE block hashes are cryptographic so no further hashing is required
 
-    auto out = std::size_t{};
+    auto out = 0_uz;
 
     static_assert(
         sizeof(out) <= opentxs::blockchain::block::Hash::payload_size_);
@@ -90,7 +93,7 @@ auto hash<opentxs::blockchain::cfilter::Hash>::operator()(
 {
     // NOTE cfilter hashes are cryptographic so no further hashing is required
 
-    auto out = std::size_t{};
+    auto out = 0_uz;
 
     static_assert(
         sizeof(out) <= opentxs::blockchain::cfilter::Hash::payload_size_);
@@ -106,7 +109,7 @@ auto hash<opentxs::blockchain::cfilter::Header>::operator()(
 {
     // NOTE cfheaders are cryptographic so no further hashing is required
 
-    auto out = std::size_t{};
+    auto out = 0_uz;
 
     static_assert(
         sizeof(out) <= opentxs::blockchain::cfilter::Header::payload_size_);
@@ -168,14 +171,6 @@ auto hash<opentxs::network::zeromq::FrameIterator>::operator()(
     return rhs.Internal().hash();
 }
 
-auto hash<opentxs::OTData>::operator()(const opentxs::Data& data) const noexcept
-    -> std::size_t
-{
-    static const auto key = opentxs::crypto::sodium::SiphashKey{};
-
-    return opentxs::crypto::sodium::Siphash(key, data.Bytes());
-}
-
 auto hash<opentxs::proto::ContactSectionVersion>::operator()(
     const opentxs::proto::ContactSectionVersion& data) const noexcept
     -> std::size_t
@@ -214,10 +209,26 @@ auto hash<opentxs::Amount>::operator()(
     return opentxs::crypto::sodium::Siphash(key, opentxs::reader(buffer));
 }
 
+auto hash<opentxs::FixedByteArray<32>>::operator()(
+    const opentxs::FixedByteArray<32>& data) const noexcept -> std::size_t
+{
+    static const auto hasher = hash<opentxs::OTData>{};
+
+    return hasher(data);
+}
+
+auto hash<opentxs::OTData>::operator()(const opentxs::Data& data) const noexcept
+    -> std::size_t
+{
+    static const auto key = opentxs::crypto::sodium::SiphashKey{};
+
+    return opentxs::crypto::sodium::Siphash(key, data.Bytes());
+}
+
 auto hash<opentxs::OTIdentifier>::operator()(
     const opentxs::Identifier& data) const noexcept -> std::size_t
 {
-    auto out = std::size_t{};
+    auto out = 0_uz;
     std::memcpy(&out, data.data(), std::min(sizeof(out), data.size()));
 
     return out;

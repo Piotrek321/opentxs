@@ -19,6 +19,7 @@
 #include "Proto.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -2734,7 +2735,7 @@ ot_exit_block:
     }
 
     {
-        auto lFileLength = std::size_t{0};
+        auto lFileLength = 0_uz;
         const bool bFileExists = api.Internal().Legacy().FileExists(
             String::Factory(strPath.c_str()), lFileLength);
 

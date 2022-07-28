@@ -20,6 +20,7 @@
 #include "internal/otx/common/Ledger.hpp"
 #include "internal/otx/common/NymFile.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
@@ -524,7 +525,7 @@ auto Base::remove_acknowledged_number(
     OT_ASSERT(verify_write_lock(lock));
 
     clear_signatures(lock);
-    auto removed = std::size_t{0};
+    auto removed = 0_uz;
 
     for (const auto& number : req) {
         removed += acknowledged_request_numbers_.erase(number);

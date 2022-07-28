@@ -197,6 +197,13 @@ auto less<opentxs::ui::implementation::ContactListSortKey>::operator()(
     return false;
 }
 
+auto less<opentxs::FixedByteArray<32>>::operator()(
+    const opentxs::FixedByteArray<32>& lhs,
+    const opentxs::FixedByteArray<32>& rhs) const -> bool
+{
+    return lhs < rhs;
+}
+
 auto less<opentxs::Pimpl<opentxs::Data>>::operator()(
     const opentxs::OTData& lhs,
     const opentxs::OTData& rhs) const -> bool

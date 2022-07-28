@@ -10,6 +10,8 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <string_view>
 
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Allocator.hpp"
@@ -117,3 +119,19 @@ private:
 // NOTE sorry Windows users, MSVC throws an ICE if we export this symbol
 extern template class OPENTXS_EXPORT_TEMPLATE FixedByteArray<32>;
 }  // namespace opentxs
+
+namespace std
+{
+template <>
+struct OPENTXS_EXPORT_TEMPLATE hash<opentxs::FixedByteArray<32>> {
+    auto operator()(const opentxs::FixedByteArray<32>& data) const noexcept
+        -> std::size_t;
+};
+
+template <>
+struct OPENTXS_EXPORT_TEMPLATE less<opentxs::FixedByteArray<32>> {
+    auto operator()(
+        const opentxs::FixedByteArray<32>& lhs,
+        const opentxs::FixedByteArray<32>& rhs) const -> bool;
+};
+}  // namespace std

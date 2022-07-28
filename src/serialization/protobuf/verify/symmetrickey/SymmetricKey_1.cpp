@@ -12,13 +12,14 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
+#include "internal/util/P0330.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
 namespace opentxs::proto
 {
-static constexpr auto crypto_salt_limit_ = std::size_t{64u};
+static constexpr auto crypto_salt_limit_ = 64_uz;
 
 auto CheckProto_1(const SymmetricKey& input, const bool silent) -> bool
 {

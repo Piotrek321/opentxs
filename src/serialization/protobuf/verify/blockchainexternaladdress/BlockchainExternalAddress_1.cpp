@@ -7,6 +7,7 @@
 
 #include <cstddef>
 
+#include "internal/util/P0330.hpp"
 #include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainEnums.pb.h"
 #include "serialization/protobuf/BlockchainExternalAddress.pb.h"
@@ -19,8 +20,8 @@ auto CheckProto_1(const BlockchainExternalAddress& input, const bool silent)
 {
     CHECK_HAVE(data);
     auto count{1};
-    auto min = std::size_t{20};
-    auto max = std::size_t{20};
+    auto min = 20_uz;
+    auto max = 20_uz;
 
     switch (input.type()) {
         case BTOUTPUT_MULTISIG: {
