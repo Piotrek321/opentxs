@@ -11,11 +11,14 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 
 namespace ot = opentxs;
 
 namespace ottest
 {
+using namespace opentxs::literals;
+
 bool init_{false};
 
 class Test_Envelope : public ::testing::Test
@@ -49,7 +52,7 @@ public:
     static auto is_active(const std::size_t row, const std::size_t column)
         -> bool
     {
-        return 0 != (row & (std::size_t{1} << column));
+        return 0 != (row & (1_uz << column));
     }
     static auto should_seal(const std::size_t row, const std::size_t column)
         -> bool
@@ -214,9 +217,9 @@ TEST_F(Test_Envelope, one_recipient)
 
 TEST_F(Test_Envelope, multiple_recipients)
 {
-    constexpr auto one = std::size_t{1};
+    constexpr auto one = 1_uz;
 
-    for (auto row = std::size_t{0}; row < (one << nyms_.size()); ++row) {
+    for (auto row = 0_uz; row < (one << nyms_.size()); ++row) {
         auto recipients = ot::crypto::Envelope::Recipients{};
         auto sender = sender_.Factory().Envelope();
 

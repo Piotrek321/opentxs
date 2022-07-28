@@ -6,13 +6,14 @@
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
 #include <chrono>
-#include <cstddef>
 
+#include "internal/util/P0330.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
 
 namespace ottest
 {
 using namespace std::literals::chrono_literals;
+using namespace opentxs::literals;
 
 TEST_F(Regtest_fixture_single, init_opentxs) {}
 
@@ -25,9 +26,9 @@ TEST_F(Regtest_fixture_single, client_disconnection_timeout)
     EXPECT_TRUE(client_1_.Network().Blockchain().Stop(test_chain_));
 
     const auto start = ot::Clock::now();
-    const auto limit = std::chrono::minutes{1};
+    const auto limit = 90s;
     const auto& chain = miner_.Network().Blockchain().GetChain(test_chain_);
-    auto count = std::size_t{1};
+    auto count = 1_uz;
 
     while ((ot::Clock::now() - start) < limit) {
         count = chain.GetPeerCount();

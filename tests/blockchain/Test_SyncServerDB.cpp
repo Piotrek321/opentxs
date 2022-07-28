@@ -10,12 +10,15 @@
 #include <memory>
 #include <string_view>
 
+#include "internal/util/P0330.hpp"
 #include "ottest/fixtures/blockchain/Basic.hpp"
 
 namespace ot = opentxs;
 
 namespace ottest
 {
+using namespace opentxs::literals;
+
 class SyncServerDB : public ::testing::Test
 {
 protected:
@@ -55,7 +58,7 @@ protected:
 
 std::unique_ptr<Listener> SyncServerDB::listener_p_{};
 
-static constexpr auto default_server_count_ = std::size_t{0};
+static constexpr auto default_server_count_ = 0_uz;
 
 TEST_F(SyncServerDB, init_library) {}
 

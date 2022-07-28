@@ -17,11 +17,14 @@
 #include <tuple>
 
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/util/P0330.hpp"
 #include "ottest/fixtures/blockchain/Regtest.hpp"
 #include "ottest/fixtures/common/User.hpp"
 
 namespace ottest
 {
+using namespace opentxs::literals;
+
 RegtestListener::RegtestListener(const ot::api::session::Client& client)
     : block_listener(std::make_unique<BlockListener>(client))
     , wallet_listener(std::make_unique<WalletListener>(client))
@@ -229,7 +232,7 @@ auto Regtest_fixture_simple::MineBlocks(
     auto previousHeader =
         headerOracle.LoadHeader(headerOracle.BestHash(ancestor))->as_Bitcoin();
 
-    for (auto i = std::size_t{0u}; i < block_number; ++i) {
+    for (auto i = 0_uz; i < block_number; ++i) {
         EXPECT_TRUE(gen);
 
         auto tx = gen(previousHeader.Height() + 1);

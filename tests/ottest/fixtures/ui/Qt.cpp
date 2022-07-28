@@ -21,6 +21,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "internal/util/P0330.hpp"
 #include "ottest/Basic.hpp"
 #include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/ui/AccountActivity.hpp"
@@ -35,6 +36,8 @@
 
 namespace ottest
 {
+using namespace opentxs::literals;
+
 constexpr auto account_activity_columns_{6};
 constexpr auto account_list_columns_{4};
 constexpr auto account_tree_columns_{1};
@@ -209,7 +212,7 @@ auto check_account_activity_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(model, parent, *it, static_cast<int>(i));
     }
 
@@ -235,7 +238,7 @@ auto check_account_list_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(model, parent, *it, static_cast<int>(i));
     }
 
@@ -261,7 +264,7 @@ auto check_account_tree_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(model, parent, *it, static_cast<int>(i));
     }
 
@@ -305,7 +308,7 @@ auto check_activity_thread_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(model, parent, *it, static_cast<int>(i));
     }
 
@@ -346,7 +349,7 @@ auto check_blockchain_account_status_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(model, parent, *it, static_cast<int>(i));
     }
 
@@ -389,7 +392,7 @@ auto check_blockchain_selection_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(model, parent, *it, static_cast<int>(i));
     }
 
@@ -420,7 +423,7 @@ auto check_contact_list_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(user, model, parent, *it, static_cast<int>(i));
     }
 
@@ -451,7 +454,7 @@ auto check_messagable_list_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(user, model, parent, *it, static_cast<int>(i));
     }
 
@@ -482,7 +485,7 @@ auto check_nym_list_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(model, parent, *it, static_cast<int>(i));
     }
 
@@ -674,7 +677,7 @@ auto check_row(
 
         auto it{expected.rows_.begin()};
 
-        for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        for (auto i = 0_uz; i < vCount; ++i, ++it) {
             output &= check_row(model, index, *it, static_cast<int>(i));
         }
     }
@@ -1089,7 +1092,7 @@ auto check_row(
 
         auto it{expected.rows_.begin()};
 
-        for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        for (auto i = 0_uz; i < vCount; ++i, ++it) {
             output &= check_row(model, index, *it, static_cast<int>(i));
         }
     }
@@ -1149,7 +1152,7 @@ auto check_row(
 
         auto it{expected.rows_.begin()};
 
-        for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        for (auto i = 0_uz; i < vCount; ++i, ++it) {
             output &= check_row(model, index, *it, static_cast<int>(i));
         }
     }
@@ -1351,7 +1354,7 @@ auto check_seed_tree_qt(
 
     auto it{expected.rows_.begin()};
 
-    for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+    for (auto i = 0_uz; i < vCount; ++i, ++it) {
         output &= check_row(model, parent, *it, static_cast<int>(i));
     }
 
@@ -1418,7 +1421,7 @@ auto check_row(
 
         auto it{expected.rows_.begin()};
 
-        for (auto i = std::size_t{}; i < vCount; ++i, ++it) {
+        for (auto i = 0_uz; i < vCount; ++i, ++it) {
             output &= check_row(model, index, *it, static_cast<int>(i));
         }
     }

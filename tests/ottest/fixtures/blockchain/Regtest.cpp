@@ -28,6 +28,7 @@
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
@@ -36,6 +37,7 @@
 namespace ottest
 {
 using namespace std::literals::chrono_literals;
+using namespace opentxs::literals;
 
 using Dir = zmq::socket::Direction;
 
@@ -835,7 +837,7 @@ auto Regtest_fixture_base::Mine(
     auto previousHeader =
         headerOracle.LoadHeader(headerOracle.BestHash(ancestor))->as_Bitcoin();
 
-    for (auto i = std::size_t{0u}; i < count; ++i) {
+    for (auto i = 0_uz; i < count; ++i) {
         auto promise = mined_blocks_.allocate();
 
         OT_ASSERT(gen);

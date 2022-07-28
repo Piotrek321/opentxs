@@ -15,11 +15,14 @@
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "internal/util/P0330.hpp"
 
 namespace ot = opentxs;
 
 namespace ottest
 {
+using namespace opentxs::literals;
+
 const auto params_ = ot::blockchain::internal::GetFilterParams(
     ot::blockchain::cfilter::Type::Basic_BIP158);
 using Hash = ot::OTData;
@@ -335,7 +338,7 @@ TEST_F(Test_Filters, golomb_coding)
 
     ASSERT_EQ(elements.size(), decoded.size());
 
-    for (auto i = std::size_t{0}; i < decoded.size(); ++i) {
+    for (auto i = 0_uz; i < decoded.size(); ++i) {
         EXPECT_EQ(elements.at(i), decoded.at(i));
     }
 }

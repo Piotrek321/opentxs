@@ -18,6 +18,7 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
+#include "internal/util/P0330.hpp"
 #include "ottest/data/blockchain/Bip158.hpp"
 #include "ottest/fixtures/blockchain/Basic.hpp"
 
@@ -380,11 +381,12 @@ TEST_F(Test_BitcoinBlock, bip158)
         EXPECT_EQ(block.ID(), vector.BlockHash(api_));
 
         const auto encodedFilter = vector.Filter(api_);
-        auto encodedElements = std::size_t{};
+        using namespace opentxs::literals;
+        auto encodedElements = 0_uz;
 
         {
             namespace bb = ot::blockchain::bitcoin;
-            auto expectedSize = std::size_t{1};
+            auto expectedSize = 1_uz;
             const auto* it =
                 static_cast<bb::ByteIterator>(encodedFilter->data());
 

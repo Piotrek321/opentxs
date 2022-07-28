@@ -11,10 +11,14 @@
 #include <type_traits>
 #include <utility>
 
+#include "internal/util/P0330.hpp"
+
 namespace ot = opentxs;
 
 namespace ottest
 {
+using namespace opentxs::literals;
+
 struct Nist {
     ot::UnallocatedCString input_{};
     ot::UnallocatedCString sha_1_{};
@@ -615,7 +619,7 @@ TEST_F(Test_Hash, nist_million_characters)
     auto calculatedSha1 = ot::Data::Factory();
     auto calculatedSha256 = ot::Data::Factory();
     auto calculatedSha512 = ot::Data::Factory();
-    constexpr auto copies = std::size_t{1000000};
+    constexpr auto copies = 1000000_uz;
     const auto& character = input.at(0);
     const ot::UnallocatedVector<char> preimage(copies, character);
     const auto view = ot::ReadView{preimage.data(), preimage.size()};
@@ -639,16 +643,19 @@ TEST_F(Test_Hash, nist_million_characters)
 TEST_F(Test_Hash, nist_gigabyte_string)
 {
     const auto& [input, sha1, sha256, sha512] = nist_one_gigabyte_;
+    // TODO c++20
     const auto eSha1 = [](const auto& hex) {
         auto out = ot::Data::Factory();
         out->DecodeHex(hex);
         return out;
     }(sha1);
+    // TODO c++20
     const auto eSha256 = [](const auto& hex) {
         auto out = ot::Data::Factory();
         out->DecodeHex(hex);
         return out;
     }(sha256);
+    // TODO c++20
     const auto eSha512 = [](const auto& hex) {
         auto out = ot::Data::Factory();
         out->DecodeHex(hex);
@@ -657,8 +664,8 @@ TEST_F(Test_Hash, nist_gigabyte_string)
     auto calculatedSha1 = ot::Data::Factory();
     auto calculatedSha256 = ot::Data::Factory();
     auto calculatedSha512 = ot::Data::Factory();
-    constexpr auto copies = std::size_t{16777216u};
-    constexpr auto size = std::size_t{1073741824u};
+    constexpr auto copies = 16777216_uz;
+    constexpr auto size = 1073741824_uz;
     auto preimage = ot::UnallocatedVector<char>{};
     preimage.reserve(size);
     const auto* const start = input.data();
@@ -666,7 +673,7 @@ TEST_F(Test_Hash, nist_gigabyte_string)
 
     ASSERT_EQ(size, copies * input.size());
 
-    for (auto count = std::size_t{0}; count < copies; ++count) {
+    for (auto count = 0_uz; count < copies; ++count) {
         preimage.insert(preimage.end(), start, end);
     }
 

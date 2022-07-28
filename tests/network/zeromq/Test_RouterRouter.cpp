@@ -10,11 +10,11 @@
 #include <atomic>
 #include <cerrno>
 #include <chrono>
-#include <cstddef>
 #include <iostream>
 #include <memory>
 #include <thread>
 
+#include "internal/util/P0330.hpp"
 #include "internal/util/Signals.hpp"
 #include "ottest/fixtures/zeromq/Helpers.hpp"
 
@@ -166,7 +166,8 @@ TEST_F(RouterRouterF, test)
     msg.AddFrame("test");
     auto sent{true};
     const auto parts = msg.size();
-    auto counter = std::size_t{0};
+    using namespace opentxs::literals;
+    auto counter = 0_uz;
 
     for (auto& frame : msg) {
         int flags{0};

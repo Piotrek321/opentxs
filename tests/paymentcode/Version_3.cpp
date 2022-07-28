@@ -5,15 +5,17 @@
 
 #include <gtest/gtest.h>
 #include <opentxs/opentxs.hpp>
-#include <cstddef>
 #include <cstdint>
 #include <memory>
 
+#include "internal/util/P0330.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
 #include "ottest/fixtures/paymentcode/Helpers.hpp"
 
 namespace ottest
 {
+using namespace opentxs::literals;
+
 class Test_PaymentCode_v3 : public PC_Fixture_Base
 {
 public:
@@ -277,7 +279,7 @@ TEST_F(Test_PaymentCode_v3, blind_alice)
         const auto expect =
             api_.Factory().DataFromHex(GetPaymentCodeVector3().alice_.G_);
         const auto got = api_.Factory().DataFromBytes(ot::reader(G));
-        constexpr auto ignore = std::size_t{16};
+        constexpr auto ignore = 16_uz;
         const auto v1 =
             ot::ReadView{expect->Bytes().data(), expect->size() - ignore};
         const auto v2 = ot::ReadView{got->Bytes().data(), got->size() - ignore};
@@ -381,7 +383,7 @@ TEST_F(Test_PaymentCode_v3, blind_bob)
         const auto expect =
             api_.Factory().DataFromHex(GetPaymentCodeVector3().bob_.G_);
         const auto got = api_.Factory().DataFromBytes(ot::reader(G));
-        constexpr auto ignore = std::size_t{16};
+        constexpr auto ignore = 16_uz;
         const auto v1 =
             ot::ReadView{expect->Bytes().data(), expect->size() - ignore};
         const auto v2 = ot::ReadView{got->Bytes().data(), got->size() - ignore};

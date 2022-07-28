@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "internal/util/P0330.hpp"
 #include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/ui/AccountActivity.hpp"
 #include "ottest/fixtures/ui/AccountList.hpp"
@@ -161,12 +162,13 @@ auto verify_response_codes(
     const std::size_t count,
     const ot::rpc::ResponseCode required) noexcept -> bool
 {
+    using namespace opentxs::literals;
     auto output{true};
     output &= (codes.size() == count);
 
     EXPECT_EQ(codes.size(), count);
 
-    for (auto i = std::size_t{}; i < codes.size(); ++i) {
+    for (auto i = 0_uz; i < codes.size(); ++i) {
         const auto& code = codes.at(i);
         output &= (code.first == i);
         output &= (code.second == required);

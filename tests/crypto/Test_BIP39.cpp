@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "crypto/Bip39.hpp"
+#include "internal/util/P0330.hpp"
 
 namespace ot = opentxs;
 
@@ -91,7 +92,8 @@ public:
         if (0 == in.size()) { return 0; }
 
         auto word = false;
-        auto count = std::size_t{};
+        using namespace opentxs::literals;
+        auto count = 0_uz;
 
         for (const auto c : in) {
             if (std::isspace(c)) {
