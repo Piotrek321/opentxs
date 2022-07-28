@@ -27,6 +27,7 @@
 #include "internal/blockchain/bitcoin/block/Factory.hpp"
 #include "internal/blockchain/bitcoin/block/Transaction.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -75,7 +76,7 @@ auto BitcoinBlock(
 
         auto index = Block::TxidIndex{};
         auto map = Block::TransactionMap{};
-        auto position = std::size_t{0};
+        auto position = 0_uz;
 
         {
             const auto& id = gen.ID();
@@ -215,7 +216,7 @@ auto parse_normal_block(
         (blockchain::Type::PKT_testnet != chain));
 
     const auto* it = ByteIterator{};
-    auto expectedSize = std::size_t{};
+    auto expectedSize = 0_uz;
     auto pHeader = parse_header(api, chain, in, it, expectedSize);
 
     OT_ASSERT(pHeader);
@@ -340,8 +341,8 @@ auto Block::calculate_merkle_row(
     out.clear();
     const auto count{in.size()};
 
-    for (auto i = std::size_t{0}; i < count; i += 2u) {
-        const auto offset = std::size_t{(1u == (count - i)) ? 0u : 1u};
+    for (auto i = 0_uz; i < count; i += 2_uz) {
+        const auto offset = (1_uz == (count - i)) ? 0_uz : 1_uz;
         auto& next = out.emplace_back();
         const auto hashed = calculate_merkle_hash(
             api,

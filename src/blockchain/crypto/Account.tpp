@@ -7,6 +7,7 @@
 
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -156,7 +157,7 @@ auto Account::NodeGroup<InterfaceType, PayloadType>::add(
     }
 
     nodes_.emplace_back(std::move(node));
-    const auto position = std::size_t{nodes_.size() - 1u};
+    const auto position = nodes_.size() - 1_uz;
     index_.emplace(id, position);
 
     return true;

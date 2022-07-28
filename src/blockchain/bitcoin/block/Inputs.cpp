@@ -19,6 +19,7 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/bitcoin/block/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/bitcoin/block/Input.hpp"
 #include "opentxs/blockchain/bitcoin/block/Inputs.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -174,7 +175,7 @@ auto Inputs::FindMatches(
 {
     auto output = blockchain::block::Matches{};
     auto& [inputs, outputs] = output;
-    auto index = std::size_t{0};
+    auto index = 0_uz;
 
     for (const auto& txin : *this) {
         auto temp =
@@ -231,7 +232,7 @@ auto Inputs::MergeMetadata(const internal::Inputs& rhs, const Log& log) noexcept
         return false;
     }
 
-    for (auto i = std::size_t{0}; i < count; ++i) {
+    for (auto i = 0_uz; i < count; ++i) {
         auto& l = *inputs_.at(i);
         const auto& r = rhs.at(i).Internal();
 
@@ -248,7 +249,7 @@ auto Inputs::MergeMetadata(const internal::Inputs& rhs, const Log& log) noexcept
 auto Inputs::NetBalanceChange(const identifier::Nym& nym, const Log& log)
     const noexcept -> opentxs::Amount
 {
-    auto index = std::size_t{0};
+    auto index = 0_uz;
 
     return std::accumulate(
         std::begin(inputs_),

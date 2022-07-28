@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/block/Hash.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
@@ -326,7 +327,7 @@ private:
     static auto index(const Vector& in) noexcept -> Index
     {
         auto output = Index{};
-        auto count = std::size_t{};
+        auto count = 0_uz;
 
         for (const auto& task : in) {
             output.emplace(task->position_, count++);

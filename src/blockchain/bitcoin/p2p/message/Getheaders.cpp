@@ -19,6 +19,7 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/FixedByteArray.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
@@ -66,7 +67,7 @@ auto BitcoinP2PGetheaders(
         return nullptr;
     }
 
-    auto count = std::size_t{0};
+    auto count = 0_uz;
     const bool haveCount =
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 

@@ -29,6 +29,7 @@
 #include "internal/core/Amount.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -159,7 +160,7 @@ auto BitcoinTransaction(
     using ReturnType = blockchain::bitcoin::block::implementation::Transaction;
 
     try {
-        auto inputBytes = std::size_t{};
+        auto inputBytes = 0_uz;
         auto instantiatedInputs = UnallocatedVector<
             std::unique_ptr<blockchain::bitcoin::block::internal::Input>>{};
         {
@@ -202,7 +203,7 @@ auto BitcoinTransaction(
             instantiatedInputs.shrink_to_fit();
         }
 
-        auto outputBytes = std::size_t{};
+        auto outputBytes = 0_uz;
         auto instantiatedOutputs = UnallocatedVector<
             std::unique_ptr<blockchain::bitcoin::block::internal::Output>>{};
         {
@@ -462,7 +463,7 @@ auto Transaction::calculate_size(const bool normalize) const noexcept
 
         return sizeof(version_) + inputs_->CalculateSize(normalize) +
                outputs_->CalculateSize() +
-               (isSegwit ? calculate_witness_size() : std::size_t{0}) +
+               (isSegwit ? calculate_witness_size() : 0_uz) +
                sizeof(lock_time_);
     });
 }
@@ -492,7 +493,7 @@ auto Transaction::calculate_witness_size() const noexcept -> std::size_t
     return std::accumulate(
         std::begin(*inputs_),
         std::end(*inputs_),
-        std::size_t{2},  // NOTE: marker byte and segwit flag byte
+        2_uz,  // NOTE: marker byte and segwit flag byte
         [=](const std::size_t previous, const auto& input) -> std::size_t {
             return previous + calculate_witness_size(input.Witness());
         });

@@ -22,6 +22,7 @@
 #include "blockchain/crypto/Subaccount.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -788,7 +789,7 @@ auto Deterministic::use_next(
     Batch& generated) const noexcept -> std::optional<Bip32Index>
 {
     try {
-        auto gap = std::size_t{0};
+        auto gap = 0_uz;
         auto candidate = used_.at(type);
         auto fallback = Fallback{};
 

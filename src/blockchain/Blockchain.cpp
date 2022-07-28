@@ -22,6 +22,7 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -291,14 +292,14 @@ auto DecodeSerializedCfilter(const ReadView bytes) noexcept(false)
 {
     auto output = std::pair<std::uint32_t, ReadView>{};
     const auto* it = reinterpret_cast<const std::byte*>(bytes.data());
-    auto expectedSize = std::size_t{1u};
+    auto expectedSize = 1_uz;
 
     if (expectedSize > bytes.size()) {
         throw std::runtime_error("Empty input");
     }
 
-    auto elementCount = std::size_t{0u};
-    auto csBytes = std::size_t{0u};
+    auto elementCount = 0_uz;
+    auto csBytes = 0_uz;
     const auto haveElementCount = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, bytes.size(), elementCount, csBytes);
 

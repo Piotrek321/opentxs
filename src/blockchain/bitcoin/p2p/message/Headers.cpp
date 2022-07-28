@@ -22,6 +22,7 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -59,7 +60,7 @@ auto BitcoinP2PHeaders(
     }
 
     const auto* it{static_cast<const std::byte*>(payload)};
-    auto count = std::size_t{0};
+    auto count = 0_uz;
     const bool decodedSize =
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
@@ -147,7 +148,7 @@ auto Headers::payload(AllocateOutput out) const noexcept -> bool
     try {
         if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-        static constexpr auto length = std::size_t{80};
+        static constexpr auto length = 80_uz;
         const auto headers = payload_.size();
         const auto cs = CompactSize(headers).Encode();
         const auto bytes = cs.size() + (headers * (length + sizeof(null)));

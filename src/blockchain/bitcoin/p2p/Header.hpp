@@ -12,7 +12,7 @@
 #include <tuple>
 
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
-#include "opentxs/Version.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -106,7 +106,7 @@ public:
     ~Header() = default;
 
 private:
-    static constexpr auto header_size_ = std::size_t{24};
+    static constexpr auto header_size_ = 24_uz;
 
     blockchain::Type chain_;
     bitcoin::Command command_;

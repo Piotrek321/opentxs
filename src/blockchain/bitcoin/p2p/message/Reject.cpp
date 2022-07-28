@@ -19,6 +19,7 @@
 #include "blockchain/bitcoin/p2p/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
@@ -56,7 +57,7 @@ auto BitcoinP2PReject(
 
     const auto* it{static_cast<const std::byte*>(payload)};
     // -----------------------------------------------
-    auto messageSize = std::size_t{0};
+    auto messageSize = 0_uz;
     const bool decodedSize = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, size, messageSize);
 

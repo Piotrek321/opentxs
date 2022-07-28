@@ -31,6 +31,7 @@
 #include "internal/serialization/protobuf/verify/GCS.hpp"
 #include "internal/util/BoostPMR.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -320,7 +321,7 @@ auto GolombDecode(
     auto stream = BitReader{encoded};
     auto last = Element{0};
 
-    for (auto i = std::size_t{0}; i < N; ++i) {
+    for (auto i = 0_uz; i < N; ++i) {
         auto delta = golomb_decode(P, stream);
         auto value = last + delta;
         output.emplace_back(value);
@@ -644,7 +645,7 @@ auto GCS::Header(const cfilter::Header& previous) const noexcept
 auto GCS::Match(const Targets& targets, allocator_type alloc) const noexcept
     -> Matches
 {
-    static constexpr auto reserveMatches = std::size_t{16};
+    static constexpr auto reserveMatches = 16_uz;
     auto output = Matches{alloc};
     output.reserve(reserveMatches);
     using Map = opentxs::Map<gcs::Element, Matches>;
@@ -684,7 +685,7 @@ auto GCS::Match(const Targets& targets, allocator_type alloc) const noexcept
 
 auto GCS::Match(const gcs::Hashes& prehashed) const noexcept -> PrehashedMatches
 {
-    static constexpr auto reserveMatches = std::size_t{16};
+    static constexpr auto reserveMatches = 16_uz;
     auto output = PrehashedMatches{prehashed.get_allocator()};
     output.reserve(reserveMatches);
     using Map = opentxs::Map<gcs::Element, PrehashedMatches>;

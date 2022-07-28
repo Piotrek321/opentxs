@@ -20,6 +20,7 @@
 #include "internal/blockchain/bitcoin/block/Factory.hpp"
 #include "internal/blockchain/bitcoin/block/Output.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/bitcoin/block/Output.hpp"
 #include "opentxs/blockchain/bitcoin/block/Outputs.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -209,7 +210,7 @@ auto Outputs::MergeMetadata(
         return false;
     }
 
-    for (auto i = std::size_t{0}; i < count; ++i) {
+    for (auto i = 0_uz; i < count; ++i) {
         auto& l = *outputs_.at(i);
         const auto& r = rhs.at(i).Internal();
 

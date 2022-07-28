@@ -15,6 +15,7 @@
 #include "core/Worker.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
@@ -172,7 +173,7 @@ protected:
             const auto& start = positions.front();
 
             if (dm_known_.height_ >= start.height_) {
-                auto next = std::ptrdiff_t{-1};
+                auto next = -1_z;
                 auto lastGoodTask = TaskPtr{};
 
                 for (auto i{buffer_.begin()}; i != buffer_.end(); ++i) {
@@ -345,7 +346,7 @@ private:
         OT_ASSERT(0 < data.size());
 
         const auto& first = data.front();
-        auto index = std::size_t{0};
+        auto index = 0_uz;
         auto b =
             std::find_if(buffer_.begin(), buffer_.end(), [&](const auto& task) {
                 ++index;
@@ -393,8 +394,8 @@ private:
             auto end{buffer_.end()};
             auto first{end};
             auto last{end};
-            auto toDelete = std::size_t{0};
-            auto index = std::size_t{0};
+            auto toDelete = 0_uz;
+            auto index = 0_uz;
 
             for (auto i{buffer_.begin()}; i != end; ++i, ++index) {
                 const auto& task = **i;

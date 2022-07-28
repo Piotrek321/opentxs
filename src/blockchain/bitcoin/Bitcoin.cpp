@@ -19,6 +19,7 @@
 #include "internal/blockchain/bitcoin/block/Script.hpp"
 #include "internal/core/Amount.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -631,8 +632,8 @@ auto EncodedTransaction::size() const noexcept -> std::size_t
     return txid_size() +
            (segwit_flag_.has_value()
                 ? std::accumulate(
-                      std::begin(witnesses_), std::end(witnesses_), 2u, cb)
-                : std::size_t{0});
+                      std::begin(witnesses_), std::end(witnesses_), 2_uz, cb)
+                : 0_uz);
 }
 
 auto EncodedWitnessItem::size() const noexcept -> std::size_t

@@ -22,6 +22,7 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -72,7 +73,7 @@ auto BitcoinP2PCfilter(
         return nullptr;
     }
 
-    auto filterSize = std::size_t{0};
+    auto filterSize = 0_uz;
     const auto haveSize = network::blockchain::bitcoin::DecodeSize(
         it, expectedSize, size, filterSize);
 

@@ -22,6 +22,7 @@
 #include "internal/blockchain/bitcoin/block/Factory.hpp"
 #include "internal/blockchain/bitcoin/block/Types.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -60,7 +61,7 @@ auto BitcoinScript(
 
     elements.reserve(bytes.size());
     const auto* it = reinterpret_cast<const std::byte*>(bytes.data());
-    auto read = std::size_t{0};
+    auto read = 0_uz;
     const auto target = bytes.size();
     const auto& logger = mute ? LogTrace() : LogVerbose();
 
@@ -278,7 +279,7 @@ auto Script::bytes(const ScriptElements& script) noexcept -> std::size_t
     return std::accumulate(
         std::begin(script),
         std::end(script),
-        std::size_t{0},
+        0_uz,
         [](const std::size_t& lhs, const value_type& rhs) -> std::size_t {
             return lhs + bytes(rhs);
         });
@@ -509,7 +510,7 @@ auto Script::evaluate_data(const ScriptElements& script) noexcept -> Pattern
 {
     OT_ASSERT(2 <= script.size());
 
-    for (auto i = std::size_t{1}; i < script.size(); ++i) {
+    for (auto i = 1_uz; i < script.size(); ++i) {
         if (false == is_data_push(script.at(i))) { return Pattern::Custom; }
     }
 
@@ -823,15 +824,13 @@ auto Script::is_direct_push(const OP opcode) noexcept(false)
 auto Script::is_push(const OP opcode) noexcept(false)
     -> std::optional<std::size_t>
 {
-    constexpr auto low = std::size_t{75u};
-    constexpr auto high = std::size_t{79u};
-    constexpr auto shift = std::size_t{low + 1u};
-    constexpr auto one = std::size_t{1};
+    constexpr auto low = 75_uz;
+    constexpr auto high = 79_uz;
+    constexpr auto shift = low + 1_uz;
+    constexpr auto one = 1_uz;
     const auto value = std::size_t{static_cast<std::uint8_t>(opcode)};
 
-    if ((low < value) && (high > value)) {
-        return std::size_t{one << (value - shift)};
-    }
+    if ((low < value) && (high > value)) { return one << (value - shift); }
 
     return std::nullopt;
 }
@@ -936,7 +935,7 @@ auto Script::MultisigPubkey(const std::size_t position) const noexcept
 {
     if (Pattern::PayToMultisig != type_) { return {}; }
 
-    const auto index = std::size_t{position + 1u};
+    const auto index = position + 1_uz;
 
     if (index > N()) { return {}; }
 
@@ -1224,7 +1223,7 @@ auto Script::validate(
         if (false == bytes.has_value()) { return false; }
         if (false == data.has_value()) { return false; }
 
-        auto size = std::size_t{};
+        auto size = 0_uz;
         const auto& pushBytes = push.value();
 
         if (pushBytes != bytes->size()) { return false; }
