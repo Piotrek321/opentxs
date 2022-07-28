@@ -48,7 +48,7 @@ public:
     BlockBatch(const BlockBatch&) = delete;
     BlockBatch(BlockBatch&& rhs) noexcept;
     auto operator=(const BlockBatch&) -> BlockBatch& = delete;
-    auto operator=(BlockBatch&&) -> BlockBatch& = delete;
+    auto operator=(BlockBatch&&) noexcept -> BlockBatch&;
 
     ~BlockBatch();
 

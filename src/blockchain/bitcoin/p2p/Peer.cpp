@@ -1532,9 +1532,9 @@ auto Peer::process_message(zmq::Message&& message) noexcept -> void
         return;
     }
 
-    log_(OT_PRETTY_CLASS())("Received ")(display_chain_)(" ")(
+    /*log_(OT_PRETTY_CLASS())("Received ")(display_chain_)(" ")(
         CommandName(command))(" command from ")(address_.Display())
-        .Flush();
+        .Flush();*/
 
     try {
         const auto& p = command_map_.at(command);

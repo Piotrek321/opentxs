@@ -114,6 +114,7 @@ public:
         return this->operator()(std::to_string(in));
     }
     auto asHex(const Data& in) const noexcept -> const Log&;
+    auto asHex(std::string_view in) const noexcept -> const Log&;
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> const internal::Log&;
 
     [[noreturn]] auto Assert(

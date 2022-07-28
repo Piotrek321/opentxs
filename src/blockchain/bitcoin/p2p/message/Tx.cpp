@@ -62,6 +62,18 @@ auto BitcoinP2PTx(
 
     return std::make_unique<ReturnType>(api, network, transaction);
 }
+
+auto BitcoinP2PTxTemp(
+    const api::Session& api,
+    std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
+    const blockchain::p2p::bitcoin::ProtocolVersion version,
+    const void* payload,
+    const std::size_t size) noexcept
+    -> blockchain::p2p::bitcoin::message::internal::Tx*
+{
+    return BitcoinP2PTx(api, std::move(pHeader), version, payload, size)
+        .release();
+}
 }  // namespace opentxs::factory
 
 namespace opentxs::blockchain::p2p::bitcoin::message

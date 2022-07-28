@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <string_view>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -226,12 +227,12 @@ using CommandMap = UnallocatedMap<Command, UnallocatedCString>;
 using CommandReverseMap = UnallocatedMap<UnallocatedCString, Command>;
 
 auto BitcoinString(const UnallocatedCString& in) noexcept -> OTData;
-auto CommandName(const Command command) noexcept -> UnallocatedCString;
 auto GetCommand(const CommandField& bytes) noexcept -> Command;
 auto GetServiceBytes(const UnallocatedSet<bitcoin::Service>& services) noexcept
     -> BitVector8;
 auto GetServices(const BitVector8 data) noexcept
     -> UnallocatedSet<bitcoin::Service>;
+auto print(const Command command) noexcept -> std::string_view;
 auto SerializeCommand(const Command command) noexcept -> CommandField;
 auto TranslateServices(
     const blockchain::Type chain,

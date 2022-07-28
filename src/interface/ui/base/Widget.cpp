@@ -7,10 +7,10 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "interface/ui/base/Widget.hpp"  // IWYU pragma: associated
 
-#include <iosfwd>
 #include <type_traits>
 
 #include "internal/api/session/UI.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/UI.hpp"
@@ -23,7 +23,7 @@ namespace opentxs::ui::implementation
 {
 auto verify_empty(const CustomData& custom) noexcept -> bool
 {
-    auto counter = std::ptrdiff_t{-1};
+    auto counter = -1_z;
 
     for (const auto& ptr : custom) {
         ++counter;

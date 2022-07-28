@@ -260,6 +260,14 @@ auto Log::asHex(const Data& in) const noexcept -> const Log&
     return (*imp_)(in.asHex());
 }
 
+auto Log::asHex(std::string_view in) const noexcept -> const Log&
+{
+    if (false == imp_->active()) { return *this; }
+
+    return operator()(
+        to_hex(reinterpret_cast<const std::byte*>(in.data()), in.size()));
+}
+
 auto Log::operator()() const noexcept -> const Log& { return *this; }
 
 auto Log::operator()(char* in) const noexcept -> const Log&

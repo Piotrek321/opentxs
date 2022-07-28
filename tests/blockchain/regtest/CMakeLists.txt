@@ -32,6 +32,12 @@ add_opentx_test(ottest-blockchain-regtest-restart-end StressRestartAtEnd.cpp)
 add_opentx_test(
   ottest-blockchain-regtest-restart-inloop StressRestartInLoop.cpp
 )
+
+set_tests_properties(ottest-blockchain-regtest-restart PROPERTIES DISABLED TRUE)
+set_tests_properties(ottest-blockchain-regtest-restart-end PROPERTIES DISABLED TRUE)
+set_tests_properties(ottest-blockchain-regtest-restart-inloop PROPERTIES DISABLED TRUE)
+
+
 add_opentx_test(ottest-blockchain-regtest-restart-early RestartEarly.cpp)
 add_opentx_test(ottest-blockchain-regtest-simple-transfer SimpleTransfer.cpp)
 add_opentx_test(

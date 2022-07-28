@@ -88,6 +88,18 @@ auto BitcoinP2PInv(
 
     return new ReturnType(api, network, std::move(payload));
 }
+
+auto BitcoinP2PInvTemp(
+    const api::Session& api,
+    std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
+    const blockchain::p2p::bitcoin::ProtocolVersion version,
+    const void* payload,
+    const std::size_t size) noexcept(false)
+    -> blockchain::p2p::bitcoin::message::internal::Inv*
+{
+    return BitcoinP2PInv(api, std::move(pHeader), version, payload, size)
+        .release();
+}
 }  // namespace opentxs::factory
 
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation

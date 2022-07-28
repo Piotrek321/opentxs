@@ -14,6 +14,7 @@
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
@@ -87,7 +88,7 @@ private:
         const ReadView value,
         Map& map) noexcept(false) -> bool
     {
-        auto input = std::size_t{};
+        auto input = 0_uz;
 
         if (sizeof(input) != key.size()) {
             throw std::runtime_error("Invalid key");

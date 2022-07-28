@@ -136,4 +136,8 @@ using CfheaderJob =
 using CfilterJob = download::Batch<GCS, cfilter::Header, cfilter::Type>;
 
 auto print(BlockOracleJobs) noexcept -> std::string_view;
+constexpr auto value(PeerManagerJobs job) noexcept
+{
+    return static_cast<OTZMQWorkType>(job);
+}
 }  // namespace opentxs::blockchain::node

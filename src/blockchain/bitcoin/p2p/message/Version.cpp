@@ -188,7 +188,7 @@ auto BitcoinP2PVersion(
     const UnallocatedCString& remoteAddress,
     const std::uint16_t remotePort,
     const std::uint64_t nonce,
-    const UnallocatedCString& userAgent,
+    const std::string_view userAgent,
     const blockchain::block::Height height,
     const bool relay) -> blockchain::p2p::bitcoin::message::internal::Version*
 {
@@ -253,7 +253,7 @@ Version::Version(
     const UnallocatedSet<blockchain::p2p::Service>& localServices,
     const UnallocatedSet<blockchain::p2p::Service>& remoteServices,
     const bitcoin::Nonce nonce,
-    const UnallocatedCString& userAgent,
+    const std::string_view userAgent,
     const block::Height height,
     const bool relay,
     const Time time) noexcept
@@ -283,7 +283,7 @@ Version::Version(
     const UnallocatedSet<blockchain::p2p::Service>& localServices,
     const UnallocatedSet<blockchain::p2p::Service>& remoteServices,
     const bitcoin::Nonce nonce,
-    const UnallocatedCString& userAgent,
+    const std::string_view userAgent,
     const block::Height height,
     const bool relay,
     const Time time) noexcept

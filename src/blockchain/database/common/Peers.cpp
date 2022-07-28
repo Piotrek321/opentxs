@@ -21,6 +21,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/BlockchainPeerAddress.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
@@ -54,7 +55,7 @@ Peers::Peers(const api::Session& api, storage::lmdb::LMDB& lmdb) noexcept(false)
         return read_index<Type>(key, value, networks_);
     };
     auto last = [this](const auto key, const auto value) {
-        auto input = std::size_t{};
+        auto input = 0_uz;
 
         if (sizeof(input) != key.size()) {
             throw std::runtime_error("Invalid key");
@@ -149,7 +150,7 @@ auto Peers::Find(
         const auto now = Clock::now();
 
         for (const auto& id : haveServices) {
-            auto weight = std::size_t{1};
+            auto weight = 1_uz;
 
             try {
                 const auto& last = connected_.at(id);
