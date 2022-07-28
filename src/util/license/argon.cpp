@@ -7,8 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "util/license/License.hpp"  // IWYU pragma: associated
 
-#include <cstddef>
-
+#include "internal/util/P0330.hpp"
 #include "opentxs/util/Container.hpp"
 
 namespace opentxs
@@ -1507,7 +1506,7 @@ auto license_argon(LicenseMap& out) noexcept -> void
         0x6f, 0x72, 0x20, 0x61, 0x64, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x61,
         0x6c, 0x20, 0x6c, 0x69, 0x61, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x2e,
         0x0a};
-    static const auto deps_argon2_LICENSE_len = std::size_t{17881u};
+    static const auto deps_argon2_LICENSE_len = 17881_uz;
 
     out.emplace(
         "argon2",

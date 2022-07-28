@@ -78,7 +78,7 @@ auto Socket::Imp::Transmit(const ReadView data, Notification notifier) noexcept
             socket_, boost::asio::buffer(buf->data(), buf->size()), cb);
     };
 
-    return asio_.Post(ThreadPool::Network, std::move(work), transmitThreadName);
+    return asio_.Post(ThreadPool::Network, std::move(work), asioTransmitThreadName);
 }
 // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 

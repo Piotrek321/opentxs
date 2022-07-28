@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "internal/util/TSV.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -28,9 +29,9 @@ namespace opentxs::util
 constexpr auto get_file_count(const std::size_t bytes) noexcept -> std::size_t
 {
     return std::max(
-        std::size_t{1},
-        ((bytes + 1u) / mapped_file_size()) +
-            std::min(std::size_t{1}, (bytes + 1u) % mapped_file_size()));
+        1_uz,
+        ((bytes + 1_uz) / mapped_file_size()) +
+            std::min(1_uz, (bytes + 1_uz) % mapped_file_size()));
 }
 
 using Offset = std::pair<std::size_t, std::size_t>;

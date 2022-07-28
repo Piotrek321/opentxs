@@ -17,6 +17,7 @@ extern "C" {
 #include <functional>
 #include <string_view>
 
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -122,7 +123,7 @@ auto Siphash(const SiphashKey& key, const ReadView data) noexcept -> std::size_t
 {
     assert(-1 != ::sodium_init());
 
-    auto output = std::size_t{};
+    auto output = 0_uz;
     auto hash = std::array<unsigned char, crypto_shorthash_BYTES>{};
     ::crypto_shorthash(
         hash.data(),

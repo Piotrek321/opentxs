@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "util/license/License.hpp"  // IWYU pragma: associated
 
-#include <cstddef>
+#include "internal/util/P0330.hpp"
 
 namespace opentxs
 {
@@ -1411,7 +1411,7 @@ auto text_mpl_v2() noexcept -> std::string_view
         0x20, 0x4d, 0x6f, 0x7a, 0x69, 0x6c, 0x6c, 0x61, 0x20, 0x50, 0x75, 0x62,
         0x6c, 0x69, 0x63, 0x20, 0x4c, 0x69, 0x63, 0x65, 0x6e, 0x73, 0x65, 0x2c,
         0x20, 0x76, 0x2e, 0x20, 0x32, 0x2e, 0x30, 0x2e, 0x0a};
-    static const auto MPL_2_0_len = std::size_t{16725};
+    static const auto MPL_2_0_len = 16725_uz;
 
     return {reinterpret_cast<const char*>(MPL_2_0), MPL_2_0_len};
 }

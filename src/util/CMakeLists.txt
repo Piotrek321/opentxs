@@ -19,6 +19,7 @@ target_sources(
     "${opentxs_SOURCE_DIR}/src/internal/util/Log.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/LogMacros.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Mutex.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/P0330.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Shared.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Signals.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/TSV.hpp"
