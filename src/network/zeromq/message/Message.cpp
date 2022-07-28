@@ -14,6 +14,7 @@
 
 #include "internal/network/zeromq/message/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "network/zeromq/message/FrameIterator.hpp"
 #include "network/zeromq/message/FrameSection.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -302,7 +303,7 @@ auto Message::Imp::Header_at(const std::size_t index) const noexcept(false)
 
 auto Message::Imp::Header() const noexcept -> const FrameSection
 {
-    auto size = std::size_t{0};
+    auto size = 0_uz;
 
     if (true == hasDivider()) { size = findDivider(); }
 
@@ -312,7 +313,7 @@ auto Message::Imp::Header() const noexcept -> const FrameSection
 
 auto Message::Imp::Header() noexcept -> FrameSection
 {
-    auto size = std::size_t{0};
+    auto size = 0_uz;
 
     if (true == hasDivider()) { size = findDivider(); }
 
@@ -408,7 +409,7 @@ auto Message::Imp::Total() const noexcept -> std::size_t
     return std::accumulate(
         frames_.begin(),
         frames_.end(),
-        std::size_t{0},
+        0_uz,
         [](const auto& lhs, const auto& rhs) { return lhs + rhs.size(); });
 }
 }  // namespace opentxs::network::zeromq

@@ -13,9 +13,7 @@
 #include "opentxs/network/zeromq/Proxy.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
 #include "opentxs/util/Container.hpp"
-
 #include "util/Thread.hpp"
-
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

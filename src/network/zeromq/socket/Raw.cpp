@@ -17,6 +17,7 @@
 
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -220,7 +221,7 @@ auto Raw::send(Message&& msg, const int baseFlags) noexcept -> bool
 {
     auto sent{true};
     const auto parts = msg.size();
-    auto counter = std::size_t{0};
+    auto counter = 0_uz;
 
     for (auto& frame : msg) {
         auto flags{baseFlags};

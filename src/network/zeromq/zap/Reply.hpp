@@ -8,6 +8,7 @@
 #include <cstddef>
 
 #include "internal/network/zeromq/message/Factory.hpp"
+#include "internal/util/P0330.hpp"
 #include "network/zeromq/message/Message.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -43,12 +44,12 @@ class Reply::Imp final : public zeromq::Message::Imp
 {
 public:
     static constexpr auto default_version_{"1.0"};
-    static constexpr auto version_position_ = std::size_t{0};
-    static constexpr auto request_id_position_ = std::size_t{1};
-    static constexpr auto status_code_position_ = std::size_t{2};
-    static constexpr auto status_text_position_ = std::size_t{3};
-    static constexpr auto user_id_position_ = std::size_t{4};
-    static constexpr auto metadata_position_ = std::size_t{5};
+    static constexpr auto version_position_ = 0_uz;
+    static constexpr auto request_id_position_ = 1_uz;
+    static constexpr auto status_code_position_ = 2_uz;
+    static constexpr auto status_text_position_ = 3_uz;
+    static constexpr auto user_id_position_ = 4_uz;
+    static constexpr auto metadata_position_ = 5_uz;
 
     static auto string_to_code(const ReadView string) noexcept -> zap::Status;
 

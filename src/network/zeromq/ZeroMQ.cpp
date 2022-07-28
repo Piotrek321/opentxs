@@ -9,29 +9,28 @@
 
 #include <zmq.h>
 #include <atomic>
-#include <chrono>
-#include <cstddef>
 #include <cstdint>
 #include <sstream>
 
+#include "internal/util/P0330.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Time.hpp"
 
 namespace opentxs::network::zeromq
 {
-constexpr auto inproc_prefix_{"inproc://opentxs/"};
-constexpr auto path_seperator_{"/"};
+using namespace std::literals;
+
+constexpr auto inproc_prefix_{"inproc://opentxs/"sv};
+constexpr auto path_seperator_{"/"sv};
 
 auto MakeArbitraryInproc() noexcept -> UnallocatedCString
 {
     static auto counter = std::atomic_int{0};
     auto out = std::stringstream{};
     out << inproc_prefix_;
-    out << std::to_string(std::chrono::duration_cast<std::chrono::seconds>(
-                              Clock::now().time_since_epoch())
-                              .count());
+    out << "arbitrary"sv;
+    out << path_seperator_;
     out << std::to_string(++counter);
 
     return out.str();
@@ -95,7 +94,7 @@ auto RawToZ85(const ReadView input, const AllocateOutput destination) noexcept
         return false;
     }
 
-    const auto target = std::size_t{input.size() + input.size() / 4 + 1};
+    const auto target = input.size() + input.size() / 4_uz + 1_uz;
     auto out = destination(target);
 
     if (false == out.valid(target)) {
@@ -131,7 +130,7 @@ auto Z85ToRaw(const ReadView input, const AllocateOutput destination) noexcept
         return false;
     }
 
-    const auto target = std::size_t{input.size() * 4 / 5};
+    const auto target = input.size() * 4_uz / 5_uz;
     auto out = destination(target);
 
     if (false == out.valid(target)) {

@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "internal/util/P0330.hpp"
 #include "network/zeromq/message/Message.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -28,15 +29,15 @@ public:
         UnallocatedMap<UnallocatedCString, zap::Mechanism>;
 
     static constexpr auto default_version_{"1.0"};
-    static constexpr auto version_position_ = std::size_t{0};
-    static constexpr auto request_id_position_ = std::size_t{1};
-    static constexpr auto domain_position_ = std::size_t{2};
-    static constexpr auto address_position_ = std::size_t{3};
-    static constexpr auto identity_position_ = std::size_t{4};
-    static constexpr auto mechanism_position_ = std::size_t{5};
-    static constexpr auto credentials_start_position_ = std::size_t{6};
-    static constexpr auto max_string_field_size_ = std::size_t{255};
-    static constexpr auto pubkey_size_ = std::size_t{32};
+    static constexpr auto version_position_ = 0_uz;
+    static constexpr auto request_id_position_ = 1_uz;
+    static constexpr auto domain_position_ = 2_uz;
+    static constexpr auto address_position_ = 3_uz;
+    static constexpr auto identity_position_ = 4_uz;
+    static constexpr auto mechanism_position_ = 5_uz;
+    static constexpr auto credentials_start_position_ = 6_uz;
+    static constexpr auto max_string_field_size_ = 255_uz;
+    static constexpr auto pubkey_size_ = 32_uz;
 
     static const UnallocatedSet<UnallocatedCString> accept_versions_;
     static const MechanismMap mechanism_map_;

@@ -23,6 +23,7 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Pipeline.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -130,7 +131,7 @@ public:
 private:
     using GuardedSocket = libguarded::plain_guarded<socket::Raw>;
 
-    static constexpr auto fixed_sockets_ = std::size_t{5};
+    static constexpr auto fixed_sockets_ = 5_uz;
 
     const zeromq::Context& context_;
     const std::size_t total_socket_count_;

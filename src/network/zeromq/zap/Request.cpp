@@ -16,6 +16,7 @@
 
 #include "internal/network/zeromq/zap/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "network/zeromq/message/FrameSection.hpp"
 #include "network/zeromq/message/Message.hpp"
 #include "opentxs/core/Data.hpp"
@@ -180,7 +181,7 @@ auto Request::Credentials() const noexcept -> const FrameSection
 {
     const std::size_t position{
         Message::imp_->body_position() + Imp::credentials_start_position_};
-    auto size = std::max(Message::imp_->size() - position, std::size_t{0});
+    auto size = std::max(Message::imp_->size() - position, 0_uz);
 
     return std::make_unique<zeromq::implementation::FrameSection>(
                this, position, size)
