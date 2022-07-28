@@ -18,6 +18,7 @@ extern "C" {
 
 #include "internal/core/Core.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::Secret>;
@@ -176,7 +177,7 @@ auto Secret::AssignText(const ReadView rhs) noexcept -> void
 {
     mode_ = Mode::Text;
     data_.clear();
-    const auto targetSize = std::size_t{rhs.size() + 1u};
+    const auto targetSize = rhs.size() + 1_uz;
     data_.reserve(targetSize);
     data_.resize(targetSize, {});
     std::memcpy(data_.data(), rhs.data(), rhs.size());
@@ -197,7 +198,7 @@ auto Secret::Concatenate(const void* in, const std::size_t bytes) noexcept
         static_cast<const std::byte*>(in) + bytes);
 
     if ((y < a) || (x > b)) {
-        const auto targetSize = std::size_t{size() + bytes};
+        const auto targetSize = size() + bytes;
         Resize(targetSize);
         auto* it = data();
         std::advance(it, size());

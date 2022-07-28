@@ -22,6 +22,7 @@ extern "C" {
 #include <utility>
 
 #include "internal/core/Core.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -119,7 +120,7 @@ auto to_hex(const std::byte* in, std::size_t size) noexcept
 
     auto out = std::stringstream{};
 
-    for (auto i = std::size_t{0}; i < size; ++i, ++in) {
+    for (auto i = 0_uz; i < size; ++i, ++in) {
         out << std::hex << std::setfill('0') << std::setw(2)
             << std::to_integer<int>(*in);
     }
@@ -136,7 +137,7 @@ auto to_hex(
 
     auto out = std::stringstream{};  // TODO c++20 use allocator
 
-    for (auto i = std::size_t{0}; i < size; ++i, ++in) {
+    for (auto i = 0_uz; i < size; ++i, ++in) {
         out << std::hex << std::setfill('0') << std::setw(2)
             << std::to_integer<int>(*in);
     }

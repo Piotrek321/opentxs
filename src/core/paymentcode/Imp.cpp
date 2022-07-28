@@ -29,6 +29,7 @@
 #include "internal/serialization/protobuf/verify/Credential.hpp"
 #include "internal/serialization/protobuf/verify/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
@@ -619,7 +620,7 @@ auto PaymentCode::generate_elements_v1(
     const Space& blind,
     UnallocatedVector<Space>& output) const noexcept(false) -> void
 {
-    constexpr auto size = std::size_t{65};
+    constexpr auto size = 65_uz;
 
     OT_ASSERT(blind.size() == sizeof(paymentcode::BinaryPreimage));
 

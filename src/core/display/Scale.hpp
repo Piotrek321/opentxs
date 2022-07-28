@@ -25,6 +25,7 @@
 
 #include "internal/core/Amount.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -53,7 +54,7 @@ public:
         const auto seperator = locale_.thousands_sep();
         const auto scaled = amount.Internal().ToFloat() * outgoing_;
         const auto [min, max] = effective_limits(minDecimals, maxDecimals);
-        auto fractionalDigits = std::max<unsigned>(max, 1u);
+        auto fractionalDigits = std::max<unsigned>(max, 1_uz);
         auto string = scaled.str(fractionalDigits, std::ios_base::fixed);
         auto haveDecimal{true};
 
@@ -76,12 +77,12 @@ public:
             haveDecimal = false;
         }
 
-        const auto wholeDigits = std::size_t{
-            string.size() - fractionalDigits - (haveDecimal ? 1u : 0u) -
-            (string.front() == '-' ? 1u : 0u)};
-        auto counter = std::size_t{
-            (4u > wholeDigits) ? 1u : 4u - ((wholeDigits - 1u) % 3u)};
-        auto pushed = std::size_t{0};
+        const auto wholeDigits = string.size() - fractionalDigits -
+                                 (haveDecimal ? 1_uz : 0_uz) -
+                                 (string.front() == '-' ? 1_uz : 0_uz);
+        auto counter =
+            (4_uz > wholeDigits) ? 1_uz : 4_uz - ((wholeDigits - 1_uz) % 3_uz);
+        auto pushed = 0_uz;
         auto formatDecimals{false};
 
         for (const auto c : string) {
@@ -89,19 +90,19 @@ public:
             ++pushed;
 
             if (pushed < wholeDigits && (c != '-')) {
-                if (0u == (counter % 4u)) {
+                if (0_uz == (counter % 4_uz)) {
                     output << seperator;
                     ++counter;
                 }
 
                 ++counter;
             } else if (c == decimalSymbol) {
-                counter = 1u;
+                counter = 1_uz;
                 formatDecimals = true;
             }
 
             if (formatDecimals) {
-                if (0u == (counter % 4u) && pushed < string.size()) {
+                if (0_uz == (counter % 4_uz) && pushed < string.size()) {
                     static constexpr auto narrowNonBreakingSpace = u8"\u202F";
                     output << narrowNonBreakingSpace;
                     ++counter;
@@ -222,13 +223,13 @@ private:
         if (min.has_value()) {
             effMin = min.value();
         } else {
-            effMin = default_min_.value_or(0u);
+            effMin = default_min_.value_or(0_uz);
         }
 
         if (max.has_value()) {
             effMax = max.value();
         } else {
-            effMax = default_max_.value_or(0u);
+            effMax = default_max_.value_or(0_uz);
         }
 
         effMax = std::min(effMax, static_cast<uint8_t>(absolute_max_));

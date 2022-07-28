@@ -14,6 +14,7 @@
 
 #include "Proto.hpp"
 #include "core/Data.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
@@ -153,7 +154,7 @@ private:
     identifier::Type type_;
 
     static constexpr auto prefix_ = "ot";
-    static constexpr auto minimum_encoded_bytes_ = std::size_t{6};
+    static constexpr auto minimum_encoded_bytes_ = 6_uz;
     static constexpr auto header_bytes_ = sizeof(algorithm_) + sizeof(type_);
     static constexpr auto proto_version_ = VersionNumber{1};
 

@@ -28,6 +28,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Identifier.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
@@ -682,7 +683,7 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
         }
 
         const auto bytes = [&] {
-            constexpr auto prefix = std::size_t{2u};
+            constexpr auto prefix = 2_uz;
             const auto* i = in.data();
 
             if (0u != std::memcmp(i, prefix_, prefix)) {
