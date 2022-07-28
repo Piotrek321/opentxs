@@ -16,6 +16,7 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory
@@ -136,7 +137,7 @@ auto Settings::Load(const String& strConfigurationFileExactPath) const -> bool
         OT_FAIL;
     }
 
-    auto lFilelength = std::size_t{0};
+    auto lFilelength = 0_uz;
 
     if (!legacy_.FileExists(
             strConfigurationFileExactPath,

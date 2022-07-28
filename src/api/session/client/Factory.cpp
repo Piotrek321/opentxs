@@ -33,6 +33,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/BlockchainBlockHeader.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/block/Header.hpp"
@@ -180,7 +181,7 @@ auto Factory::BitcoinTransaction(
     return factory::BitcoinTransaction(
         api_,
         chain,
-        isGeneration ? 0u : std::numeric_limits<std::size_t>::max(),
+        isGeneration ? 0_uz : std::numeric_limits<std::size_t>::max(),
         time,
         Encoded::Deserialize(api_, chain, bytes));
 }

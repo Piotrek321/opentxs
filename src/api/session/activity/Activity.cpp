@@ -24,6 +24,7 @@
 #include "internal/otx/common/Item.hpp"    // IWYU pragma: keep
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -741,7 +742,7 @@ auto Activity::thread_preload_thread(
     }
 
     const auto size = std::size_t(thread.item_size());
-    auto cached = std::size_t{0};
+    auto cached = 0_uz;
 
     if (start > size) {
         LogError()(OT_PRETTY_CLASS())("Error: start larger than size (")(
@@ -753,10 +754,10 @@ auto Activity::thread_preload_thread(
 
     OT_ASSERT((size - start) <= std::numeric_limits<int>::max());
 
-    for (auto i = (size - start); i > 0u; --i) {
+    for (auto i = (size - start); i > 0_uz; --i) {
         if (cached >= count) { break; }
 
-        const auto& item = thread.item(static_cast<int>(i - 1u));
+        const auto& item = thread.item(static_cast<int>(i - 1_uz));
         const auto& box = static_cast<otx::client::StorageBox>(item.box());
 
         switch (box) {

@@ -32,6 +32,7 @@
 #include "internal/util/Flag.hpp"
 #include "internal/util/Log.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "internal/util/Signals.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -407,8 +408,8 @@ auto Context::StartClientSession(const Options& args, const int instance) const
 {
     auto lock = Lock{lock_};
 
-    const auto count = std::max<std::size_t>(0u, instance);
-    const auto effective = std::min<std::size_t>(count, client_.size());
+    const auto count = std::max<std::size_t>(0_uz, instance);
+    const auto effective = std::min(count, client_.size());
 
     if (effective == client_.size()) { start_client(lock, args); }
 

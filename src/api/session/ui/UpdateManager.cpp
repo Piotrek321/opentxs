@@ -16,6 +16,7 @@
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -108,11 +109,11 @@ private:
     {
         const auto body = in.Body();
 
-        OT_ASSERT(0u < body.size());
+        OT_ASSERT(0_uz < body.size());
 
         const auto& idFrame = body.at(0);
 
-        OT_ASSERT(0u < idFrame.size());
+        OT_ASSERT(0_uz < idFrame.size());
 
         const auto id = api_.Factory().Identifier(idFrame);
         auto lock = Lock{lock_};

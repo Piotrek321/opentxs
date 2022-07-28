@@ -8,7 +8,6 @@
 #include "api/crypto/blockchain/Imp_blockchain.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <cstddef>
 #include <iosfwd>
 #include <iterator>
 #include <sstream>
@@ -21,6 +20,7 @@
 #include "internal/blockchain/node/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -180,13 +180,13 @@ auto BlockchainImp::ActivityDescription(
             output << "to ";
         }
 
-        auto n = std::size_t{0};
+        auto n = 0_uz;
         const auto max = names.size();
 
         for (auto i = names.begin(); i != names.end(); ++n, ++i) {
-            if (0u == n) {
+            if (0_uz == n) {
                 output << *i;
-            } else if ((n + 1u) == max) {
+            } else if ((n + 1_uz) == max) {
                 output << ", and ";
                 output << *i;
             } else {

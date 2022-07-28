@@ -23,6 +23,7 @@
 #include "internal/crypto/Seed.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -588,7 +589,7 @@ auto Seed::LongestWord(
         }
         case opentxs::crypto::SeedStyle::BIP32: {
 
-            return 130u;
+            return 130_uz;
         }
         default: {
 

@@ -18,6 +18,7 @@
 #include "internal/crypto/library/Ripemd160.hpp"
 #include "internal/crypto/library/Scrypt.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -326,7 +327,7 @@ auto Hash::sha_256_double_checksum(
             throw std::runtime_error{"invalid output"};
         }
 
-        static constexpr auto size = std::size_t{4};
+        static constexpr auto size = 4_uz;
         auto buf = destination(size);
 
         if (false == buf.valid(size)) {

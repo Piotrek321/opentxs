@@ -27,6 +27,7 @@
 #include "internal/otx/server/MessageProcessor.hpp"
 #include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -125,7 +126,7 @@ auto NotarySession(
 
 namespace opentxs::api::session
 {
-auto Notary::DefaultMintKeyBytes() noexcept -> std::size_t { return 1536u; }
+auto Notary::DefaultMintKeyBytes() noexcept -> std::size_t { return 1536_uz; }
 }  // namespace opentxs::api::session
 
 namespace opentxs::api::session::imp
