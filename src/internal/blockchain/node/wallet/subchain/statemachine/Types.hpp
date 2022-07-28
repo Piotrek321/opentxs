@@ -12,6 +12,7 @@
 #include <tuple>
 #include <utility>
 
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -75,9 +76,9 @@ using ProgressBatch = UnallocatedVector<
     std::pair<std::reference_wrapper<const block::Position>, std::size_t>>;
 using ScanStatus = std::pair<ScanState, block::Position>;
 
-static constexpr auto scan_status_bytes_ = std::size_t{
+static constexpr auto scan_status_bytes_ =
     sizeof(ScanState) + sizeof(block::Height) +
-    sizeof(std::vector<std::uint8_t>) + 32u};
+    sizeof(std::vector<std::uint8_t>) + 32_uz;
 
 auto decode(
     const api::Session& api,

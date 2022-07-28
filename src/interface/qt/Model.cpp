@@ -23,6 +23,7 @@
 #include "internal/interface/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Mutex.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
@@ -285,9 +286,9 @@ private:
             const ui::internal::Row* before,
             const ui::internal::Row* item) noexcept -> std::ptrdiff_t
         {
-            auto pos = std::ptrdiff_t{0};
+            auto pos = 0_z;
 
-            if ((nullptr == before) || (0u == children_.size())) {
+            if ((nullptr == before) || (0_uz == children_.size())) {
                 children_.emplace_front(item);
 
                 return pos;

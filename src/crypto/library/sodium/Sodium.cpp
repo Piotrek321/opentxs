@@ -26,6 +26,7 @@ extern "C" {
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/library/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
@@ -188,7 +189,7 @@ auto Sodium::Derive(
         static const auto blank = char{};
         const auto empty = ((nullptr == input) || (0u == inputSize));
         const auto* ptr = empty ? &blank : reinterpret_cast<const char*>(input);
-        const auto effective = empty ? std::size_t{0u} : inputSize;
+        const auto effective = empty ? 0_uz : inputSize;
 
         if (1u < parallel) {
             const auto rc = [&] {

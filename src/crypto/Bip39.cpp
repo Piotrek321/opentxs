@@ -22,6 +22,7 @@
 
 #include "internal/core/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
@@ -136,10 +137,10 @@ auto Bip39::entropy_to_words(
     }
 
     auto mnemonicWords = MnemonicWords{};
-    auto bitIndex = std::size_t{0};
+    auto bitIndex = 0_uz;
 
     for (std::size_t currentWord = 0; currentWord < wordCount; currentWord++) {
-        auto indexDict = std::size_t{0};
+        auto indexDict = 0_uz;
 
         for (std::size_t bit_iterator = 0; bit_iterator < BitsPerWord;
              bit_iterator++) {
@@ -428,7 +429,7 @@ auto Bip39::words_to_root_pkt(
         }
 
         static const auto salt = UnallocatedCString{"pktwallet seed 0"};
-        static constexpr auto keyBytes = std::size_t{19u};
+        static constexpr auto keyBytes = 19_uz;
         const auto key = [&] {
             const auto sKey = api.Crypto().Symmetric().Key(
                 passphrase,

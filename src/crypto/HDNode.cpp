@@ -15,6 +15,7 @@
 #include <tuple>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -38,7 +39,7 @@ HDNode::HDNode(const api::Crypto& crypto) noexcept
     check();
 
     {
-        static const auto size = std::size_t{32 + 32 + 33};
+        static const auto size = 32_uz + 32_uz + 33_uz;
         a_->WriteInto()(size);
         b_->WriteInto()(size);
 

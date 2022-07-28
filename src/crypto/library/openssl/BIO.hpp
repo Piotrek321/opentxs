@@ -12,6 +12,7 @@ extern "C" {
 
 #include <cstddef>
 
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Container.hpp"
 
@@ -20,7 +21,7 @@ namespace opentxs::crypto::openssl
 class BIO
 {
 private:
-    static constexpr auto read_amount_ = std::size_t{256};
+    static constexpr auto read_amount_ = 256_uz;
 
     ::BIO& m_refBIO;
     bool bCleanup;

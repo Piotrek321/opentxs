@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/bitcoin/bloom/Types.hpp"
@@ -125,7 +126,7 @@ public:
     BitWriter() = delete;
 
 private:
-    static constexpr auto ACCUM_BITS = std::size_t{sizeof(std::uint64_t) * 8u};
+    static constexpr auto ACCUM_BITS = sizeof(std::uint64_t) * 8_uz;
 
     Vector<std::byte>& output_;
     std::uint64_t accum_;

@@ -118,9 +118,9 @@ auto BlockchainStatistics::custom(
     } catch (...) {
         out.emplace_back(new blockchain::block::Height{-1});
         out.emplace_back(new blockchain::block::Height{-1});
-        out.emplace_back(new std::size_t{0});
-        out.emplace_back(new std::size_t{0});
-        out.emplace_back(new std::size_t{0});
+        out.emplace_back(new std::size_t{});
+        out.emplace_back(new std::size_t{});
+        out.emplace_back(new std::size_t{});
         out.emplace_back(new blockchain::Amount{0});
     }
 

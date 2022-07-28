@@ -16,6 +16,7 @@ extern "C" {
 #include <string_view>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
@@ -311,7 +312,7 @@ auto OpenSSL::SharedSecret(
         return false;
     }
 
-    auto size = std::size_t{};
+    auto size = 0_uz;
 
     if (1 != ::EVP_PKEY_derive(dh, nullptr, &size)) {
         LogError()(OT_PRETTY_CLASS())("Failed to calculate shared secret size")
@@ -375,7 +376,7 @@ auto OpenSSL::Sign(
         return false;
     }
 
-    auto bytes = std::size_t{};
+    auto bytes = 0_uz;
 
     if (1 != EVP_DigestSignFinal(md, nullptr, &bytes)) {
         LogError()(OT_PRETTY_CLASS())("Failed to calculate signature size")

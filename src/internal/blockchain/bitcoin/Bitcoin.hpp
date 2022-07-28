@@ -14,6 +14,7 @@
 #include <optional>
 #include <tuple>
 
+#include "internal/util/P0330.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
@@ -51,7 +52,7 @@ namespace be = boost::endian;
 
 namespace opentxs::blockchain
 {
-static constexpr auto standard_hash_size_ = std::size_t{32};
+static constexpr auto standard_hash_size_ = 32_uz;
 }  // namespace opentxs::blockchain
 
 namespace opentxs::blockchain::bitcoin

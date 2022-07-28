@@ -22,6 +22,7 @@
 #include "internal/core/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/P0330.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -218,7 +219,7 @@ auto Envelope::calculate_requirements(const Nyms& recipients) noexcept(false)
 
 auto Envelope::calculate_solutions() noexcept -> Solutions
 {
-    constexpr auto one = std::size_t{1};
+    constexpr auto one = 1_uz;
     auto output = Solutions{};
 
     for (auto row = one; row < (one << supported_.size()); ++row) {

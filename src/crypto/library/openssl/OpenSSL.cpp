@@ -272,7 +272,7 @@ auto OpenSSL::Digest(
         if (1 != rc) { throw std::runtime_error{"failed to write digest"}; }
 
         return true;
-        
+
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
