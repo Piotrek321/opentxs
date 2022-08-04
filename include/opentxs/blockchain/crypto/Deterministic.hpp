@@ -9,6 +9,7 @@
 
 #include <optional>
 #include <string_view>
+#include <HDPath.pb.h>
 
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/util/Container.hpp"

@@ -14,12 +14,14 @@
 #include <stdexcept>
 #include <string_view>
 #include <tuple>
+#include <thread>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/P0330.hpp"
 #include "ottest/fixtures/blockchain/BlockListener.hpp"
 #include "ottest/fixtures/blockchain/Common.hpp"
+#include "ottest/fixtures/blockchain/ScanListener.hpp"
 #include "ottest/fixtures/blockchain/WalletListener.hpp"
 #include "ottest/fixtures/common/User.hpp"
 
