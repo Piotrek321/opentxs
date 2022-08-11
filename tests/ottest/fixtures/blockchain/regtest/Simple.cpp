@@ -270,7 +270,6 @@ auto Regtest_fixture_simple::CreateClient(
     OT_ASSERT(handle);
 
     const auto& network = handle.get();
-    const auto added = network.AddPeer(address);
 
     auto seed = ImportBip39(client, words);
     const auto& user = CreateNym(client, name, seed, instance);
@@ -311,6 +310,7 @@ auto Regtest_fixture_simple::CreateClient(
                 .data())) {
         throw std::runtime_error("Error connecting to client1 socket");
     }
+    const auto added = network.AddPeer(address);
 
     const auto status = done.wait_for(std::chrono::minutes(2));
     const auto future = (std::future_status::ready == status);

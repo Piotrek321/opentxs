@@ -33,15 +33,15 @@ TEST_F(Regtest_fixture_simple, send_to_client)
 
     auto [user_alice, success_alice] = CreateClient(
         opentxs::Options{},
-        3,
+        4,
         core_wallet_.name_,
-        core_wallet_.words_,
+        GetPaymentCodeVector3().alice_.words_,
         address_);
     EXPECT_TRUE(success_alice);
 
     auto [user_bob, success_bob] = CreateClient(
         opentxs::Options{},
-        4,
+        5,
         name_bob,
         GetPaymentCodeVector3().bob_.words_,
         address_);

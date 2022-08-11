@@ -27,7 +27,7 @@ TEST_F(
     // Create wallets
     auto [user_bob, success] = CreateClient(
         opentxs::Options{},
-        3,
+        5,
         name_bob_,
         GetPaymentCodeVector3().bob_.words_,
         address_);
@@ -44,13 +44,13 @@ TEST_F(
     EXPECT_EQ(GetWalletName(user_bob), name_andrew);
 
     // Cleanup
-    CloseClient(user_bob.name_);
+   // CloseClient(user_bob.name_);
     ot::LogConsole()("User removed");
 
     // Create user with same seed but different name
     auto [user_andrew_after_reboot, success2] = CreateClient(
         opentxs::Options{},
-        3,
+        5,
         name_andrew,
         GetPaymentCodeVector3().bob_.words_,
         address_);
@@ -61,7 +61,7 @@ TEST_F(
     EXPECT_EQ(GetWalletName(user_andrew_after_reboot), name_andrew);
     EXPECT_EQ(bob_address, GetWalletAddress(user_andrew_after_reboot));
 
-    CloseClient(user_andrew_after_reboot.name_);
+   //CloseClient(user_andrew_after_reboot.name_);
     Shutdown();
 }
 
