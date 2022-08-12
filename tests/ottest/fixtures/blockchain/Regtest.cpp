@@ -43,10 +43,10 @@ using namespace opentxs::literals;
 
 using Dir = zmq::socket::Direction;
 
-constexpr auto sync_server_sync_{"inproc://sync_server_endpoint/sync"};
+/*constexpr auto sync_server_sync_{"inproc://sync_server_endpoint/sync"};
 constexpr auto sync_server_sync_public_{
     "inproc://sync_server_public_endpoint/sync"};
-constexpr auto sync_server_update_{"inproc://sync_server_endpoint/update"};
+constexpr auto sync_server_update_{"inproc://sync_server_endpoint/update"};*/
 
 /*class BlockchainStartup::Imp
 {
