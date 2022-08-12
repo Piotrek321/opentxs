@@ -97,7 +97,8 @@ RPC_fixture::RPC_fixture() noexcept
         static auto out = RPCPushCounter{ot_};
 
         return out;
-    }())
+    }()),
+    ot{}
 {
 }
 
@@ -154,7 +155,7 @@ auto RPC_fixture::CreateNym(
 
     OT_ASSERT(nym);
 
-    const auto id = nym->ID().asBase58(ot_.Crypto());
+    const auto id = nym->ID().str();
     auto& nyms = local_nym_map_.at(api.Instance());
     nyms.emplace(id);
 

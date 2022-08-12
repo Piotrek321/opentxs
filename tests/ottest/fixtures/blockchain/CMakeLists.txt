@@ -20,6 +20,8 @@ target_sources(
     "Download.hpp"
     "HeaderOracle.cpp"
     "HeaderOracle.hpp"
+    "Restart.cpp"
+    "Restart.hpp"
     "MinedBlocks.cpp"
     "MinedBlocks.hpp"
     "PeerListener.cpp"

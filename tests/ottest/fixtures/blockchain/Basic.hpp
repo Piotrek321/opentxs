@@ -36,6 +36,8 @@ class Message;
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
 
+namespace ot = opentxs;
+
 namespace ottest
 {
 struct FilterVector {

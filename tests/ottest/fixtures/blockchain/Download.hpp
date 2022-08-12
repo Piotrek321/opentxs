@@ -11,6 +11,7 @@
 #include "blockchain/DownloadManager.hpp"
 #include "ottest/Basic.hpp"
 
+namespace ot = opentxs;
 namespace b = ot::blockchain;
 namespace d = b::download;
 namespace bb = b::block;

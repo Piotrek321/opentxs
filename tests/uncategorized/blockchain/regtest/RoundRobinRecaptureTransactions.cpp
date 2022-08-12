@@ -11,7 +11,10 @@
 
 #include "opentxs/util/Log.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
-#include "ottest/fixtures/blockchain/regtest/Simple.hpp"
+//#include "ottest/fixtures/blockchain/regtest/Simple.hpp"
+#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
+
 
 namespace ottest
 {

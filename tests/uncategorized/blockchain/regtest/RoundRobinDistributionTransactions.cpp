@@ -12,7 +12,9 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
-#include "ottest/fixtures/blockchain/regtest/Simple.hpp"
+#include "ottest/fixtures/blockchain/Regtest.hpp"
+#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
+
 
 namespace ottest
 {
@@ -60,7 +62,7 @@ TEST_F(Regtest_fixture_round_robin, round_robin_distribution_transactions)
         WaitForSynchro(*receiver, target_height, receiver->expected_balance_);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
-            *sender, send_transactions_, transactions_ /*transactions_ptxid_*/);
+            *sender, send_transactions_, transactions_ptxid_);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
         send_transactions_.clear();
 
