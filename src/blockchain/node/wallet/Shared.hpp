@@ -76,6 +76,8 @@ public:
     virtual auto ConstructTransaction(
         const proto::BlockchainTransactionProposal& tx,
         std::promise<SendOutcome>&& promise) const noexcept -> void;
+    virtual auto GetTransactions() const noexcept
+    -> UnallocatedVector<block::pTxid>;
     virtual auto FeeEstimate() const noexcept -> std::optional<Amount>;
     virtual auto GetBalance() const noexcept -> Balance;
     virtual auto GetBalance(const identifier::Nym& owner) const noexcept
@@ -126,6 +128,8 @@ public:
     auto ConstructTransaction(
         const proto::BlockchainTransactionProposal& tx,
         std::promise<SendOutcome>&& promise) const noexcept -> void final;
+    auto GetTransactions() const noexcept
+    -> UnallocatedVector<block::pTxid> override;
     auto FeeEstimate() const noexcept -> std::optional<Amount> final;
     auto GetBalance() const noexcept -> Balance final;
     auto GetBalance(const identifier::Nym& owner) const noexcept

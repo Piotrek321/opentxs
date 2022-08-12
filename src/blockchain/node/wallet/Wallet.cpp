@@ -76,6 +76,15 @@ auto Wallet::ConstructTransaction(
     shared->ConstructTransaction(tx, std::move(promise));
 }
 
+auto Wallet::GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>
+{
+    auto shared{shared_};
+
+    OT_ASSERT(shared);
+
+    return shared->GetTransactions();
+}
+
 auto Wallet::FeeEstimate() const noexcept -> std::optional<Amount>
 {
     auto shared{shared_};

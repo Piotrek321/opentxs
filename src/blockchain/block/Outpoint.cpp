@@ -167,4 +167,15 @@ auto Outpoint::str() const noexcept -> UnallocatedCString
 }
 
 auto Outpoint::Txid() const noexcept -> ReadView { return reader(txid_); }
+
+auto Outpoint::TxidAsHex() const noexcept -> UnallocatedCString
+{
+    auto out = std::stringstream{};
+    for (const auto byte : txid_) {
+        out << std::hex << std::setfill('0') << std::setw(2)
+            << std::to_integer<int>(byte);
+    }
+    return out.str();
+}
 }  // namespace opentxs::blockchain::block
+

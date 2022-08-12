@@ -159,5 +159,7 @@ private:
 
     auto get_data(const std::size_t position) const noexcept(false) -> ReadView;
     auto get_opcode(const std::size_t position) const noexcept(false) -> OP;
+    virtual bool CompareScriptElements(
+    const bitcoin::block::Script& other) const noexcept override;
 };
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

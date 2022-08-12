@@ -25,13 +25,13 @@ namespace ottest
 {
 using namespace opentxs::literals;
 
-RegtestListener::RegtestListener(const ot::api::session::Client& client)
+/*RegtestListener::RegtestListener(const ot::api::session::Client& client)
     : block_listener(std::make_unique<BlockListener>(client))
     , wallet_listener(std::make_unique<WalletListener>(client))
 {
-}
+}*/
 
-Regtest_fixture_simple::Regtest_fixture_simple()
+/*Regtest_fixture_simple::Regtest_fixture_simple()
     : Regtest_fixture_normal(0, ot::Options{}.SetBlockchainStorageLevel(1))
     , send_transactions_()
     , users_()
@@ -738,7 +738,7 @@ void Regtest_fixture_simple::advance_blockchain(
 
     target_height += static_cast<int>(MaturationInterval());
 }
-
+*/
 void Regtest_fixture_round_robin::SetUp()
 {
     Regtest_fixture_simple::SetUp();

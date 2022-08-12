@@ -40,6 +40,11 @@ auto Wallet::Shared::ConstructTransaction(
 {
 }
 
+auto Wallet::Shared::GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>
+{
+    return {};
+}
+
 auto Wallet::Shared::FeeEstimate() const noexcept -> std::optional<Amount>
 {
     return {};
@@ -153,6 +158,11 @@ auto Shared::ConstructTransaction(
     proposals_.lock()->Add(tx, std::move(promise));
     to_actor_.lock()->SendDeferred(
         MakeWork(wallet::WalletJobs::statemachine), __FILE__, __LINE__, true);
+}
+
+auto Shared::GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>
+{
+    return db_.GetTransactions();
 }
 
 auto Shared::FeeEstimate() const noexcept -> std::optional<Amount>

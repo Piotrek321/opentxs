@@ -10,7 +10,7 @@
 
 #include "internal/identity/Nym.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
-#include "ottest/fixtures/blockchain/regtest/Simple.hpp"
+#include "ottest/fixtures/blockchain/RegtestSimple.hpp"
 #include "ottest/fixtures/ui/AccountTree.hpp"
 
 namespace ottest

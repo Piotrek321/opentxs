@@ -65,6 +65,9 @@ public:
     using UTXO =
         std::pair<block::Outpoint, std::unique_ptr<bitcoin::block::Output>>;
 
+    virtual auto GetTransactions() const noexcept
+    -> UnallocatedVector<block::pTxid> = 0;
+
     virtual auto GetBalance() const noexcept -> Balance = 0;
     virtual auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance = 0;

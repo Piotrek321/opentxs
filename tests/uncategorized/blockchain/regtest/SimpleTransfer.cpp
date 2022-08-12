@@ -80,7 +80,7 @@ TEST_F(Regtest_fixture_simple, send_to_client)
         SendCoins(*receiver, *sender, target_height, coin_to_send);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
-            *sender, send_transactions_, transactions_ptxid_);
+            *sender, send_transactions_, transactions_ /*transactions_ptxid_*/);
         auto fee = CalculateFee(send_transactions_, loaded_transactions);
         send_transactions_.clear();
 

@@ -1269,4 +1269,18 @@ auto Script::Value(const std::size_t position) const noexcept
 
     return get_data(index);
 }
+
+bool Script::CompareScriptElements(
+    const opentxs::blockchain::bitcoin::block::Script& other) const noexcept
+{
+    if (size() != other.size()) return false;
+    auto otherIter = other.begin();
+    auto iter = begin();
+    while (iter != end()) {
+        if (*iter != *otherIter) return false;
+        ++iter;
+        ++otherIter;
+    }
+    return true;
+}
 }  // namespace opentxs::blockchain::bitcoin::block::implementation

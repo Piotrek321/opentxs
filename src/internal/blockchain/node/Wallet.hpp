@@ -119,6 +119,9 @@ public:
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
 
+    auto GetTransactions() const noexcept
+    -> UnallocatedVector<block::pTxid> override;
+
     ~Wallet() final;
 
 private:

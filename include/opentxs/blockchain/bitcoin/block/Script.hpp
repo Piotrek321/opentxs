@@ -117,6 +117,8 @@ public:
 
     virtual ~Script() = default;
 
+    virtual bool CompareScriptElements(const Script& other) const = 0;
+
 protected:
     Script() noexcept = default;
 };

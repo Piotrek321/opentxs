@@ -26,6 +26,17 @@
 
 #include "ottest/Basic.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/blockchain/BlockchainStartup.hpp"
+#include "ottest/fixtures/blockchain/BlockListener.hpp"
+#include "ottest/fixtures/blockchain/MinedBlocks.hpp"
+#include "ottest/fixtures/blockchain/PeerListener.hpp"
+#include "ottest/fixtures/blockchain/ScanListener.hpp"
+#include "ottest/fixtures/blockchain/SyncRequestor.hpp"
+#include "ottest/fixtures/blockchain/SyncSubscriber.hpp"
+#include "ottest/fixtures/blockchain/WalletListener.hpp"
+#include "ottest/fixtures/blockchain/TXOs.hpp"
+#include "ottest/fixtures/blockchain/TXOState.hpp"
+#include "ottest/fixtures/blockchain/regtest/Base.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -117,15 +128,16 @@ using State = otsync::State;
 using Pattern = ot::blockchain::bitcoin::block::Script::Pattern;
 using FilterType = ot::blockchain::cfilter::Type;
 
-constexpr auto test_chain_{b::Type::UnitTest};
+//constexpr auto test_chain_{b::Type::UnitTest};
 constexpr auto sync_server_update_public_{
     "inproc://sync_server_public_endpoint/update"};
-constexpr auto coinbase_fun_{"The Industrial Revolution and its consequences "
-                             "have been a disaster for the human race."};
+/*constexpr auto coinbase_fun_{"The Industrial Revolution and its consequences "
+                             "have been a disaster for the human race."};*/
 
 class User;
 struct Server;
 
+/*
 class BlockchainStartup
 {
 public:
@@ -376,8 +388,9 @@ private:
     struct Imp;
 
     std::unique_ptr<Imp> imp_;
-};
+};*/
 
+/*
 class Regtest_fixture_base : virtual public ::testing::Test
 {
 public:
@@ -503,17 +516,17 @@ private:
         const TXOState::Data& expected,
         const ot::Vector<UTXO>& got) const noexcept -> bool;
 };
-
-class Regtest_fixture_normal : public Regtest_fixture_base
+*/
+/*class Regtest_fixture_normal : public Regtest_fixture_base
 {
 protected:
     Regtest_fixture_normal(const int clientCount);
     Regtest_fixture_normal(
         const int clientCount,
         const ot::Options& clientArgs);
-};
+};*/
 
-class Regtest_fixture_hd : public Regtest_fixture_normal
+/*class Regtest_fixture_hd : public Regtest_fixture_normal
 {
 protected:
     static const User alice_;
@@ -582,8 +595,8 @@ protected:
     auto Shutdown() noexcept -> void final;
 
     Regtest_payment_code();
-};
-
+};*/
+/*
 class Regtest_fixture_single : public Regtest_fixture_normal
 {
 protected:
@@ -620,5 +633,5 @@ protected:
 private:
     static std::unique_ptr<SyncSubscriber> sync_subscriber_;
     static std::unique_ptr<SyncRequestor> sync_requestor_;
-};
+};*/
 }  // namespace ottest

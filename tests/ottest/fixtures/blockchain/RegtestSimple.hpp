@@ -13,6 +13,7 @@
 
 #include "Regtest.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
+#include "ottest/fixtures/blockchain/regtest/Simple.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs
@@ -51,11 +52,6 @@ class Address;
 class Options;
 }  // namespace opentxs
 
-namespace ottest
-{
-class User;
-}  // namespace ottest
-// NOLINTEND(modernize-concat-nested-namespaces)
 
 namespace ottest
 {
@@ -63,15 +59,15 @@ using ot::blockchain::node::TxoState;
 using namespace opentxs;
 
 class User;
-
+/*
 struct RegtestListener {
     RegtestListener(const ot::api::session::Client& client);
 
     std::unique_ptr<BlockListener> block_listener;
     std::unique_ptr<WalletListener> wallet_listener;
 };
-
-class Regtest_fixture_simple : public Regtest_fixture_normal
+*/
+/*class Regtest_fixture_simple : public Regtest_fixture_normal
 {
 protected:
     using OutputsSet = std::set<UTXO>;
@@ -238,7 +234,7 @@ private:
         const User& receiver,
         std::vector<Transaction>& transactions,
         const size_t output_size) -> void;
-};
+};*/
 
 class Regtest_fixture_round_robin : public Regtest_fixture_simple
 {

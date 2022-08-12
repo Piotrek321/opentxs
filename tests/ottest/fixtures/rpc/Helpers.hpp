@@ -54,7 +54,6 @@ class Message;
 }  // namespace network
 
 class Amount;
-class Identifier;
 // }  // namespace v1
 }  // namespace opentxs
 // NOLINTEND(modernize-concat-nested-namespaces)
@@ -122,7 +121,7 @@ protected:
     static IssuedUnits created_units_;
     static AccountMap registered_accounts_;
     static UserIndex users_;
-    
+
     RPCPushCounter& push_;
 
     auto CreateNym(

@@ -60,6 +60,7 @@ public:
     auto Index() const noexcept -> std::uint32_t;
     auto Txid() const noexcept -> ReadView;
     auto str() const noexcept -> UnallocatedCString;
+    auto TxidAsHex() const noexcept -> UnallocatedCString;
 
     Outpoint(const ReadView serialized) noexcept(false);
     Outpoint(const ReadView txid, const std::uint32_t index) noexcept(false);

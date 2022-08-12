@@ -30,8 +30,10 @@
 #include "internal/util/Mutex.hpp"
 #include "internal/util/P0330.hpp"
 #include "ottest/data/crypto/PaymentCodeV3.hpp"
+#include "ottest/fixtures/blockchain/regtest/Base.hpp"
 #include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
+#include "ottest/fixtures/blockchain/Common.hpp"
 #include "util/Work.hpp"
 
 namespace ottest
@@ -46,7 +48,7 @@ constexpr auto sync_server_sync_public_{
     "inproc://sync_server_public_endpoint/sync"};
 constexpr auto sync_server_update_{"inproc://sync_server_endpoint/update"};
 
-class BlockchainStartup::Imp
+/*class BlockchainStartup::Imp
 {
 private:
     using Promise = std::promise<void>;
@@ -165,7 +167,6 @@ public:
     {
     }
 };
-
 BlockchainStartup::BlockchainStartup(
     const ot::api::Session& api,
     const ot::blockchain::Type chain) noexcept
@@ -421,7 +422,9 @@ PeerListener::PeerListener(
 }
 
 PeerListener::~PeerListener() = default;
+*/
 
+/*
 Regtest_fixture_base::Regtest_fixture_base(
     const bool waitForHandshake,
     const int clientCount,
@@ -1092,7 +1095,8 @@ auto Regtest_fixture_base::TestWallet(
 
     return output;
 }
-
+*/
+/*
 Regtest_fixture_hd::Regtest_fixture_hd()
     : Regtest_fixture_normal(1)
     , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
@@ -1166,7 +1170,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
 
         OT_ASSERT(output);
 
-        const auto& txid = transactions_ptxid_.emplace_back(output->ID()).get();
+        const auto& txid = transactions_.emplace_back(output->ID())//.get();
 
         for (auto i = Index{0}; i < Index{count}; ++i) {
             auto& [bytes, amount, pattern] = meta.at(i);
@@ -1193,7 +1197,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
     if (false == init_) {
         auto cb = [](User& user) {
             const auto& api = *user.api_;
-            const auto& nymID = user.nym_id_.get();
+            const auto& nymID = user.nym_id_//.get();
             const auto reason = api.Factory().PasswordPrompt(__func__);
             api.Crypto().Blockchain().NewHDSubaccount(
                 nymID,
@@ -1236,14 +1240,14 @@ auto Regtest_fixture_hd::SendHD() const noexcept -> const bca::HD&
 auto Regtest_fixture_hd::Shutdown() noexcept -> void
 {
     listener_p_.reset();
-    transactions_ptxid_.clear();
+    transactions_.clear();
     Regtest_fixture_normal::Shutdown();
 }
 
 Regtest_fixture_normal::Regtest_fixture_normal(
     const int clientCount,
     const ot::Options& clientArgs)
-    : Regtest_fixture_base(true, clientCount, clientArgs)
+    : Regtest_fixture_base(ot_,true, clientCount, clientArgs)
 {
 }
 
@@ -1253,7 +1257,8 @@ Regtest_fixture_normal::Regtest_fixture_normal(const int clientCount)
           ot::Options{}.SetBlockchainStorageLevel(1))
 {
 }
-
+*/
+/*
 Regtest_fixture_single::Regtest_fixture_single(const ot::Options& clientArgs)
     : Regtest_fixture_normal(1, clientArgs)
 {
@@ -2492,5 +2497,5 @@ const User Regtest_payment_code::bob_{
 TXOs Regtest_payment_code::txos_alice_{alice_};
 TXOs Regtest_payment_code::txos_bob_{bob_};
 std::unique_ptr<ScanListener> Regtest_payment_code::listener_alice_p_{};
-std::unique_ptr<ScanListener> Regtest_payment_code::listener_bob_p_{};
+std::unique_ptr<ScanListener> Regtest_payment_code::listener_bob_p_{};*/
 }  // namespace ottest

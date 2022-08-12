@@ -20,7 +20,8 @@ TEST_F(Test_HeaderOracle, add_checkpoint_already_in_best_chain)
     EXPECT_TRUE(verify_best_chain(best_chain_1_));
     EXPECT_TRUE(verify_siblings(siblings_1_));
 
-    EXPECT_TRUE(header_oracle_.Internal().AddCheckpoint(6, get_block_hash(BLOCK_6)));
+    EXPECT_TRUE(
+        header_oracle_.Internal().AddCheckpoint(6, get_block_hash(BLOCK_6)));
 
     const auto [height, hash] = header_oracle_.GetCheckpoint();
 
