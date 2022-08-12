@@ -87,8 +87,8 @@ TEST_F(Regtest_payment_code, alice_contact_list_initial)
     const auto expected = ContactListData{{
         {true, alice_.name_, alice_.name_, "ME", ""},
     }};
-    wait_for_counter(contact_list_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(contact_list_alice_, false));
     EXPECT_TRUE(check_contact_list(alice_, expected));
     EXPECT_TRUE(check_contact_list_qt(alice_, expected));
 }
@@ -117,8 +117,8 @@ TEST_F(Regtest_payment_code, alice_account_activity_initial)
         {{u8"0", u8"0 units"}},
         {},
     };
-    wait_for_counter(account_activity_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_, false));
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
@@ -139,8 +139,8 @@ TEST_F(Regtest_payment_code, alice_account_list_initial)
          0,
          u8"0 units"},
     }};
-    wait_for_counter(account_list_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_alice_, false));
     EXPECT_TRUE(check_account_list(alice_, expected));
     EXPECT_TRUE(check_account_list_qt(alice_, expected));
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
@@ -164,8 +164,8 @@ TEST_F(Regtest_payment_code, alice_account_tree_initial)
                0,
                "0 units"},
           }}}};
-    wait_for_counter(account_tree_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
     EXPECT_TRUE(check_account_tree(alice_, expected));
     EXPECT_TRUE(check_account_tree_qt(alice_, expected));
 }
@@ -175,8 +175,8 @@ TEST_F(Regtest_payment_code, bob_contact_list_initial)
     const auto expected = ContactListData{{
         {true, bob_.name_, bob_.name_, "ME", ""},
     }};
-    wait_for_counter(contact_list_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(contact_list_bob_, false));
     EXPECT_TRUE(check_contact_list(bob_, expected));
     EXPECT_TRUE(check_contact_list_qt(bob_, expected));
 }
@@ -205,8 +205,8 @@ TEST_F(Regtest_payment_code, bob_account_activity_initial)
         {{u8"0", u8"0 units"}},
         {},
     };
-    wait_for_counter(account_activity_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_, false));
     EXPECT_TRUE(check_account_activity(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(bob_, id, expected));
@@ -227,8 +227,8 @@ TEST_F(Regtest_payment_code, bob_account_list_initial)
          0,
          u8"0 units"},
     }};
-    wait_for_counter(account_list_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_bob_, false));
     EXPECT_TRUE(check_account_list(bob_, expected));
     EXPECT_TRUE(check_account_list_qt(bob_, expected));
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
@@ -252,8 +252,8 @@ TEST_F(Regtest_payment_code, bob_account_tree_initial)
                0,
                "0 units"},
           }}}};
-    wait_for_counter(account_tree_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
     EXPECT_TRUE(check_account_tree(bob_, expected));
     EXPECT_TRUE(check_account_tree_qt(bob_, expected));
 }
@@ -327,7 +327,7 @@ TEST_F(Regtest_payment_code, first_block)
 
     const auto& tx = *pTx;
 
-    EXPECT_EQ(tx.ID(), transactions_.at(0));
+    EXPECT_EQ(tx.ID(), /*transactions_ptxid_*/ transactions_.at(0));
     EXPECT_EQ(tx.BlockPosition(), 0);
     ASSERT_EQ(tx.Outputs().size(), 1);
     EXPECT_TRUE(tx.IsGeneration());
@@ -365,14 +365,15 @@ TEST_F(Regtest_payment_code, alice_account_activity_initial_receive)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(0)),
                 std::nullopt,
                 11,
             },
         },
     };
-    wait_for_counter(account_activity_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_, false));
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
@@ -393,8 +394,8 @@ TEST_F(Regtest_payment_code, alice_account_list_initial_receive)
          10000000000,
          u8"100 units"},
     }};
-    wait_for_counter(account_list_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_alice_, false));
     EXPECT_TRUE(check_account_list(alice_, expected));
     EXPECT_TRUE(check_account_list_qt(alice_, expected));
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
@@ -418,8 +419,8 @@ TEST_F(Regtest_payment_code, alice_account_tree_initial_receive)
                10000000000,
                u8"100 units"},
           }}}};
-    wait_for_counter(account_tree_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
     EXPECT_TRUE(check_account_tree(alice_, expected));
     EXPECT_TRUE(check_account_tree_qt(alice_, expected));
 }
@@ -450,7 +451,8 @@ TEST_F(Regtest_payment_code, send_to_bob)
             GetPaymentCodeVector3().bob_.payment_code_),
         1000000000,
         memo_outgoing_);
-    const auto& txid = transactions_.emplace_back(future.get().second);
+    const auto& txid =
+        /*transactions_ptxid_*/ transactions_.emplace_back(future.get().second);
 
     ASSERT_FALSE(txid.empty());
 
@@ -461,8 +463,8 @@ TEST_F(Regtest_payment_code, send_to_bob)
         ASSERT_TRUE(pTX);
 
         const auto& tx = *pTX;
-        EXPECT_TRUE(
-            txos_alice_.SpendUnconfirmed({transactions_.at(0).Bytes(), 0}));
+        EXPECT_TRUE(txos_alice_.SpendUnconfirmed(
+            {/*transactions_ptxid_*/ transactions_.at(0).Bytes(), 0}));
         EXPECT_TRUE(txos_alice_.AddUnconfirmed(tx, 1, SendHD()));
         // NOTE do not update Bob's txos since the recipient payment code
         // subaccount does not exist yet.
@@ -505,7 +507,7 @@ TEST_F(Regtest_payment_code, first_outgoing_transaction)
     const auto& me = alice_.nym_id_;
     const auto self = contact.ContactID(me);
     const auto other = contact.ContactID(bob_.nym_id_);
-    const auto& txid = transactions_.at(1);
+    const auto& txid = /*transactions_ptxid_*/ transactions_.at(1);
     const auto pTX = blockchain.LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);
@@ -572,8 +574,8 @@ TEST_F(Regtest_payment_code, alice_contact_list_first_spend_unconfirmed)
         {true, alice_.name_, alice_.name_, "ME", ""},
         {false, bob_.name_, bob_.payment_code_, "P", ""},
     }};
-    wait_for_counter(contact_list_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(contact_list_alice_, false));
     EXPECT_TRUE(check_contact_list(alice_, expected));
     EXPECT_TRUE(check_contact_list_qt(alice_, expected));
     EXPECT_TRUE(CheckContactID(
@@ -614,7 +616,8 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
                 "",
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(1)),
                 std::nullopt,
                 0,
             },
@@ -627,14 +630,15 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(0)),
                 std::nullopt,
                 11,
             },
         },
     };
-    wait_for_counter(account_activity_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_, false));
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
@@ -655,8 +659,8 @@ TEST_F(Regtest_payment_code, alice_account_list_first_spend_unconfirmed)
          8999999684,
          u8"89.999\u202F996\u202F84 units"},
     }};
-    wait_for_counter(account_list_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_alice_, false));
     EXPECT_TRUE(check_account_list(alice_, expected));
     EXPECT_TRUE(check_account_list_qt(alice_, expected));
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
@@ -680,8 +684,8 @@ TEST_F(Regtest_payment_code, alice_account_tree_first_spend_unconfirmed)
                8999999684,
                u8"89.999\u202F996\u202F84 units"},
           }}}};
-    wait_for_counter(account_tree_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
     EXPECT_TRUE(check_account_tree(alice_, expected));
     EXPECT_TRUE(check_account_tree_qt(alice_, expected));
 }
@@ -715,8 +719,8 @@ TEST_F(Regtest_payment_code, alice_activity_thread_first_spend_unconfirmed)
             },
         },
     };
-    wait_for_counter(activity_thread_alice_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(activity_thread_alice_bob_, false));
     EXPECT_TRUE(check_activity_thread(alice_, contact, expected));
     EXPECT_TRUE(check_activity_thread_qt(alice_, contact, expected));
 }
@@ -732,8 +736,8 @@ TEST_F(Regtest_payment_code, bob_contact_list_first_unconfirmed_incoming)
         {true, bob_.name_, bob_.name_, "ME", ""},
         {false, alice_.name_, alice_.payment_code_, "P", ""},
     }};
-    wait_for_counter(contact_list_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(contact_list_bob_, false));
     EXPECT_TRUE(check_contact_list(bob_, expected));
     EXPECT_TRUE(check_contact_list_qt(bob_, expected));
     EXPECT_TRUE(CheckContactID(
@@ -774,14 +778,15 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_unconfirmed_incoming)
                 "",
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(1)),
                 std::nullopt,
                 0,
             },
         },
     };
-    wait_for_counter(account_activity_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_, false));
     EXPECT_TRUE(check_account_activity(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(bob_, id, expected));
@@ -802,8 +807,8 @@ TEST_F(Regtest_payment_code, bob_account_list_first_unconfirmed_incoming)
          1000000000,
          u8"10 units"},
     }};
-    wait_for_counter(account_list_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_bob_, false));
     EXPECT_TRUE(check_account_list(bob_, expected));
     EXPECT_TRUE(check_account_list_qt(bob_, expected));
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
@@ -827,8 +832,8 @@ TEST_F(Regtest_payment_code, bob_account_tree_first_unconfirmed_incoming)
                1000000000,
                u8"10 units"},
           }}}};
-    wait_for_counter(account_tree_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
     EXPECT_TRUE(check_account_tree(bob_, expected));
     EXPECT_TRUE(check_account_tree_qt(bob_, expected));
 }
@@ -862,8 +867,8 @@ TEST_F(Regtest_payment_code, bob_activity_thread_first_unconfirmed_incoming)
             },
         },
     };
-    wait_for_counter(activity_thread_bob_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(activity_thread_bob_alice_, false));
     EXPECT_TRUE(check_activity_thread(bob_, contact, expected));
     EXPECT_TRUE(check_activity_thread_qt(bob_, contact, expected));
 }
@@ -874,7 +879,7 @@ TEST_F(Regtest_payment_code, bob_txodb_first_unconfirmed_incoming)
         // NOTE normally this would be done when the transaction was first sent
         // but the subaccount returned by ReceivePC() did not exist yet.
         const auto pTX = client_1_.Crypto().Blockchain().LoadTransactionBitcoin(
-            transactions_.at(1));
+            /*transactions_ptxid_*/ transactions_.at(1));
 
         ASSERT_TRUE(pTX);
 
@@ -901,7 +906,7 @@ TEST_F(Regtest_payment_code, confirm_send)
     account_list_bob_.expected_ += 0;
     account_tree_alice_.expected_ += 2;
     account_tree_bob_.expected_ += 0;
-    const auto& txid = transactions_.at(1);
+    const auto& txid = /*transactions_ptxid_*/ transactions_.at(1);
     const auto extra = [&] {
         auto output = ot::UnallocatedVector<Transaction>{};
         const auto pTX = output.emplace_back(
@@ -918,7 +923,8 @@ TEST_F(Regtest_payment_code, confirm_send)
     EXPECT_TRUE(listener_alice_.wait(future1));
     EXPECT_TRUE(listener_alice_.wait(future2));
     EXPECT_TRUE(txos_alice_.Mature(end));
-    EXPECT_TRUE(txos_alice_.Confirm(transactions_.at(0)));
+    EXPECT_TRUE(
+        txos_alice_.Confirm(/*transactions_ptxid_*/ transactions_.at(0)));
     EXPECT_TRUE(txos_alice_.Confirm(txid));
     EXPECT_TRUE(txos_bob_.Mature(end));
     EXPECT_TRUE(txos_bob_.Confirm(txid));
@@ -964,7 +970,7 @@ TEST_F(Regtest_payment_code, second_block)
         const auto& tx = *pTx;
         expected.emplace_back(ot::space(tx.ID().Bytes(), ot::alloc::System()));
 
-        EXPECT_EQ(tx.ID(), transactions_.at(1));
+        EXPECT_EQ(tx.ID(), /*transactions_ptxid_*/ transactions_.at(1));
         EXPECT_EQ(tx.BlockPosition(), 1);
         EXPECT_FALSE(tx.IsGeneration());
         ASSERT_EQ(tx.Inputs().size(), 1);
@@ -1061,7 +1067,8 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
                 "",
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(1)),
                 std::nullopt,
                 1,
             },
@@ -1074,14 +1081,15 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(0)),
                 std::nullopt,
                 12,
             },
         },
     };
-    wait_for_counter(account_activity_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_, false));
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
@@ -1146,8 +1154,8 @@ TEST_F(Regtest_payment_code, alice_account_list_first_spend_confirmed)
          8999999684,
          u8"89.999\u202F996\u202F84 units"},
     }};
-    wait_for_counter(account_list_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_alice_, false));
     EXPECT_TRUE(check_account_list(alice_, expected));
     EXPECT_TRUE(check_account_list_qt(alice_, expected));
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
@@ -1171,8 +1179,8 @@ TEST_F(Regtest_payment_code, alice_account_tree_first_spend_confirmed)
                8999999684,
                u8"89.999\u202F996\u202F84 units"},
           }}}};
-    wait_for_counter(account_tree_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
     EXPECT_TRUE(check_account_tree(alice_, expected));
     EXPECT_TRUE(check_account_tree_qt(alice_, expected));
 }
@@ -1216,14 +1224,15 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_spend_confirmed)
                 "",
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(1)),
                 std::nullopt,
                 1,
             },
         },
     };
-    wait_for_counter(account_activity_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_, false));
     EXPECT_TRUE(check_account_activity(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(bob_, id, expected));
@@ -1288,8 +1297,8 @@ TEST_F(Regtest_payment_code, bob_account_list_first_spend_confirmed)
          1000000000,
          u8"10 units"},
     }};
-    wait_for_counter(account_list_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_bob_, false));
     EXPECT_TRUE(check_account_list(bob_, expected));
     EXPECT_TRUE(check_account_list_qt(bob_, expected));
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
@@ -1313,8 +1322,8 @@ TEST_F(Regtest_payment_code, bob_account_tree_first_spend_confirmed)
                1000000000,
                u8"10 units"},
           }}}};
-    wait_for_counter(account_tree_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
     EXPECT_TRUE(check_account_tree(bob_, expected));
     EXPECT_TRUE(check_account_tree_qt(bob_, expected));
 }
@@ -1327,7 +1336,7 @@ TEST_F(Regtest_payment_code, bob_first_incoming_transaction)
     const auto& me = bob_.nym_id_;
     const auto self = contact.ContactID(me);
     const auto other = contact.ContactID(alice_.nym_id_);
-    const auto& txid = transactions_.at(1);
+    const auto& txid = /*transactions_ptxid_*/ transactions_.at(1);
     const auto pTX = blockchain.LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);
@@ -1406,7 +1415,8 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
             GetPaymentCodeVector3().bob_.payment_code_),
         1500000000,
         memo_outgoing_);
-    const auto& txid = transactions_.emplace_back(future.get().second);
+    const auto& txid =
+        /*transactions_ptxid_*/ transactions_.emplace_back(future.get().second);
 
     ASSERT_FALSE(txid.empty());
 
@@ -1417,8 +1427,8 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
         ASSERT_TRUE(pTX);
 
         const auto& tx = *pTX;
-        EXPECT_TRUE(
-            txos_alice_.SpendUnconfirmed({transactions_.at(1).Bytes(), 1}));
+        EXPECT_TRUE(txos_alice_.SpendUnconfirmed(
+            {/*transactions_ptxid_*/ transactions_.at(1).Bytes(), 1}));
         EXPECT_TRUE(txos_bob_.AddUnconfirmed(tx, 0, ReceivePC()));
         EXPECT_TRUE(txos_alice_.AddUnconfirmed(tx, 1, SendHD()));
     }
@@ -1479,7 +1489,8 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
                 "",
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
-                ot::blockchain::HashToNumber(transactions_.at(2)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(2)),
                 std::nullopt,
                 0,
             },
@@ -1493,7 +1504,8 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
                 "",
                 "Outgoing Unit Test Simulation transaction to "
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(1)),
                 std::nullopt,
                 1,
             },
@@ -1506,14 +1518,15 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(0)),
                 std::nullopt,
                 12,
             },
         },
     };
-    wait_for_counter(account_activity_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_, false));
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
@@ -1578,8 +1591,8 @@ TEST_F(Regtest_payment_code, alice_account_list_second_spend_unconfirmed)
          7499999448,
          u8"74.999\u202F994\u202F48 units"},
     }};
-    wait_for_counter(account_list_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_alice_, false));
     EXPECT_TRUE(check_account_list(alice_, expected));
     EXPECT_TRUE(check_account_list_qt(alice_, expected));
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
@@ -1603,8 +1616,8 @@ TEST_F(Regtest_payment_code, alice_account_tree_second_spend_unconfirmed)
                7499999448,
                u8"74.999\u202F994\u202F48 units"},
           }}}};
-    wait_for_counter(account_tree_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
     EXPECT_TRUE(check_account_tree(alice_, expected));
     EXPECT_TRUE(check_account_tree_qt(alice_, expected));
 }
@@ -1650,8 +1663,8 @@ TEST_F(Regtest_payment_code, alice_activity_thread_second_spend_unconfirmed)
             },
         },
     };
-    wait_for_counter(activity_thread_alice_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(activity_thread_alice_bob_, false));
     EXPECT_TRUE(check_activity_thread(alice_, contact, expected));
     EXPECT_TRUE(check_activity_thread_qt(alice_, contact, expected));
 }
@@ -1664,7 +1677,7 @@ TEST_F(Regtest_payment_code, alice_second_outgoing_transaction)
     const auto& me = alice_.nym_id_;
     const auto self = contact.ContactID(me);
     const auto other = contact.ContactID(bob_.nym_id_);
-    const auto& txid = transactions_.at(2);
+    const auto& txid = /*transactions_ptxid_*/ transactions_.at(2);
     const auto pTX = blockchain.LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);
@@ -1761,7 +1774,8 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
                 "",
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
-                ot::blockchain::HashToNumber(transactions_.at(2)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(2)),
                 std::nullopt,
                 0,
             },
@@ -1775,14 +1789,15 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
                 "",
                 "Incoming Unit Test Simulation transaction from "
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(1)),
                 std::nullopt,
                 1,
             },
         },
     };
-    wait_for_counter(account_activity_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_, false));
     EXPECT_TRUE(check_account_activity(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(bob_, id, expected));
@@ -1847,8 +1862,8 @@ TEST_F(Regtest_payment_code, bob_account_list_second_unconfirmed_incoming)
          2500000000,
          u8"25 units"},
     }};
-    wait_for_counter(account_list_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_bob_, false));
     EXPECT_TRUE(check_account_list(bob_, expected));
     EXPECT_TRUE(check_account_list_qt(bob_, expected));
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
@@ -1872,8 +1887,8 @@ TEST_F(Regtest_payment_code, bob_account_tree_second_unconfirmed_incoming)
                2500000000,
                u8"25 units"},
           }}}};
-    wait_for_counter(account_tree_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
     EXPECT_TRUE(check_account_tree(bob_, expected));
     EXPECT_TRUE(check_account_tree_qt(bob_, expected));
 }
@@ -1919,8 +1934,8 @@ TEST_F(Regtest_payment_code, bob_activity_thread_second_unconfirmed_incoming)
             },
         },
     };
-    wait_for_counter(activity_thread_bob_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(activity_thread_bob_alice_, false));
     EXPECT_TRUE(check_activity_thread(bob_, contact, expected));
     EXPECT_TRUE(check_activity_thread_qt(bob_, contact, expected));
 }
@@ -1962,8 +1977,8 @@ TEST_F(Regtest_payment_code, alice_contact_list_after_otx)
         {true, alice_.name_, alice_.name_, "ME", ""},
         {true, bob_.name_, bob_.name_, "B", ""},
     }};
-    wait_for_counter(contact_list_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(contact_list_alice_, false));
     EXPECT_TRUE(check_contact_list(alice_, expected));
     EXPECT_TRUE(check_contact_list_qt(alice_, expected));
 }
@@ -2001,7 +2016,8 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
                 "",
                 "",
                 "Outgoing Unit Test Simulation transaction to Bob",
-                ot::blockchain::HashToNumber(transactions_.at(2)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(2)),
                 std::nullopt,
                 0,
             },
@@ -2014,7 +2030,8 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
                 "",
                 "",
                 "Outgoing Unit Test Simulation transaction to Bob",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(1)),
                 std::nullopt,
                 1,
             },
@@ -2027,14 +2044,15 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction",
-                ot::blockchain::HashToNumber(transactions_.at(0)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(0)),
                 std::nullopt,
                 12,
             },
         },
     };
-    wait_for_counter(account_activity_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_alice_, false));
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
@@ -2055,8 +2073,8 @@ TEST_F(Regtest_payment_code, alice_account_list_after_otx)
          7499999448,
          u8"74.999\u202F994\u202F48 units"},
     }};
-    wait_for_counter(account_list_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_alice_, false));
     EXPECT_TRUE(check_account_list(alice_, expected));
     EXPECT_TRUE(check_account_list_qt(alice_, expected));
     EXPECT_TRUE(check_account_list_rpc(alice_, expected));
@@ -2080,8 +2098,8 @@ TEST_F(Regtest_payment_code, alice_account_tree_after_otx)
                7499999448,
                u8"74.999\u202F994\u202F48 units"},
           }}}};
-    wait_for_counter(account_tree_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_alice_, false));
     EXPECT_TRUE(check_account_tree(alice_, expected));
     EXPECT_TRUE(check_account_tree_qt(alice_, expected));
 }
@@ -2125,8 +2143,8 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_otx)
             },
         },
     };
-    wait_for_counter(activity_thread_alice_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(activity_thread_alice_bob_, false));
     EXPECT_TRUE(check_activity_thread(alice_, contact, expected));
     EXPECT_TRUE(check_activity_thread_qt(alice_, contact, expected));
 }
@@ -2137,8 +2155,8 @@ TEST_F(Regtest_payment_code, bob_contact_list_after_otx)
         {true, bob_.name_, bob_.name_, "ME", ""},
         {true, alice_.name_, alice_.name_, "A", ""},
     }};
-    wait_for_counter(contact_list_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(contact_list_bob_, false));
     EXPECT_TRUE(check_contact_list(bob_, expected));
     EXPECT_TRUE(check_contact_list_qt(bob_, expected));
 }
@@ -2176,7 +2194,8 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction from Alice",
-                ot::blockchain::HashToNumber(transactions_.at(2)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(2)),
                 std::nullopt,
                 0,
             },
@@ -2189,14 +2208,15 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
                 "",
                 "",
                 "Incoming Unit Test Simulation transaction from Alice",
-                ot::blockchain::HashToNumber(transactions_.at(1)),
+                ot::blockchain::HashToNumber(
+                    /*transactions_ptxid_*/ transactions_.at(1)),
                 std::nullopt,
                 1,
             },
         },
     };
-    wait_for_counter(account_activity_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_activity_bob_, false));
     EXPECT_TRUE(check_account_activity(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(bob_, id, expected));
     EXPECT_TRUE(check_account_activity_rpc(bob_, id, expected));
@@ -2261,8 +2281,8 @@ TEST_F(Regtest_payment_code, bob_account_list_after_otx)
          2500000000,
          u8"25 units"},
     }};
-    wait_for_counter(account_list_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_list_bob_, false));
     EXPECT_TRUE(check_account_list(bob_, expected));
     EXPECT_TRUE(check_account_list_qt(bob_, expected));
     EXPECT_TRUE(check_account_list_rpc(bob_, expected));
@@ -2286,8 +2306,8 @@ TEST_F(Regtest_payment_code, bob_account_tree_after_otx)
                2500000000,
                u8"25 units"},
           }}}};
-    wait_for_counter(account_tree_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(account_tree_bob_, false));
     EXPECT_TRUE(check_account_tree(bob_, expected));
     EXPECT_TRUE(check_account_tree_qt(bob_, expected));
 }
@@ -2331,8 +2351,8 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_otx)
             },
         },
     };
-    wait_for_counter(activity_thread_bob_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(activity_thread_bob_alice_, false));
     EXPECT_TRUE(check_activity_thread(bob_, contact, expected));
     EXPECT_TRUE(check_activity_thread_qt(bob_, contact, expected));
 }
@@ -2398,8 +2418,8 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_message)
             },
         },
     };
-    wait_for_counter(activity_thread_alice_bob_, false);
 
+    ASSERT_TRUE(wait_for_counter(activity_thread_alice_bob_, false));
     EXPECT_TRUE(check_activity_thread(alice_, contact, expected));
     EXPECT_TRUE(check_activity_thread_qt(alice_, contact, expected));
 }
@@ -2456,8 +2476,8 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_message)
             },
         },
     };
-    wait_for_counter(activity_thread_bob_alice_, false);
 
+    ASSERT_TRUE(wait_for_counter(activity_thread_bob_alice_, false));
     EXPECT_TRUE(check_activity_thread(bob_, contact, expected));
     EXPECT_TRUE(check_activity_thread_qt(bob_, contact, expected));
 }

@@ -20,8 +20,9 @@ TEST_F(Test_HeaderOracle, reorg_to_checkpoint_descendent)
     EXPECT_TRUE(verify_best_chain(best_chain_8a_));
     EXPECT_TRUE(verify_siblings(siblings_8a_));
 
-    EXPECT_TRUE(
-        header_oracle_.Internal().AddCheckpoint(2, get_block_hash(BLOCK_6)));
+    EXPECT_TRUE(header_oracle_.Internal().AddCheckpoint(2, get_block_hash(BLOCK_6)));
+
+    // TODO : MT-87 : Fix this test when a sleep is added here // sleep(2)
 
     const auto [height, hash] = header_oracle_.GetCheckpoint();
 

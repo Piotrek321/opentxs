@@ -40,7 +40,7 @@ protected:
 
     static ot::Nym_p alice_p_;
     static ot::Nym_p bob_p_;
-    static Transactions transactions_;
+    static Transactions transactions_ptxid_;
     static std::unique_ptr<ScanListener> listener_alice_p_;
     static std::unique_ptr<ScanListener> listener_bob_p_;
 
@@ -94,7 +94,7 @@ protected:
     {
         listener_bob_p_.reset();
         listener_alice_p_.reset();
-        transactions_.clear();
+        transactions_ptxid_.clear();
         bob_p_.reset();
         alice_p_.reset();
         Regtest_fixture_normal::Shutdown();
@@ -237,7 +237,7 @@ protected:
 
             OT_ASSERT(output);
 
-            transactions_.emplace_back(output->ID());
+            transactions_ptxid_.emplace_back(output->ID());
 
             return output;
         })
@@ -265,7 +265,7 @@ protected:
 
 ot::Nym_p Regtest_stress::alice_p_{};
 ot::Nym_p Regtest_stress::bob_p_{};
-Regtest_stress::Transactions Regtest_stress::transactions_{};
+Regtest_stress::Transactions Regtest_stress::transactions_ptxid_{};
 std::unique_ptr<ScanListener> Regtest_stress::listener_alice_p_{};
 std::unique_ptr<ScanListener> Regtest_stress::listener_bob_p_{};
 
@@ -502,8 +502,8 @@ TEST_F(Regtest_stress, bob_after_receive)
         expected_account_bob_,
         make_cb(account_activity_, u8"account_activity_"));
     constexpr auto expectedTotal = amount_ * transaction_count_;
-    wait_for_counter(account_activity_, false);
 
+    EXPECT_TRUE(wait_for_counter(account_activity_));
     EXPECT_EQ(widget.Balance(), expectedTotal);
     EXPECT_EQ(widget.BalancePolarity(), 1);
 

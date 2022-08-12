@@ -133,7 +133,7 @@ TEST_F(Test_BlockchainActivity, blockchain_selection)
     const auto& widget = api_.UI().BlockchainSelection(
         ot::ui::Blockchains::All, make_cb(counter, "Blockchain selector"));
 
-    wait_for_counter(counter, false);
+    ASSERT_TRUE(wait_for_counter(counter));
 
     auto row = widget.First();
     auto expected{ot::blockchain::Type::Bitcoin};
@@ -383,7 +383,7 @@ TEST_F(Test_BlockchainActivity, setup_blockchain_account)
     fifth_index_ = indexFour.value();
     sixth_index_ = indexFour.value();
 
-    wait_for_counter(account_list_, false);
+    ASSERT_TRUE(wait_for_counter(account_list_));
 }
 
 TEST_F(Test_BlockchainActivity, setup_ui)
@@ -420,7 +420,7 @@ TEST_F(Test_BlockchainActivity, setup_ui)
 
 TEST_F(Test_BlockchainActivity, initial_state_account_list)
 {
-    wait_for_counter(account_list_, false);
+    ASSERT_TRUE(wait_for_counter(account_list_));
 
     const auto& widget = api_.UI().AccountList(nym_1_id());
     auto row = widget.First();
@@ -442,7 +442,7 @@ TEST_F(Test_BlockchainActivity, initial_state_account_list)
 #if OT_QT
 TEST_F(Test_BlockchainActivity, initial_state_account_list_qt)
 {
-    wait_for_counter(account_list_, false);
+    ASSERT_TRUE(wait_for_counter(account_list_));
 
     const auto* pWidget = api_.UI().AccountListQt(nym_1_id());
 
@@ -496,7 +496,7 @@ TEST_F(Test_BlockchainActivity, initial_state_account_list_qt)
 
 TEST_F(Test_BlockchainActivity, initial_state_account_activity)
 {
-    wait_for_counter(account_activity_, false);
+    ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto& widget = api_.UI().AccountActivity(
         nym_1_id(), api_.Factory().IdentifierFromBase58(btc_account_id_));
@@ -526,7 +526,7 @@ TEST_F(Test_BlockchainActivity, initial_state_account_activity)
 #if OT_QT
 TEST_F(Test_BlockchainActivity, initial_state_account_activity_qt)
 {
-    wait_for_counter(account_activity_, false);
+    ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto* pWidget = api_.UI().AccountActivityQt(
         nym_1_id(), api_.Factory().IdentifierFromBase58(btc_account_id_));
@@ -553,13 +553,13 @@ TEST_F(Test_BlockchainActivity, initial_state_account_activity_qt)
 
 TEST_F(Test_BlockchainActivity, initial_state_account_summary)
 {
-    wait_for_counter(account_summary_, false);
+    ASSERT_TRUE(wait_for_counter(account_summary_));
     // FIXME
 }
 
 TEST_F(Test_BlockchainActivity, initial_state_activity_summary)
 {
-    wait_for_counter(activity_summary_, false);
+    ASSERT_TRUE(wait_for_counter(activity_summary_));
 
     const auto& widget = api_.UI().ActivitySummary(nym_1_id());
     auto row = widget.First();
@@ -569,7 +569,7 @@ TEST_F(Test_BlockchainActivity, initial_state_activity_summary)
 
 TEST_F(Test_BlockchainActivity, initial_state_activity_thread_1)
 {
-    wait_for_counter(activity_thread_1_, false);
+    ASSERT_TRUE(wait_for_counter(activity_thread_1_));
 
     const auto& widget = api_.UI().ActivityThread(nym_1_id(), contact_5_id());
     auto row = widget.First();
@@ -579,7 +579,7 @@ TEST_F(Test_BlockchainActivity, initial_state_activity_thread_1)
 
 TEST_F(Test_BlockchainActivity, initial_state_activity_thread_2)
 {
-    wait_for_counter(activity_thread_2_, false);
+    ASSERT_TRUE(wait_for_counter(activity_thread_2_));
 
     const auto& widget = api_.UI().ActivityThread(nym_1_id(), contact_6_id());
     auto row = widget.First();
@@ -589,7 +589,7 @@ TEST_F(Test_BlockchainActivity, initial_state_activity_thread_2)
 
 TEST_F(Test_BlockchainActivity, initial_state_activity_thread_3)
 {
-    wait_for_counter(activity_thread_3_, false);
+    ASSERT_TRUE(wait_for_counter(activity_thread_3_));
 
     const auto& widget = api_.UI().ActivityThread(nym_1_id(), contact_7_id());
     auto row = widget.First();
@@ -634,7 +634,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned)
 
 TEST_F(Test_BlockchainActivity, receive_assigned_account_list)
 {
-    wait_for_counter(account_list_, false);
+    ASSERT_TRUE(wait_for_counter(account_list_));
 
     const auto& widget = api_.UI().AccountList(nym_1_id());
     auto row = widget.First();
@@ -655,7 +655,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_account_list)
 
 TEST_F(Test_BlockchainActivity, receive_assigned_account_activity)
 {
-    wait_for_counter(account_activity_, false);
+    ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto& widget = api_.UI().AccountActivity(
         nym_1_id(), api_.Factory().IdentifierFromBase58(btc_account_id_));
@@ -716,7 +716,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_account_activity)
 #if OT_QT
 TEST_F(Test_BlockchainActivity, receive_assigned_account_activity_qt)
 {
-    wait_for_counter(account_activity_, false);
+    ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto* pWidget = api_.UI().AccountActivityQt(
         nym_1_id(), api_.Factory().IdentifierFromBase58(btc_account_id_));
@@ -844,13 +844,13 @@ TEST_F(Test_BlockchainActivity, receive_assigned_account_activity_qt)
 
 TEST_F(Test_BlockchainActivity, receive_assigned_account_summary)
 {
-    wait_for_counter(account_summary_, false);
+    ASSERT_TRUE(wait_for_counter(account_summary_));
     // FIXME
 }
 
 TEST_F(Test_BlockchainActivity, receive_assigned_activity_summary)
 {
-    wait_for_counter(activity_summary_, false);
+    ASSERT_TRUE(wait_for_counter(activity_summary_));
 
     const auto& widget = api_.UI().ActivitySummary(nym_1_id());
     auto row = widget.First();
@@ -877,7 +877,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_activity_summary)
 
 TEST_F(Test_BlockchainActivity, receive_assigned_activity_thread_1)
 {
-    wait_for_counter(activity_thread_1_, false);
+    ASSERT_TRUE(wait_for_counter(activity_thread_1_));
 
     const auto& widget = api_.UI().ActivityThread(nym_1_id(), contact_5_id());
     auto row = widget.First();
@@ -898,7 +898,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_activity_thread_1)
 
 TEST_F(Test_BlockchainActivity, receive_assigned_activity_thread_2)
 {
-    wait_for_counter(activity_thread_2_, false);
+    ASSERT_TRUE(wait_for_counter(activity_thread_2_));
 
     const auto& widget = api_.UI().ActivityThread(nym_1_id(), contact_6_id());
     auto row = widget.First();
@@ -981,7 +981,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_activity_thread_2)
 
 TEST_F(Test_BlockchainActivity, send_account_activity)
 {
-    wait_for_counter(account_activity_, false);
+    ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto& widget = api_.UI().AccountActivity(
         nym_1_id(), api_.Factory().IdentifierFromBase58(btc_account_id_));
@@ -1059,7 +1059,7 @@ TEST_F(Test_BlockchainActivity, send_account_activity)
 #if OT_QT
 TEST_F(Test_BlockchainActivity, send_account_activity_qt)
 {
-    wait_for_counter(account_activity_, false);
+    ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto* pWidget = api_.UI().AccountActivityQt(
         nym_1_id(), api_.Factory().IdentifierFromBase58(btc_account_id_));
@@ -1236,7 +1236,7 @@ TEST_F(Test_BlockchainActivity, send_account_activity_qt)
 
 TEST_F(Test_BlockchainActivity, send_activity_summary)
 {
-    wait_for_counter(activity_summary_, false);
+    ASSERT_TRUE(wait_for_counter(activity_summary_));
 
     const auto& widget = api_.UI().ActivitySummary(nym_1_id());
     auto row = widget.First();
@@ -1274,7 +1274,7 @@ TEST_F(Test_BlockchainActivity, send_activity_summary)
 
 TEST_F(Test_BlockchainActivity, send_activity_thread_3)
 {
-    wait_for_counter(activity_thread_3_, false);
+    ASSERT_TRUE(wait_for_counter(activity_thread_3_));
 
     const auto& widget = api_.UI().ActivityThread(nym_1_id(), contact_7_id());
     auto row = widget.First();
@@ -1321,7 +1321,7 @@ TEST_F(Test_BlockchainActivity, receive_unassigned)
 
 TEST_F(Test_BlockchainActivity, receive_unassigned_account_activity)
 {
-    wait_for_counter(account_activity_, false);
+    ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto& widget = api_.UI().AccountActivity(
         nym_1_id(), api_.Factory().IdentifierFromBase58(btc_account_id_));
@@ -1415,7 +1415,7 @@ TEST_F(Test_BlockchainActivity, receive_unassigned_account_activity)
 #if OT_QT
 TEST_F(Test_BlockchainActivity, receive_unassigned_account_activity_qt)
 {
-    wait_for_counter(account_activity_, false);
+    ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto* pWidget = api_.UI().AccountActivityQt(
         nym_1_id(), api_.Factory().IdentifierFromBase58(btc_account_id_));
@@ -1637,7 +1637,7 @@ TEST_F(Test_BlockchainActivity, receive_unassigned_account_activity_qt)
 
 TEST_F(Test_BlockchainActivity, receive_unassigned_activity_summary)
 {
-    wait_for_counter(activity_summary_, false);
+    ASSERT_TRUE(wait_for_counter(activity_summary_));
 
     const auto& widget = api_.UI().ActivitySummary(nym_1_id());
     auto row = widget.First();
