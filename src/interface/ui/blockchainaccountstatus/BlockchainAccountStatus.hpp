@@ -91,6 +91,7 @@ public:
 protected:
     auto pipeline(Message&& in) noexcept -> void final;
     auto state_machine() noexcept -> int final;
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -105,6 +106,7 @@ private:
         init = OT_ZMQ_INIT_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
+    static auto to_str(Work) -> std::string;
 
     using SubaccountMap = UnallocatedMap<
         BlockchainAccountStatusRowID,
@@ -113,6 +115,7 @@ private:
         UnallocatedMap<blockchain::crypto::SubaccountType, SubaccountMap>;
 
     const blockchain::Type chain_;
+    Work last_job_;
 
     auto construct_row(
         const BlockchainAccountStatusRowID& id,

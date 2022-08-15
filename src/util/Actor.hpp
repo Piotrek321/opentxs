@@ -329,7 +329,7 @@ private:
     auto worker(Message&& in) noexcept -> void
     {
         log_(name_)(" ")(__FUNCTION__)(": Message received").Flush();
-        enqueue(std::move(in));
+        post(std::move(in));
     }
 
     virtual auto to_str(Work) const noexcept -> std::string = 0;

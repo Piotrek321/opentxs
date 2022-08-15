@@ -49,6 +49,17 @@ auto ContactListModel(
 
 namespace opentxs::ui::implementation
 {
+auto ContactList::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::contact, "contact"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+        {Work::shutdown, "shutdown"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 ContactList::ContactList(
     const api::session::Client& api,
     const identifier::Nym& nymID,
@@ -56,6 +67,7 @@ ContactList::ContactList(
     : ContactListList(api, nymID, cb, false)
     , Worker(api, "ContactList")
     , owner_contact_id_(Widget::api_.Contacts().ContactID(nymID))
+    , last_job_{}
 {
     OT_ASSERT(false == owner_contact_id_->empty());
 
@@ -177,6 +189,7 @@ auto ContactList::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     switch (work) {
         case Work::contact: {
@@ -245,6 +258,11 @@ auto ContactList::startup() noexcept -> void
     }
 
     finish_startup();
+}
+
+auto ContactList::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 ContactList::~ContactList()

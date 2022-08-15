@@ -45,11 +45,24 @@ auto NymListModel(
 
 namespace opentxs::ui::implementation
 {
+auto NymList::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::newnym, "newnym"},
+        {Work::nymchanged, "nymchanged"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+        {Work::shutdown, "shutdown"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 NymList::NymList(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : NymListList(api, api.Factory().Identifier(), cb, false)
     , Worker(api, "NymList")
+    , last_job_{}
 {
     init_executor({
         UnallocatedCString{api.Endpoints().NymCreated()},
@@ -102,6 +115,7 @@ auto NymList::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     if ((false == startup_complete()) && (Work::init != work)) {
         pipeline_.Push(std::move(in));
@@ -175,6 +189,11 @@ auto NymList::startup() noexcept -> void
     load();
     finish_startup();
     trigger();
+}
+
+auto NymList::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 NymList::~NymList()

@@ -136,7 +136,10 @@ private:
     std::atomic<std::size_t> connected_count_;
     std::atomic_bool running_;
     zeromq::internal::Thread* thread_;
-
+    struct diag {
+        unsigned last_idx_;
+    };
+    diag diag_;
     auto get_chain(Chain chain) const noexcept -> CString;
     auto get_provider(Chain chain) const noexcept -> CString;
     auto get_required_height(Chain chain) const noexcept -> Height;

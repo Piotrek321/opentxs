@@ -10,7 +10,7 @@ std::thread::id Reactor::processing_thread_id()
     return processing_thread_id_;
 }
 
-auto Reactor::enqueue(network::zeromq::Message&& in, unsigned idx) -> bool
+auto Reactor::post(network::zeromq::Message&& in, unsigned idx) -> bool
 {
     if (active_) {
         auto& mq = message_queue_.at(idx);
@@ -151,17 +151,12 @@ bool Reactor::stop()
 {
     auto was_active = active_.exchange(false);
     if (was_active) {
-        // Looks clumsy but we avoid executing command while
-        // having the ownership of the mutex.
         while (true) {
-            std::unique_ptr<Command> c{};
-            {
-                std::unique_lock<std::mutex> lck(mtx_queue_state);
-                if (command_queue_.empty()) { break; }
-                c = std::move(command_queue_.front());
-                command_queue_.pop();
+            if (auto c = dequeue_command(); c) {
+                c->exec();
+            } else {
+                break;
             }
-            if (c) { c->exec(); }
         }
 
         // Abort all messages
@@ -222,7 +217,7 @@ auto Reactor::process_command(std::unique_ptr<Command>&& in) -> void
 
 auto Reactor::process_message(network::zeromq::Message&& in, int idx) -> void
 {
-    time_it([&]() { handle(std::move(in), idx); }, "XX MESSAGE HANDLER", 400ms);
+    time_it([&]() { handle(std::move(in), idx); }, "XX MESSAGE HANDLER", 800ms);
     tadiag("Last job: ", last_job_str());
 }
 
@@ -232,7 +227,7 @@ auto Reactor::process_scheduled(network::zeromq::Message&& in) -> void
         // Present implementation only allows a single schedueld queue.
         [&]() { handle(std::move(in), 0); },
         "XX SCHEDULED MESSAGE HANDLER",
-        40ms);
+        80ms);
     tadiag("Last job: ", last_job_str());
 }
 

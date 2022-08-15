@@ -64,6 +64,8 @@ public:
         }
     }
 
+    std::string last_job_str() const noexcept override;
+
     FilterDownloader(
         const api::Session& api,
         database::Cfilter& db,
@@ -93,6 +95,7 @@ public:
         , chain_(chain)
         , type_(type)
         , notify_(notify)
+        , last_job_{}
     {
         init_executor({shutdown});
         start();
@@ -124,6 +127,7 @@ private:
     const blockchain::Type chain_;
     const cfilter::Type type_;
     const NotifyCallback& notify_;
+    FilterOracle::Work last_job_;
 
     auto batch_ready() const noexcept -> void
     {
@@ -213,6 +217,7 @@ auto FilterOracle::FilterDownloader::pipeline(zmq::Message&& in) -> void
 
     using Work = FilterOracle::Work;
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
@@ -244,6 +249,12 @@ auto FilterOracle::FilterDownloader::shut_down() noexcept -> void
 {
     close_pipeline();
     // TODO MT-34 investigate what other actions might be needed
+}
+
+auto FilterOracle::FilterDownloader::last_job_str() const noexcept
+    -> std::string
+{
+    return FilterOracle::to_str(last_job_);
 }
 
 }  // namespace opentxs::blockchain::node::implementation

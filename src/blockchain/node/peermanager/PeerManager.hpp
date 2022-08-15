@@ -249,6 +249,8 @@ public:
         Shutdown = value(WorkType::Shutdown),
     };
 
+    static auto to_str(Work) -> std::string;
+
     auto AddIncomingPeer(const int id, std::uintptr_t endpoint) const noexcept
         -> void final;
     auto AddPeer(const blockchain::p2p::Address& address) const noexcept
@@ -295,6 +297,8 @@ public:
     }
 
     auto init() noexcept -> void final;
+
+    auto last_job_str() const noexcept -> std::string override;
 
     PeerManager(
         const api::Session& api,
@@ -368,6 +372,7 @@ private:
     mutable UnallocatedSet<int> verified_peers_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
+    Work last_job_;
 
     static auto peer_target(
         const Type chain,

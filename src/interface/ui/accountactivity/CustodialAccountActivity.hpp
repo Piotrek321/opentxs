@@ -87,6 +87,8 @@ public:
     auto NotaryName() const noexcept -> UnallocatedCString final;
     auto Unit() const noexcept -> UnitType final;
 
+    std::string last_job_str() const noexcept override;
+
     CustodialAccountActivity(
         const api::session::Client& api,
         const identifier::Nym& nymID,
@@ -118,7 +120,10 @@ private:
         shutdown = value(WorkType::Shutdown),
     };
 
+    static auto to_str(Work) -> std::string;
+
     UnallocatedCString alias_;
+    Work last_job_;
 
     static auto extract_event(
         const proto::PaymentEventType event,

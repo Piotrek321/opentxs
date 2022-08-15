@@ -71,6 +71,7 @@ public:
         , chain_(chain)
         , type_(type)
         , checkpoint_(std::move(cb))
+        , last_job_{}
     {
         init_executor(
             {shutdown, UnallocatedCString{api_.Endpoints().BlockchainReorg()}});
@@ -89,6 +90,8 @@ public:
         }
     }
 
+    auto last_job_str() const noexcept -> std::string final;
+
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
     auto state_machine() noexcept -> int final;
@@ -106,6 +109,7 @@ private:
     const blockchain::Type chain_;
     const cfilter::Type type_;
     const Callback checkpoint_;
+    FilterOracle::Work last_job_;
 
     auto batch_ready() const noexcept -> void
     {
@@ -235,6 +239,7 @@ auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) -> void
     OT_ASSERT(1 <= body.size());
 
     const auto work = body.at(0).as<FilterOracle::Work>();
+    last_job_ = work;
 
     switch (work) {
         case FilterOracle::Work::shutdown: {
@@ -271,6 +276,12 @@ auto FilterOracle::HeaderDownloader::shut_down() noexcept -> void
 {
     close_pipeline();
     // TODO MT-34 investigate what other actions might be needed
+}
+
+auto FilterOracle::HeaderDownloader::last_job_str() const noexcept
+    -> std::string
+{
+    return FilterOracle::to_str(last_job_);
 }
 
 }  // namespace opentxs::blockchain::node::implementation

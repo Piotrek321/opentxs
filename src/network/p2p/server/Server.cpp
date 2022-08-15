@@ -41,7 +41,6 @@
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
 #include "opentxs/network/p2p/Base.hpp"
-#include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/PushTransaction.hpp"
 #include "opentxs/network/p2p/PushTransactionReply.hpp"
 #include "opentxs/network/p2p/Request.hpp"
@@ -59,6 +58,31 @@
 
 namespace opentxs::network::p2p
 {
+
+auto Server::Imp::to_str(MessageType value, unsigned idx) -> std::string
+{
+    static const auto Map = std::map<MessageType, std::string>{
+        {MessageType::error, "error"},
+        {MessageType::sync_request, "sync_request"},
+        {MessageType::sync_ack, "sync_ack"},
+        {MessageType::sync_reply, "sync_reply"},
+        {MessageType::new_block_header, "new_block_header"},
+        {MessageType::query, "query"},
+        {MessageType::publish_contract, "publish_contract"},
+        {MessageType::publish_ack, "publish_ack"},
+        {MessageType::contract_query, "contract_query"},
+        {MessageType::contract, "contract"},
+        {MessageType::pushtx, "pushtx"},
+        {MessageType::pushtx_reply, "pushtx_reply"}};
+
+    if (idx) {
+        auto i = Map.find(value);
+        return i == Map.end() ? std::string{"???"} : i->second;
+    } else {
+        return std::string{"*internal"};
+    }
+}
+
 Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     : Reactor(LogTrace(), "Server", 2)
     , api_(api)
@@ -76,10 +100,10 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     , batch_(handle_.batch_)
     , external_callback_(
           batch_.listen_callbacks_.emplace_back(zeromq::ListenCallback::Factory(
-              [this](auto&& msg) { enqueue(std::move(msg), 1); })))
+              [this](auto&& msg) { post(std::move(msg), 1); })))
     , internal_callback_(
           batch_.listen_callbacks_.emplace_back(zeromq::ListenCallback::Factory(
-              [this](auto&& msg) { enqueue(std::move(msg), 0); })))
+              [this](auto&& msg) { post(std::move(msg), 0); })))
     , sync_([&]() -> auto& {
         auto& out = batch_.sockets_.at(0);
         const auto rc = out.SetExposedUntrusted();
@@ -169,6 +193,7 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     , started_(false)
     , running_(true)
     , gate_()
+    , diag_{}
 {
     LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
     tdiag("About to start");
@@ -179,6 +204,7 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
 auto Server::Imp::handle(network::zeromq::Message&& in, unsigned idx) noexcept
     -> void
 {
+    diag_.last_idx_ = idx;
     switch (idx) {
         case 0:
             process_internal(std::move(in));
@@ -192,7 +218,10 @@ auto Server::Imp::handle(network::zeromq::Message&& in, unsigned idx) noexcept
     }
 }
 
-auto Server::Imp::last_job_str() const noexcept -> std::string { return {}; }
+auto Server::Imp::last_job_str() const noexcept -> std::string
+{
+    return to_str(diag_.last_message_type_, diag_.last_idx_);
+}
 
 auto Server::Imp::process_external(zeromq::Message&& incoming) noexcept -> void
 {
@@ -204,19 +233,19 @@ auto Server::Imp::process_external(zeromq::Message&& incoming) noexcept -> void
             throw std::runtime_error{"failed to instantiate message"};
         }
 
-        using Type = opentxs::network::p2p::MessageType;
         const auto type = base->Type();
+        diag_.last_message_type_ = type;
 
         switch (type) {
-            case Type::query:
-            case Type::sync_request: {
+            case MessageType::query:
+            case MessageType::sync_request: {
                 process_sync(std::move(incoming), *base);
             } break;
-            case Type::publish_contract:
-            case Type::contract_query: {
+            case MessageType::publish_contract:
+            case MessageType::contract_query: {
                 wallet_.Send(std::move(incoming));
             } break;
-            case Type::pushtx: {
+            case MessageType::pushtx: {
                 process_pushtx(std::move(incoming), *base);
             } break;
             default: {

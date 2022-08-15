@@ -112,6 +112,19 @@ auto print(PeerManagerJobs job) noexcept -> std::string_view
 
 namespace opentxs::blockchain::node::implementation
 {
+auto PeerManager::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::Disconnect, "Disconnect"},
+        {Work::AddPeer, "AddPeer"},
+        {Work::AddListener, "AddListener"},
+        {Work::IncomingPeer, "IncomingPeer"},
+        {Work::StateMachine, "StateMachine"},
+        {Work::Shutdown, "Shutdown"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 PeerManager::PeerManager(
     const api::Session& api,
     const internal::Config& config,
@@ -152,6 +165,7 @@ PeerManager::PeerManager(
     , verified_peers_()
     , init_promise_()
     , init_(init_promise_.get_future())
+    , last_job_{}
 {
     init_executor({shutdown});
     start();
@@ -338,6 +352,7 @@ auto PeerManager::pipeline(zmq::Message&& message) -> void
     OT_ASSERT(0 < body.size());
 
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
 
     switch (work) {
         case Work::Disconnect: {
@@ -500,6 +515,11 @@ auto PeerManager::VerifyPeer(const int id, const UnallocatedCString& address)
     }
 
     api_.Network().Blockchain().Internal().UpdatePeer(chain_, address);
+}
+
+auto PeerManager::last_job_str() const noexcept -> std::string
+{
+    return to_str(last_job_);
 }
 
 PeerManager::~PeerManager()

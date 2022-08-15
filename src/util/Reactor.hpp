@@ -110,6 +110,7 @@ public:
                     command_queue_.push(std::move(fc));
                     notify();
                 } else {
+                    fc->exec();
                     fc.reset();
                 }
             }
@@ -128,7 +129,7 @@ public:
         unsigned idx = 0) noexcept -> void = 0;
 
     // Add a message to reactor queue.
-    auto enqueue(network::zeromq::Message&& in, unsigned idx = 0) -> bool;
+    auto post(network::zeromq::Message&& in, unsigned idx = 0) -> bool;
 
     // Schedule message execution
     auto post_at(

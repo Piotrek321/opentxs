@@ -189,6 +189,7 @@ public:
 protected:
     auto pipeline(Message&& in) noexcept -> void final;
     auto state_machine() noexcept -> int final;
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -204,6 +205,7 @@ private:
         init = OT_ZMQ_INIT_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
+    static auto to_str(Work) -> std::string;
 
     const OTIdentifier threadID_;
     const OTIdentifier self_contact_;
@@ -216,6 +218,7 @@ private:
     mutable UnallocatedCString draft_;
     mutable UnallocatedMap<api::session::OTX::TaskID, DraftTask> draft_tasks_;
     mutable std::optional<Callbacks> callbacks_;
+    Work last_job_;
 
     auto calculate_display_name() const noexcept -> UnallocatedCString;
     auto calculate_participants() const noexcept -> UnallocatedCString;

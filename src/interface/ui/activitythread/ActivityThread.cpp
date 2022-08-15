@@ -78,6 +78,21 @@ auto ActivityThreadModel(
 
 namespace opentxs::ui::implementation
 {
+auto ActivityThread::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::contact, "contact"},
+        {Work::thread, "thread"},
+        {Work::message_loaded, "message_loaded"},
+        {Work::message_loaded, "message_loaded"},
+        {Work::messagability, "messagability"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 ActivityThread::ActivityThread(
     const api::session::Client& api,
     const identifier::Nym& nymID,
@@ -96,6 +111,7 @@ ActivityThread::ActivityThread(
     , draft_()
     , draft_tasks_()
     , callbacks_()
+    , last_job_{}
 {
     init_executor({
         api.Activity().ThreadPublisher(primary_id_),
@@ -383,6 +399,7 @@ auto ActivityThread::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     if ((false == startup_complete()) && (Work::init != work)) {
         pipeline_.Push(std::move(in));
@@ -985,6 +1002,11 @@ auto ActivityThread::validate_account(
     }
 
     return true;
+}
+
+auto ActivityThread::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 ActivityThread::~ActivityThread()

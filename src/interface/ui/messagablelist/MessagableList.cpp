@@ -45,6 +45,18 @@ auto MessagableListModel(
 
 namespace opentxs::ui::implementation
 {
+auto MessagableList::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::contact, "contact"},
+        {Work::nym, "nym"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+        {Work::shutdown, "shutdown"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 MessagableList::MessagableList(
     const api::session::Client& api,
     const identifier::Nym& nymID,
@@ -52,6 +64,7 @@ MessagableList::MessagableList(
     : MessagableListList(api, nymID, cb, false)
     , Worker(api, "MessagableList")
     , owner_contact_id_(Widget::api_.Contacts().ContactID(nymID))
+    , last_job_{}
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().ContactUpdate()},
@@ -89,6 +102,7 @@ auto MessagableList::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     switch (work) {
         case Work::contact: {
@@ -204,6 +218,11 @@ auto MessagableList::startup() noexcept -> void
     }
 
     finish_startup();
+}
+
+auto MessagableList::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 MessagableList::~MessagableList()

@@ -79,6 +79,7 @@ public:
 protected:
     auto pipeline(Message&& in) noexcept -> void final;
     auto state_machine() noexcept -> int final;
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -91,6 +92,7 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
         shutdown = value(WorkType::Shutdown),
     };
+    static auto to_str(Work) -> std::string;
 
     auto construct_row(
         const NymListRowID& id,
@@ -108,5 +110,8 @@ private:
     NymList(NymList&&) = delete;
     auto operator=(const NymList&) -> NymList& = delete;
     auto operator=(NymList&&) -> NymList& = delete;
+
+private:
+    Work last_job_;
 };
 }  // namespace opentxs::ui::implementation

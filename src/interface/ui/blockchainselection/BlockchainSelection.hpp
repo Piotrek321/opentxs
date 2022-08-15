@@ -122,6 +122,7 @@ public:
 
     auto pipeline(Message&& in) noexcept -> void final;
     auto state_machine() noexcept -> int final;
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -155,10 +156,13 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    static auto to_str(Work) -> std::string;
+
     const UnallocatedSet<blockchain::Type> filter_;
     mutable UnallocatedMap<blockchain::Type, bool> chain_state_;
     mutable std::atomic<std::size_t> enabled_count_;
     mutable Callback enabled_callback_;
+    Work last_job_;
 
     static auto filter(const ui::Blockchains type) noexcept
         -> UnallocatedSet<blockchain::Type>;

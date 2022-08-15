@@ -140,6 +140,8 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    static auto to_str(Work) -> std::string;
+
     auto DefaultType() const noexcept -> cfilter::Type final
     {
         return default_type_;

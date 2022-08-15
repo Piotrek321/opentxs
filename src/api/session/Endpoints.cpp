@@ -81,9 +81,6 @@ Endpoints::Endpoints(const int instance) noexcept
           build_inproc_path("blockchain/balance", version_1_))
     , connection_status_(build_inproc_path("connectionstatus", version_1_))
     , contact_update_(build_inproc_path("contactupdate", version_1_))
-    , dht_request_nym_(build_inproc_path("dht/requestnym", version_1_))
-    , dht_request_server_(build_inproc_path("dht/requestserver", version_1_))
-    , dht_request_unit_(build_inproc_path("dht/requestunit", version_1_))
     , find_nym_(build_inproc_path("otx/search/nym", version_1_))
     , find_server_(build_inproc_path("otx/search/server", version_1_))
     , find_unit_definition_(build_inproc_path("otx/search/unit", version_1_))
@@ -264,21 +261,6 @@ auto Endpoints::ConnectionStatus() const noexcept -> std::string_view
 auto Endpoints::ContactUpdate() const noexcept -> std::string_view
 {
     return contact_update_;
-}
-
-auto Endpoints::DhtRequestNym() const noexcept -> std::string_view
-{
-    return dht_request_nym_;
-}
-
-auto Endpoints::DhtRequestServer() const noexcept -> std::string_view
-{
-    return dht_request_server_;
-}
-
-auto Endpoints::DhtRequestUnit() const noexcept -> std::string_view
-{
-    return dht_request_unit_;
 }
 
 auto Endpoints::FindNym() const noexcept -> std::string_view

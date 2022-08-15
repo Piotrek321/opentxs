@@ -10,7 +10,6 @@
 #include <optional>
 
 #include "Proto.hpp"
-#include "internal/network/Factory.hpp"
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/message/Factory.hpp"
 #include "internal/network/zeromq/message/Message.hpp"

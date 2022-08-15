@@ -65,6 +65,20 @@ auto BlockchainAccountStatusModel(
 
 namespace opentxs::ui::implementation
 {
+auto BlockchainAccountStatus::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::newaccount, "newaccount"},
+        {Work::header, "header"},
+        {Work::reorg, "reorg"},
+        {Work::progress, "progress"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 BlockchainAccountStatus::BlockchainAccountStatus(
     const api::session::Client& api,
     const BlockchainAccountStatusPrimaryID& id,
@@ -73,6 +87,7 @@ BlockchainAccountStatus::BlockchainAccountStatus(
     : BlockchainAccountStatusType(api, id, cb, false)
     , Worker(api, "BlockchainAccountStatus")
     , chain_(chain)
+    , last_job_{}
 {
     init_executor({
         UnallocatedCString{api.Endpoints().BlockchainAccountCreated()},
@@ -179,6 +194,7 @@ auto BlockchainAccountStatus::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     if ((false == startup_complete()) && (Work::init != work)) {
         pipeline_.Push(std::move(in));
@@ -512,6 +528,11 @@ auto BlockchainAccountStatus::subchain_display_name(
     progressOut = progress.str();
 
     return out;
+}
+
+auto BlockchainAccountStatus::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 BlockchainAccountStatus::~BlockchainAccountStatus()

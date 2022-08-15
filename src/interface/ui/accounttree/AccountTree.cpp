@@ -65,12 +65,26 @@ auto AccountTreeModel(
 
 namespace opentxs::ui::implementation
 {
+auto AccountTree::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::custodial, "custodial"},
+        {Work::blockchain, "blockchain"},
+        {Work::balance, "balance"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 AccountTree::AccountTree(
     const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : AccountTreeList(api, nymID, cb, false)
     , Worker(api, "AccountTree")
+    , last_job_{}
 {
     // TODO monitor for notary nym changes since this may affect custodial
     // account names
@@ -408,6 +422,7 @@ auto AccountTree::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     if ((false == startup_complete()) && (Work::init != work)) {
         pipeline_.Push(std::move(in));
@@ -544,6 +559,11 @@ auto AccountTree::subscribe(SubscribeSet&& chains) const noexcept -> void
             return work;
         }());
     }
+}
+
+auto AccountTree::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 AccountTree::~AccountTree()

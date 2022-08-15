@@ -91,6 +91,8 @@ protected:
     auto pipeline(Message&& in) noexcept -> void final;
     auto state_machine() noexcept -> int final;
 
+    auto last_job_str() const noexcept -> std::string final;
+
 private:
     auto shut_down() noexcept -> void;
 
@@ -107,6 +109,7 @@ private:
     static auto print(Work type) noexcept -> const char*;
 
     UnallocatedSet<blockchain::Type> chains_;
+    Work last_job_;
 
     auto construct_row(
         const AccountListRowID& id,

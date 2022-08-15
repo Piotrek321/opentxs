@@ -66,6 +66,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
     , type_(type)
     , notify_(notify)
     , job_counter_()
+    , last_job_{}
 {
     init_executor(
         {shutdown,
@@ -176,6 +177,7 @@ auto FilterOracle::BlockIndexer::pipeline(zmq::Message&& in) -> void
 
     using Work = FilterOracle::Work;
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
@@ -389,4 +391,10 @@ FilterOracle::BlockIndexer::~BlockIndexer()
         // TODO MT-34 improve
     }
 }
+
+auto FilterOracle::BlockIndexer::last_job_str() const noexcept -> std::string
+{
+    return FilterOracle::to_str(last_job_);
+}
+
 }  // namespace opentxs::blockchain::node::implementation

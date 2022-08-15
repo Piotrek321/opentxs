@@ -153,6 +153,8 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    static auto to_str(Work) -> std::string;
+
     const Type chain_;
 
     auto AddBlock(const std::shared_ptr<const bitcoin::block::Block> block)

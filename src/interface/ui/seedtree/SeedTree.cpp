@@ -60,6 +60,19 @@ auto SeedTreeModel(
 
 namespace opentxs::ui::implementation
 {
+auto SeedTree::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::new_nym, "new_nym"},
+        {Work::changed_nym, "changed_nym"},
+        {Work::changed_seed, "changed_seed"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 SeedTree::SeedTree(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
@@ -68,6 +81,7 @@ SeedTree::SeedTree(
     , callbacks_()
     , default_nym_(api.Factory().NymID())
     , default_seed_(api.Factory().Identifier())
+    , last_job_{}
 {
     init_executor({
         UnallocatedCString{api.Endpoints().NymCreated()},
@@ -397,6 +411,7 @@ auto SeedTree::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     if ((false == startup_complete()) && (Work::init != work)) {
         pipeline_.Push(std::move(in));
@@ -503,6 +518,11 @@ auto SeedTree::startup() noexcept -> void
     load();
     finish_startup();
     trigger();
+}
+
+auto SeedTree::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 SeedTree::~SeedTree()

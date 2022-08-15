@@ -99,7 +99,7 @@ private:
 struct Mytime {
     Mytime();
     static std::int64_t basecount() noexcept;
-    inline static std::int64_t base = basecount();
+    static std::int64_t base;
     std::string str();
 };
 
@@ -218,7 +218,7 @@ std::string to_string(const MessageMarker&);
 
 #else  // defined(__linux) && defined(TDIAG)
 
-using handle_type = std::uint64_t;
+using handle_type = std::thread::native_handle_type;
 struct ThreadHandle {
     ThreadHandle() {}
     ThreadHandle(std::string&&, std::string&&, handle_type) {}

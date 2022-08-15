@@ -227,6 +227,17 @@ struct NullWallet final : public node::internal::Wallet {
     ~NullWallet() final = default;
 };
 
+auto Base::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::heartbeat, "heartbeat"},
+        {Work::filter, "filter"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 Base::Base(
     const api::Session& api,
     const Type type,

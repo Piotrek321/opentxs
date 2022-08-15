@@ -70,6 +70,8 @@ public:
         return signal_shutdown();
     }
 
+    auto last_job_str() const noexcept -> std::string override;
+
     SyncServer(
         const api::Session& api,
         database::Sync& db,
@@ -104,6 +106,7 @@ public:
         , zmq_lock_()
         , zmq_running_(true)
         , zmq_thread_(&SyncServer::zmq_thread, this)
+        , last_job_{}
     {
         init_executor(
             {shutdown,
@@ -150,6 +153,7 @@ private:
     mutable std::mutex zmq_lock_;
     std::atomic_bool zmq_running_;
     std::thread zmq_thread_;
+    Work last_job_;
 
     auto batch_ready() const noexcept -> void { trigger(); }
     static auto batch_size(const std::size_t in) noexcept -> std::size_t
@@ -455,6 +459,8 @@ auto SyncServer::pipeline(zmq::Message&& in) -> void
 
     using Work = Work;
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
+
     auto lock = Lock{zmq_lock_};
 
     switch (work) {
@@ -490,5 +496,10 @@ auto SyncServer::shut_down() noexcept -> void
 {
     close_pipeline();
     // TODO MT-34 investigate what other actions might be needed
+}
+
+auto SyncServer::last_job_str() const noexcept -> std::string
+{
+    return node::implementation::Base::to_str(last_job_);
 }
 }  // namespace opentxs::blockchain::node::base

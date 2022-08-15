@@ -149,41 +149,42 @@ std::string abbreviate(std::string&& full);
 std::string abbreviate(std::string&& full)
 {
     static const auto dict = std::map<std::string, std::string>{
-        {"Account", "Acc"},       {"Accounts", "Accs"},
-        {"Action", "Actn"},       {"Activity", "Avty"},
-        {"Actor", "Actr"},        {"Balance", "Blnc"},
-        {"Bitcoin", "Bitc"},      {"Block", "Blck"},
-        {"Blockchain", "Bchn"},   {"Data", "Data"},
-        {"Deterministic", "Det"}, {"Downloader", "Dldr"},
-        {"Event", "Evt"},         {"Filter", "Flt"},
-        {"Imp", "Imp"},           {"Header", "Hdr"},
-        {"Index", "Idx"},         {"Indexer", "Idxr"},
-        {"Internal", "Int"},      {"Jobs", "Jobs"},
-        {"Manager", "Mgr"},       {"Miner", "Mnr"},
-        {"Network", "Nwk"},       {"Notification", "Ntf"},
-        {"Oracle", "Orac"},       {"Process", "Proc"},
-        {"Progress", "Prog"},     {"Reactor", "Reac"},
-        {"Rescan", "Resc"},       {"Scan", "Scan"},
-        {"Server", "Serv"},       {"Simple", "Simp"},
-        {"State", "Stat"},        {"Status", "Stts"},
-        {"Summary", "Sum"},       {"Thread", "Thr"},
-        {"Visitor", "Vis"},       {"Wallet", "Wal"},
-        {"account", "ac"},        {"accounts", "as"},
-        {"actor", "ar"},          {"balance", "bl"},
-        {"balance", "bl"},        {"base", "bs"},
-        {"block", "bk"},          {"blockchain", "bn"},
-        {"blockoracle", "bo"},    {"data", "dt"},
-        {"deterministic", "dm"},  {"downloader", "dl"},
-        {"filter", "fl"},         {"impl", "im"},
-        {"implementation", "im"}, {"index", "ix"},
-        {"indexer", "ir"},        {"internal", "in"},
-        {"jobs", "jb"},           {"manager", "mr"},
-        {"network", "nk"},        {"notification", "nf"},
-        {"oracle", "or"},         {"process", "pr"},
-        {"progress", "pg"},       {"reactor", "rr"},
-        {"rescan", "rs"},         {"scan", "sc"},
-        {"server", "sv"},         {"state", "st"},
-        {"wallet", "wt"}};
+        {"Account", "Acc"},      {"Accounts", "Accs"},
+        {"Action", "Actn"},      {"Activity", "Acvt"},
+        {"Actor", "Actr"},       {"Balance", "Blnc"},
+        {"Bitcoin", "Bitc"},     {"Block", "Blck"},
+        {"Blockchain", "Bchn"},  {"Data", "Data"},
+        {"Client", "Clt"},       {"Deterministic", "Det"},
+        {"Downloader", "Dldr"},  {"Event", "Evt"},
+        {"Filter", "Flt"},       {"Imp", "Imp"},
+        {"Header", "Hdr"},       {"Index", "Idx"},
+        {"Indexer", "Idxr"},     {"Internal", "Int"},
+        {"Jobs", "Jobs"},        {"Manager", "Mgr"},
+        {"Miner", "Mnr"},        {"Network", "Nwk"},
+        {"Notification", "Ntf"}, {"Oracle", "Orac"},
+        {"Process", "Proc"},     {"Progress", "Prog"},
+        {"Reactor", "Reac"},     {"Rescan", "Resc"},
+        {"Scan", "Scan"},        {"Selection", "Sel"},
+        {"Server", "Serv"},      {"Simple", "Smpl"},
+        {"State", "Sta"},        {"Status", "Stt"},
+        {"Statistics", "Scs"},   {"Summary", "Sum"},
+        {"Thread", "Thr"},       {"Visitor", "Vis"},
+        {"Wallet", "Wal"},       {"account", "ac"},
+        {"accounts", "as"},      {"actor", "ar"},
+        {"balance", "bl"},       {"balance", "bl"},
+        {"base", "bs"},          {"block", "bk"},
+        {"blockchain", "bn"},    {"blockoracle", "bo"},
+        {"data", "dt"},          {"deterministic", "dm"},
+        {"downloader", "dl"},    {"filter", "fl"},
+        {"impl", "im"},          {"implementation", "im"},
+        {"index", "ix"},         {"indexer", "ir"},
+        {"internal", "in"},      {"jobs", "jb"},
+        {"manager", "mr"},       {"network", "nk"},
+        {"notification", "nf"},  {"oracle", "or"},
+        {"process", "pr"},       {"progress", "pg"},
+        {"reactor", "rr"},       {"rescan", "rs"},
+        {"scan", "sc"},          {"server", "sv"},
+        {"state", "st"},         {"wallet", "wt"}};
 
     while (true) {
         auto idouble_colon = full.find("::");
@@ -310,6 +311,9 @@ ThreadMonitor::ThreadMonitor()
 
 std::mutex ThreadMonitor::mutex_ = {};
 ThreadMonitor* ThreadMonitor::instance_ = nullptr;
+
+// static
+std::int64_t Mytime::base = basecount();
 
 Mytime::Mytime() {}
 std::string Mytime::str()

@@ -236,26 +236,27 @@ Client::Imp::Imp(
           {
               {external_router_.ID(),
                &external_router_,
-               [this](auto&& m) { enqueue(std::move(m), External_IDX); }},
+               [this](auto&& m) { post(std::move(m), External_IDX); }},
               {monitor_.ID(),
                &monitor_,
-               [this](auto&& m) { enqueue(std::move(m), Monitor_IDX); }},
+               [this](auto&& m) { post(std::move(m), Monitor_IDX); }},
               {external_sub_.ID(),
                &external_sub_,
-               [this](auto&& m) { enqueue(std::move(m), External_IDX); }},
+               [this](auto&& m) { post(std::move(m), External_IDX); }},
               {internal_router_.ID(),
                &internal_router_,
-               [this](auto&& m) { enqueue(std::move(m), Internal_IDX); }},
+               [this](auto&& m) { post(std::move(m), Internal_IDX); }},
               {internal_sub_.ID(),
                &internal_sub_,
-               [this](auto&& m) { enqueue(std::move(m), Internal_IDX); }},
+               [this](auto&& m) { post(std::move(m), Internal_IDX); }},
               {loopback_.ID(),
                &loopback_,
-               [this](auto&& m) { enqueue(std::move(m), Internal_IDX); }},
+               [this](auto&& m) { post(std::move(m), Internal_IDX); }},
               {wallet_.ID(),
                &wallet_,
-               [this](auto&& m) { enqueue(std::move(m), Wallet_IDX); }},
+               [this](auto&& m) { post(std::move(m), Wallet_IDX); }},
           }))
+    , diag_{0}
 {
     OT_ASSERT(nullptr != thread_);
 
@@ -267,6 +268,7 @@ Client::Imp::Imp(
 auto Client::Imp::handle(network::zeromq::Message&& in, unsigned idx) noexcept
     -> void
 {
+    diag_.last_idx_ = idx;
     if (idx < end_IDX) {
         batch_.listen_callbacks_.at(idx)->Process(std::move(in));
     } else {
@@ -276,7 +278,7 @@ auto Client::Imp::handle(network::zeromq::Message&& in, unsigned idx) noexcept
 
 auto Client::Imp::last_job_str() const noexcept -> std::string
 {
-    return "Client";
+    return std::string{"channel:"} + std::to_string(diag_.last_idx_);
 }
 
 auto Client::Imp::Endpoint() const noexcept -> std::string_view

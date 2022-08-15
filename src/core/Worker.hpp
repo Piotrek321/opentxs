@@ -129,7 +129,7 @@ protected:
         , state_machine_queued_{}
         , pipeline_{api.Network().ZeroMQ().Internal().Pipeline(
               std::move(diagnostic),
-              [this](network::zeromq::Message&& in) { enqueue(std::move(in)); },
+              [this](network::zeromq::Message&& in) { post(std::move(in)); },
               {},
               {},
               {},
@@ -177,12 +177,6 @@ private:
     auto handle(network::zeromq::Message&& in, unsigned) noexcept -> void final
     {
         if (running_) pipeline(std::move(in));
-    }
-
-    std::string last_job_str() const noexcept override
-    {
-        // By default we do not care about Worker's last job.
-        return {};
     }
 };
 }  // namespace opentxs

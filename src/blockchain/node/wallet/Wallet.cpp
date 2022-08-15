@@ -83,6 +83,7 @@ Wallet::Wallet(
     , fee_oracle_(factory::FeeOracle(api_, chain))
     , accounts_(api, parent_, db_, mempool, chain_)
     , proposals_(api, parent_, db_, chain_)
+    , last_job_{}
 {
     init_executor({
         UnallocatedCString{shutdown},
@@ -201,6 +202,7 @@ auto Wallet::pipeline(network::zeromq::Message&& in) -> void
     }
 
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
     const auto start = Clock::now();
 
     switch (work) {
@@ -249,6 +251,11 @@ auto Wallet::state_machine() noexcept -> int
     if (!running_.load()) { return -1; }
 
     return proposals_.Run() ? 10 : 100;
+}
+
+auto Wallet::last_job_str() const noexcept -> std::string
+{
+    return std::string{print(last_job_)};
 }
 
 Wallet::~Wallet()

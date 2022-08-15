@@ -100,6 +100,7 @@ public:
 protected:
     auto pipeline(Message&& in) noexcept -> void final;
     auto state_machine() noexcept -> int final;
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -119,6 +120,8 @@ private:
         init = OT_ZMQ_INIT_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
+    static auto to_str(Work) -> std::string;
+
     using CachedData = std::tuple<
         blockchain::block::Height,
         blockchain::block::Height,
@@ -130,6 +133,7 @@ private:
     const api::network::Blockchain& blockchain_;
     Map<BlockchainStatisticsRowID, CachedData> cache_;
     Timer timer_;
+    Work last_job_;
 
     auto construct_row(
         const BlockchainStatisticsRowID& id,

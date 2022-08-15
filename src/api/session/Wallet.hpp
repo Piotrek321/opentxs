@@ -25,6 +25,7 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/identity/Authority.hpp"
 #include "internal/identity/Nym.hpp"
+#include "internal/network/p2p/Types.hpp"
 #include "internal/network/zeromq/Handle.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/otx/common/Account.hpp"
@@ -156,7 +157,14 @@ class String;
 
 namespace opentxs::api::session::imp
 {
-class Wallet : virtual public internal::Wallet, public Lockable
+struct ReactorClient {
+    virtual ~ReactorClient() = default;
+    virtual auto last_job() const noexcept -> std::string = 0;
+};
+
+class Wallet : virtual public internal::Wallet,
+               public Lockable,
+               public ReactorClient
 {
 public:
     auto Account(const Identifier& accountID) const -> SharedAccount final;
@@ -453,6 +461,8 @@ protected:
         otx::context::internal::Base* context) const;
     auto server_to_nym(Identifier& nymOrNotaryID) const -> OTNymID;
 
+    auto last_job() const noexcept -> std::string override;
+
     Wallet(const api::Session& api);
 
 private:
@@ -504,9 +514,6 @@ private:
     OTZMQPublishSocket unit_publisher_;
     OTZMQPublishSocket peer_reply_publisher_;
     OTZMQPublishSocket peer_request_publisher_;
-    OTZMQRequestSocket dht_nym_requester_;
-    OTZMQRequestSocket dht_server_requester_;
-    OTZMQRequestSocket dht_unit_requester_;
     OTZMQPushSocket find_nym_;
     opentxs::network::zeromq::internal::Handle handle_;
     opentxs::network::zeromq::internal::Batch& batch_;
@@ -517,6 +524,7 @@ private:
     class WalletReactor;
     std::unique_ptr<WalletReactor> reactor_;
     opentxs::network::zeromq::internal::Thread* thread_;
+    mutable opentxs::network::p2p::Job last_job_;
 
     static auto reverse_unit_map(const UnitNameMap& map) -> UnitNameReverse;
 
