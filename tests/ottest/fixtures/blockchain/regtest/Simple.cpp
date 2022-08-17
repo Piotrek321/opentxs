@@ -506,14 +506,16 @@ auto Regtest_fixture_simple::CreateClient(
     const ot::UnallocatedCString& words,
     const ot::blockchain::p2p::Address& address) -> std::pair<const User&, bool>
 {
-    const auto& client = ot_.StartClientSession(client_args, instance);
+    auto client_args_(std::move(
+        client_args.SetBlockchainProfile(opentxs::BlockchainProfile::desktop)
+            .AddBlockchainSyncServer(sync_server_main_endpoint_)));
+    const auto& client = ot_.StartClientSession(client_args_, instance);
     const auto start = client.Network().Blockchain().Start(test_chain_);
     const auto handle = client.Network().Blockchain().GetChain(test_chain_);
 
     OT_ASSERT(handle);
 
     const auto& network = handle.get();
-    const auto added = network.AddPeer(address);
 
     auto seed = ImportBip39(client, words);
     const auto& user = CreateNym(client, name, seed, instance);
@@ -555,6 +557,8 @@ auto Regtest_fixture_simple::CreateClient(
         throw std::runtime_error("Error connecting to client1 socket");
     }
 
+    const auto added = network.AddPeer(address);
+
     const auto status = done.wait_for(std::chrono::minutes(2));
     const auto future = (std::future_status::ready == status);
 
@@ -564,9 +568,9 @@ auto Regtest_fixture_simple::CreateClient(
 auto Regtest_fixture_simple::CloseClient(const ot::UnallocatedCString& name)
     -> void
 {
-    users_.at(name).api_->Network().Blockchain().Stop(test_chain_);
+   /* users_.at(name).api_->Network().Blockchain().Stop(test_chain_);
     users_.erase(name);
-    user_listeners_.erase(name);
+    user_listeners_.erase(name);*/
 }
 auto Regtest_fixture_simple::GetWalletAddress(const User& user) const noexcept
     -> std::string
