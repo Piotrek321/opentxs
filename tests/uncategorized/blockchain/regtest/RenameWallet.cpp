@@ -27,7 +27,7 @@ TEST_F(
     // Create wallets
     auto [user_bob, success] = CreateClient(
         opentxs::Options{},
-        3,
+        4,
         name_bob_,
         GetPaymentCodeVector3().bob_.words_,
         address_);
@@ -50,7 +50,7 @@ TEST_F(
     // Create user with same seed but different name
     auto [user_andrew_after_reboot, success2] = CreateClient(
         opentxs::Options{},
-        3,
+        5,
         name_andrew,
         GetPaymentCodeVector3().bob_.words_,
         address_);
