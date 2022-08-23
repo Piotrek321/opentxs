@@ -135,10 +135,6 @@ private:
         const block::Position& previousCfilter,
         const block::Position& newTip) noexcept -> void;
     auto work() noexcept -> int final;
-    virtual auto to_str(Work) const noexcept -> std::string
-        {
-            return "Piotr B. ";
-        };
-
+    auto to_str(Work w) const noexcept -> std::string override;
 };
 }  // namespace opentxs::blockchain::node::filteroracle

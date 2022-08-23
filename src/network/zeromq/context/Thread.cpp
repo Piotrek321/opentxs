@@ -96,6 +96,15 @@ auto Thread::Add(BatchID id, StartArgs&& args) noexcept -> bool
     return true;
 }
 
+auto Thread::Add(
+    BatchID id,
+    StartArgs&& args,
+    const std::string_view threadName) noexcept -> bool
+{
+    SetName(threadName);
+
+    return Add(id, std::move(args));
+}
 auto Thread::snc_add(ThreadStartArgs&& sockets) noexcept -> bool
 {
     for (auto [socket, cb] : sockets) {

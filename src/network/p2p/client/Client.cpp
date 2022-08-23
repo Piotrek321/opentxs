@@ -84,7 +84,7 @@ namespace opentxs::network::p2p
 Client::Imp::Imp(
     const api::Session& api,
     zeromq::internal::Handle&& handle) noexcept
-    : Reactor(LogTrace(), ClientThreadName, end_IDX)
+    : Reactor(LogTrace(), clientThreadName.data(), end_IDX)
     , api_(api)
     , endpoint_(zeromq::MakeArbitraryInproc())
     , monitor_endpoint_(zeromq::MakeArbitraryInproc())
@@ -257,9 +257,10 @@ Client::Imp::Imp(
               {wallet_.ID(),
                &wallet_,
                [this](auto&& m) { post(std::move(m), Wallet_IDX); }},
-          }))
+          },
+          batch_.thread_name_))
     , diag_{0}
-//batch_.thread_name_))
+
 {
     OT_ASSERT(nullptr != thread_);
 

@@ -19,6 +19,7 @@
 #include <queue>
 #include <string_view>
 
+#include "Thread.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -45,7 +46,6 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/Reactor.hpp"
 #include "util/ScopeGuard.hpp"
-#include "Thread.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT

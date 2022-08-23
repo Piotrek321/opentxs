@@ -787,7 +787,8 @@ struct BlockchainSelection : virtual public List,
         std::function<void(blockchain::Type, bool, std::size_t)>;
 
     virtual auto EnabledCount() const noexcept -> std::size_t = 0;
-    virtual auto EnabledChains() const noexcept -> UnallocatedSet<blockchain::Type> = 0;
+    virtual auto EnabledChains() const noexcept
+        -> UnallocatedSet<blockchain::Type> = 0;
     virtual auto last(const implementation::BlockchainSelectionRowID& id)
         const noexcept -> bool = 0;
 

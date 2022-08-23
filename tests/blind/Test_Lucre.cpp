@@ -373,7 +373,7 @@ TEST_F(Test_Basic, wallet)
     }
 
     {
-       const auto& purse =
+        const auto& purse =
             api_.Wallet().Purse(alice_nym_id_, server_id(), unit_id(), false);
 
         EXPECT_TRUE(purse);

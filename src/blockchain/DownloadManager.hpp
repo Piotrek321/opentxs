@@ -54,7 +54,7 @@ public:
         dm_known_ = position;
         buffer_.clear();
         next_ = 0;
-        downcast().dm_update_tip(position, dm_previous_.get());
+        downcast().update_tip(position, dm_previous_.get());
     }
     auto Start() noexcept { enabled_ = true; }
 

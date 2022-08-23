@@ -197,6 +197,5 @@ private:
 
     auto init_contacts() noexcept -> void;
     auto work() noexcept -> int final;
-
 };
 }  // namespace opentxs::blockchain::node::wallet

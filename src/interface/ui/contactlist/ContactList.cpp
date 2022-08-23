@@ -66,7 +66,7 @@ ContactList::ContactList(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : ContactListList(api, nymID, cb, false)
-    , Worker(api, "ContactList")
+    , Worker(api, contactListThreadName.data())
     , owner_contact_id_(Widget::api_.Contacts().ContactID(nymID))
     , last_job_{}
 {

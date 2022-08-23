@@ -6,13 +6,13 @@
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
-#include "opentxs/util/Container.hpp"
 
 #include <QObject>
 #include <QString>
 #include <QVariant>
 
 #include "opentxs/interface/qt/Model.hpp"
+#include "opentxs/util/Container.hpp"
 
 class QModelIndex;
 class QObject;

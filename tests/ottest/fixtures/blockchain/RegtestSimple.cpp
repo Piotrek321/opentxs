@@ -271,7 +271,7 @@ auto Regtest_fixture_simple::CreateClient(
     const auto added = network.AddPeer(address);
 
     auto seed = ImportBip39(client, words);
-    const auto& user = CreateNym(client, name, seed, instance);
+    auto& user = CreateNym(client, name, seed, instance);
 
     auto cb = [](User& user) {
         const auto& api = *user.api_;

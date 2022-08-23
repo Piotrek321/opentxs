@@ -68,7 +68,7 @@ AccountList::AccountList(
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : AccountListList(api, nymID, cb, false)
-    , Worker(api, "AccountList")
+    , Worker(api, accountListThreadName.data())
     , chains_()
     , last_job_{}
 {

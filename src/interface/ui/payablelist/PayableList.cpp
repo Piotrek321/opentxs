@@ -63,7 +63,7 @@ PayableList::PayableList(
     const UnitType& currency,
     const SimpleCallback& cb) noexcept
     : PayableListList(api, nymID, cb, false)
-    , Worker(api, "PayableList")
+    , Worker(api, payableListThreadName.data())
     , owner_contact_id_(Widget::api_.Factory().Identifier())  // FIXME wtf
     , currency_(currency)
     , last_job_{}

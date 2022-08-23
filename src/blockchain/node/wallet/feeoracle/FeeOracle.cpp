@@ -60,7 +60,7 @@ FeeOracle::Imp::Imp(
     allocator_type&& alloc,
     CString endpoint) noexcept
     : Allocated(std::move(alloc))
-    , Worker(api, "FeeOracle")
+    , Worker(api, feeOracleThreadName.data())
     , chain_(chain)
     , timer_(api.Network().Asio().Internal().GetTimer())
     , sources_(factory::FeeSources(api, chain_, endpoint, alloc.resource()))

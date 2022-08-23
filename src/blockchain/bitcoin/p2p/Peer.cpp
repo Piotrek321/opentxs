@@ -1261,7 +1261,7 @@ auto Peer::process_getheaders(
         hashes.begin(),
         hashes.end(),
         std::back_inserter(headers),
-        [&](const auto& hash) -> auto{
+        [&](const auto& hash) -> auto {
             return headers_.Internal().LoadBitcoinHeader(hash);
         });
     tdiag("QQQ About to create a Command::headers message");

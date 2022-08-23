@@ -76,7 +76,7 @@ Wallet::Wallet(
     const node::internal::Mempool& mempool,
     const Type chain,
     const std::string_view shutdown) noexcept
-    : Worker(api, "Wallet")
+    : Worker(api, walletThreadName.data())
     , parent_(parent)
     , db_(db)
     , chain_(chain)

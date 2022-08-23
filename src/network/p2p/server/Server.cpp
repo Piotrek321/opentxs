@@ -85,7 +85,7 @@ auto Server::Imp::to_str(MessageType value, unsigned idx) -> std::string
 }
 
 Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
-    : Reactor(LogTrace(), "Server", 2)
+    : Reactor(LogTrace(), serverThreadName.data(), 2)
     , api_(api)
     , zmq_(zmq)
     , handle_(zmq_.Internal().MakeBatch([&] {
@@ -205,7 +205,7 @@ Server::Imp::Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
     LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
     tdiag("About to start");
     start();
-    thread_->SetName("SvrSkt");
+    thread_->SetName(serverSktThreadName.data());
 }
 
 auto Server::Imp::handle(network::zeromq::Message&& in, unsigned idx) noexcept

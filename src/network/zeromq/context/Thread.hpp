@@ -76,7 +76,6 @@ class Thread final : public zeromq::internal::Thread
 public:
     // Add any number of socket-callback pairs.
     auto Add(BatchID id, StartArgs&& args) noexcept -> bool;
-    //TOODODODO wiesiek ma tylko to na gorze
     auto Add(
         BatchID id,
         StartArgs&& args,

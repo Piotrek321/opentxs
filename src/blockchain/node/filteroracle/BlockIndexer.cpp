@@ -88,13 +88,13 @@ BlockIndexer::Imp::Imp(
           api,
           LogTrace(),
           blockIndexerThreadName.data(),
-          batch,/*,
-          [&] {
-              auto out = CString{print(chain), alloc};
-              out.append(" filter oracle block indexer");
+          batch, /*,
+           [&] {
+               auto out = CString{print(chain), alloc};
+               out.append(" filter oracle block indexer");
 
-              return out;
-          }(),*/
+               return out;
+           }(),*/
           alloc,
           {
               {CString{parentEndpoint, alloc}, Direction::Connect},
@@ -376,7 +376,9 @@ auto BlockIndexer::Imp::Shutdown() noexcept -> void
     // WARNING this function must never be called from with this class's
     // Actor::worker function or else a deadlock will occur. Shutdown must only
     // be called by a different Actor.
-   //Piotr B. auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_};
+    // Piotr B. WHAT TO DO HERE? We do not have reorg_lock_ anymore
+    // auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_};
+    std::cerr << "TESTSTESTSET\n\n\n";
     transition_state_shutdown();
 }
 
@@ -455,6 +457,11 @@ auto BlockIndexer::Imp::work() noexcept -> int
 
     return calculate_next_block();
 }
+
+auto BlockIndexer::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+};
 
 BlockIndexer::Imp::~Imp() = default;
 }  // namespace opentxs::blockchain::node::filteroracle

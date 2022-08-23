@@ -86,7 +86,7 @@ auto Position::operator=(const Position& rhs) noexcept -> Position&
 
 auto Position::operator=(Position&& rhs) noexcept -> Position&
 {
-    if (this != std::addressof(rhs)){
+    if (this != std::addressof(rhs)) {
         height_ = std::move(rhs.height_);
         hash_ = std::move(rhs.hash_);
     }

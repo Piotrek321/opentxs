@@ -111,8 +111,8 @@
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Exclusive.tpp"
-#include "util/Thread.hpp"
 #include "util/Reactor.hpp"
+#include "util/Thread.hpp"
 
 template class opentxs::Exclusive<opentxs::Account>;
 template class opentxs::Shared<opentxs::Account>;
@@ -128,7 +128,7 @@ public:
     WalletReactor(
         opentxs::network::zeromq::ListenCallback& callback,
         ReactorClient& rc)
-        : Reactor(LogTrace(), "Wallet", 1)
+        : Reactor(LogTrace(), walletThreadName.data(), 1)
         , callback_(callback)
         , rc_(rc)
     {
@@ -241,7 +241,8 @@ Wallet::Wallet(const api::Session& api)
                    auto&& m) {
                    if (batch.toggle_) { socket.Send(std::move(m)); }
                }},
-          }))
+          },
+          batch_.thread_name_))
     , last_job_{}
 {
     reactor_->start();

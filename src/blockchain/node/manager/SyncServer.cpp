@@ -64,10 +64,12 @@ auto SyncServer::Tip() const noexcept -> block::Position
 {
     return db_.SyncTip();
 }
+
 auto SyncServer::NextBatch() noexcept -> BatchType
 {
     return allocate_batch(type_);
 }
+
 auto SyncServer::Shutdown() noexcept -> std::shared_future<void>
 {
     {
@@ -101,7 +103,7 @@ SyncServer::SyncServer(
           "sync server",
           2000,
           1000)
-    , SyncWorker(api, 20ms)
+    , SyncWorker(api, syncServerThreadName.data())
     , db_(db)
     , header_(header)
     , filter_(filter)
@@ -114,6 +116,7 @@ SyncServer::SyncServer(
     , zmq_lock_()
     , zmq_running_(true)
     , zmq_thread_(&SyncServer::zmq_thread, this)
+    , last_job_{}
 {
     init_executor(
         {shutdown,
@@ -121,6 +124,7 @@ SyncServer::SyncServer(
              api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)}});
     ::zmq_setsockopt(socket_.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
     ::zmq_connect(socket_.get(), endpoint_.c_str());
+    start();
 }
 
 SyncServer::~SyncServer()
@@ -133,7 +137,51 @@ SyncServer::~SyncServer()
     }
 }
 
+auto SyncServer::pipeline(zmq::Message&& in) -> void
+{
+    if (!running_.load()) { return; }
+
+    const auto body = in.Body();
+
+    OT_ASSERT(1 <= body.size());
+
+    using Work = Work;
+    const auto work = body.at(0).as<Work>();
+    last_job_ = work;
+
+    auto lock = Lock{zmq_lock_};
+
+    switch (work) {
+        case Work::shutdown: {
+            protect_shutdown([this] { shut_down(); });
+        } break;
+        case Work::heartbeat: {
+            if (dm_enabled()) { process_position(filter_.Tip(type_)); }
+
+            run_if_enabled();
+        } break;
+        case Work::filter: {
+            process_position(in);
+            run_if_enabled();
+        } break;
+        case Work::statemachine: {
+            download();
+            run_if_enabled();
+        } break;
+        default: {
+            OT_FAIL;
+        }
+    }
+}
+
+auto SyncServer::state_machine() noexcept -> int
+{
+    tdiag("SyncServer::state_machine");
+    return SyncDM::state_machine() ? 20 : 400;
+}
+
 auto SyncServer::batch_ready() const noexcept -> void { trigger(); }
+
 auto SyncServer::batch_size(const std::size_t in) noexcept -> std::size_t
 {
     if (in < 10) {
@@ -150,6 +198,7 @@ auto SyncServer::batch_size(const std::size_t in) noexcept -> std::size_t
         return 1000;
     }
 }
+
 auto SyncServer::check_task(TaskType&) const noexcept -> void {}
 
 auto SyncServer::hello(const Lock&, const block::Position& incoming)
@@ -179,6 +228,7 @@ auto SyncServer::update_tip(const Position& position, const int&) const noexcept
     LogDetail()(print(chain_))(" sync data updated to height ")(
         position.height_)
         .Flush();
+    tdiag("update_tip to", position.height_);
 }
 
 auto SyncServer::download() noexcept -> void
@@ -190,6 +240,7 @@ auto SyncServer::download() noexcept -> void
         task->download(filter_.LoadFilter(type_, task->position_.hash_, {}));
     }
 }
+
 auto SyncServer::process_position(const zmq::Message& in) noexcept -> void
 {
     const auto body = in.Body();
@@ -203,6 +254,7 @@ auto SyncServer::process_position(const zmq::Message& in) noexcept -> void
     process_position(
         Position{body.at(2).as<block::Height>(), body.at(3).Bytes()});
 }
+
 auto SyncServer::process_position(const Position& pos) noexcept -> void
 {
     LogTrace()(OT_PRETTY_CLASS())(__func__)(": processing block ")(pos).Flush();
@@ -250,6 +302,7 @@ auto SyncServer::process_position(const Position& pos) noexcept -> void
     } catch (...) {
     }
 }
+
 auto SyncServer::process_zmq(const Lock& lock) noexcept -> void
 {
     network::zeromq::Message incoming{};
@@ -295,6 +348,7 @@ auto SyncServer::process_zmq(const Lock& lock) noexcept -> void
         LogError()(OT_PRETTY_CLASS())(__func__)(": ")(e.what()).Flush();
     }
 }
+
 auto SyncServer::queue_processing(DownloadedData&& data) noexcept -> void
 {
     if (data.empty()) { return; }
@@ -382,6 +436,7 @@ auto SyncServer::queue_processing(DownloadedData&& data) noexcept -> void
         OTSocket::send_message(lock, socket_.get(), std::move(work));
     }
 }
+
 auto SyncServer::zmq_thread() noexcept -> void
 {
     Signals::Block();
@@ -419,50 +474,15 @@ auto SyncServer::zmq_thread() noexcept -> void
     ::zmq_disconnect(socket_.get(), endpoint_.c_str());
 }
 
-auto SyncServer::pipeline(zmq::Message&& in) -> void
-{
-    if (!running_.load()) { return; }
-
-    const auto body = in.Body();
-
-    OT_ASSERT(1 <= body.size());
-
-    using Work = Work;
-    const auto work = body.at(0).as<Work>();
-    auto lock = Lock{zmq_lock_};
-
-    switch (work) {
-        case Work::shutdown: {
-            protect_shutdown([this] { shut_down(); });
-        } break;
-        case Work::heartbeat: {
-            if (dm_enabled()) { process_position(filter_.Tip(type_)); }
-
-            run_if_enabled();
-        } break;
-        case Work::filter: {
-            process_position(in);
-            run_if_enabled();
-        } break;
-        case Work::statemachine: {
-            download();
-            run_if_enabled();
-        } break;
-        default: {
-            OT_FAIL;
-        }
-    }
-}
-
-auto SyncServer::state_machine() noexcept -> bool
-{
-    return SyncDM::state_machine();
-}
-
 auto SyncServer::shut_down() noexcept -> void
 {
     close_pipeline();
     // TODO MT-34 investigate what other actions might be needed
+}
+
+auto SyncServer::last_job_str() const noexcept -> std::string
+{
+    return node::implementation::Base::to_str(last_job_);
 }
 
 }  // namespace opentxs::blockchain::node::base

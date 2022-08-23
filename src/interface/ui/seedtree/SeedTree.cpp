@@ -77,7 +77,7 @@ SeedTree::SeedTree(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : SeedTreeList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, "SeedTree")
+    , Worker(api, seedTreeThreadName.data())
     , callbacks_()
     , default_nym_(api.Factory().NymID())
     , default_seed_(api.Factory().Identifier())

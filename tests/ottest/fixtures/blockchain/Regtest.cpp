@@ -1331,7 +1331,8 @@ Regtest_fixture_sync::Regtest_fixture_sync()
         alex_.init(client_1_);
 
         OT_ASSERT(
-            alex.payment_code_ == GetPaymentCodeVector3().alice_.payment_code_);
+            alex_.payment_code_ ==
+            GetPaymentCodeVector3().alice_.payment_code_);
 
         init_ = true;
     }
@@ -2521,25 +2522,19 @@ std::unique_ptr<const PeerListener> Regtest_fixture_base::peer_listener_{};
 std::unique_ptr<MinedBlocks> Regtest_fixture_base::mined_block_cache_{};
 Regtest_fixture_base::BlockListen Regtest_fixture_base::block_listener_{};
 Regtest_fixture_base::WalletListen Regtest_fixture_base::wallet_listener_{};
-const User Regtest_fixture_hd::alice_{
-    GetPaymentCodeVector3().alice_.words_,
-    "Alice"};
+User Regtest_fixture_hd::alice_{GetPaymentCodeVector3().alice_.words_, "Alice"};
 TXOs Regtest_fixture_hd::txos_{alice_};
 std::unique_ptr<ScanListener> Regtest_fixture_hd::listener_p_{};
-const User Regtest_fixture_sync::alex_{
-    GetPaymentCodeVector3().alice_.words_,
-    "Alex"};
+User Regtest_fixture_sync::alex_{GetPaymentCodeVector3().alice_.words_, "Alex"};
 std::optional<ot::OTServerContract> Regtest_fixture_sync::notary_{std::nullopt};
 std::optional<ot::OTUnitDefinition> Regtest_fixture_sync::unit_{std::nullopt};
 std::unique_ptr<SyncSubscriber> Regtest_fixture_sync::sync_subscriber_{};
 std::unique_ptr<SyncRequestor> Regtest_fixture_sync::sync_requestor_{};
 Server Regtest_payment_code::server_1_{};
-const User Regtest_payment_code::alice_{
+User Regtest_payment_code::alice_{
     GetPaymentCodeVector3().alice_.words_,
     "Alice"};
-const User Regtest_payment_code::bob_{
-    GetPaymentCodeVector3().bob_.words_,
-    "Bob"};
+User Regtest_payment_code::bob_{GetPaymentCodeVector3().bob_.words_, "Bob"};
 TXOs Regtest_payment_code::txos_alice_{alice_};
 TXOs Regtest_payment_code::txos_bob_{bob_};
 std::unique_ptr<ScanListener> Regtest_payment_code::listener_alice_p_{};

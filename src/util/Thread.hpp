@@ -277,7 +277,7 @@ static_assert(
 
 constexpr std::string_view asioTransmitThreadName{"AsioTransmit\0"};
 static_assert(
-        asioTransmitThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    asioTransmitThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
 constexpr std::string_view P2PClientThreadName{"P2PClient\0"};
@@ -439,6 +439,111 @@ static_assert(
 constexpr std::string_view pipelineThreadName{"Pipeline\0"};
 static_assert(
     pipelineThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockDownloaderThreadName{"BlockDwnldr\0"};
+static_assert(
+    blockDownloaderThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view filterDownloaderThreadName{"FilterDwnldr\0"};
+static_assert(
+    filterDownloaderThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view headerDownloaderThreadName{"HeaderDwnldr\0"};
+static_assert(
+    headerDownloaderThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view baseThreadName{"Base\0"};
+static_assert(
+    baseThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view syncServerThreadName{"SyncServer\0"};
+static_assert(
+    syncServerThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view peerManagerThreadName{"PeerManager\0"};
+static_assert(
+    peerManagerThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view feeOracleThreadName{"FeeOracle\0"};
+static_assert(
+    feeOracleThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view peerThreadName{"Peer\0"};
+static_assert(
+    peerThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view accountListThreadName{"AccountList\0"};
+static_assert(
+    accountListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view activityThreadName{"ActivityThread\0"};
+static_assert(
+    activityThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockchainAccountStatusThreadName{"BlcchnAccSts\0"};
+static_assert(
+    blockchainAccountStatusThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockchainSelectionThreadName{"BlcchnSelect\0"};
+static_assert(
+    blockchainSelectionThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockchainStatisticsThreadName{"BlcchnStats\0"};
+static_assert(
+    blockchainStatisticsThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view contactListThreadName{"ContactList\0"};
+static_assert(
+    contactListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view messagableListThreadName{"MessagableList\0"};
+static_assert(
+    messagableListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view nymListThreadName{"NymList\0"};
+static_assert(
+    nymListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view payableListThreadName{"PayableList\0"};
+static_assert(
+    payableListThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view seedTreeThreadName{"SeedTree\0"};
+static_assert(
+    seedTreeThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view clientThreadName{"Client\0"};
+static_assert(
+    clientThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view serverThreadName{"Server\0"};
+static_assert(
+    serverThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view serverSktThreadName{"SvrSkt\0"};
+static_assert(
+    serverSktThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
 }  // namespace opentxs

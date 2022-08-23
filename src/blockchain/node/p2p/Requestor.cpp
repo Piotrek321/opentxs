@@ -628,10 +628,7 @@ auto Requestor::Imp::work() noexcept -> int
     return -1;
 }
 
-Requestor::Imp::~Imp()
-{
-    signal_shutdown();
-}
+Requestor::Imp::~Imp() { signal_shutdown(); }
 }  // namespace opentxs::blockchain::node::p2p
 
 namespace opentxs::blockchain::node::p2p
