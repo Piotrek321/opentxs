@@ -121,7 +121,7 @@ auto BlockDownloader::check_task(TaskType& task) const noexcept -> void
     }
 }
 
-auto BlockDownloader::pipeline(network::zeromq::Message&& in) noexcept -> void
+auto BlockDownloader::pipeline(network::zeromq::Message&& in) -> void
 {
     if (false == running_.load()) { return; }
 

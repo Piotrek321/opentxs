@@ -89,7 +89,7 @@ struct UpdateManager::Imp {
         , map_()
         , publisher_(api.Network().ZeroMQ().PublishSocket())
         , pipeline_(api.Network().ZeroMQ().Internal().Pipeline(
-              updateManagerThreadName,
+              updateManagerThreadName.data(),
               [this](auto&& in) { pipeline(std::move(in)); }))
     {
         publisher_->Start(api_.Endpoints().WidgetUpdate().data());

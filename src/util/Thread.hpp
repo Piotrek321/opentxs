@@ -416,4 +416,29 @@ static_assert(
     asioDataThreadName.size() <= MAX_THREAD_NAME_SIZE,
     "name is too long");
 
+constexpr std::string_view actorThreadName{"Actor\0"};
+static_assert(
+    actorThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view feeSourceThreadName{"FeeSource\0"};
+static_assert(
+    feeSourceThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view blockIndexerThreadName{"BlockIndexer\0"};
+static_assert(
+    blockIndexerThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view accountActivityThreadName{"AccActv\0"};
+static_assert(
+    accountActivityThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
+constexpr std::string_view pipelineThreadName{"Pipeline\0"};
+static_assert(
+    pipelineThreadName.size() <= MAX_THREAD_NAME_SIZE,
+    "name is too long");
+
 }  // namespace opentxs

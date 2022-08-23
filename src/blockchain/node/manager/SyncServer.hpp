@@ -24,6 +24,7 @@
 #include "opentxs/blockchain/block/Position.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
+#include "internal/api/session/Endpoints.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -111,9 +112,14 @@ public:
         const blockchain::Type chain,
         const cfilter::Type type,
         const UnallocatedCString& shutdown,
-        const UnallocatedCString& publishEndpoint) noexcept;
+        const UnallocatedCString& publishEndpoint) noexcept
+: SyncDM(
+              [&] { return db.SyncTip(); }(),
+              [&] {
+        auto promise = std::promise<int>{};
+        promise.set_value(0);
 
-                  return Finished{promise.get_future()};
+        return Finished{promise.get_future()};
               }(),
               "sync server",
               2000,

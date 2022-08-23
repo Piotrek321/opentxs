@@ -277,11 +277,8 @@ auto Scan::Imp::work() noexcept -> int
 
     if (highestClean.has_value()) {
         clean.emplace_back(ScanState::scan_clean, highestClean.value());
-        // TODO: remove Lambda
-        to_process_.SendDeferred([&] {
-            auto out = MakeWork(Work::update);
-            add_last_reorg(out);
-            encode(clean, out);
+        to_process_.SendDeferred(make_work(std::move(clean)));
+    }
 
     return !caught_up() ? 1 : 400;
 }

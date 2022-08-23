@@ -7,195 +7,299 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/filteroracle/BlockIndexer.hpp"  // IWYU pragma: associated
 
+#include <boost/smart_ptr/make_shared.hpp>
+#include <algorithm>
 #include <chrono>
-#include <exception>
-#include <optional>
-#include <stdexcept>
+#include <mutex>
+#include <string_view>
+#include <utility>
 
 #include "blockchain/DownloadManager.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/database/Cfilter.hpp"
-#include "internal/blockchain/node/BlockOracle.hpp"
+#include "internal/blockchain/node/Types.hpp"
+#include "internal/blockchain/node/filteroracle/FilterOracle.hpp"
+#include "internal/blockchain/node/filteroracle/Types.hpp"
+#include "internal/network/zeromq/Types.hpp"
+#include "internal/util/Future.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/Hash.hpp"
-#include "opentxs/blockchain/bitcoin/cfilter/Header.hpp"
+#include "opentxs/blockchain/bitcoin/cfilter/GCS.hpp"
+#include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Types.hpp"
+#include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Allocator.hpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
+#include "util/Work.hpp"
 
-namespace opentxs::blockchain::node::implementation
+namespace opentxs::blockchain::node::filteroracle
 {
-FilterOracle::BlockIndexer::BlockIndexer(
-    const api::Session& api,
-    database::Cfilter& db,
-    const HeaderOracle& header,
-    const internal::BlockOracle& block,
-    const internal::Manager& node,
-    FilterOracle& parent,
-    const blockchain::Type chain,
-    const cfilter::Type type,
-    const UnallocatedCString& shutdown,
-    const NotifyCallback& notify) noexcept
-    : BlockDMFilter(
-          [&] { return db.FilterTip(type); }(),
-          [&] {
-              auto promise = std::promise<cfilter::Header>{};
-              const auto tip = db.FilterTip(type);
-              promise.set_value(db.LoadFilterHeader(type, tip.second.Bytes()));
+auto print(BlockIndexerJob job) noexcept -> std::string_view
+{
+    try {
+        using Job = BlockIndexerJob;
+        using namespace std::literals;
+        static const auto map = Map<Job, std::string_view>{
+            {Job::shutdown, "shutdown"sv},
+            {Job::header, "header"sv},
+            {Job::reindex, "reindex"sv},
+            {Job::reorg, "reorg"sv},
+            {Job::full_block, "full_block"sv},
+            {Job::init, "init"sv},
+            {Job::statemachine, "statemachine"sv},
+        };
 
-              return Finished{promise.get_future()};
-          }(),
-          "filter",
-          2000,
-          1000)
-    , BlockWorkerFilter(api, "BlockIndexer")
-    , db_(db)
-    , header_(header)
-    , block_(block)
+        return map.at(job);
+    } catch (...) {
+        LogError()(__FUNCTION__)("invalid BlockIndexerJob: ")(
+            static_cast<OTZMQWorkType>(job))
+            .Flush();
+
+        OT_FAIL;
+    }
+}
+}  // namespace opentxs::blockchain::node::filteroracle
+
+namespace opentxs::blockchain::node::filteroracle
+{
+BlockIndexer::Imp::Imp(
+    const api::Session& api,
+    const node::Manager& node,
+    const node::FilterOracle& parent,
+    database::Cfilter& db,
+    NotifyCallback&& notify,
+    blockchain::Type chain,
+    cfilter::Type type,
+    std::string_view parentEndpoint,
+    const network::zeromq::BatchID batch,
+    allocator_type alloc) noexcept
+    : Actor(
+          api,
+          LogTrace(),
+          blockIndexerThreadName.data(),
+          batch,/*,
+          [&] {
+              auto out = CString{print(chain), alloc};
+              out.append(" filter oracle block indexer");
+
+              return out;
+          }(),*/
+          alloc,
+          {
+              {CString{parentEndpoint, alloc}, Direction::Connect},
+              {CString{
+                   api.Endpoints().Internal().BlockchainBlockUpdated(chain),
+                   alloc},
+               Direction::Connect},
+              {CString{api.Endpoints().BlockchainReorg(), alloc},
+               Direction::Connect},
+          })
+    , api_(api)
     , node_(node)
     , parent_(parent)
+    , db_(db)
     , chain_(chain)
-    , type_(type)
-    , notify_(notify)
-    , job_counter_()
-    , last_job_{}
+    , filter_type_(type)
+    , notify_(std::move(notify))
+    , state_(State::normal)
+    , previous_header_()
+    , current_header_()
+    , best_position_(block::Position{})
+    , current_position_(block::Position{})
 {
-    init_executor(
-        {shutdown,
-         UnallocatedCString{
-             api_.Endpoints().Internal().BlockchainBlockUpdated(chain_)}});
-    start();
 }
 
-auto FilterOracle::BlockIndexer::batch_size(const std::size_t in) const noexcept
-    -> std::size_t
+auto BlockIndexer::Imp::calculate_next_block() noexcept -> bool
 {
-    if (in < 10) {
+    OT_ASSERT(0 <= current_position_.height_);
 
-        return 1;
-    } else if (in < 100) {
+    const auto& blockOracle = node_.BlockOracle();
+    const auto& headerOracle = node_.HeaderOracle();
+    auto position = headerOracle.GetPosition(current_position_.height_ + 1);
+    const auto& [height, hash] = position;
 
-        return 10;
-    } else if (in < 1000) {
+    if (hash.empty()) {
+        log_(OT_PRETTY_CLASS())(name_)(": block hash not found for height ")(
+            height)
+            .Flush();
 
-        return 100;
+        return true;
+    }
+
+    auto future = blockOracle.LoadBitcoin(hash);
+
+    if (false == IsReady(future)) {
+        log_(OT_PRETTY_CLASS())(name_)(": block ")
+            .asHex(hash)(" not yet downloaded")
+            .Flush();
+
+        return true;
+    }
+
+    const auto pBlock = future.get();
+
+    if (false == bool(pBlock)) {
+        // NOTE the only time the future should contain an uninitialized pointer
+        // is if the block oracle is shutting down
+        log_(OT_PRETTY_CLASS())(name_)(": block ")
+            .asHex(hash)(" unavailable")
+            .Flush();
+
+        return false;
+    }
+
+    const auto& block = *pBlock;
+
+    OT_ASSERT(block.ID() == hash);
+
+    if (block.Header().ParentHash() != current_position_.hash_) {
+        log_(OT_PRETTY_CLASS())(name_)(": block ")
+            .asHex(hash)(" is not connected to current tip")
+            .Flush();
+        process_reorg(headerOracle.CommonParent(position).first);
+
+        return true;
+    }
+
+    auto alloc = get_allocator();
+    auto filters = Vector<database::Cfilter::CFilterParams>{alloc};
+    auto headers = Vector<database::Cfilter::CFHeaderParams>{alloc};
+    const auto& [ignore1, cfilter] = filters.emplace_back(
+        hash, parent_.Internal().ProcessBlock(filter_type_, block, alloc));
+
+    if (false == cfilter.IsValid()) {
+        log_(OT_PRETTY_CLASS())(name_)(": failed to calculate gcs for ")(
+            (position))
+            .Flush();
+
+        OT_FAIL;
+    }
+
+    auto& [ignore2, cfheader, cfhash] = headers.emplace_back(
+        hash, cfilter.Header(current_header_), cfilter.Hash());
+    const auto rc = db_.StoreFilters(filter_type_, headers, filters, position);
+
+    if (false == rc) {
+        log_(OT_PRETTY_CLASS())(name_)(": failed to update database").Flush();
+
+        OT_FAIL;
+    }
+
+    previous_header_ = std::move(current_header_);
+    current_header_ = std::move(cfheader);
+    current_position_ = std::move(position);
+    notify_(filter_type_, current_position_);
+
+    return current_position_ != best_position_;
+}
+
+auto BlockIndexer::Imp::do_shutdown() noexcept -> void
+{
+    current_header_ = {};
+    previous_header_ = {};
+    best_position_ = block::Position{};
+    current_position_ = block::Position{};
+}
+
+auto BlockIndexer::Imp::do_startup() noexcept -> void
+{
+    best_position_ = node_.BlockOracle().Tip();
+    const auto headerTip = db_.FilterHeaderTip(filter_type_);
+    const auto cfilterTip = db_.FilterTip(filter_type_);
+    auto post = ScopeGuard{
+        [&] { update_position(headerTip, cfilterTip, current_position_); }};
+    find_best_position(std::min(headerTip, cfilterTip));
+}
+
+auto BlockIndexer::Imp::find_best_position(block::Position candidate) noexcept
+    -> void
+{
+    static const auto blank = make_blank<block::Height>::value(api_);
+    const auto& headerOracle = node_.HeaderOracle();
+
+    if (blank == candidate.height_) {
+        candidate = headerOracle.GetPosition(0);
+
+        OT_ASSERT(db_.HaveFilterHeader(filter_type_, candidate.hash_));
+        OT_ASSERT(db_.HaveFilter(filter_type_, candidate.hash_));
+    }
+
+    if (0 == candidate.height_) {
+        current_header_ =
+            db_.LoadFilterHeader(filter_type_, candidate.hash_.Bytes());
+        previous_header_ = {};
+        current_position_ = std::move(candidate);
+
+        return;
     } else {
+        // NOTE this procedure allows for recovery from certain types of
+        // database corruption. If the expected data are not present for the
+        // cfilter tip and cfheader tip recorded in the database then the tips
+        // will be rewound to the point at which consistent data is found, or
+        // the genesis position is reached, whichever comes first.
+        const auto have_data = [&](const auto& prev, const auto& cur) -> bool {
+            return db_.HaveFilterHeader(filter_type_, cur) &&
+                   db_.HaveFilterHeader(filter_type_, prev) &&
+                   db_.HaveFilter(filter_type_, cur) &&
+                   db_.HaveFilter(filter_type_, prev);
+        };
 
-        return 1000;
-    }
-}
+        while (0 <= candidate.height_) {
+            if (0 == candidate.height_) {
+                current_header_ =
+                    db_.LoadFilterHeader(filter_type_, candidate.hash_.Bytes());
+                previous_header_ = {};
+                current_position_ = std::move(candidate);
 
-auto FilterOracle::BlockIndexer::calculate_cfheaders(
-    UnallocatedVector<BlockIndexerData>& cache) const noexcept -> bool
-{
-    auto failures{0};
+                return;
+            } else {
+                auto prior = candidate.height_ - 1;
+                auto previous = headerOracle.BestHash(prior);
 
-    for (auto& data : cache) {
-        auto& [blockHashView, cfilter] = data.filter_data_;
-        auto& task = data.incoming_data_;
-        const auto& [height, block] = task.position_;
+                if (have_data(previous, candidate.hash_)) {
+                    current_header_ = db_.LoadFilterHeader(
+                        filter_type_, candidate.hash_.Bytes());
+                    previous_header_ =
+                        db_.LoadFilterHeader(filter_type_, previous.Bytes());
+                    current_position_ = std::move(candidate);
 
-        try {
-            LogTrace()(OT_PRETTY_CLASS())("Calculating cfheader for ")(
-                print(chain_))(" block at height ")(height)
-                .Flush();
-            auto& [blockHash, cfheader, filterHashView] = data.header_data_;
-            auto& previous = task.previous_;
-            static constexpr auto zero = 0s;
-            using State = std::future_status;
-
-            if (auto status = previous.wait_for(zero); State::ready != status) {
-                LogError()(OT_PRETTY_CLASS())("Timeout waiting for previous ")(
-                    print(chain_))(" cfheader #")(height - 1)
-                    .Flush();
-
-                throw std::runtime_error("timeout");
+                    return;
+                } else {
+                    candidate = {std::move(prior), std::move(previous)};
+                }
             }
-
-            OT_ASSERT(cfilter.IsValid());
-
-            cfheader = cfilter.Header(previous.get().Bytes());
-
-            if (cfheader.empty()) {
-                LogError()(OT_PRETTY_CLASS())("failed to calculate ")(
-                    print(chain_))(" cfheader #")(height)
-                    .Flush();
-
-                throw std::runtime_error("Failed to calculate cfheader");
-            }
-
-            LogTrace()(OT_PRETTY_CLASS())(
-                "Finished calculating cfheader and cfilter "
-                "for ")(print(chain_))(" block at height ")(height)
-                .Flush();
-            task.process(std::move(cfheader));
-        } catch (...) {
-            task.process(std::current_exception());
-            ++failures;
         }
-    }
 
-    return (0 == failures);
-}
-
-auto FilterOracle::BlockIndexer::download() noexcept -> void
-{
-    auto work = NextBatch();
-    constexpr auto none = 0s;
-
-    for (const auto& task : work.data_) {
-        const auto& hash = task->position_.second;
-        auto future = block_.LoadBitcoin(hash);
-
-        if (std::future_status::ready == future.wait_for(none)) {
-            auto block = future.get();
-
-            if (!block) { return; }  // Might occur during shutdown
-
-            OT_ASSERT(block->ID() == hash);
-
-            task->download(std::move(block));
-        }
+        OT_FAIL;  // it should be impossible to reach this line
     }
 }
 
-auto FilterOracle::BlockIndexer::pipeline(zmq::Message&& in) -> void
+auto BlockIndexer::Imp::Init(boost::shared_ptr<Imp> me) noexcept -> void
 {
-    if (!running_.load()) { return; }
+    signal_startup(me);
+}
 
-    const auto body = in.Body();
-
-    OT_ASSERT(1 <= body.size());
-
-    using Work = FilterOracle::Work;
-    const auto work = body.at(0).as<Work>();
-    last_job_ = work;
-
-    switch (work) {
-        case Work::shutdown: {
-            protect_shutdown([this] { shut_down(); });
+auto BlockIndexer::Imp::pipeline(
+    const Work work,
+    network::zeromq::Message&& msg) noexcept -> void
+{
+    switch (state_) {
+        case State::normal: {
+            state_normal(work, std::move(msg));
         } break;
-        case Work::heartbeat: {
-            if (dm_enabled()) { process_position(block_.Tip()); }
-
-            run_if_enabled();
-        } break;
-        case Work::full_block: {
-            if (dm_enabled()) { process_position(in); }
-
-            run_if_enabled();
-        } break;
-        case Work::statemachine: {
-            download();
-            run_if_enabled();
+        case State::shutdown: {
+            shutdown_actor();
         } break;
         default: {
             OT_FAIL;
@@ -203,198 +307,195 @@ auto FilterOracle::BlockIndexer::pipeline(zmq::Message&& in) -> void
     }
 }
 
-auto FilterOracle::BlockIndexer::state_machine() noexcept -> int
-{
-    tdiag("BlockIndexer::state_machine");
-    return BlockDMFilter::state_machine() ? 20 : 500;
-}
-
-auto FilterOracle::BlockIndexer::process_position(
-    const zmq::Message& in) noexcept -> void
+auto BlockIndexer::Imp::process_block(network::zeromq::Message&& in) noexcept
+    -> void
 {
     const auto body = in.Body();
 
     OT_ASSERT(body.size() > 2);
 
-    process_position(
-        Position{body.at(1).as<block::Height>(), body.at(2).Bytes()});
+    process_block(
+        block::Position{body.at(1).as<block::Height>(), body.at(2).Bytes()});
 }
 
-auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
+auto BlockIndexer::Imp::process_block(block::Position&& position) noexcept
     -> void
 {
-    const auto current = known();
-    auto compare{current};
-    LogTrace()(OT_PRETTY_CLASS())(" Current position: ")(print(current))
-        .Flush();
-    LogTrace()(OT_PRETTY_CLASS())("Incoming position: ")(print(pos)).Flush();
-    auto hashes = decltype(header_.Ancestors(current, pos)){};
-    auto prior = Previous{std::nullopt};
-    auto searching{true};
+    if (node_.HeaderOracle().IsInBestChain(position)) {
+        best_position_ = std::move(position);
+    }
+}
 
-    while (searching) {
-        try {
-            hashes = header_.Ancestors(compare, pos, 2000u);
+auto BlockIndexer::Imp::process_reindex(network::zeromq::Message&&) noexcept
+    -> void
+{
+    reset(node_.HeaderOracle().GetPosition(0));
+}
 
-            OT_ASSERT(!hashes.empty());
-        } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-            reset_to_genesis();
+auto BlockIndexer::Imp::process_reorg(network::zeromq::Message&& in) noexcept
+    -> void
+{
+    const auto body = in.Body();
 
-            return;
-        }
+    if (1 > body.size()) {
+        LogError()(OT_PRETTY_CLASS())(name_)(": invalid message").Flush();
 
-        auto postcondition = ScopeGuard{[&] { hashes.erase(hashes.begin()); }};
-        auto& first = hashes.front();
-        LogTrace()(OT_PRETTY_CLASS())("         Ancestor: ")(print(first))
-            .Flush();
+        OT_FAIL;
+    }
 
-        if (first == pos) { return; }
+    const auto chain = body.at(1).as<blockchain::Type>();
 
-        if (first == current) {
-            searching = false;
-            break;
-        }
+    if (chain_ != chain) { return; }
 
-        auto cfheader = db_.LoadFilterHeader(type_, first.second.Bytes());
-        // TODO allocator
-        const auto cfilter = db_.LoadFilter(type_, first.second.Bytes(), {});
+    process_reorg(node_.HeaderOracle().CommonParent(current_position_).first);
+}
 
-        if (cfheader.IsNull()) {
-            LogError()(OT_PRETTY_CLASS())("Missing cfheader for block ")(
-                print(first))
+auto BlockIndexer::Imp::process_reorg(block::Position&& commonParent) noexcept
+    -> void
+{
+    if (best_position_ > commonParent) { best_position_ = commonParent; }
+
+    if (current_position_ > commonParent) { reset(std::move(commonParent)); }
+}
+
+auto BlockIndexer::Imp::Reindex() noexcept -> void
+{
+    pipeline_.Push(MakeWork(Work::reindex));
+}
+
+auto BlockIndexer::Imp::reset(block::Position&& to) noexcept -> void
+{
+    const auto before = current_position_;
+    auto post =
+        ScopeGuard{[&] { update_position(before, before, current_position_); }};
+    find_best_position(std::move(to));
+}
+
+auto BlockIndexer::Imp::Shutdown() noexcept -> void
+{
+    // WARNING this function must never be called from with this class's
+    // Actor::worker function or else a deadlock will occur. Shutdown must only
+    // be called by a different Actor.
+   //Piotr B. auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_};
+    transition_state_shutdown();
+}
+
+auto BlockIndexer::Imp::state_normal(const Work work, Message&& msg) noexcept
+    -> void
+{
+    switch (work) {
+        case Work::shutdown: {
+            shutdown_actor();
+        } break;
+        case Work::header: {
+            // NOTE no action necessary
+        } break;
+        case Work::reorg: {
+            process_reorg(std::move(msg));
+            do_work();
+        } break;
+        case Work::reindex: {
+            process_reindex(std::move(msg));
+            do_work();
+        } break;
+        case Work::full_block: {
+            process_block(std::move(msg));
+            do_work();
+        } break;
+        case Work::init: {
+            do_init();
+        } break;
+        case Work::statemachine: {
+            do_work();
+        } break;
+        default: {
+            LogError()(OT_PRETTY_CLASS())(name_)(": unhandled message type ")(
+                static_cast<OTZMQWorkType>(work))
                 .Flush();
-        }
 
-        if (!cfilter.IsValid()) {
-            LogError()(OT_PRETTY_CLASS())("Missing cfilter for block ")(
-                print(first))
-                .Flush();
-        }
-
-        if (cfilter.IsValid() && !cfheader.IsNull()) {
-            auto promise = std::promise<cfilter::Header>{};
-            promise.set_value(std::move(cfheader));
-            prior.emplace(std::move(first), promise.get_future());
-            searching = false;
-            break;
-        }
-
-        OT_ASSERT(0 < first.first);
-
-        const auto height = first.first - 1;
-        compare = block::Position{height, header_.BestHash(height)};
-    }
-
-    update_position(std::move(hashes), type_, std::move(prior));
-}
-
-auto FilterOracle::BlockIndexer::queue_processing(
-    DownloadedData&& data) noexcept -> void
-{
-    if (data.empty()) { return; }
-
-    auto filters = Vector<database::Cfilter::CFilterParams>{};
-    auto headers = Vector<database::Cfilter::CFHeaderParams>{};
-    auto cache = UnallocatedVector<BlockIndexerData>{};
-    const auto& tip = data.back();
-
-    {
-        auto jobCounter = job_counter_.Allocate();
-        const auto count{data.size()};
-
-        if (data.empty()) { return; }
-
-        filters.reserve(count);
-        headers.reserve(count);
-        cache.reserve(count);
-        static const auto blankHash = cfilter::Hash{};
-
-        for (const auto& task : data) {
-            if (!running_.load()) { return; }
-
-            auto& filter = filters.emplace_back();
-            auto& header = headers.emplace_back();
-            auto& job = cache.emplace_back(
-                blankHash, *task, type_, filter, header, jobCounter);
-            ++jobCounter;
-            const auto queued = api_.Network().Asio().Internal().Post(
-                ThreadPool::General, [&] { parent_.ProcessBlock(job); });
-
-            if (!queued) {
-                --jobCounter;
-
-                return;
-            }
+            OT_FAIL;
         }
     }
+}
 
-    if (!calculate_cfheaders(cache)) { return; }
+auto BlockIndexer::Imp::transition_state_shutdown() noexcept -> void
+{
+    state_ = State::shutdown;
+    log_(OT_PRETTY_CLASS())(name_)(": transitioned to shutdown state").Flush();
+    signal_shutdown();
+}
 
-    try {
-        tip->output_.get();
-        const auto stored =
-            db_.StoreFilters(type_, headers, filters, tip->position_);
+auto BlockIndexer::Imp::update_position(
+    const block::Position& previousCfheader,
+    const block::Position& previousCfilter,
+    const block::Position& newTip) noexcept -> void
+{
+    auto changed{false};
 
-        if (!stored) {
-            const auto error = CString{print(chain_)} + " database error";
+    if (newTip != previousCfheader) {
+        changed = true;
+        const auto rc = db_.SetFilterHeaderTip(filter_type_, newTip);
 
-            throw std::runtime_error{error.c_str()};
-        }
-    } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-
-        for (auto& task : data) { task->process(std::current_exception()); }
+        OT_ASSERT(rc);
     }
-}
 
-auto FilterOracle::BlockIndexer::reset_to_genesis() noexcept -> void
-{
-    LogError()(OT_PRETTY_CLASS())("Performing full reset").Flush();
-    static const auto genesis = block::Position{
-        0, opentxs::blockchain::node::HeaderOracle::GenesisBlockHash(chain_)};
-    std::promise<cfilter::Header> promise{};
-    promise.set_value(db_.LoadFilterHeader(type_, genesis.second.Bytes()));
-    Reset(genesis, promise.get_future());
-}
+    if (newTip != previousCfilter) {
+        changed = true;
+        const auto rc = db_.SetFilterTip(filter_type_, newTip);
 
-auto FilterOracle::BlockIndexer::shut_down() noexcept -> void
-{
-    close_pipeline();
-    // TODO MT-34 investigate what other actions might be needed
-}
-
-auto FilterOracle::BlockIndexer::update_tip(
-    const Position& position,
-    const cfilter::Header&) const noexcept -> void
-{
-    auto saved = db_.SetFilterTip(type_, position);
-
-    OT_ASSERT(saved);
-
-    saved = db_.SetFilterHeaderTip(type_, position);
-
-    OT_ASSERT(saved);
-
-    LogDetail()(print(chain_))(
-        " cfheader and cfilter chain updated to height ")(position.first)
-        .Flush();
-    notify_(type_, position);
-}
-
-FilterOracle::BlockIndexer::~BlockIndexer()
-{
-    try {
-        signal_shutdown().get();
-    } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-        // TODO MT-34 improve
+        OT_ASSERT(rc);
     }
+
+    if (changed) { notify_(filter_type_, newTip); }
 }
 
-auto FilterOracle::BlockIndexer::last_job_str() const noexcept -> std::string
+auto BlockIndexer::Imp::work() noexcept -> int
 {
-    return FilterOracle::to_str(last_job_);
+    if (current_position_ == best_position_) { return false; }
+
+    return calculate_next_block();
 }
 
-}  // namespace opentxs::blockchain::node::implementation
+BlockIndexer::Imp::~Imp() = default;
+}  // namespace opentxs::blockchain::node::filteroracle
+
+namespace opentxs::blockchain::node::filteroracle
+{
+BlockIndexer::BlockIndexer(
+    const api::Session& api,
+    const node::Manager& node,
+    const node::FilterOracle& parent,
+    database::Cfilter& db,
+    NotifyCallback&& notify,
+    blockchain::Type chain,
+    cfilter::Type type,
+    std::string_view parentEndpoint) noexcept
+    : imp_([&] {
+        const auto& zmq = api.Network().ZeroMQ().Internal();
+        const auto batchID = zmq.PreallocateBatch();
+        // TODO the version of libc++ present in android ndk 23.0.7599858
+        // has a broken std::allocate_shared function so we're using
+        // boost::shared_ptr instead of std::shared_ptr
+
+        return boost::allocate_shared<Imp>(
+            alloc::PMR<Imp>{zmq.Alloc(batchID)},
+            api,
+            node,
+            parent,
+            db,
+            std::move(notify),
+            chain,
+            type,
+            parentEndpoint,
+            batchID);
+    }())
+{
+    OT_ASSERT(imp_);
+}
+
+auto BlockIndexer::Reindex() noexcept -> void { imp_->Reindex(); }
+
+auto BlockIndexer::Start() noexcept -> void { imp_->Init(imp_); }
+
+BlockIndexer::~BlockIndexer() { imp_->Shutdown(); }
+}  // namespace opentxs::blockchain::node::filteroracle

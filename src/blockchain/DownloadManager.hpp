@@ -54,7 +54,7 @@ public:
         dm_known_ = position;
         buffer_.clear();
         next_ = 0;
-        downcast().update_tip(position, dm_previous_.get());
+        downcast().dm_update_tip(position, dm_previous_.get());
     }
     auto Start() noexcept { enabled_ = true; }
 
@@ -251,7 +251,7 @@ protected:
         dm_known_ = buffer_.back()->position_;
         std::cerr << ThreadMonitor::get_name()
                   << " download Manager::update_position to target = "
-                  << dm_known_.first << "\n";
+                  << dm_known_.height_ << "\n";
 
         OT_ASSERT(dm_done_.height_ <= dm_known_.height_);
 
@@ -394,7 +394,7 @@ private:
         if (caught_up(lock)) {
             std::cerr << ThreadMonitor::get_name()
                       << " download Manager::state_machine caught up1 !!!!"
-                      << dm_known_.first << " " << dm_known_.second.asHex()
+                      << dm_known_.height_ << " " << dm_known_.hash_.asHex()
                       << "\n";
             return false;
         }
@@ -467,7 +467,7 @@ private:
         if (caught_up(lock)) {
             std::cerr << ThreadMonitor::get_name()
                       << " download Manager::state_machine caught up2 !!!!"
-                      << dm_known_.first << " " << dm_known_.second.asHex()
+                      << dm_known_.height_ << " " << dm_known_.hash_.asHex()
                       << "\n";
             return false;
         }

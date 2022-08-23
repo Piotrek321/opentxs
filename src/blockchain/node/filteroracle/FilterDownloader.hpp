@@ -40,8 +40,6 @@ public:
     auto NextBatch() noexcept -> BatchType;
     auto UpdatePosition(const Position& pos) -> void;
 
-    std::string last_job_str() const noexcept override;
-
     FilterDownloader(
         const api::Session& api,
         database::Cfilter& db,
@@ -50,7 +48,14 @@ public:
         const blockchain::Type chain,
         const cfilter::Type type,
         const UnallocatedCString& shutdown,
-        const filteroracle::NotifyCallback& notify) noexcept;
+        const filteroracle::NotifyCallback& notify) noexcept
+        : FilterDM(
+              [&] { return db.FilterTip(type); }(),
+              [&] {
+                  auto promise = std::promise<cfilter::Header>{};
+                  const auto tip = db.FilterTip(type);
+                  promise.set_value(
+                      db.LoadFilterHeader(type, tip.hash_.Bytes()));
 
                   return Finished{promise.get_future()};
               }(),
@@ -80,13 +85,6 @@ public:
         }
     }
 
-protected:
-    auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> int final;
-
-private:
-    auto shut_down() noexcept -> void;
-
 private:
     friend FilterDM;
 
@@ -95,9 +93,10 @@ private:
     const internal::Manager& node_;
     const blockchain::Type chain_;
     const cfilter::Type type_;
-    const NotifyCallback& notify_;
+    const filteroracle::NotifyCallback& notify_;
     FilterOracle::Work last_job_;
-
+   auto process_reset(
+        const zmq::Message& in) noexcept -> void;
     auto batch_ready() const noexcept -> void
     {
         node_.JobReady(PeerManagerJobs::JobAvailableCfilters);
@@ -112,65 +111,62 @@ private:
             return 10;
         } else if (in < 1000) {
 
-    auto batch_ready() const noexcept -> void;
-    static auto batch_size(std::size_t in) noexcept -> std::size_t;
-    auto check_task(TaskType&) const noexcept -> void;
-    auto trigger_state_machine() const noexcept -> void;
-    auto update_tip(const Position& position, const cfilter::Header&)
-        const noexcept -> void;
+            return 100;
+        } else {
 
-    auto process_reset(const zmq::Message& in) noexcept -> void;
-    auto queue_processing(DownloadedData&& data) noexcept -> void;
-};
-
-auto FilterOracle::FilterDownloader::pipeline(zmq::Message&& in) -> void
-{
-    if (!running_.load()) { return; }
-
-    const auto body = in.Body();
-
-    OT_ASSERT(0 < body.size());
-
-    using Work = FilterOracle::Work;
-    const auto work = body.at(0).as<Work>();
-    last_job_ = work;
-
-    switch (work) {
-        case Work::shutdown: {
-            protect_shutdown([this] { shut_down(); });
-        } break;
-        case Work::reset_filter_tip: {
-            process_reset(in);
-        } break;
-        case Work::heartbeat: {
-            UpdatePosition(db_.FilterHeaderTip(type_));
-            run_if_enabled();
-        } break;
-        case Work::statemachine: {
-            run_if_enabled();
-        } break;
-        default: {
-            OT_FAIL;
+            return 1000;
         }
     }
-}
 
-auto FilterOracle::FilterDownloader::state_machine() noexcept -> int
-{
-    tdiag("FilterDownloader::state_machine");
-    return FilterDM::state_machine() ? 20 : 400;
-}
+        auto pipeline(zmq::Message && in)->void
+        {
+            if (!running_.load()) { return; }
 
-auto FilterOracle::FilterDownloader::shut_down() noexcept -> void
-{
-    close_pipeline();
-    // TODO MT-34 investigate what other actions might be needed
-}
+            const auto body = in.Body();
 
-auto FilterOracle::FilterDownloader::last_job_str() const noexcept
-    -> std::string
-{
-    return FilterOracle::to_str(last_job_);
-}
+            OT_ASSERT(0 < body.size());
 
-}  // namespace opentxs::blockchain::node::implementation
+            using Work = FilterOracle::Work;
+            const auto work = body.at(0).as<Work>();
+            last_job_ = work;
+
+            switch (work) {
+                case Work::shutdown: {
+                    protect_shutdown([this] { shut_down(); });
+                } break;
+                case Work::reset_filter_tip: {
+                    process_reset(in);
+                } break;
+                case Work::heartbeat: {
+                    UpdatePosition(db_.FilterHeaderTip(type_));
+                    run_if_enabled();
+                } break;
+                case Work::statemachine: {
+                    run_if_enabled();
+                } break;
+                default: {
+                    OT_FAIL;
+                }
+            }
+        }
+
+        auto state_machine() noexcept->int
+        {
+            tdiag("FilterDownloader::state_machine");
+            return FilterDM::state_machine() ? 20 : 400;
+        }
+
+        auto shut_down() noexcept->void
+        {
+            close_pipeline();
+            // TODO MT-34 investigate what other actions might be needed
+        }
+
+        auto last_job_str()
+            const noexcept->std::string
+        {
+            return FilterOracle::to_str(last_job_);
+        }
+    };
+
+}// namespace opentxs::blockchain::node::implementation

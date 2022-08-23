@@ -45,6 +45,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/Reactor.hpp"
 #include "util/ScopeGuard.hpp"
+#include "Thread.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
 namespace opentxs  // NOLINT
@@ -181,6 +182,7 @@ protected:
         , pipeline_{api.Network().ZeroMQ().Internal().Pipeline(
               std::string(name_),
               {},
+              actorThreadName,
               subscribe,
               pull,
               dealer,

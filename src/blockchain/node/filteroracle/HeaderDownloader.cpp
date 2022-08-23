@@ -6,7 +6,6 @@
 #include "blockchain/node/filteroracle/HeaderDownloader.hpp"  // IWYU pragma: associated
 
 #include "blockchain/node/filteroracle/FilterDownloader.hpp"
-#include "internal/blockchain/database/Cfilter.hpp"
 #include "internal/blockchain/node/Manager.hpp"
 
 namespace opentxs::blockchain::node::implementation
@@ -14,43 +13,6 @@ namespace opentxs::blockchain::node::implementation
 auto FilterOracle::HeaderDownloader::NextBatch() noexcept -> BatchType
 {
     return allocate_batch(type_);
-}
-
-FilterOracle::HeaderDownloader::HeaderDownloader(
-    const api::Session& api,
-    database::Cfilter& db,
-    const HeaderOracle& header,
-    const internal::Manager& node,
-    FilterOracle::FilterDownloader& filter,
-    const blockchain::Type chain,
-    const cfilter::Type type,
-    const UnallocatedCString& shutdown,
-    Callback&& cb) noexcept
-    : HeaderDM(
-          [&] { return db.FilterHeaderTip(type); }(),
-          [&] {
-              auto promise = std::promise<cfilter::Header>{};
-              const auto tip = db.FilterHeaderTip(type);
-              promise.set_value(db.LoadFilterHeader(type, tip.hash_.Bytes()));
-
-              return Finished{promise.get_future()};
-          }(),
-          "cfheader",
-          20000,
-          10000)
-    , HeaderWorker(api, 20ms)
-    , db_(db)
-    , header_(header)
-    , node_(node)
-    , filter_(filter)
-    , chain_(chain)
-    , type_(type)
-    , checkpoint_(std::move(cb))
-{
-    init_executor(
-        {shutdown, UnallocatedCString{api_.Endpoints().BlockchainReorg()}});
-
-    OT_ASSERT(checkpoint_);
 }
 
 FilterOracle::HeaderDownloader::~HeaderDownloader()
@@ -196,50 +158,6 @@ auto FilterOracle::HeaderDownloader::queue_processing(
     const auto saved = db_.StoreFilterHeaders(type_, std::move(headers));
 
     OT_ASSERT(saved);
-}
-
-auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) -> void
-{
-    if (!running_.load()) { return; }
-
-    const auto body = in.Body();
-
-    OT_ASSERT(1 <= body.size());
-
-    const auto work = body.at(0).as<FilterOracle::Work>();
-
-    switch (work) {
-        case FilterOracle::Work::shutdown: {
-            protect_shutdown([this] { shut_down(); });
-        } break;
-        case FilterOracle::Work::block:
-        case FilterOracle::Work::reorg: {
-            process_position(in);
-            run_if_enabled();
-        } break;
-        case FilterOracle::Work::reset_filter_tip: {
-            process_reset(in);
-        } break;
-        case FilterOracle::Work::heartbeat: {
-            process_position();
-            run_if_enabled();
-        } break;
-        case FilterOracle::Work::statemachine: {
-            run_if_enabled();
-        } break;
-        default: {
-            OT_FAIL;
-        }
-    }
-}
-auto FilterOracle::HeaderDownloader::state_machine() noexcept -> bool
-{
-    return HeaderDM::state_machine();
-}
-auto FilterOracle::HeaderDownloader::shut_down() noexcept -> void
-{
-    close_pipeline();
-    // TODO MT-34 investigate what other actions might be needed
 }
 
 }  // namespace opentxs::blockchain::node::implementation
