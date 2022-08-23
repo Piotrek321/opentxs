@@ -1,3 +1,10 @@
 # IDE specific dirs
 .vscode
 .idea
+*.vpj
+*.vpw
+*.vpwhistu
+*.vtg
+cmake-build-debug/*
+src/cmake-build-debug
+

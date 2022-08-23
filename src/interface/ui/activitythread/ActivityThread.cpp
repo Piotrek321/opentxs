@@ -79,13 +79,28 @@ auto ActivityThreadModel(
 
 namespace opentxs::ui::implementation
 {
+auto ActivityThread::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::contact, "contact"},
+        {Work::thread, "thread"},
+        {Work::message_loaded, "message_loaded"},
+        {Work::message_loaded, "message_loaded"},
+        {Work::messagability, "messagability"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 ActivityThread::ActivityThread(
     const api::session::Client& api,
     const identifier::Nym& nymID,
     const Identifier& threadID,
     const SimpleCallback& cb) noexcept
     : ActivityThreadList(api, nymID, cb, false)
-    , Worker(api, 100ms)
+    , Worker(api, "ActivityThread")
     , threadID_(threadID)
     , self_contact_(api.Contacts().NymToContact(primary_id_))
     , contacts_()
@@ -97,6 +112,7 @@ ActivityThread::ActivityThread(
     , draft_()
     , draft_tasks_()
     , callbacks_()
+    , last_job_{}
 {
     init_executor({
         api.Activity().ThreadPublisher(primary_id_),
@@ -105,6 +121,7 @@ ActivityThread::ActivityThread(
         UnallocatedCString{api.Endpoints().MessageLoaded()},
         UnallocatedCString{api.Endpoints().TaskComplete()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -383,6 +400,7 @@ auto ActivityThread::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     if ((false == startup_complete()) && (Work::init != work)) {
         pipeline_.Push(std::move(in));
@@ -861,7 +879,7 @@ auto ActivityThread::startup() noexcept -> void
     trigger();
 }
 
-auto ActivityThread::state_machine() noexcept -> bool
+auto ActivityThread::state_machine() noexcept -> int
 {
     auto again{false};
 
@@ -872,7 +890,7 @@ auto ActivityThread::state_machine() noexcept -> bool
         switch (value) {
             case otx::client::Messagability::READY: {
 
-                return false;
+                return 100;
             }
             case otx::client::Messagability::UNREGISTERED: {
 
@@ -883,7 +901,7 @@ auto ActivityThread::state_machine() noexcept -> bool
         }
     }
 
-    return again;
+    return again ? 100 : 500;
 }
 
 auto ActivityThread::ThreadID() const noexcept -> UnallocatedCString
@@ -985,6 +1003,11 @@ auto ActivityThread::validate_account(
     }
 
     return true;
+}
+
+auto ActivityThread::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 ActivityThread::~ActivityThread()

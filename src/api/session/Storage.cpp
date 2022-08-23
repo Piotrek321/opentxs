@@ -1934,25 +1934,15 @@ auto Storage::Store(const proto::Nym& data, const UnallocatedCString& alias)
     const -> bool
 {
     UnallocatedCString plaintext;
-    const bool saved = mutable_Root()
-                           .get()
-                           .mutable_Tree()
-                           .get()
-                           .mutable_Nyms()
-                           .get()
-                           .mutable_Nym(data.nymid())
-                           .get()
-                           .Store(data, alias, plaintext);
-
-    if (saved) {
-        if (config_.auto_publish_nyms_ && config_.dht_callback_) {
-            config_.dht_callback_(data.nymid(), plaintext);
-        }
-
-        return true;
-    }
-
-    return false;
+    return mutable_Root()
+        .get()
+        .mutable_Tree()
+        .get()
+        .mutable_Nyms()
+        .get()
+        .mutable_Nym(data.nymid())
+        .get()
+        .Store(data, alias, plaintext);
 }
 
 auto Storage::Store(const ReadView& view, const UnallocatedCString& alias) const
@@ -2235,19 +2225,14 @@ auto Storage::Store(
     auto storageVersion(data);
     storageVersion.clear_publicnym();
     UnallocatedCString plaintext;
-    const bool saved =
-        mutable_Root().get().mutable_Tree().get().mutable_Servers().get().Store(
-            data, alias, plaintext);
 
-    if (saved) {
-        if (config_.auto_publish_servers_ && config_.dht_callback_) {
-            config_.dht_callback_(storageVersion.id(), plaintext);
-        }
-
-        return true;
-    }
-
-    return false;
+    return mutable_Root()
+        .get()
+        .mutable_Tree()
+        .get()
+        .mutable_Servers()
+        .get()
+        .Store(data, alias, plaintext);
 }
 
 auto Storage::Store(const proto::Ciphertext& serialized) const -> bool
@@ -2262,19 +2247,14 @@ auto Storage::Store(
     auto storageVersion(data);
     storageVersion.clear_issuer_nym();
     UnallocatedCString plaintext;
-    const bool saved =
-        mutable_Root().get().mutable_Tree().get().mutable_Units().get().Store(
-            data, alias, plaintext);
 
-    if (saved) {
-        if (config_.auto_publish_units_ && config_.dht_callback_) {
-            config_.dht_callback_(storageVersion.id(), plaintext);
-        }
-
-        return true;
-    }
-
-    return false;
+    return mutable_Root()
+        .get()
+        .mutable_Tree()
+        .get()
+        .mutable_Units()
+        .get()
+        .Store(data, alias, plaintext);
 }
 
 auto Storage::ThreadList(const UnallocatedCString& nymID, const bool unreadOnly)

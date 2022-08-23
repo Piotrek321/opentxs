@@ -42,6 +42,7 @@
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 #include "util/Blank.hpp"
+#include "util/threadutil.hpp"
 
 #define OT_BITCOIN_BLOCK_HEADER_SIZE 80
 
@@ -109,11 +110,12 @@ auto BitcoinBlockHeader(
             serialized.nonce_.value(),
             false);
 
+        std::cerr << ThreadMonitor::get_name()
+                  << " BitcoinBlockHeader RETURNS\n";
         return std::make_unique<blockchain::bitcoin::block::Header>(
             imp.release());
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
-
         return std::make_unique<blockchain::bitcoin::block::Header>();
     }
 }

@@ -12,6 +12,7 @@
 #include <boost/system/error_code.hpp>  // IWYU pragma: keep
 #include <chrono>
 #include <string_view>
+#include <typeinfo>
 #include <utility>
 
 #include "blockchain/node/wallet/subchain/SubchainStateData.hpp"
@@ -90,21 +91,11 @@ Job::Job(
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,
     const network::zeromq::EndpointArgs& dealer,
-    const Vector<network::zeromq::SocketData>& extra,
-    Set<Work>&& neverDrop) noexcept
+    const Vector<network::zeromq::SocketData>& extra) noexcept
     : Actor(
           parent->api_,
           logger,
-          [&] {
-              using namespace std::literals;
-              auto out = CString{alloc};
-              out.append(print(type));
-              out.append(" job for "sv);
-              out.append(parent->name_);
-
-              return out;
-          }(),
-          1ms,
+          std::string(print(type)) + " job for " + parent->name_,
           batch,
           alloc,
           [&] {
@@ -123,8 +114,7 @@ Job::Job(
               std::copy(extra.begin(), extra.end(), std::back_inserter(out));
 
               return out;
-          }(),
-          std::move(neverDrop))
+          }())
     , parent_p_(parent)
     , parent_(*parent_p_)
     , job_type_(type)
@@ -148,40 +138,49 @@ auto Job::add_last_reorg(Message& out) const noexcept -> void
 
 auto Job::ChangeState(const State state, StateSequence reorg) noexcept -> bool
 {
+    return synchronize(
+        [state, reorg, this] { return sChangeState(state, reorg); });
+}
+auto Job::sChangeState(const State state, StateSequence reorg) noexcept -> bool
+{
     if (auto old = pending_state_.exchange(state); old == state) {
-
         return true;
     }
 
-    auto lock = lock_for_reorg(name_, reorg_lock_);
     auto output{false};
+    try {
 
-    switch (state) {
-        case State::normal: {
-            if (State::reorg != state_) { break; }
-            output = transition_state_normal();
-        } break;
-        case State::reorg: {
-            if (State::shutdown == state_) { break; }
+        switch (state) {
+            case State::normal: {
+                if (State::reorg != state_) { break; }
+                output = transition_state_normal();
+            } break;
+            case State::reorg: {
+                if (State::shutdown == state_) { break; }
 
-            output = transition_state_reorg(reorg);
-        } break;
-        case State::shutdown: {
-            if (State::reorg == state_) { break; }
+                output = transition_state_reorg(reorg);
+            } break;
+            case State::shutdown: {
+                if (State::reorg == state_) { break; }
 
-            output = transition_state_shutdown();
-        } break;
-        default: {
-            OT_FAIL;
+                output = transition_state_shutdown();
+            } break;
+            default: {
+                OT_FAIL;
+            }
         }
-    }
 
-    if (!output) {
-        LogError()(OT_PRETTY_CLASS())(name_)(" failed to change state from ")(
-            print(state_))(" to ")(print(state))
-            .Flush();
-    }
+        if (!output) {
+            LogError()(OT_PRETTY_CLASS())(
+                name_)(" failed to change state from ")(print(state_))(" to ")(
+                print(state))
+                .Flush();
+        }
 
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(name_)(" exception: ")(e.what()).Flush();
+        output = false;
+    }
     return output;
 }
 
@@ -206,8 +205,15 @@ auto Job::last_reorg() const noexcept -> std::optional<StateSequence>
     }
 }
 
+auto Job::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto Job::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
@@ -316,7 +322,7 @@ auto Job::process_startup(Message&& msg) noexcept -> void
 {
     state_ = State::normal;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     flush_cache();
     do_work();
 }
@@ -483,7 +489,7 @@ auto Job::state_reorg(const Work work, Message&& msg) noexcept -> void
 
 auto Job::transition_state_normal() noexcept -> bool
 {
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     state_ = State::normal;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to normal state ").Flush();
     trigger();
@@ -497,7 +503,7 @@ auto Job::transition_state_reorg(StateSequence id) noexcept -> bool
 
     if (0u == reorgs_.count(id)) {
         reorgs_.emplace(id);
-        disable_automatic_processing_ = true;
+        disable_automatic_processing(true);
         state_ = State::reorg;
         log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {
@@ -516,11 +522,11 @@ auto Job::transition_state_shutdown() noexcept -> bool
     return true;
 }
 
-auto Job::work() noexcept -> bool
+auto Job::work() noexcept -> int
 {
     process_watchdog();
 
-    return false;
+    return -1;
 }
 
 Job::~Job() { watchdog_.Cancel(); }

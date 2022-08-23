@@ -42,6 +42,7 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
+#include "util/threadutil.hpp"
 
 namespace opentxs::api::network
 {
@@ -445,7 +446,6 @@ auto BlockchainImp::ReportProgress(
     work.AddFrame(chain);
     work.AddFrame(current);
     work.AddFrame(target);
-
     sync_updates_->Send(std::move(work));
 }
 

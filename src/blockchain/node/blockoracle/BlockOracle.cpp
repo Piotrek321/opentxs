@@ -106,13 +106,12 @@ BlockOracle::Imp::Imp(
           LogTrace(),
           [&] {
               using namespace std::literals;
-              auto out = CString{alloc};
+              auto out = std::string{};
               out.append(print(chain));
               out.append(" block oracle"sv);
 
               return out;
           }(),
-          500ms,
           batch,
           alloc,
           [&] {
@@ -234,8 +233,15 @@ auto BlockOracle::Imp::LoadBitcoin(
     return output;
 }
 
+auto BlockOracle::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto BlockOracle::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (work) {
         case Work::shutdown: {
             shutdown_actor();
@@ -286,7 +292,7 @@ auto BlockOracle::Imp::SubmitBlock(const ReadView in) const noexcept -> void
     pipeline_.Push(std::move(work));
 }
 
-auto BlockOracle::Imp::work() noexcept -> bool
+auto BlockOracle::Imp::work() noexcept -> int
 {
     return cache_.lock()->StateMachine();
 }

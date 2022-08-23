@@ -28,41 +28,28 @@ struct Outstanding::Imp {
 
     auto operator++() noexcept -> Imp&
     {
-        {
-            auto lock = Lock{lock_};
-            const auto count = ++(position_->second);
-            idle_ = finished(count);
-            limited_ = limited(count);
-        }
+        auto lock = Lock{lock_};
+        const auto count = ++(position_->second);
+        idle_ = finished(count);
+        limited_ = limited(count);
 
-        finished_.notify_all();
-        ready_.notify_all();
-
+        if (idle_) { finished_.notify_all(); }
         return *this;
     }
     auto operator--() noexcept -> Imp&
     {
-        {
-            auto lock = Lock{lock_};
-            const auto count = --(position_->second);
-            idle_ = finished(count);
-            limited_ = limited(count);
-        }
+        auto lock = Lock{lock_};
+        const auto count = --(position_->second);
+        idle_ = finished(count);
+        limited_ = limited(count);
 
         finished_.notify_all();
-        ready_.notify_all();
-
         return *this;
     }
     auto wait_for_finished() noexcept -> void
     {
         auto lock = Lock{lock_};
         finished_.wait(lock, [this] { return finished(); });
-    }
-    auto wait_for_ready() noexcept -> void
-    {
-        auto lock = Lock{lock_};
-        ready_.wait(lock, [this] { return false == limited(); });
     }
 
     Imp(JobCounter::Imp& parent,
@@ -85,7 +72,6 @@ struct Outstanding::Imp {
         , idle_(true)
         , limited_(false)
         , finished_()
-        , ready_()
         , position_(position)
     {
     }
@@ -103,7 +89,6 @@ private:
     bool idle_;
     std::atomic_bool limited_;
     std::condition_variable finished_;
-    std::condition_variable ready_;
     OutstandingMap::iterator position_;
 
     auto finished() const noexcept -> bool { return finished(value()); }
@@ -194,8 +179,6 @@ auto Outstanding::wait_for_finished() noexcept -> void
 {
     imp_->wait_for_finished();
 }
-
-auto Outstanding::wait_for_ready() noexcept -> void { imp_->wait_for_ready(); }
 
 JobCounter::~JobCounter()
 {

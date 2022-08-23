@@ -10,11 +10,8 @@ target_sources(
   opentxs-common
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/api/network/Asio.hpp"
-    "${opentxs_SOURCE_DIR}/src/internal/api/network/Dht.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/api/network/Factory.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/api/network/Network.hpp"
-    "Dht.cpp"
-    "Dht.hpp"
     "Network.cpp"
     "Network.hpp"
     "ZAP.cpp"
@@ -24,7 +21,6 @@ target_sources(
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Asio.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Dht.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Network.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/ZAP.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/ZMQ.hpp"

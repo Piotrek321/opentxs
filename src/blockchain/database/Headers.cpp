@@ -41,6 +41,7 @@
 #include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 #include "util/LMDB.hpp"
 #include "util/Work.hpp"
+#include "util/threadutil.hpp"
 
 namespace opentxs::blockchain::database
 {
@@ -79,6 +80,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     if (false == common_.StoreBlockHeaders(update.UpdatedHeaders())) {
         LogError()(OT_PRETTY_CLASS())("Failed to save block headers").Flush();
 
+        std::cerr << ThreadMonitor::get_name()
+                  << " Failed to save block headers\n";
         return false;
     }
 
@@ -98,6 +101,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             LogError()(OT_PRETTY_CLASS())("Failed to save checkpoint height")
                 .Flush();
 
+            std::cerr << ThreadMonitor::get_name()
+                      << " Failed to save checkpoint height\n";
             return false;
         }
 
@@ -111,6 +116,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             LogError()(OT_PRETTY_CLASS())("Failed to save checkpoint hash")
                 .Flush();
 
+            std::cerr << ThreadMonitor::get_name()
+                      << " Failed to save checkpoint hash\n";
             return false;
         }
     }
@@ -126,6 +133,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             LogError()(OT_PRETTY_CLASS())("Failed to save disconnected hash")
                 .Flush();
 
+            std::cerr << ThreadMonitor::get_name()
+                      << " Failed to save disconnected hash\n";
             return false;
         }
     }
@@ -139,6 +148,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             LogError()(OT_PRETTY_CLASS())("Failed to delete disconnected hash")
                 .Flush();
 
+            std::cerr << ThreadMonitor::get_name()
+                      << " Failed to delete disconnected hash\n";
             return false;
         }
     }
@@ -152,6 +163,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             LogError()(OT_PRETTY_CLASS())("Failed to save sibling hash")
                 .Flush();
 
+            std::cerr << ThreadMonitor::get_name()
+                      << " Failed to save sibling hash\n";
             return false;
         }
     }
@@ -175,6 +188,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             LogError()(OT_PRETTY_CLASS())("Failed to save block metadata")
                 .Flush();
 
+            std::cerr << ThreadMonitor::get_name()
+                      << " Failed to save block metadata\n";
             return false;
         }
     }
@@ -185,6 +200,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                 LogError()(OT_PRETTY_CLASS())("Failed to delete best hash")
                     .Flush();
 
+                std::cerr << ThreadMonitor::get_name()
+                          << " Failed to delete best hash\n";
                 return false;
             }
         }
@@ -206,6 +223,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                          .first) {
             LogError()(OT_PRETTY_CLASS())("Failed to store best hash").Flush();
 
+            std::cerr << ThreadMonitor::get_name()
+                      << " Failed to store best hash\n";
             return false;
         }
     }
@@ -213,6 +232,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     if (false == parentTxn.Finalize(true)) {
         LogError()(OT_PRETTY_CLASS())("Database error").Flush();
 
+        std::cerr << ThreadMonitor::get_name() << " Database error\n";
         return false;
     }
 
@@ -233,12 +253,21 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
         work.AddFrame(pHeight);
         work.AddFrame(bytes.data(), bytes.size());
         work.AddFrame(height);
+
+        std::cerr << ThreadMonitor::get_name()
+                  << " Headers::ApplyUpdate sending BlockchainReorg\n";
+        MessageMarker().mark(work);
         network_.Reorg().Send(std::move(work));
     } else {
         auto work = MakeWork(WorkType::BlockchainNewHeader);
         work.AddFrame(network_.Chain());
         work.AddFrame(bytes.data(), bytes.size());
         work.AddFrame(height);
+        std::cerr << ThreadMonitor::get_name()
+                  << " Headers::ApplyUpdate sending BlockchainNewHeader\n";
+
+        // QQQ
+        MessageMarker().mark(work);
         network_.Reorg().Send(std::move(work));
     }
 

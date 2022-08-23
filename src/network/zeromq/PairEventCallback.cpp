@@ -48,7 +48,7 @@ auto PairEventCallback::clone() const -> PairEventCallback*
     return new PairEventCallback(callback_);
 }
 
-auto PairEventCallback::Deactivate() const noexcept -> void
+auto PairEventCallback::Deactivate() noexcept -> void
 {
     static const auto null = [](const proto::PairEvent&) {};
     auto rlock = rLock{execute_lock_};

@@ -24,11 +24,6 @@ namespace opentxs  // NOLINT
 // {
 namespace api
 {
-namespace network
-{
-class Dht;
-}  // namespace network
-
 namespace session
 {
 class Storage;
@@ -46,12 +41,6 @@ class Scheduler : virtual public api::Periodic, public Lockable
 {
 public:
     const api::Context& parent_;
-    std::int64_t nym_publish_interval_{0};
-    std::int64_t nym_refresh_interval_{0};
-    std::int64_t server_publish_interval_{0};
-    std::int64_t server_refresh_interval_{0};
-    std::int64_t unit_publish_interval_{0};
-    std::int64_t unit_refresh_interval_{0};
     Flag& running_;
 
     auto Cancel(const int task) const -> bool final
@@ -79,9 +68,7 @@ public:
     ~Scheduler() override;
 
 protected:
-    void Start(
-        const api::session::Storage* const storage,
-        const api::network::Dht& dht);
+    void Start(const api::session::Storage* const storage);
 
     Scheduler(const api::Context& parent, Flag& running);
 

@@ -75,6 +75,7 @@ auto PairSocket(
     -> std::unique_ptr<network::zeromq::socket::Pair>;
 auto Pipeline(
     const network::zeromq::Context& context,
+    std::string&& diagnostic,
     std::function<void(network::zeromq::Message&&)>&& callback,
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,

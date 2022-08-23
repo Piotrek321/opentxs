@@ -100,9 +100,9 @@ private:
     {
         const auto elapsed = Clock::now() - start;
 
-        if (elapsed > minimum) { return; }
-
-        Sleep(std::chrono::duration_cast<Duration>(minimum - elapsed));
+        auto remaining =
+            std::chrono::duration_cast<Duration>(minimum - elapsed);
+        if (remaining.count() > 0) { std::this_thread::sleep_for(remaining); }
     }
 
     auto run() noexcept -> void

@@ -209,6 +209,15 @@ auto Rescan::Imp::ProcessReorg(
     const Lock& headerOracleLock,
     const block::Position& parent) noexcept -> void
 {
+    synchronize([&lock = std::as_const(headerOracleLock), &parent, this] {
+        sProcessReorg(lock, parent);
+    });
+}
+
+auto Rescan::Imp::sProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
+{
     if (last_scanned_.has_value()) {
         const auto target = parent_.ReorgTarget(
             headerOracleLock, parent, last_scanned_.value());
@@ -391,7 +400,7 @@ auto Rescan::Imp::stop() const noexcept -> block::Height
     return stopHeight;
 }
 
-auto Rescan::Imp::work() noexcept -> bool
+auto Rescan::Imp::work() noexcept -> int
 {
     auto post = ScopeGuard{[&] {
         if (last_scanned_.has_value()) {
@@ -413,7 +422,7 @@ auto Rescan::Imp::work() noexcept -> bool
     if (false == parent_.scan_dirty_) {
         log_(OT_PRETTY_CLASS())(name_)(" rescan is not necessary").Flush();
 
-        return false;
+        return -1;
     }
 
     if (rescan_finished()) {
@@ -422,7 +431,7 @@ auto Rescan::Imp::work() noexcept -> bool
             " rescan has caught up to current filter tip")
             .Flush();
 
-        return false;
+        return -1;
     }
 
     auto highestTested = current();
@@ -434,7 +443,7 @@ auto Rescan::Imp::work() noexcept -> bool
             "beyond height ")(highestTested.height_)
             .Flush();
 
-        return false;
+        return -1;
     }
 
     auto dirty = Vector<ScanStatus>{get_allocator()};
@@ -475,7 +484,7 @@ auto Rescan::Imp::work() noexcept -> bool
             .Flush();
     }
 
-    return can_advance();
+    return can_advance() ? 1 : 400;
 }
 }  // namespace opentxs::blockchain::node::wallet
 

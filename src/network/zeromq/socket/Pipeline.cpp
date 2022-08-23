@@ -37,6 +37,7 @@ namespace opentxs::factory
 {
 auto Pipeline(
     const network::zeromq::Context& context,
+    std::string&& diagnostic,
     std::function<void(network::zeromq::Message&&)>&& callback,
     const network::zeromq::EndpointArgs& subscribe,
     const network::zeromq::EndpointArgs& pull,
@@ -53,6 +54,7 @@ auto Pipeline(
     alloc.construct(
         imp,
         context,
+        std::move(diagnostic),
         std::move(callback),
         subscribe,
         pull,
@@ -69,6 +71,7 @@ namespace opentxs::network::zeromq
 {
 Pipeline::Imp::Imp(
     const zeromq::Context& context,
+    std::string&& diagnostic,
     Callback&& callback,
     const EndpointArgs& subscribe,
     const EndpointArgs& pull,
@@ -78,6 +81,7 @@ Pipeline::Imp::Imp(
     const std::optional<zeromq::BatchID>& preallocated,
     allocator_type pmr) noexcept
     : Imp(context,
+          std::move(diagnostic),
           std::move(callback),
           MakeArbitraryInproc(pmr.resource()),
           MakeArbitraryInproc(pmr.resource()),
@@ -93,6 +97,7 @@ Pipeline::Imp::Imp(
 
 Pipeline::Imp::Imp(
     const zeromq::Context& context,
+    std::string&& diagnostic,
     Callback&& callback,
     const CString internalEndpoint,
     const CString outgoingEndpoint,
@@ -105,6 +110,7 @@ Pipeline::Imp::Imp(
     allocator_type pmr) noexcept
     : Allocated(allocator_type{pmr})
     , context_(context)
+    , diagnostic_{std::move(diagnostic)}
     , total_socket_count_(fixed_sockets_ + extra.size())
     , gate_()
     , shutdown_(false)
@@ -140,7 +146,7 @@ Pipeline::Imp::Imp(
             ListenCallback::Factory(std::move(callback)));
 
         OT_ASSERT(batch.sockets_.size() == total_socket_count_);
-        batch.thread_name_ = adjustThreadName(threadName, "Pipeline");
+        batch.thread_name_ = adjustThreadName(threadName, PipelineThreadName);
 
         return batch;
     }())
@@ -198,44 +204,46 @@ Pipeline::Imp::Imp(
 
         return socket;
     }())
-    , thread_(context_.Internal().Start(
-          batch_.id_,
-          [&] {
-              auto out = StartArgs{
-                  {outgoing_.ID(),
-                   &outgoing_,
-                   [socket = &dealer_](auto&& m) {
-                       socket->Send(std::move(m));
-                   }},
-                  {internal_.ID(),
-                   &internal_,
-                   [id = internal_.ID(),
-                    &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                       m.Internal().Prepend(id);
-                       cb.Process(std::move(m));
-                   }},
-                  {dealer_.ID(),
-                   &dealer_,
-                   [id = dealer_.ID(),
-                    &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                       m.Internal().Prepend(id);
-                       cb.Process(std::move(m));
-                   }},
-                  {pull_.ID(),
-                   &pull_,
-                   [id = pull_.ID(),
-                    &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                       m.Internal().Prepend(id);
-                       cb.Process(std::move(m));
-                   }},
-                  {sub_.ID(),
-                   &sub_,
-                   [id = sub_.ID(),
-                    &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
-                       m.Internal().Prepend(id);
-                       cb.Process(std::move(m));
-                   }},
-              };
+    , thread_(context_.Internal().Start(batch_.id_, [&] {
+        auto out = StartArgs{
+            {outgoing_.ID(),
+             &outgoing_,
+             [this](auto&& m) {
+                 try {
+                     auto closing = gate_.get();
+                     if (!closing) { SendFromThread(std::move(m)); }
+                 } catch (...) {
+                 }
+             }},
+            {internal_.ID(),
+             &internal_,
+             [id = internal_.ID(),
+              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+            {dealer_.ID(),
+             &dealer_,
+             [id = dealer_.ID(),
+              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+            {pull_.ID(),
+             &pull_,
+             [id = pull_.ID(),
+              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+            {sub_.ID(),
+             &sub_,
+             [id = sub_.ID(),
+              &cb = batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+        };
 
               OT_ASSERT(batch_.sockets_.size() == total_socket_count_);
               OT_ASSERT((fixed_sockets_ + extra.size()) == total_socket_count_);

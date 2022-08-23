@@ -79,15 +79,15 @@ protected:
 
     struct WalletDescription {
         WalletDescription()
-            : name_()
-            , words_()
+            : name_{}
+            , words_{}
         {
         }
         WalletDescription(
             const ot::UnallocatedCString& name,
             const ot::UnallocatedCString& words)
-            : name_(name)
-            , words_(words)
+            : name_{name}
+            , words_{words}
         {
         }
 
@@ -118,7 +118,7 @@ protected:
         const ot::api::session::Client& api,
         const ot::UnallocatedCString& name,
         const ot::UnallocatedCString& seed,
-        int index) noexcept -> const User&;
+        int index) noexcept -> User&;
 
     auto ImportBip39(
         const ot::api::Session& api,
@@ -130,7 +130,7 @@ protected:
         int instance,
         const ot::UnallocatedCString& name,
         const ot::UnallocatedCString& words,
-        const b::p2p::Address& address) -> std::pair<const User&, bool>;
+        const b::p2p::Address& address) -> std::pair<User&, bool>;
 
     auto CloseClient(const ot::UnallocatedCString& name) -> void;
 
@@ -161,7 +161,8 @@ protected:
     auto WaitForSynchro(
         const User& user,
         const Height target,
-        const Amount expected_balance) -> void;
+        const Amount expected_balance,
+        std::chrono::seconds = 0s) -> void;
 
     auto GetBalance(const User& user) const -> const Amount;
     auto GetDisplayBalance(const User& user) const

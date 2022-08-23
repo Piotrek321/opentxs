@@ -107,7 +107,9 @@ public:
 
 protected:
     auto pipeline(Message&& in) noexcept -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
+
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -122,6 +124,9 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    static auto to_str(Work) -> std::string;
+
+    Work last_job_;
     using SortIndex = int;
     using AccountName = UnallocatedCString;
     using AccountID = AccountCurrencyRowID;

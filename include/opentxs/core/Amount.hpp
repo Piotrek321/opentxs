@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <string>
 #include <string_view>
 #include <type_traits>
 
@@ -128,6 +129,8 @@ public:
     auto operator-() -> Amount;
 
     auto Serialize(const AllocateOutput dest) const noexcept -> bool;
+
+    auto str() const -> std::string;
 
     auto swap(Amount& rhs) noexcept -> void;
 

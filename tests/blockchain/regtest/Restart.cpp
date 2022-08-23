@@ -20,7 +20,8 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
     ot::LogConsole()("send_to_client_reboot_confirm_data start").Flush();
-    ot::Amount receiver_balance_after_send, sender_balance_after_send;
+    ot::Amount receiver_balance_after_send{};
+    ot::Amount sender_balance_after_send{};
 
     // Create wallets
     const auto& user_alice = CreateUser(name_alice_, words_alice_);
@@ -60,18 +61,18 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
         GetDisplayBalance(receiver_balance_after_send))
         .Flush();
 
-    // Collect outputs
-    std::set<UTXO> bob_outputs;
-    std::set<UTXO> alice_outputs;
-    std::map<ot::blockchain::node::TxoState, std::size_t>
-        bob_number_of_outputs_per_type;
-    std::map<ot::blockchain::node::TxoState, std::size_t>
-        alice_number_of_outputs_per_type;
-
-    CollectOutputs(user_bob, bob_outputs, bob_number_of_outputs_per_type);
-    CollectOutputs(user_alice, alice_outputs, alice_number_of_outputs_per_type);
-
     EXPECT_EQ(balance_after_mine_ + coin_to_send_, receiver_balance_after_send);
+
+    // Collect outputs
+    std::set<UTXO> bob_outputs{};
+    std::map<ot::blockchain::node::TxoState, std::size_t>
+        bob_number_of_outputs_per_type{};
+    CollectOutputs(user_bob, bob_outputs, bob_number_of_outputs_per_type);
+
+    std::set<UTXO> alice_outputs{};
+    std::map<ot::blockchain::node::TxoState, std::size_t>
+        alice_number_of_outputs_per_type{};
+    CollectOutputs(user_alice, alice_outputs, alice_number_of_outputs_per_type);
 
     auto loaded_transactions = CollectTransactionsForFeeCalculations(
         user_alice, send_transactions_, transactions_ptxid_);
@@ -83,7 +84,8 @@ TEST_F(Restart_fixture, send_to_client_reboot_confirm_data)
         Amount{balance_after_mine_} - Amount{coin_to_send_} - fee);
     sender_balance_after_send = GetBalance(user_alice);
     ot::LogConsole()(
-        "Alice balance after send " + GetDisplayBalance(GetBalance(user_alice)))
+        "QQQQ Alice balance after send " +
+        GetDisplayBalance(GetBalance(user_alice)))
         .Flush();
     EXPECT_EQ(
         Amount{balance_after_mine_} - Amount{coin_to_send_} - fee,

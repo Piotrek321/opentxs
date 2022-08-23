@@ -121,6 +121,7 @@ public:
         const std::string_view threadName = {}) const noexcept
         -> OTZMQPairSocket final;
     auto Pipeline(
+        std::string&& diagnostic,
         std::function<void(zeromq::Message&&)>&& callback,
         const std::string_view threadName,
         const EndpointArgs& subscribe,

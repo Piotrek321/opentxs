@@ -101,6 +101,7 @@ public:
     auto ExtraSocket(std::size_t index) noexcept(false) -> socket::Raw& final;
 
     Imp(const zeromq::Context& context,
+        std::string&& diagnostic,
         Callback&& callback,
         const EndpointArgs& subscribe,
         const EndpointArgs& pull,
@@ -110,6 +111,7 @@ public:
         const std::optional<zeromq::BatchID>& preallocated,
         allocator_type pmr) noexcept;
     Imp(const zeromq::Context& context,
+        std::string&& diagnostic,
         Callback&& callback,
         const CString internalEndpoint,
         const CString outgoingEndpoint,
@@ -134,6 +136,7 @@ private:
     static constexpr auto fixed_sockets_ = 5_uz;
 
     const zeromq::Context& context_;
+    const std::string diagnostic_;
     const std::size_t total_socket_count_;
     mutable Gatekeeper gate_;
     mutable std::atomic<bool> shutdown_;

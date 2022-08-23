@@ -49,13 +49,44 @@ public:
         const blockchain::Type chain,
         const cfilter::Type type,
         const UnallocatedCString& shutdown,
-        Callback&& cb) noexcept;
+        Callback&& cb) noexcept
+        : HeaderDM(
+              [&] { return db.FilterHeaderTip(type); }(),
+              [&] {
+                  auto promise = std::promise<cfilter::Header>{};
+                  const auto tip = db.FilterHeaderTip(type);
+                  promise.set_value(
+                      db.LoadFilterHeader(type, tip.second.Bytes()));
+
+                  return Finished{promise.get_future()};
+              }(),
+              "cfheader",
+              20000,
+              10000)
+        , HeaderWorker(api, "HeaderDownloader")
+        , db_(db)
+        , header_(header)
+        , node_(node)
+        , filter_(filter)
+        , chain_(chain)
+        , type_(type)
+        , checkpoint_(std::move(cb))
+        , last_job_{}
+    {
+        init_executor(
+            {shutdown, UnallocatedCString{api_.Endpoints().BlockchainReorg()}});
+        start();
 
     ~HeaderDownloader() final;
 
+    auto last_job_str() const noexcept -> std::string final;
+
 protected:
     auto pipeline(zmq::Message&& in) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
+
+private:
+    auto shut_down() noexcept -> void;
 
 private:
     friend HeaderDM;
@@ -67,6 +98,7 @@ private:
     const blockchain::Type chain_;
     const cfilter::Type type_;
     const Callback checkpoint_;
+    FilterOracle::Work last_job_;
 
     auto batch_ready() const noexcept -> void;
     static auto batch_size(const std::size_t in) noexcept -> std::size_t;
@@ -83,5 +115,59 @@ private:
     auto queue_processing(DownloadedData&& data) noexcept -> void;
     auto shut_down() noexcept -> void;
 };
+
+auto FilterOracle::HeaderDownloader::pipeline(zmq::Message&& in) -> void
+{
+    if (!running_.load()) { return; }
+
+    const auto body = in.Body();
+
+    OT_ASSERT(1 <= body.size());
+
+    const auto work = body.at(0).as<FilterOracle::Work>();
+    last_job_ = work;
+
+    switch (work) {
+        case FilterOracle::Work::shutdown: {
+            protect_shutdown([this] { shut_down(); });
+        } break;
+        case FilterOracle::Work::block:
+        case FilterOracle::Work::reorg: {
+            process_position(in);
+            run_if_enabled();
+        } break;
+        case FilterOracle::Work::reset_filter_tip: {
+            process_reset(in);
+        } break;
+        case FilterOracle::Work::heartbeat: {
+            process_position();
+            run_if_enabled();
+        } break;
+        case FilterOracle::Work::statemachine: {
+            run_if_enabled();
+        } break;
+        default: {
+            OT_FAIL;
+        }
+    }
+}
+
+auto FilterOracle::HeaderDownloader::state_machine() noexcept -> int
+{
+    tdiag("HeaderDownloader::state_machine");
+    return HeaderDM::state_machine() ? 20 : 400;
+}
+
+auto FilterOracle::HeaderDownloader::shut_down() noexcept -> void
+{
+    close_pipeline();
+    // TODO MT-34 investigate what other actions might be needed
+}
+
+auto FilterOracle::HeaderDownloader::last_job_str() const noexcept
+    -> std::string
+{
+    return FilterOracle::to_str(last_job_);
+}
 
 }  // namespace opentxs::blockchain::node::implementation

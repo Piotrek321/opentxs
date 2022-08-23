@@ -80,6 +80,7 @@ public:
     virtual auto GetType() const noexcept -> Type = 0;
     virtual auto GetVerifiedPeerCount() const noexcept -> std::size_t = 0;
     virtual auto HeaderOracle() const noexcept -> const node::HeaderOracle& = 0;
+    virtual auto HeaderOracle() noexcept -> node::HeaderOracle& = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Manager& = 0;
     virtual auto Listen(const blockchain::p2p::Address& address) const noexcept

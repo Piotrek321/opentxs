@@ -7,10 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <functional>
-#include <memory>
-
-#include "opentxs/util/Container.hpp"
+#include <cstdint>
 
 namespace opentxs::network
 {
@@ -19,8 +16,4 @@ enum class ConnectionState : std::uint8_t {
     ACTIVE = 1,
     STALLED = 2
 };
-
-using DhtResults = UnallocatedVector<std::shared_ptr<UnallocatedCString>>;
-using DhtDoneCallback = std::function<void(bool)>;
-using DhtResultsCallback = std::function<bool(const DhtResults&)>;
 }  // namespace opentxs::network

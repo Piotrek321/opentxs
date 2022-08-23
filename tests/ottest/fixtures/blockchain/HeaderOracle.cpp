@@ -12,6 +12,7 @@
 #include "internal/blockchain/node/Config.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Manager.hpp"
+#include "util/threadutil.hpp"
 
 namespace ottest
 {

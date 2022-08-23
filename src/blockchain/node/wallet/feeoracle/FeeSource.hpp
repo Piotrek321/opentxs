@@ -78,13 +78,17 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
+    auto to_string(Work) const noexcept -> const std::string&;
+
     auto Shutdown() noexcept -> void;
 
     ~Imp() override;
 
 protected:
     auto pipeline(network::zeromq::Message&&) -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
+
+    auto last_job_str() const noexcept -> std::string override;
 
 private:
     auto shut_down() noexcept -> void;
@@ -114,6 +118,7 @@ private:
     network::zeromq::socket::Raw to_oracle_;
     std::optional<std::future<boost::json::value>> future_;
     Timer timer_;
+    Work last_job_;
 
     auto jitter() noexcept -> std::chrono::seconds;
     virtual auto process(const boost::json::value& data) noexcept

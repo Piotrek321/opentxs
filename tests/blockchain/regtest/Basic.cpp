@@ -11,6 +11,7 @@
 #include <future>
 #include <memory>
 #include <optional>
+#include <thread>
 #include <tuple>
 #include <utility>
 
@@ -262,7 +263,6 @@ TEST_F(Regtest_fixture_hd, account_activity_immature)
             },
         },
     };
-
     EXPECT_TRUE(wait_for_counter(account_activity_));
     EXPECT_TRUE(check_account_activity(alice_, id, expected));
     EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
@@ -349,7 +349,6 @@ TEST_F(Regtest_fixture_hd, advance_test_chain_one_block_before_maturation)
     account_list_.expected_ += 0;
     account_activity_.expected_ += (2u * count);
     account_status_.expected_ += (6u * count);
-
     EXPECT_EQ(start, 1);
     EXPECT_EQ(end, 10);
     EXPECT_TRUE(Mine(start, count));
@@ -657,7 +656,7 @@ TEST_F(Regtest_fixture_hd, failed_spend)
     EXPECT_TRUE(txid->empty());
 
     // TODO ensure CancelProposal is finished processing with appropriate signal
-    ot::Sleep(5s);
+    std::this_thread::sleep_for(5s);
 }
 
 TEST_F(Regtest_fixture_hd, account_activity_failed_spend)

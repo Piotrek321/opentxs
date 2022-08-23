@@ -297,10 +297,6 @@ if(OT_INSTALL_LIBRARY_DEPENDENCIES)
     )
   endif()
 
-  if(DHT_EXPORT)
-    message(WARNING "Installing OpenDHT dependencies not supported yet")
-  endif(DHT_EXPORT)
-
   if(SQLITE_EXPORT)
     get_target_property(
       SQLITE3_LIBRARY

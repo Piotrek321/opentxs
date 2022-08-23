@@ -61,14 +61,34 @@ auto BlockchainStatisticsModel(
 
 namespace opentxs::ui::implementation
 {
+auto BlockchainStatistics::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::blockheader, "blockheader"},
+        {Work::activepeer, "activepeer"},
+        {Work::reorg, "reorg"},
+        {Work::statechange, "statechange"},
+        {Work::filter, "filter"},
+        {Work::block, "block"},
+        {Work::connectedpeer, "connectedpeer"},
+        {Work::balance, "balance"},
+        {Work::timer, "timer"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 BlockchainStatistics::BlockchainStatistics(
     const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : BlockchainStatisticsList(api, api.Factory().Identifier(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "BlockchainStatistics")
     , blockchain_(api.Network().Blockchain())
     , cache_()
     , timer_(api.Network().Asio().Internal().GetTimer())
+    , last_job_{}
 {
     init_executor({
         UnallocatedCString{api.Endpoints().BlockchainBlockDownloadQueue()},
@@ -79,6 +99,7 @@ BlockchainStatistics::BlockchainStatistics(
         UnallocatedCString{api.Endpoints().BlockchainStateChange()},
         UnallocatedCString{api.Endpoints().BlockchainWalletUpdated()},
     });
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -179,6 +200,7 @@ auto BlockchainStatistics::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
@@ -227,7 +249,7 @@ auto BlockchainStatistics::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainStatistics::state_machine() noexcept -> bool { return false; }
+auto BlockchainStatistics::state_machine() noexcept -> int { return -1; }
 
 auto BlockchainStatistics::shut_down() noexcept -> void
 {
@@ -387,6 +409,11 @@ auto BlockchainStatistics::startup() noexcept -> void
 
     finish_startup();
     reset_timer();
+}
+
+auto BlockchainStatistics::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 BlockchainStatistics::~BlockchainStatistics()

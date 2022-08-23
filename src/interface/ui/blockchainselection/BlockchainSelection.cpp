@@ -50,12 +50,25 @@ auto BlockchainSelectionModel(
 
 namespace opentxs::ui::implementation
 {
+auto BlockchainSelection::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::statechange, "statechange"},
+        {Work::enable, "enable"},
+        {Work::disable, "disable"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 BlockchainSelection::BlockchainSelection(
     const api::session::Client& api,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     : BlockchainSelectionList(api, Identifier::Factory(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "BlockchainSelection")
     , filter_(filter(type))
     , chain_state_([&] {
         auto out = UnallocatedMap<blockchain::Type, bool>{};
@@ -66,9 +79,11 @@ BlockchainSelection::BlockchainSelection(
     }())
     , enabled_count_(0)
     , enabled_callback_()
+    , last_job_{}
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().BlockchainStateChange()}});
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
@@ -194,6 +209,7 @@ auto BlockchainSelection::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
@@ -224,7 +240,7 @@ auto BlockchainSelection::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto BlockchainSelection::state_machine() noexcept -> bool { return false; }
+auto BlockchainSelection::state_machine() noexcept -> int { return -1; }
 
 auto BlockchainSelection::shut_down() noexcept -> void
 {
@@ -289,6 +305,11 @@ auto BlockchainSelection::startup() noexcept -> void
     }
 
     finish_startup();
+}
+
+auto BlockchainSelection::last_job_str() const noexcept -> std::string
+{
+    return std::string{to_str(last_job_)};
 }
 
 BlockchainSelection::~BlockchainSelection()

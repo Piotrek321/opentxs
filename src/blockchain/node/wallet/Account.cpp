@@ -89,15 +89,7 @@ Account::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          [&] {
-              using namespace std::literals;
-
-              return CString{alloc}
-                  .append(print(chain))
-                  .append(" account for "sv)
-                  .append(account.NymID().str());
-          }(),
-          0ms,
+          std::string(print(chain)) + " account for " + account.NymID().str(),
           batch,
           alloc,
           {
@@ -152,15 +144,26 @@ Account::Imp::Imp(
 {
 }
 
+Account::Imp::~Imp()
+{
+    tdiag("Account::Imp::~Imp");
+    signal_shutdown();
+}
+
 auto Account::Imp::ChangeState(const State state, StateSequence reorg) noexcept
     -> bool
 {
-    if (auto old = pending_state_.exchange(state); old == state) {
+    return synchronize(
+        [state, reorg, this] { return sChangeState(state, reorg); });
+}
 
+auto Account::Imp::sChangeState(const State state, StateSequence reorg) noexcept
+    -> bool
+{
+    if (auto old = pending_state_.exchange(state); old == state) {
         return true;
     }
 
-    auto lock = lock_for_reorg(name_, reorg_lock_);
     auto output{false};
 
     switch (state) {
@@ -257,12 +260,30 @@ auto Account::Imp::check_pc(const crypto::PaymentCode& subaccount) noexcept
 
 auto Account::Imp::clear_children() noexcept -> void
 {
-    const auto cb = [](auto& value) {
-        auto rc = value.second->ChangeState(Subchain::State::shutdown, {});
+    for (auto [key, sp] : notification_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+        std::chrono::milliseconds x(100);
+        std::this_thread::sleep_for(x);
+    }
+    //    std::for_each(notification_.begin(), notification_.end(), cb);
+    for (auto [key, sp] : internal_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+    }
+    //    std::for_each(notification_.begin(), internal_.end(), cb);
+    for (auto [key, sp] : external_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+    }
+    //    std::for_each(external_.begin(), external_.end(), cb);
+    for (auto [key, sp] : outgoing_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+    }
+    //    std::for_each(outgoing_.begin(), outgoing_.end(), cb);
+    for (auto [key, sp] : incoming_) {
+        sp->ChangeState(Subchain::State::shutdown, {});
+    }
+    //    std::for_each(incoming_.begin(), incoming_.end(), cb);
 
-        OT_ASSERT(rc);
-    };
-    for_each(cb);
+    //    for_each(cb);
     notification_.clear();
     internal_.clear();
     external_.clear();
@@ -337,8 +358,15 @@ auto Account::Imp::instantiate(
     return output;
 }
 
+auto Account::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto Account::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string(print(work)));
+
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
@@ -431,6 +459,18 @@ auto Account::Imp::ProcessReorg(
     std::atomic_int& errors,
     const block::Position& parent) noexcept -> void
 {
+    synchronize(
+        [&lock = std::as_const(headerOracleLock), &tx, &errors, &parent, this] {
+            sProcessReorg(lock, tx, errors, parent);
+        });
+}
+
+auto Account::Imp::sProcessReorg(
+    const Lock& headerOracleLock,
+    storage::lmdb::LMDB::Transaction& tx,
+    std::atomic_int& errors,
+    const block::Position& parent) noexcept -> void
+{
     for_each([&](auto& item) {
         item.second->ProcessReorg(headerOracleLock, tx, errors, parent);
     });
@@ -513,7 +553,7 @@ auto Account::Imp::state_reorg(const Work work, Message&& msg) noexcept -> void
 
 auto Account::Imp::transition_state_normal() noexcept -> bool
 {
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     const auto cb = [](auto& value) {
         auto rc = value.second->ChangeState(Subchain::State::normal, {});
 
@@ -542,7 +582,7 @@ auto Account::Imp::transition_state_reorg(StateSequence id) noexcept -> bool
         if (!success) { return false; }
 
         reorgs_.emplace(id);
-        disable_automatic_processing_ = true;
+        disable_automatic_processing(true);
         state_ = State::reorg;
         log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {
@@ -563,7 +603,7 @@ auto Account::Imp::transition_state_shutdown() noexcept -> bool
     return true;
 }
 
-auto Account::Imp::work() noexcept -> bool { return false; }
+auto Account::Imp::work() noexcept -> int { return -1; }
 }  // namespace opentxs::blockchain::node::wallet
 
 namespace opentxs::blockchain::node::wallet

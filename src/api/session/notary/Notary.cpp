@@ -30,7 +30,6 @@
 #include "internal/util/P0330.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
@@ -155,9 +154,7 @@ Notary::Notary(
                   parent.Asio(),
                   zmq,
                   endpoints,
-                  factory::BlockchainNetworkAPINull(),
-                  config,
-                  true);
+                  factory::BlockchainNetworkAPINull());
           },
           factory::SessionFactoryAPI(*this))
     , reason_(factory_.PasswordPrompt("Notary operation"))
@@ -357,7 +354,7 @@ auto Notary::ID() const -> const identifier::Notary&
 void Notary::Init()
 {
     mint_thread_ = std::thread(&Notary::mint, this);
-    Scheduler::Start(storage_.get(), network_.DHT());
+    Scheduler::Start(storage_.get());
     Storage::init(factory_, crypto_.Seed());
 
     Start();

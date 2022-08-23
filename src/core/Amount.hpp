@@ -176,6 +176,8 @@ public:
         return copy(amount, dest);
     }
 
+    auto str() const -> std::string { return amount_.str(); }
+
     auto SerializeBitcoin(const AllocateOutput dest) const noexcept
         -> bool final
     {

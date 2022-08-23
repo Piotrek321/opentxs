@@ -64,6 +64,21 @@ auto CustodialAccountActivityModel(
 
 namespace opentxs::ui::implementation
 {
+auto CustodialAccountActivity::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::notary, "notary"},
+        {Work::unit, "unit"},
+        {Work::contact, "contact"},
+        {Work::account, "account"},
+        {Work::workflow, "workflow"},
+        {Work::init, "init"},
+        {Work::statemachine, "statemachine"},
+        {Work::shutdown, "shutdown"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 CustodialAccountActivity::CustodialAccountActivity(
     const api::session::Client& api,
     const identifier::Nym& nymID,
@@ -71,7 +86,9 @@ CustodialAccountActivity::CustodialAccountActivity(
     const SimpleCallback& cb) noexcept
     : AccountActivity(api, nymID, accountID, AccountType::Custodial, cb)
     , alias_()
+    , last_job_{}
 {
+    tdiag("CCA constructor 1");
     init({
         UnallocatedCString{api.Endpoints().AccountUpdate()},
         UnallocatedCString{api.Endpoints().ContactUpdate()},
@@ -79,7 +96,9 @@ CustodialAccountActivity::CustodialAccountActivity(
         UnallocatedCString{api.Endpoints().UnitUpdate()},
         UnallocatedCString{api.Endpoints().WorkflowAccountUpdate()},
     });
+    tdiag("CCA constructor 2");
 
+    start();
     // If an Account exists, then the unit definition and notary contracts must
     // exist already.
     OT_ASSERT(0 < Contract().Version());
@@ -399,6 +418,7 @@ auto CustodialAccountActivity::pipeline(Message&& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    last_job_ = work;
 
     switch (work) {
         case Work::notary: {
@@ -417,6 +437,7 @@ auto CustodialAccountActivity::pipeline(Message&& in) noexcept -> void
             process_workflow(in);
         } break;
         case Work::init: {
+            tdiag("processing init msg");
             startup();
             finish_startup();
         } break;
@@ -434,10 +455,7 @@ auto CustodialAccountActivity::pipeline(Message&& in) noexcept -> void
     }
 }
 
-auto CustodialAccountActivity::state_machine() noexcept -> bool
-{
-    return false;
-}
+auto CustodialAccountActivity::state_machine() noexcept -> int { return -1; }
 
 auto CustodialAccountActivity::shut_down() noexcept -> void
 {
@@ -611,9 +629,13 @@ auto CustodialAccountActivity::Unit() const noexcept -> UnitType
     return contract_->UnitOfAccount();
 }
 
+std::string CustodialAccountActivity::last_job_str() const noexcept
+{
+    return to_str(last_job_);
+}
+
 CustodialAccountActivity::~CustodialAccountActivity()
 {
-    wait_for_startup();
     protect_shutdown([this] { shut_down(); });
 }
 }  // namespace opentxs::ui::implementation

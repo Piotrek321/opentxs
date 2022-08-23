@@ -104,6 +104,15 @@ auto Progress::Imp::ProcessReorg(
     const Lock& headerOracleLock,
     const block::Position& parent) noexcept -> void
 {
+    synchronize([&lock = std::as_const(headerOracleLock), &parent, this] {
+        sProcessReorg(lock, parent);
+    });
+}
+
+auto Progress::Imp::sProcessReorg(
+    const Lock& headerOracleLock,
+    const block::Position& parent) noexcept -> void
+{
     auto handle = parent_.progress_position_.lock();
     auto& last = *handle;
 

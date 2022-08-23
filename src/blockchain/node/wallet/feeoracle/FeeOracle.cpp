@@ -60,20 +60,23 @@ FeeOracle::Imp::Imp(
     allocator_type&& alloc,
     CString endpoint) noexcept
     : Allocated(std::move(alloc))
-    , Worker(api, {})
+    , Worker(api, "FeeOracle")
     , chain_(chain)
     , timer_(api.Network().Asio().Internal().GetTimer())
     , sources_(factory::FeeSources(api, chain_, endpoint, alloc.resource()))
     , data_(alloc.resource())
     , output_(std::nullopt)
+    , last_job_{}
+
 {
     pipeline_.BindSubscriber(endpoint);
     reset_timer();
+    start();
 }
 
 auto FeeOracle::Imp::EstimatedFee() const noexcept -> std::optional<Amount>
 {
-    return *output_.lock_shared();
+    return *output_.lock();
 }
 
 auto FeeOracle::Imp::pipeline(network::zeromq::Message&& in) -> void
@@ -89,19 +92,24 @@ auto FeeOracle::Imp::pipeline(network::zeromq::Message&& in) -> void
     OT_ASSERT(0 < body.size());
 
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
 
     switch (work) {
         case Work::shutdown: {
+            tdiag("Work::shutdown");
             protect_shutdown([this] { shut_down(); });
         } break;
         case Work::update_estimate: {
+            tdiag("Work::update_estimate");
             process_update(std::move(in));
             do_work();
         } break;
         case Work::statemachine: {
+            tdiag("Work::statemachine");
             do_work();
         } break;
         default: {
+            tdiag("Work::? ", static_cast<int>(work));
             LogError()(OT_PRETTY_CLASS())("unhandled type: ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
@@ -141,7 +149,7 @@ auto FeeOracle::Imp::reset_timer() noexcept -> void
     });
 }
 
-auto FeeOracle::Imp::state_machine() noexcept -> bool
+auto FeeOracle::Imp::state_machine() noexcept -> int
 {
     static constexpr auto validity = std::chrono::minutes{20};
     const auto limit = Clock::now() - validity;
@@ -160,24 +168,46 @@ auto FeeOracle::Imp::state_machine() noexcept -> bool
             }),
         data_.end());
 
-    output_.modify_detach([this,
-                           average =
-                               sum / std::max<std::size_t>(data_.size(), 1u)](
-                              auto& value) mutable {
-        if (0 < average) {
-            static const auto scale = display::Scale{"", "", {{10, 0}}, 0, 0};
-            LogDetail()("Updated ")(print(chain_))(" fee estimate to ")(
-                scale.Format(average))(" sat / 1000 vBytes")
-                .Flush();
-            value.emplace(std::move(average));
-        } else {
-            LogDetail()("Fee estimate for ")(print(chain_))(" not available")
-                .Flush();
-            value = std::nullopt;
-        }
-    });
+    tdiag("FeeOracle state_machine");
 
-    return false;
+    if (Amount average = sum / std::max<std::size_t>(data_.size(), 1u);
+        average > 0) {
+        static const auto scale = display::Scale{"", "", {{10, 0}}, 0, 0};
+        LogDetail()("Updated ")(print(chain_))(" fee estimate to ")(
+            scale.Format(average))(" sat / 1000 vBytes")
+            .Flush();
+        *output_.lock() = std::move(average);
+    } else {
+        LogDetail()("Fee estimate for ")(print(chain_))(" not available")
+            .Flush();
+        output_.lock()->reset();
+    }
+    tdiag("FeeOracle state_machine 3");
+
+    return -1;
+}
+
+auto FeeOracle::Imp::to_string(Work value) const noexcept -> const std::string&
+{
+    static const auto Map = std::map<Work, std::string>{
+        {Work::shutdown, "shutdown"},
+        {Work::update_estimate, "update_estimate"},
+        {Work::statemachine, "statemachine"},
+    };
+    try {
+        return Map.at(value);
+    } catch (...) {
+        LogError()(__FUNCTION__)("invalid FeeOracle job: ")(
+            static_cast<OTZMQWorkType>(value))
+            .Flush();
+
+        OT_FAIL;
+    }
+}
+
+auto FeeOracle::Imp::last_job_str() const noexcept -> std::string
+{
+    return to_string(last_job_);
 }
 
 auto FeeOracle::Imp::Shutdown() noexcept -> void

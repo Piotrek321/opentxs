@@ -66,15 +66,26 @@
 #include "serialization/protobuf/P2PBlockchainChainState.pb.h"
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
+#include "util/threadutil.hpp"
 
 namespace bc = opentxs::blockchain;
+
+namespace
+{
+constexpr unsigned External_IDX = 0;
+constexpr unsigned Internal_IDX = 1;
+constexpr unsigned Monitor_IDX = 2;
+constexpr unsigned Wallet_IDX = 3;
+constexpr unsigned end_IDX = 4;
+}  // namespace
 
 namespace opentxs::network::p2p
 {
 Client::Imp::Imp(
     const api::Session& api,
     zeromq::internal::Handle&& handle) noexcept
-    : api_(api)
+    : Reactor(LogTrace(), ClientThreadName, end_IDX)
+    , api_(api)
     , endpoint_(zeromq::MakeArbitraryInproc())
     , monitor_endpoint_(zeromq::MakeArbitraryInproc())
     , loopback_endpoint_(zeromq::MakeArbitraryInproc())
@@ -94,10 +105,10 @@ Client::Imp::Imp(
 
         return out;
     }())
-    , external_cb_(batch_.listen_callbacks_.at(0))
-    , internal_cb_(batch_.listen_callbacks_.at(1))
-    , monitor_cb_(batch_.listen_callbacks_.at(2))
-    , wallet_cb_(batch_.listen_callbacks_.at(3))
+    , external_cb_(batch_.listen_callbacks_.at(External_IDX))
+    , internal_cb_(batch_.listen_callbacks_.at(Internal_IDX))
+    , monitor_cb_(batch_.listen_callbacks_.at(Monitor_IDX))
+    , wallet_cb_(batch_.listen_callbacks_.at(Wallet_IDX))
     , external_router_([&]() -> auto& {
         auto& out = batch_.sockets_.at(0);
         auto rc = out.SetRouterHandover(true);
@@ -227,45 +238,50 @@ Client::Imp::Imp(
           {
               {external_router_.ID(),
                &external_router_,
-               [id = external_router_.ID(), &cb = external_cb_](auto&& m) {
-                   cb.Process(std::move(m));
-               }},
+               [this](auto&& m) { post(std::move(m), External_IDX); }},
               {monitor_.ID(),
                &monitor_,
-               [id = monitor_.ID(), &cb = monitor_cb_](auto&& m) {
-                   cb.Process(std::move(m));
-               }},
+               [this](auto&& m) { post(std::move(m), Monitor_IDX); }},
               {external_sub_.ID(),
                &external_sub_,
-               [id = external_sub_.ID(), &cb = external_cb_](auto&& m) {
-                   cb.Process(std::move(m));
-               }},
+               [this](auto&& m) { post(std::move(m), External_IDX); }},
               {internal_router_.ID(),
                &internal_router_,
-               [id = internal_router_.ID(), &cb = internal_cb_](auto&& m) {
-                   cb.Process(std::move(m));
-               }},
+               [this](auto&& m) { post(std::move(m), Internal_IDX); }},
               {internal_sub_.ID(),
                &internal_sub_,
-               [id = internal_sub_.ID(), &cb = internal_cb_](auto&& m) {
-                   cb.Process(std::move(m));
-               }},
+               [this](auto&& m) { post(std::move(m), Internal_IDX); }},
               {loopback_.ID(),
                &loopback_,
-               [id = loopback_.ID(), &cb = internal_cb_](auto&& m) {
-                   cb.Process(std::move(m));
-               }},
+               [this](auto&& m) { post(std::move(m), Internal_IDX); }},
               {wallet_.ID(),
                &wallet_,
-               [id = wallet_.ID(), &cb = wallet_cb_](auto&& m) {
-                   cb.Process(std::move(m));
-               }},
-          },
-          batch_.thread_name_))
+               [this](auto&& m) { post(std::move(m), Wallet_IDX); }},
+          }))
+    , diag_{0}
+//batch_.thread_name_))
 {
     OT_ASSERT(nullptr != thread_);
 
     LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(batch_.id_).Flush();
+    tdiag("about to start");
+    start();
+}
+
+auto Client::Imp::handle(network::zeromq::Message&& in, unsigned idx) noexcept
+    -> void
+{
+    diag_.last_idx_ = idx;
+    if (idx < end_IDX) {
+        batch_.listen_callbacks_.at(idx)->Process(std::move(in));
+    } else {
+        LogTrace()(OT_PRETTY_CLASS())("out of range idx: ")(idx).Flush();
+    }
+}
+
+auto Client::Imp::last_job_str() const noexcept -> std::string
+{
+    return std::string{"channel:"} + std::to_string(diag_.last_idx_);
 }
 
 auto Client::Imp::Endpoint() const noexcept -> std::string_view
@@ -957,6 +973,7 @@ auto Client::Imp::server_is_stalled(client::Server& server) noexcept -> void
 
 auto Client::Imp::shutdown() noexcept -> void
 {
+    stop();
     if (auto run = running_.exchange(false); run) { batch_.ClearCallbacks(); }
 }
 

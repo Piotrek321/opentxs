@@ -190,7 +190,8 @@ public:
 
 protected:
     auto pipeline(Message&& in) noexcept -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
+    auto last_job_str() const noexcept -> std::string final;
 
 private:
     auto shut_down() noexcept -> void;
@@ -247,6 +248,13 @@ private:
     OTZMQDealerSocket balance_socket_;
     Progress progress_;
     blockchain::block::Height height_;
+    Work last_job_;
+    UnallocatedVector<blockchain::block::pTxid> transactions_;
+    UnallocatedSet<AccountActivityRowID> active_;
+    UnallocatedVector<blockchain::block::pTxid>::const_iterator iload_;
+    UnallocatedVector<blockchain::block::pTxid>::const_iterator eload_;
+    bool load_in_progress_;
+    mutable std::mutex load_lock_;
 
     static auto print(Work type) noexcept -> const char*;
 
@@ -254,6 +262,8 @@ private:
         -> UnallocatedCString final;
 
     auto load_thread() noexcept -> void;
+    auto load_thread_portion() noexcept -> bool;
+    auto load_thread_old() noexcept -> void;
     auto process_balance(const Message& in) noexcept -> void;
     auto process_block(const Message& in) noexcept -> void;
     auto process_contact(const Message& in) noexcept -> void;

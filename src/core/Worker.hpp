@@ -7,9 +7,11 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstring>
 #include <functional>
 #include <future>
 #include <mutex>
+#include <optional>
 
 #include "internal/network/zeromq/Context.hpp"
 #include "internal/network/zeromq/Types.hpp"
@@ -26,6 +28,7 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
+#include "util/Reactor.hpp"
 #include "util/Thread.hpp"
 #include "util/Work.hpp"
 
@@ -48,17 +51,17 @@ class Client;
 namespace opentxs
 {
 template <typename API = api::session::Client>
-class Worker
+class Worker : public Reactor
 {
 protected:
     virtual auto pipeline(network::zeromq::Message&& in) -> void = 0;
-    virtual auto state_machine() noexcept -> bool = 0;
+    virtual auto state_machine() noexcept -> int = 0;
 
 protected:
     using Endpoints = UnallocatedVector<UnallocatedCString>;
 
     const API& api_;
-    const std::chrono::milliseconds rate_limit_;
+    std::string diagnostic_;
     std::atomic<bool> running_;
 
 private:
@@ -67,17 +70,18 @@ private:
     std::mutex shutdown_mutex_;
     Time last_executed_;
     mutable std::atomic<bool> state_machine_queued_;
+    //    std::once_flag thread_register_once_;
 
 protected:
     network::zeromq::Pipeline pipeline_;
 
     auto trigger() const noexcept -> void
     {
-        if (false == running_.load()) { return; }
+        if (!running_) { return; }
 
-        const auto running = state_machine_queued_.exchange(true);
+        const auto was_queued = state_machine_queued_.exchange(true);
 
-        if (false == running) {
+        if (!was_queued) {
             pipeline_.Push(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
         }
     }
@@ -90,10 +94,17 @@ protected:
 
     auto do_work() noexcept
     {
-        rate_limit_state_machine();
-        state_machine_queued_.store(false);
-        if (state_machine()) { trigger(); }
-        last_executed_ = Clock::now();
+        if (!running_) { return; }
+
+        state_machine_queued_ = false;
+        int when_next = state_machine();
+        if (when_next == 0) {
+            last_executed_ = Clock::now();
+            trigger();
+        } else if (when_next > 0) {
+            last_executed_ = Clock::now();
+            trigger_at(last_executed_ + std::chrono::milliseconds(when_next));
+        }
     }
     auto init_executor(const Endpoints endpoints = {}) noexcept -> void
     {
@@ -106,20 +117,20 @@ protected:
 
     Worker(
         const API& api,
-        const std::chrono::milliseconds rateLimit,
+        std::string diagnostic,
         const Vector<network::zeromq::SocketData>& extra = {}) noexcept
-        : api_{api}
-        , rate_limit_{rateLimit}
+        : Reactor(LogTrace(), diagnostic)
+        , api_{api}
+        , diagnostic_{diagnostic}
         , running_{true}
         , shutdown_promise_{}
         , shutdown_complete_{shutdown_promise_.get_future()}
         , shutdown_mutex_{}
         , last_executed_{Clock::now()}
-        , state_machine_queued_{false}
+        , state_machine_queued_{}
         , pipeline_{api.Network().ZeroMQ().Internal().Pipeline(
-              [this](auto&& in) {
-                  if (running_) pipeline(std::move(in));
-              },
+              std::move(diagnostic),
+              [this](network::zeromq::Message&& in) { post(std::move(in)); },
               workerThreadName,
               {},
               {},
@@ -128,43 +139,46 @@ protected:
     {
         LogTrace()(OT_PRETTY_CLASS())("using ZMQ batch ")(pipeline_.BatchID())
             .Flush();
+        //        start();
+        tdiag("created ", name());
     }
 
-    virtual ~Worker()
+    ~Worker() override
     {
+        tdiag("Worker::~Worker.1");
         protect_shutdown([this] { close_pipeline(); });
+        tdiag("Worker::~Worker.2");
     }
 
     auto is_running() const noexcept { return running_.load(); }
 
     void protect_shutdown(std::function<void()> funct)
     {
-        bool running = true;
-
-        // Note: the lock is to hold up callers who will not get to
-        // trigger another shutdown functor execution but who could
-        // instead proceed to complete object destruction.
-        std::unique_lock<std::mutex> lock(shutdown_mutex_);
-
-        // Note: despite mutex protection, we use atomic here to avoid
-        // having to block the execution of the working thread.
-        bool can_do = running_.compare_exchange_strong(running, false);
-
+        bool can_do = running_.exchange(false);
         if (can_do) {
-            funct();
+            synchronize([this, funct]() {
+                stop();
+                funct();
+                close_pipeline();
+            });
             shutdown_promise_.set_value();
+        } else {
+            stop();
         }
     }
 
 private:
-    auto rate_limit_state_machine() const noexcept
+    auto trigger_at(
+        std::chrono::time_point<std::chrono::system_clock> t_at) noexcept
+        -> void
     {
-        auto outstanding =
-            rate_limit_ - std::chrono::duration_cast<std::chrono::milliseconds>(
-                              Clock::now() - last_executed_);
-        if (0 < outstanding.count()) {
-            std::this_thread::sleep_for(outstanding);
-        }
+        auto queued = state_machine_queued_.exchange(true);
+
+        if (!queued) { post_at(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL), t_at); }
+    }
+    auto handle(network::zeromq::Message&& in, unsigned) noexcept -> void final
+    {
+        if (running_) pipeline(std::move(in));
     }
 };
 }  // namespace opentxs

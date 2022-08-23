@@ -56,6 +56,7 @@ PeerManager::Jobs::Jobs(const api::Session& api) noexcept
            &broadcast_transaction_.get()},
           {PeerManagerJobs::BroadcastBlock, &broadcast_block_.get()},
       })
+    , closed_{}
 {
     // WARNING if any publish sockets are converted to push sockets or vice
     // versa then blockchain::p2p::implementation::Peer::subscribe() must also
@@ -69,6 +70,10 @@ auto PeerManager::Jobs::Dispatch(const PeerManagerJobs type) noexcept -> void
 
 auto PeerManager::Jobs::Dispatch(zmq::Message&& work) -> void
 {
+    if (closed_) {
+        std::cerr << ThreadMonitor::get_name() << " Jobs::closed_!!!\n";
+        return;
+    }
     const auto body = work.Body();
 
     OT_ASSERT(0 < body.size());
@@ -110,6 +115,8 @@ auto PeerManager::Jobs::listen(
 
 auto PeerManager::Jobs::Shutdown() noexcept -> void
 {
+    std::cerr << ThreadMonitor::get_name() << "Jobs::Shutdown\n";
+    closed_ = true;
     for (auto [type, socket] : socket_map_) { socket->Close(); }
 }
 

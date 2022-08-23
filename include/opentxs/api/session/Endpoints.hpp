@@ -259,39 +259,6 @@ public:
      */
     virtual auto ContactUpdate() const noexcept -> std::string_view = 0;
 
-    /** Search for a nym in the DHT
-     *
-     *  A dealer socket can connect to this endpoint to send and receive
-     *  DHTRequestNym tagged messages.
-     *
-     *  See opentxs/util/WorkTypes.hpp for message format documentation
-     *
-     *  This endpoint is active for all session types.
-     */
-    virtual auto DhtRequestNym() const noexcept -> std::string_view = 0;
-
-    /** Search for a notary in the DHT
-     *
-     *  A dealer socket can connect to this endpoint to send and receive
-     *  DHTRequestServer tagged messages.
-     *
-     *  See opentxs/util/WorkTypes.hpp for message format documentation
-     *
-     *  This endpoint is active for all session types.
-     */
-    virtual auto DhtRequestServer() const noexcept -> std::string_view = 0;
-
-    /** Search for a unit definition in the DHT
-     *
-     *  A dealer socket can connect to this endpoint to send and receive
-     *  DHTRequestUnit tagged messages.
-     *
-     *  See opentxs/util/WorkTypes.hpp for message format documentation
-     *
-     *  This endpoint is active for all session types.
-     */
-    virtual auto DhtRequestUnit() const noexcept -> std::string_view = 0;
-
     /** Search for a nym on known notaries
      *
      *  A push socket can connect to this endpoint to send

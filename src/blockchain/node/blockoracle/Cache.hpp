@@ -101,7 +101,7 @@ public:
     auto Request(const Vector<block::Hash>& hashes) noexcept
         -> BitcoinBlockResults;
     auto Shutdown() noexcept -> void;
-    auto StateMachine() noexcept -> bool;
+    auto StateMachine() noexcept -> int;
 
     Cache(
         const api::Session& api_,

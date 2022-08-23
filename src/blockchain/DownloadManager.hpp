@@ -83,6 +83,8 @@ protected:
 
         if (caught_up(lock)) {
             LogTrace()(OT_PRETTY_CLASS())(log_)(" caught up").Flush();
+            std::cerr << ThreadMonitor::get_name()
+                      << " QQQ download Manager caught up3\n";
 
             return {};
         }
@@ -247,6 +249,9 @@ protected:
         }
 
         dm_known_ = buffer_.back()->position_;
+        std::cerr << ThreadMonitor::get_name()
+                  << " download Manager::update_position to target = "
+                  << dm_known_.first << "\n";
 
         OT_ASSERT(dm_done_.height_ <= dm_known_.height_);
 
@@ -386,7 +391,13 @@ private:
     }
     auto state_machine(const Lock& lock) noexcept -> bool
     {
-        if (caught_up(lock)) { return false; }
+        if (caught_up(lock)) {
+            std::cerr << ThreadMonitor::get_name()
+                      << " download Manager::state_machine caught up1 !!!!"
+                      << dm_known_.first << " " << dm_known_.second.asHex()
+                      << "\n";
+            return false;
+        }
 
         OT_ASSERT(0 < buffer_.size());
 
@@ -453,12 +464,19 @@ private:
 
         downcast().queue_processing(std::move(process));
 
-        if (caught_up(lock)) { return false; }
+        if (caught_up(lock)) {
+            std::cerr << ThreadMonitor::get_name()
+                      << " download Manager::state_machine caught up2 !!!!"
+                      << dm_known_.first << " " << dm_known_.second.asHex()
+                      << "\n";
+            return false;
+        }
 
         if (0u < unallocated(lock)) { downcast().batch_ready(); }
 
         return true;
     }
+
     auto dm_update_tip(const Lock&, Position&& pos, Finished&& data) noexcept
         -> void
     {

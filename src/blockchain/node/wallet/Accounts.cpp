@@ -89,13 +89,7 @@ Accounts::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          [&] {
-              auto out = CString{print(chain), alloc};
-              out.append(" wallet account manager");
-
-              return out;
-          }(),
-          0ms,
+          std::string(print(chain)) + " wallet account manager",
           batch,
           alloc,
           {
@@ -178,8 +172,15 @@ auto Accounts::Imp::do_startup() noexcept -> void
     }
 }
 
+auto Accounts::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto Accounts::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
@@ -354,7 +355,6 @@ auto Accounts::Imp::Shutdown() noexcept -> void
     // WARNING this function must never be called from with this class's
     // Actor::worker function or else a deadlock will occur. Shutdown must only
     // be called by a different Actor.
-    auto lock = std::unique_lock<std::timed_mutex>{reorg_lock_};
     transition_state_shutdown();
 }
 
@@ -404,6 +404,7 @@ auto Accounts::Imp::transition_state_reorg() noexcept -> bool
         auto work = MakeWork(AccountJobs::prepare_reorg);
         work.AddFrame(id);
         to_children_.SendDeferred(std::move(work));
+        tdiag("Sending prepare_reorg");
     }
 
     auto success{true};
@@ -419,6 +420,7 @@ auto Accounts::Imp::transition_state_reorg() noexcept -> bool
 
 auto Accounts::Imp::transition_state_shutdown() noexcept -> void
 {
+    tdiag("About to send Shutdown");
     to_children_.SendDeferred(MakeWork(AccountJobs::prepare_shutdown));
     for_each([](auto& a) {
         auto rc = a.second.ChangeState(Account::State::shutdown);
@@ -430,7 +432,7 @@ auto Accounts::Imp::transition_state_shutdown() noexcept -> void
     signal_shutdown();
 }
 
-auto Accounts::Imp::work() noexcept -> bool { return false; }
+auto Accounts::Imp::work() noexcept -> int { return -1; }
 
 Accounts::Imp::~Imp() = default;
 }  // namespace opentxs::blockchain::node::wallet

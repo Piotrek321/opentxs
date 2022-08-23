@@ -18,7 +18,6 @@ namespace network
 {
 class Asio;
 class Blockchain;
-class Dht;
 }  // namespace network
 }  // namespace api
 
@@ -46,7 +45,6 @@ public:
 
     auto Asio() const noexcept -> const network::Asio&;
     auto Blockchain() const noexcept -> const network::Blockchain&;
-    auto DHT() const noexcept -> const network::Dht&;
     auto ZeroMQ() const noexcept -> const opentxs::network::zeromq::Context&;
 
     OPENTXS_NO_EXPORT auto Shutdown() noexcept -> void;

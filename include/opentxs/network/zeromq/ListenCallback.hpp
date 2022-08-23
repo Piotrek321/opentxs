@@ -42,7 +42,7 @@ public:
 
     /// Deactivate will block until Process is no longer executing, unless it is
     /// called by the same thread as the one currently executing the callback.
-    virtual auto Deactivate() const noexcept -> void = 0;
+    virtual auto Deactivate() noexcept -> void = 0;
     virtual auto Process(Message&& message) const noexcept -> void = 0;
 
     virtual auto Replace(ReceiveCallback callback) noexcept -> void = 0;

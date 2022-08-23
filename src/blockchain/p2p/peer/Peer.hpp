@@ -157,7 +157,9 @@ public:
 
 protected:
     auto pipeline(zmq::Message&& message) noexcept -> void final;
-    auto state_machine() noexcept -> bool final;
+    auto state_machine() noexcept -> int final;
+
+    auto last_job_str() const noexcept -> std::string override;
 
 private:
     auto shut_down() noexcept -> void;
@@ -320,7 +322,9 @@ protected:
     auto reset_block_job() noexcept -> void;
     auto reset_cfheader_job() noexcept -> void;
     auto reset_cfilter_job() noexcept -> void;
-    auto send(std::pair<zmq::Frame, zmq::Frame>&& data) noexcept -> SendStatus;
+    auto send(
+        std::pair<zmq::Frame, zmq::Frame>&& data,
+        bool diag = false) noexcept -> SendStatus;
     auto update_address_services(
         const UnallocatedSet<p2p::Service>& services) noexcept -> void;
     auto verifying() noexcept -> bool
@@ -369,6 +373,7 @@ private:
     peer::Activity activity_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
+    node::PeerManagerJobs last_job_;
 
     static auto init_connection_manager(
         const api::Session& api,

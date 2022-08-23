@@ -110,9 +110,7 @@ Client::Client(
                   parent.Asio(),
                   zmq,
                   endpoints,
-                  factory::BlockchainNetworkAPI(*this, endpoints, zmq),
-                  config,
-                  false);
+                  factory::BlockchainNetworkAPI(*this, endpoints, zmq));
           },
           factory::SessionFactoryAPI(*this))
     , zeromq_(opentxs::Factory::ZMQ(*this, running_))
@@ -280,10 +278,7 @@ auto Client::ServerAction() const -> const otx::client::ServerAction&
     return *server_action_;
 }
 
-void Client::StartActivity()
-{
-    Scheduler::Start(storage_.get(), network_.DHT());
-}
+void Client::StartActivity() { Scheduler::Start(storage_.get()); }
 
 auto Client::StartBlockchain() noexcept -> void
 {

@@ -53,14 +53,7 @@ Requestor::Imp::Imp(
     : Actor(
           api,
           LogTrace(),
-          [&] {
-              auto out = CString(print(chain), alloc);
-              out.push_back(' ');
-              out.append("p2p requestor");
-
-              return out;
-          }(),
-          0ms,
+          std::string(print(chain)) + " p2p requestor",
           batch,
           alloc,
           {
@@ -262,8 +255,15 @@ auto Requestor::Imp::next_position() const noexcept -> const block::Position&
     return (blank() == queue_position_) ? local_position_ : queue_position_;
 }
 
+auto Requestor::Imp::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto Requestor::Imp::pipeline(const Work work, Message&& msg) noexcept -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (state_) {
         case State::init: {
             state_init(work, std::move(msg));
@@ -404,6 +404,7 @@ auto Requestor::Imp::reset_timer(
                 LogError()(OT_PRETTY_CLASS())(ec).Flush();
             }
         } else {
+            tdiag("QQQ Requestor::Imp::reset_timer StateMachine");
             pipeline_.Push(MakeWork(Work::StateMachine));
         }
     });
@@ -416,6 +417,7 @@ auto Requestor::Imp::state_init(const Work work, Message&& msg) noexcept -> void
             shutdown_actor();
         } break;
         case Work::PushTransaction: {
+            tdiag("... defer(&&)");
             defer(std::move(msg));
         } break;
         case Work::Register: {
@@ -606,7 +608,7 @@ auto Requestor::Imp::update_remote_position(
     last_remote_position_ = Clock::now();
 }
 
-auto Requestor::Imp::work() noexcept -> bool
+auto Requestor::Imp::work() noexcept -> int
 {
     switch (state_) {
         case State::init: {
@@ -623,7 +625,7 @@ auto Requestor::Imp::work() noexcept -> bool
         }
     }
 
-    return false;
+    return -1;
 }
 
 Requestor::Imp::~Imp()

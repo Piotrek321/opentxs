@@ -10,10 +10,8 @@
 #include <tuple>
 #include <utility>
 
-#include "api/network/Dht.hpp"
 #include "internal/api/network/Factory.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Dht.hpp"
 #include "opentxs/api/network/Network.hpp"
 
 // NOLINTBEGIN(modernize-concat-nested-namespaces)
@@ -26,7 +24,6 @@ namespace api
 namespace network
 {
 class Asio;
-class Dht;
 }  // namespace network
 
 namespace session
@@ -53,34 +50,15 @@ namespace opentxs::api::network
 struct Network::Imp {
     const network::Asio& asio_;
     const opentxs::network::zeromq::Context& zmq_;
-    std::unique_ptr<Dht> dht_;
     network::Blockchain blockchain_;
 
     Imp(const api::Session& api,
         const network::Asio& asio,
         const opentxs::network::zeromq::Context& zmq,
         const api::session::Endpoints& endpoints,
-        api::network::Blockchain::Imp* blockchain,
-        const bool dhtDefault,
-        std::int64_t& nymPublishInterval,
-        std::int64_t& nymRefreshInterval,
-        std::int64_t& serverPublishInterval,
-        std::int64_t& serverRefreshInterval,
-        std::int64_t& unitPublishInterval,
-        std::int64_t& unitRefreshInterval) noexcept
+        api::network::Blockchain::Imp* blockchain) noexcept
         : asio_(asio)
         , zmq_(zmq)
-        , dht_(factory::DhtAPI(
-              api,
-              zmq_,
-              endpoints,
-              dhtDefault,
-              nymPublishInterval,
-              nymRefreshInterval,
-              serverPublishInterval,
-              serverRefreshInterval,
-              unitPublishInterval,
-              unitRefreshInterval))
         , blockchain_(blockchain)
     {
     }

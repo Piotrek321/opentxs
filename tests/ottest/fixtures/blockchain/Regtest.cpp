@@ -19,6 +19,7 @@
 #include <mutex>
 #include <optional>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -33,6 +34,7 @@
 #include "ottest/fixtures/common/User.hpp"
 #include "ottest/fixtures/integration/Helpers.hpp"
 #include "util/Work.hpp"
+#include "util/threadutil.hpp"
 
 namespace ottest
 {
@@ -196,34 +198,66 @@ struct BlockListener::Imp {
         , cb_(zmq::ListenCallback::Factory([&](zmq::Message&& msg) {
             const auto body = msg.Body();
 
-            OT_ASSERT(0 < body.size());
+            if (target_ == -1) { return; }
 
-            auto position = [&]() -> Position {
-                switch (body.at(0).as<ot::WorkType>()) {
-                    case ot::WorkType::BlockchainNewHeader: {
-                        OT_ASSERT(3 < body.size());
+            try {
 
-                        return {body.at(3).as<Height>(), body.at(2).Bytes()};
+                OT_ASSERT(0 < body.size());
+
+                auto position = [&]() -> Position {
+                    switch (body.at(0).as<ot::WorkType>()) {
+                        case ot::WorkType::BlockchainNewHeader: {
+                            OT_ASSERT(3 < body.size());
+
+                            opentxs::MessageMarker diagnostic(msg);
+                            std::cerr << opentxs::ThreadMonitor::get_name()
+                                      << " Regtest BlockListener::Imp "
+                                         "received BlockchainNewHeader from "
+                                      << diagnostic << "\n";
+
+                            return {
+                                body.at(3).as<Height>(), body.at(2).Bytes()};
+                        }
+                        case ot::WorkType::BlockchainReorg: {
+                            OT_ASSERT(5 < body.size());
+
+                            opentxs::MessageMarker diagnostic(msg);
+                            std::cerr << opentxs::ThreadMonitor::get_name()
+                                      << "QQQ Regtest BlockListener::Imp "
+                                         "received BlockchainReorg from "
+                                      << diagnostic << "\n";
+
+                            return {
+                                body.at(5).as<Height>(), body.at(4).Bytes()};
+                        }
+                        default: {
+
+                            OT_FAIL;
+                        }
                     }
-                    case ot::WorkType::BlockchainReorg: {
-                        OT_ASSERT(5 < body.size());
+                }();
 
-                        return {body.at(5).as<Height>(), body.at(4).Bytes()};
-                    }
-                    default: {
+                const auto& [height, hash] = position;
+                //                auto lock = ot::Lock{lock_};
 
-                        OT_FAIL;
+                std::cerr << opentxs::ThreadMonitor::get_name()
+                          << " BLOCK LISTENER " << std::hex << pthread_self()
+                          << std::dec << " height=" << height
+                          << " target_=" << target_ << "\n";
+
+                if (height == target_) {
+                    try {
+                        promise_.set_value(std::move(position));
+                    } catch (const std::exception& e) {
+                        std::cerr << opentxs::ThreadMonitor::get_name()
+                                  << " BLOCK LISTENER exception: " << e.what()
+                                  << "\n";
                     }
                 }
-            }();
-            const auto& [height, hash] = position;
-            auto lock = ot::Lock{lock_};
-
-            if (height == target_) {
-                try {
-                    promise_.set_value(std::move(position));
-                } catch (...) {
-                }
+            } catch (const std::exception& e) {
+                std::cerr << opentxs::ThreadMonitor::get_name()
+                          << " exception: " << e.what() << "\n";
+                throw;
             }
         }))
         , socket_(api_.Network().ZeroMQ().SubscribeSocket(cb_))
@@ -239,12 +273,16 @@ BlockListener::BlockListener(const ot::api::Session& api) noexcept
 
 auto BlockListener::GetFuture(const Height height) noexcept -> Future
 {
+    std::cerr << opentxs::ThreadMonitor::get_name()
+              << "BlockListener::GetFuture height " << height << "\n";
     auto lock = ot::Lock{imp_->lock_};
     imp_->target_ = height;
 
     try {
         imp_->promise_ = {};
-    } catch (...) {
+    } catch (const std::exception& e) {
+        std::cerr << opentxs::ThreadMonitor::get_name()
+                  << "BLOCK GetFuture exception: " << e.what() << "\n";
     }
 
     return imp_->promise_.get_future();
@@ -754,7 +792,7 @@ auto Regtest_fixture_base::init_block(
 
 auto Regtest_fixture_base::init_mined() noexcept -> MinedBlocks&
 {
-    if (false == bool(mined_block_cache_)) {
+    if (!mined_block_cache_) {
         mined_block_cache_ = std::make_unique<MinedBlocks>();
     }
 
@@ -832,6 +870,10 @@ auto Regtest_fixture_base::Mine(
         wallets.emplace_back(wallet_2_.GetFuture(targetHeight));
     }
 
+    std::cerr << "Mine client_count_ is " << client_count_
+              << " targetHeight = " << targetHeight
+              << "------------------------------------\n";
+
     const auto& network = miner_.Network().Blockchain().GetChain(test_chain_);
     const auto& headerOracle = network.HeaderOracle();
     auto previousHeader =
@@ -839,6 +881,9 @@ auto Regtest_fixture_base::Mine(
 
     for (auto i = 0_uz; i < count; ++i) {
         auto promise = mined_blocks_.allocate();
+
+        std::this_thread::sleep_for(3000ms);
+        std::cerr << "Generation round " << i << "\n";
 
         OT_ASSERT(gen);
 
@@ -1201,8 +1246,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
                 test_chain_,
                 reason);
         };
-        auto& alice = const_cast<User&>(alice_);
-        alice.init_custom(client_1_, cb);
+        alice_.init_custom(client_1_, cb);
 
         OT_ASSERT(
             alice_.payment_code_ ==
@@ -1284,8 +1328,7 @@ Regtest_fixture_sync::Regtest_fixture_sync()
     }())
 {
     if (false == init_) {
-        auto& alex = const_cast<User&>(alex_);
-        alex.init(client_1_);
+        alex_.init(client_1_);
 
         OT_ASSERT(
             alex.payment_code_ == GetPaymentCodeVector3().alice_.payment_code_);
@@ -1416,10 +1459,8 @@ Regtest_payment_code::Regtest_payment_code()
                 test_chain_,
                 reason);
         };
-        auto& alice = const_cast<User&>(alice_);
-        auto& bob = const_cast<User&>(bob_);
-        alice.init_custom(client_1_, server_1_, cb);
-        bob.init_custom(client_2_, server_1_, cb);
+        alice_.init_custom(client_1_, server_1_, cb);
+        bob_.init_custom(client_2_, server_1_, cb);
 
         OT_ASSERT(
             alice_.payment_code_ ==
@@ -1553,7 +1594,6 @@ struct ScanListener::Imp {
         {
         }
         Data() = delete;
-        Data(Data&&) = default;
         Data(const Data&) = delete;
         auto operator=(const Data&) -> Data& = delete;
         auto operator=(Data&&) -> Data& = delete;
@@ -2409,6 +2449,8 @@ struct WalletListener::Imp {
         , cb_(zmq::ListenCallback::Factory([&](zmq::Message&& msg) {
             const auto body = msg.Body();
 
+            if (target_ == -1) { return; }
+
             OT_ASSERT(body.size() == 4);
 
             auto lock = ot::Lock{lock_};
@@ -2417,12 +2459,17 @@ struct WalletListener::Imp {
             if (height == target_) {
                 try {
                     promise_.set_value(height);
-                } catch (...) {
+                } catch (const std::exception& e) {
+                    std::cerr << opentxs::ThreadMonitor::get_name()
+                              << "WALLET LISTENER exception: " << e.what()
+                              << "\n";
                 }
             }
         }))
         , socket_(api_.Network().ZeroMQ().SubscribeSocket(cb_))
     {
+        std::cerr << opentxs::ThreadMonitor::get_name()
+                  << api_.Endpoints().BlockchainSyncProgress().data() << "\n";
         OT_ASSERT(
             socket_->Start(api_.Endpoints().BlockchainSyncProgress().data()));
     }
@@ -2435,12 +2482,16 @@ WalletListener::WalletListener(const ot::api::Session& api) noexcept
 
 auto WalletListener::GetFuture(const Height height) noexcept -> Future
 {
+    std::cerr << opentxs::ThreadMonitor::get_name()
+              << "WalletListener::GetFuture " << height << "\n";
     auto lock = ot::Lock{imp_->lock_};
     imp_->target_ = height;
 
     try {
         imp_->promise_ = {};
-    } catch (...) {
+    } catch (const std::exception& e) {
+        std::cerr << opentxs::ThreadMonitor::get_name()
+                  << "WALLET GetFuture exception: " << e.what() << "\n";
     }
 
     return imp_->promise_.get_future();

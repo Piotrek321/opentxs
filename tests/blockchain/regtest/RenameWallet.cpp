@@ -6,6 +6,7 @@
 #include "ottest/fixtures/blockchain/Regtest.hpp"  // IWYU pragma: associated
 
 #include <gtest/gtest.h>
+#include <iostream>
 #include <thread>
 
 #include "internal/identity/Nym.hpp"

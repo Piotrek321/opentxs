@@ -29,8 +29,8 @@ namespace opentxs::blockchain::block
 class Validator
 {
 public:
-    virtual auto Validate(const bitcoin::block::Block& block) const noexcept
-        -> bool
+    virtual auto Validate(
+        const blockchain::bitcoin::block::Block& block) const noexcept -> bool
     {
         return true;
     }

@@ -103,8 +103,10 @@ TEST_F(Restart_fixture, send_multiple_transactions_remove_user_compare)
     EXPECT_EQ(GetBalance(user_bob_after_reboot), receiver_balance);
     EXPECT_EQ(GetBalance(user_alice_after_reboot), sender_balance);
 
+    // TODO verify the logical correctness after the following cal was changed
+    // to refer to Alice 2 rather than the deleted Alice
     auto loaded_transactions = CollectTransactionsForFeeCalculations(
-        user_alice, send_transactions_, transactions_ptxid_);
+        user_alice_after_reboot, send_transactions_, transactions_ptxid_);
     auto fee = CalculateFee(send_transactions_, loaded_transactions);
 
     EXPECT_EQ(

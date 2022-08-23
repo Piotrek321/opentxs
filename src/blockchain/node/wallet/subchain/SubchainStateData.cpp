@@ -445,8 +445,7 @@ SubchainStateData::SubchainStateData(
     : Actor(
           api,
           LogTrace(),
-          describe(subaccount, subchain, alloc),
-          0ms,
+          std::string(describe(subaccount, subchain, alloc)),
           batch,
           alloc,
           {
@@ -529,6 +528,7 @@ SubchainStateData::SubchainStateData(
       })
     , watchdog_(api_.Network().Asio().Internal().GetTimer())
 {
+    tdiag("SubchainStateData::SubchainStateData.1", this);
     OT_ASSERT(false == owner_->empty());
     OT_ASSERT(false == id_->empty());
 }
@@ -560,18 +560,25 @@ SubchainStateData::SubchainStateData(
           network::zeromq::MakeArbitraryInproc(alloc.resource()),
           alloc)
 {
+    tdiag("SubchainStateData::SubchainStateData.2", this);
 }
 
 auto SubchainStateData::ChangeState(
     const State state,
     StateSequence reorg) noexcept -> bool
 {
+    return synchronize(
+        [state, reorg, this] { return sChangeState(state, reorg); });
+}
+auto SubchainStateData::sChangeState(
+    const State state,
+    StateSequence reorg) noexcept -> bool
+{
     if (auto old = pending_state_.exchange(state); old == state) {
-
         return true;
     }
 
-    auto lock = lock_for_reorg(name_, reorg_lock_);
+    tdiag("sChangeState ", this);
     auto output{false};
 
     switch (state) {
@@ -644,7 +651,11 @@ auto SubchainStateData::choose_thread_count(std::size_t elements) noexcept
 
 auto SubchainStateData::clear_children() noexcept -> void
 {
+    tdiag("clear_children, children:", (have_children_ ? "YES" : "NO"));
     if (have_children_) {
+        have_children_ = false;
+        tdiag("SubchainStateData clear_children.1 ", this);
+
         auto rc = scan_->ChangeState(JobState::shutdown, {});
 
         OT_ASSERT(rc);
@@ -665,12 +676,13 @@ auto SubchainStateData::clear_children() noexcept -> void
 
         OT_ASSERT(rc);
 
+        tdiag("SubchainStateData clear_children.2 ", this);
+
         scan_.reset();
         process_.reset();
         index_.reset();
         rescan_.reset();
         progress_.reset();
-        have_children_ = false;
     }
 }
 
@@ -888,9 +900,16 @@ auto SubchainStateData::Init(boost::shared_ptr<SubchainStateData> me) noexcept
     signal_startup(me);
 }
 
+auto SubchainStateData::to_str(Work w) const noexcept -> std::string
+{
+    return std::string(print(w));
+}
+
 auto SubchainStateData::pipeline(const Work work, Message&& msg) noexcept
     -> void
 {
+    tadiag("pipeline ", std::string{print(work)});
+
     switch (state_) {
         case State::normal: {
             state_normal(work, std::move(msg));
@@ -1046,6 +1065,18 @@ auto SubchainStateData::ProcessTransaction(
 }
 
 auto SubchainStateData::ProcessReorg(
+    const Lock& headerOracleLock,
+    storage::lmdb::LMDB::Transaction& tx,
+    std::atomic_int& errors,
+    const block::Position& parent) noexcept -> void
+{
+    synchronize(
+        [&lock = std::as_const(headerOracleLock), &tx, &errors, &parent, this] {
+            sProcessReorg(lock, tx, errors, parent);
+        });
+}
+
+auto SubchainStateData::sProcessReorg(
     const Lock& headerOracleLock,
     storage::lmdb::LMDB::Transaction& tx,
     std::atomic_int& errors,
@@ -1680,6 +1711,7 @@ auto SubchainStateData::state_reorg(const Work work, Message&& msg) noexcept
         case Work::prepare_reorg:
         case Work::rescan:
         case Work::statemachine: {
+            tdiag("...defer(&&)");
             defer(std::move(msg));
         } break;
         case Work::watchdog_ack: {
@@ -1741,9 +1773,11 @@ auto SubchainStateData::to_patterns(const Elements& in, allocator_type alloc)
 
 auto SubchainStateData::transition_state_normal() noexcept -> bool
 {
-    if (false == have_children_) { return false; }
+    tdiag(
+        "transition_state_normal, children:", (have_children_ ? "YES" : "NO"));
+    if (!have_children_) { return false; }
 
-    disable_automatic_processing_ = false;
+    disable_automatic_processing(false);
     auto rc = scan_->ChangeState(JobState::normal, {});
 
     OT_ASSERT(rc);
@@ -1774,7 +1808,8 @@ auto SubchainStateData::transition_state_normal() noexcept -> bool
 auto SubchainStateData::transition_state_reorg(StateSequence id) noexcept
     -> bool
 {
-    if (false == have_children_) { return false; }
+    tdiag("transition_state_reorg, children:", (have_children_ ? "YES" : "NO"));
+    if (!have_children_) { return false; }
 
     OT_ASSERT(0u < id);
 
@@ -1790,7 +1825,7 @@ auto SubchainStateData::transition_state_reorg(StateSequence id) noexcept
         if (false == output) { return false; }
 
         reorgs_.emplace(id);
-        disable_automatic_processing_ = true;
+        disable_automatic_processing(true);
         state_ = State::reorg;
         log_(OT_PRETTY_CLASS())(name_)(" ready to process reorg ")(id).Flush();
     } else {
@@ -1803,6 +1838,9 @@ auto SubchainStateData::transition_state_reorg(StateSequence id) noexcept
 
 auto SubchainStateData::transition_state_shutdown() noexcept -> bool
 {
+    tdiag(
+        "transition_state_shutdown, children:",
+        (have_children_ ? "YES" : "NO"));
     clear_children();
     state_ = State::shutdown;
     log_(OT_PRETTY_CLASS())(name_)(" transitioned to shutdown state ").Flush();
@@ -1843,7 +1881,7 @@ auto SubchainStateData::translate(const TXOs& utxos, Patterns& outpoints)
     }
 }
 
-auto SubchainStateData::work() noexcept -> bool
+auto SubchainStateData::work() noexcept -> int
 {
     const auto now = Clock::now();
     using namespace std::literals;
@@ -1860,18 +1898,8 @@ auto SubchainStateData::work() noexcept -> bool
         }
     }
 
-    watchdog_.SetRelative(60s);
-    watchdog_.Wait([this](const auto& error) {
-        if (error) {
-            if (boost::system::errc::operation_canceled != error.value()) {
-                LogError()(OT_PRETTY_CLASS())(name_)(" ")(error).Flush();
-            }
-        } else {
-            trigger();
-        }
-    });
-
-    return false;
+    // trigger in 60s
+    return 60000;
 }
 
 SubchainStateData::~SubchainStateData()

@@ -66,8 +66,66 @@ auto BlockchainPeerManager(
 }
 }  // namespace opentxs::factory
 
+namespace opentxs::blockchain::node
+{
+
+auto print(PeerManagerJobs job) noexcept -> std::string_view
+{
+    try {
+        static const auto map = Map<PeerManagerJobs, std::string>{
+            {node::PeerManagerJobs::Shutdown, "Shutdown"},
+            {node::PeerManagerJobs::Mempool, "Mempool"},
+            {node::PeerManagerJobs::Register, "Register"},
+            {node::PeerManagerJobs::Connect, "Connect"},
+            {node::PeerManagerJobs::Disconnect, "Disconnect"},
+            {node::PeerManagerJobs::P2P, "P2P"},
+            {node::PeerManagerJobs::Getheaders, "Getheaders"},
+            {node::PeerManagerJobs::Getblock, "Getblock"},
+            {node::PeerManagerJobs::BroadcastTransaction,
+             "BroadcastTransaction"},
+            {node::PeerManagerJobs::BroadcastBlock, "BroadcastBlock"},
+            {node::PeerManagerJobs::JobAvailableCfheaders,
+             "JobAvailableCfheaders"},
+            {node::PeerManagerJobs::JobAvailableCfilters,
+             "JobAvailableCfilters"},
+            {node::PeerManagerJobs::JobAvailableBlock, "JobAvailableBlock"},
+            {node::PeerManagerJobs::ActivityTimeout, "ActivityTimeout"},
+            {node::PeerManagerJobs::NeedPing, "NeedPing"},
+            {node::PeerManagerJobs::Body, "Body"},
+            {node::PeerManagerJobs::Header, "Header"},
+            {node::PeerManagerJobs::Heartbeat, "Heartbeat"},
+            {node::PeerManagerJobs::Init, "Init"},
+            {node::PeerManagerJobs::ReceiveMessage, "ReceiveMessage"},
+            {node::PeerManagerJobs::SendMessage, "SendMessage"},
+            {node::PeerManagerJobs::StateMachine, "StateMachine"},
+        };
+
+        return map.at(job);
+    } catch (...) {
+        LogError()(__FUNCTION__)("invalid PeerManagerJobs: ")(
+            static_cast<OTZMQWorkType>(job))
+            .Flush();
+
+        OT_FAIL;
+    }
+}
+}  // namespace opentxs::blockchain::node
+
 namespace opentxs::blockchain::node::implementation
 {
+auto PeerManager::to_str(Work value) -> std::string
+{
+    static auto Map = std::map<Work, std::string>{
+        {Work::Disconnect, "Disconnect"},
+        {Work::AddPeer, "AddPeer"},
+        {Work::AddListener, "AddListener"},
+        {Work::IncomingPeer, "IncomingPeer"},
+        {Work::StateMachine, "StateMachine"},
+        {Work::Shutdown, "Shutdown"}};
+    auto i = Map.find(value);
+    return i == Map.end() ? std::string{"???"} : i->second;
+}
+
 PeerManager::PeerManager(
     const api::Session& api,
     const internal::Config& config,
@@ -82,7 +140,8 @@ PeerManager::PeerManager(
     const UnallocatedCString& seednode,
     const UnallocatedCString& shutdown) noexcept
     : internal::PeerManager()
-    , Worker(api, 100ms)
+    , Worker(api, "PeerManager")
+    , closed_{}
     , node_(node)
     , database_(database)
     , chain_(chain)
@@ -107,8 +166,10 @@ PeerManager::PeerManager(
     , verified_peers_()
     , init_promise_()
     , init_(init_promise_.get_future())
+    , last_job_{}
 {
     init_executor({shutdown});
+    start();
 }
 
 auto PeerManager::AddIncomingPeer(const int id, std::uintptr_t endpoint)
@@ -156,6 +217,7 @@ auto PeerManager::BroadcastBlock(const block::Block& block) const noexcept
     auto work = jobs_.Work(PeerManagerJobs::BroadcastBlock);
     work.AddFrame(block.ID());
 
+    tdiag("about to dispatch BroadcastBlock");
     jobs_.Dispatch(std::move(work));
 
     return true;
@@ -175,6 +237,7 @@ auto PeerManager::BroadcastTransaction(
     const auto view = reader(bytes);
     auto work = jobs_.Work(PeerManagerJobs::BroadcastTransaction);
     work.AddFrame(view.data(), view.size());
+    tdiag("BroadcastTransaction dispatch");
     jobs_.Dispatch(std::move(work));
 
     return true;
@@ -290,9 +353,11 @@ auto PeerManager::pipeline(zmq::Message&& message) -> void
     OT_ASSERT(0 < body.size());
 
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
 
     switch (work) {
         case Work::Disconnect: {
+            tdiag("PeerManager::Disconnect");
             OT_ASSERT(1 < body.size());
 
             const auto id = body.at(1).as<int>();
@@ -396,12 +461,16 @@ auto PeerManager::RequestBlocks(
         work.AddFrame(block.data(), block.size());
 
         if (work.Body().size() > limit) {
+            tdiag("RequestBlocks about to dispatch Getblock");
             jobs_.Dispatch(std::move(work));
             work = jobs_.Work(PeerManagerJobs::Getblock);
         }
     }
 
-    if (work.Body().size() > 1u) { jobs_.Dispatch(std::move(work)); }
+    if (work.Body().size() > 1u) {
+        tdiag("RequestBlocks about to dispatch unknown");
+        jobs_.Dispatch(std::move(work));
+    }
 
     return true;
 }
@@ -412,6 +481,7 @@ auto PeerManager::RequestHeaders() const noexcept -> bool
 
     if (0 == peers_.Count()) { return false; }
 
+    tdiag("RequestHeaders about to dispatch Getheaders");
     jobs_.Dispatch(PeerManagerJobs::Getheaders);
 
     return true;
@@ -419,17 +489,20 @@ auto PeerManager::RequestHeaders() const noexcept -> bool
 
 auto PeerManager::shut_down() noexcept -> void
 {
-    close_pipeline();
-    jobs_.Shutdown();
-    peers_.Shutdown();
-    // TODO MT-34 investigate what other actions might be needed
+    if (!closed_.exchange(true)) {
+        close_pipeline();
+        tdiag("Peers Shutdown");
+        peers_.Shutdown();
+        tdiag("jobs Shutdown");
+        jobs_.Shutdown();
+    }
 }
 
-auto PeerManager::state_machine() noexcept -> bool
+auto PeerManager::state_machine() noexcept -> int
 {
     LogTrace()(OT_PRETTY_CLASS()).Flush();
 
-    if (!running_.load()) { return false; }
+    if (!running_.load()) { return -1; }
 
     return peers_.Run();
 }
@@ -443,6 +516,11 @@ auto PeerManager::VerifyPeer(const int id, const UnallocatedCString& address)
     }
 
     api_.Network().Blockchain().Internal().UpdatePeer(chain_, address);
+}
+
+auto PeerManager::last_job_str() const noexcept -> std::string
+{
+    return to_str(last_job_);
 }
 
 PeerManager::~PeerManager()

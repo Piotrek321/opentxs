@@ -7,6 +7,10 @@ add_subdirectory(argon2)
 add_subdirectory(base64)
 add_subdirectory(irrxml)
 
+if(${CMAKE_CXX_COMPILER_ID} MATCHES GNU)
+    target_compile_options(irrxml PRIVATE -Wno-suggest-override)
+endif()
+
 if(PACKETCRYPT_EXPORT)
   add_subdirectory(packetcrypt)
 endif()

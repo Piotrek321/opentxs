@@ -516,7 +516,7 @@ protected:
 class Regtest_fixture_hd : public Regtest_fixture_normal
 {
 protected:
-    static const User alice_;
+    static User alice_;
     static TXOs txos_;
     static std::unique_ptr<ScanListener> listener_p_;
 
@@ -546,8 +546,8 @@ protected:
         "I have come here to chew bubblegum and kick ass...and I'm all out of "
         "bubblegum."};
 
-    static const User alice_;
-    static const User bob_;
+    static User alice_;
+    static User bob_;
     static Server server_1_;
     static TXOs txos_alice_;
     static TXOs txos_bob_;
@@ -606,7 +606,7 @@ private:
 class Regtest_fixture_sync : public Regtest_fixture_single
 {
 protected:
-    static const User alex_;
+    static User alex_;
     static std::optional<ot::OTServerContract> notary_;
     static std::optional<ot::OTUnitDefinition> unit_;
 

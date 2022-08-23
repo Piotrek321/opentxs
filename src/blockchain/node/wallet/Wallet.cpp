@@ -46,25 +46,6 @@ auto BlockchainWallet(
 
 namespace opentxs::blockchain::node::wallet
 {
-auto lock_for_reorg(
-    const std::string_view name,
-    std::timed_mutex& mutex) noexcept -> std::unique_lock<std::timed_mutex>
-{
-    auto lock = std::unique_lock<std::timed_mutex>{mutex, std::defer_lock};
-    auto failures{-1};
-
-    while (!lock.owns_lock()) {
-        if (++failures < 300) {
-            lock.try_lock_for(997ms);
-        } else {
-            LogError()(name)(" state machine is not responding").Flush();
-            lock.try_lock_for(997ms);
-        }
-    }
-
-    return lock;
-}
-
 auto print(WalletJobs job) noexcept -> std::string_view
 {
     try {
@@ -95,17 +76,19 @@ Wallet::Wallet(
     const node::internal::Mempool& mempool,
     const Type chain,
     const std::string_view shutdown) noexcept
-    : Worker(api, 10ms)
+    : Worker(api, "Wallet")
     , parent_(parent)
     , db_(db)
     , chain_(chain)
     , fee_oracle_(factory::FeeOracle(api_, chain))
     , accounts_(api, parent_, db_, mempool, chain_)
     , proposals_(api, parent_, db_, chain_)
+    , last_job_{}
 {
     init_executor({
         UnallocatedCString{shutdown},
     });
+    start();
 }
 
 auto Wallet::ConstructTransaction(
@@ -219,6 +202,7 @@ auto Wallet::pipeline(network::zeromq::Message&& in) -> void
     }
 
     const auto work = body.at(0).as<Work>();
+    last_job_ = work;
     const auto start = Clock::now();
 
     switch (work) {
@@ -262,11 +246,16 @@ auto Wallet::StartRescan() const noexcept -> bool
     return true;
 }
 
-auto Wallet::state_machine() noexcept -> bool
+auto Wallet::state_machine() noexcept -> int
 {
-    if (!running_.load()) { return false; }
+    if (!running_.load()) { return -1; }
 
-    return proposals_.Run();
+    return proposals_.Run() ? 10 : 100;
+}
+
+auto Wallet::last_job_str() const noexcept -> std::string
+{
+    return std::string{print(last_job_)};
 }
 
 Wallet::~Wallet()
