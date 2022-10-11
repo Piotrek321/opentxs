@@ -104,7 +104,7 @@ BlockchainSelection::BlockchainSelection(
     const std::vector<opentxs::blockchain::Type>& chains,
     const SimpleCallback& cb) noexcept
     : BlockchainSelectionList(api, Identifier::Factory(), cb, false)
-    , Worker(api, {})
+    , Worker(api, "BlockchainSelection chains")
     , filter_(filter(chains))
     , chain_state_([&] {
         auto out = UnallocatedMap<blockchain::Type, bool>{};
@@ -115,9 +115,11 @@ BlockchainSelection::BlockchainSelection(
     }())
     , enabled_count_(0)
     , enabled_callback_()
+    , last_job_{}
 {
     init_executor(
         {UnallocatedCString{api.Endpoints().BlockchainStateChange()}});
+    start();
     pipeline_.Push(MakeWork(Work::init));
 }
 
