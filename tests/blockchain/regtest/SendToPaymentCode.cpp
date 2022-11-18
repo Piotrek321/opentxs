@@ -15,7 +15,7 @@
 namespace ottest
 {
 
-TEST_F(Regtest_fixture_simple, send_to_client)
+TEST_F(Regtest_fixture_simple, send_to_payment_code)
 {
     EXPECT_TRUE(Start());
     EXPECT_TRUE(Connect());
@@ -72,7 +72,14 @@ TEST_F(Regtest_fixture_simple, send_to_client)
     for (size_t number_of_test = 0; number_of_test < numbers_of_test;
          number_of_test++) {
 
-        SendCoins(*receiver, *sender, target_height, coin_to_send);
+        const auto& network =
+            user_alice.api_->Network().Blockchain().GetChain(test_chain_);
+        auto future = network.SendToPaymentCode(
+            user_alice.nym_id_,
+            user_bob.PaymentCode(),
+            coin_to_send,
+            "memo for outgoing transaction");
+        MineTransaction(*sender, future.get().second, target_height);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
             *sender, send_transactions_, transactions_ptxid_);
@@ -83,7 +90,13 @@ TEST_F(Regtest_fixture_simple, send_to_client)
         receiver->expected_balance_ += coin_to_send;
         WaitForSynchro(*sender, target_height, sender->expected_balance_);
         WaitForSynchro(*receiver, target_height, receiver->expected_balance_);
-
+        /*std::cerr << "sender->expected_balance_ " <<
+           GetDisplayBalance(sender->expected_balance_) <<
+            "\nreceiver->expected_balance_ " <<
+           GetDisplayBalance(receiver->expected_balance_)
+                  << "\nsender: " << GetDisplayBalance(GetBalance(*sender)) <<
+            "\nreceiver: " << GetDisplayBalance(GetBalance(*receiver)) <<
+           "\n";*/
         EXPECT_EQ(GetBalance(*sender), sender->expected_balance_);
         EXPECT_EQ(GetBalance(*receiver), receiver->expected_balance_);
 
@@ -92,5 +105,4 @@ TEST_F(Regtest_fixture_simple, send_to_client)
 
     Shutdown();
 }
-
-}  // namespace ottest
+}
