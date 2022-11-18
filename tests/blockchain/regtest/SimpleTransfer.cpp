@@ -22,10 +22,10 @@ TEST_F(Regtest_fixture_simple, send_to_client)
 
     const std::string name_alice = "Alice";
     const std::string name_bob = "Bob";
-
     Height begin = 0;
     const auto blocks_number = 2;
     auto coin_to_send = 100000;
+    const auto expected_balance = amount_in_transaction_ * blocks_number * transaction_in_block_;
 
     auto [user_alice, success_alice] = CreateClient(
         opentxs::Options{},
@@ -54,18 +54,18 @@ TEST_F(Regtest_fixture_simple, send_to_client)
 
     EXPECT_EQ(
         GetBalance(user_alice),
-        amount_in_transaction_ * blocks_number * transaction_in_block_);
+        expected_balance);
 
     EXPECT_EQ(
         GetBalance(user_bob),
-        amount_in_transaction_ * blocks_number * transaction_in_block_);
+        expected_balance);
 
     User* sender = &users_.at(name_alice);
     User* receiver = &users_.at(name_bob);
     sender->expected_balance_ =
-        amount_in_transaction_ * blocks_number * transaction_in_block_;
+        expected_balance;
     receiver->expected_balance_ =
-        amount_in_transaction_ * blocks_number * transaction_in_block_;
+        expected_balance;
 
     const size_t numbers_of_test = 2;
 

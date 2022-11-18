@@ -26,6 +26,7 @@ TEST_F(Regtest_fixture_simple, send_to_payment_code)
     Height begin = 0;
     const auto blocks_number = 2;
     auto coin_to_send = 100000;
+    const auto expected_balance = amount_in_transaction_ * blocks_number * transaction_in_block_;
 
     auto [user_alice, success_alice] = CreateClient(
         opentxs::Options{},
@@ -54,18 +55,18 @@ TEST_F(Regtest_fixture_simple, send_to_payment_code)
 
     EXPECT_EQ(
         GetBalance(user_alice),
-        amount_in_transaction_ * blocks_number * transaction_in_block_);
+        expected_balance);
 
     EXPECT_EQ(
         GetBalance(user_bob),
-        amount_in_transaction_ * blocks_number * transaction_in_block_);
+        expected_balance);
 
     User* sender = &users_.at(name_alice);
     User* receiver = &users_.at(name_bob);
     sender->expected_balance_ =
-        amount_in_transaction_ * blocks_number * transaction_in_block_;
+        expected_balance;
     receiver->expected_balance_ =
-        amount_in_transaction_ * blocks_number * transaction_in_block_;
+        expected_balance;
 
     const size_t numbers_of_test = 2;
 
@@ -73,12 +74,14 @@ TEST_F(Regtest_fixture_simple, send_to_payment_code)
          number_of_test++) {
 
         const auto& network =
-            user_alice.api_->Network().Blockchain().GetChain(test_chain_);
+            sender->api_->Network().Blockchain().GetChain(test_chain_);
+
         auto future = network.SendToPaymentCode(
-            user_alice.nym_id_,
-            user_bob.PaymentCode(),
+            sender->nym_id_,
+            receiver->PaymentCode(),
             coin_to_send,
             "memo for outgoing transaction");
+
         MineTransaction(*sender, future.get().second, target_height);
 
         auto loaded_transactions = CollectTransactionsForFeeCalculations(
@@ -88,15 +91,10 @@ TEST_F(Regtest_fixture_simple, send_to_payment_code)
 
         sender->expected_balance_ -= Amount{coin_to_send} + fee;
         receiver->expected_balance_ += coin_to_send;
+
         WaitForSynchro(*sender, target_height, sender->expected_balance_);
         WaitForSynchro(*receiver, target_height, receiver->expected_balance_);
-        /*std::cerr << "sender->expected_balance_ " <<
-           GetDisplayBalance(sender->expected_balance_) <<
-            "\nreceiver->expected_balance_ " <<
-           GetDisplayBalance(receiver->expected_balance_)
-                  << "\nsender: " << GetDisplayBalance(GetBalance(*sender)) <<
-            "\nreceiver: " << GetDisplayBalance(GetBalance(*receiver)) <<
-           "\n";*/
+
         EXPECT_EQ(GetBalance(*sender), sender->expected_balance_);
         EXPECT_EQ(GetBalance(*receiver), receiver->expected_balance_);
 
@@ -105,4 +103,4 @@ TEST_F(Regtest_fixture_simple, send_to_payment_code)
 
     Shutdown();
 }
-}
+}  // namespace ottest

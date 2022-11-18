@@ -14,10 +14,10 @@ parameters:
     default: "-j 8 --output-on-failure --repeat until-pass:3 --timeout 300 --schedule-random"
     type: string
   ctest-disabled-tests:
-    default: "(ottest-blockchain-regtest-)(basic|reorg|sync-client|restart|restart-end|restart-inloop|simple-transfer|round-robin-distribution-transactions|round-robin-recapture-transactions|sync-server)"
+    default: "(ottest-blockchain-regtest-)(basic|reorg|sync-client|restart|restart-end|restart-inloop|simple-transfer|round-robin-distribution-transactions|round-robin-recapture-transactions|sync-server|send-to-payment-code)"
     type: string
   ctest-disabled-tests-ccov:
-    default: "(ottest-blockchain-)(headeroracle-|regtest-)(add_checkpoint_already_in_best_chain|add_checkpoint_disconnected|basic_reorg|basic_reorg-batch|basic_sequence|basic_sequence-batch|checkpoint_prevents_reorg|checkpoint_prevents_reorg-batch|checkpoint_prevents_update|checkpoint_prevents_update-batch|delete_checkpoint|receive_headers_out_of_order|receive_headers_out_of_order-batch|basic|sync-client|sync-server|restart|restart-end|restart-inloop|restart-early|simple-transfer|round-robin-distribution-transactions|round-robin-recapture-transactions|reorg)"
+    default: "(ottest-blockchain-)(headeroracle-|regtest-)(add_checkpoint_already_in_best_chain|add_checkpoint_disconnected|basic_reorg|basic_reorg-batch|basic_sequence|basic_sequence-batch|checkpoint_prevents_reorg|checkpoint_prevents_reorg-batch|checkpoint_prevents_update|checkpoint_prevents_update-batch|delete_checkpoint|receive_headers_out_of_order|receive_headers_out_of_order-batch|basic|sync-client|sync-server|restart|restart-end|restart-inloop|restart-early|simple-transfer|round-robin-distribution-transactions|round-robin-recapture-transactions|reorg|send-to-payment-code)"
     type: string
 
 executors:
