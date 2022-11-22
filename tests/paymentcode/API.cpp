@@ -48,12 +48,21 @@ TEST_F(Test_PaymentCodeAPI, alice)
     }();
 
     EXPECT_FALSE(seedID.empty());
-
+    //Creates first nym with seedID under index 0 but does not set paymentCode version. {} is constructor for Parameters
+    //Set nym as default one since it is first created, add this nym as contact with name, nym ID and paymentCode
+    //Here is paymentCode create (during nym createing we create source which creates NymIDSource and there
     const auto pNym = alice_.Wallet().Nym({seedID, 0}, reason, "Alice");
 
     ASSERT_TRUE(pNym);
 
     const auto& nym = *pNym;
+    //nym.PaymentCode() returns an UnallocatedCString containing a base58-encoded representation of that Nym's
+    //Payment Code, which is available inside the Nym as part of his source.
+    //In this case Nyms have a BIP-47 source type. The source_ member variable contains the Nym's source,
+    //which is made out of its Seed, and which includes a data member containing the payment code for that Nym.
+    //This source is generated when the Nym is generated. It basically IS the Nym. If type is different than BIP47 empty string is returned.
+
+    //Creates PaymentCode object from string
     const auto localPC = alice_.Factory().PaymentCode(nym.PaymentCode());
     const auto remotePC = alice_.Factory().PaymentCode(remote.payment_code_);
 
@@ -67,6 +76,7 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
         return out;
     }();
+    //Creates Identifier for both receiving and sending chain
     const auto id1 = alice_.Crypto().Blockchain().NewPaymentCodeSubaccount(
         nym.ID(), localPC, remotePC, ot::reader(path), receiveChain, reason);
     const auto id2 = alice_.Crypto().Blockchain().NewPaymentCodeSubaccount(
@@ -74,7 +84,8 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
     ASSERT_FALSE(id1->empty());
     ASSERT_FALSE(id2->empty());
-
+    //Takes wallet for nym type, then from wallet takes account with id equal to nym.ID()
+    //and finally for that account it returns payment code for id1
     const auto& account1 =
         alice_.Crypto().Blockchain().PaymentCodeSubaccount(nym.ID(), id1);
     const auto& account2 =
